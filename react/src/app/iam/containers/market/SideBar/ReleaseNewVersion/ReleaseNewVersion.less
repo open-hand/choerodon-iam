@@ -1,0 +1,77 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.version-option-text {
+  display: flex;
+  justify-content: space-between;
+  .version-status {
+    border-radius: 0.02rem;
+    font-size: 0.1rem;
+    color: #fff;
+    text-align: center;
+    line-height: 0.16rem;
+    padding: 0 0.04rem;
+    margin-left: 0.06rem;
+    margin-top: 0.02rem;
+  }
+  .published {
+    background: #00bfa5;
+  }
+  .publishing {
+    background: #ffb100;
+  }
+}
+
+.c7n-market-releaseNewVersion {
+  .overLoadCollapse();
+  &-hr {
+    .hr();
+  }
+  .required {
+    .required();
+  }
+  &-document-title, &-changelog-title, &-overview-title {
+    .editorTitle();
+  }
+  &-document, &-changelog, &-overview {
+    margin-bottom: 0.2rem;
+  }
+  &-form {
+    .overLoadCollapse();
+    width: 5.12rem;
+    table > tbody > tr > td {
+      vertical-align: middle !important;
+    }
+    table > tbody > tr:last-child > td {
+      vertical-align: top !important;
+    }
+    table > tbody > tr > td > label {
+      color: rgba(0, 0, 0, 0.54) !important;
+    }
+    &-version-select {
+      .c7n-pro-select {
+        border: none;
+      }
+    }
+  }
+
+  &-img {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+  }
+
+  &-table {
+    width: 5.12rem;
+    //.c7n-pro-table-row-height-fixed .c7n-pro-table-cell-inner {
+    //  padding: 0 !important;
+    //}
+    .overloadTableColor();
+    .c7n-pro-select-float-label:before {
+      content: none !important;
+    }
+    .c7n-pro-select {
+      padding: 0 !important;
+    }
+  }
+}

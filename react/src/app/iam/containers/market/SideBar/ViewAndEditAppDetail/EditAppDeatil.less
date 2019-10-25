@@ -1,0 +1,23 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-editAppDetail {
+  &-img {
+    .imgContainer();
+  }
+  &-form {
+    .createFormOverload();
+    .labelHelp {
+      .customLabelHelp();
+    }
+  }
+  &-overview {
+    &-title {
+      .editorTitle();
+    }
+    margin-bottom: 0.2rem;
+  }
+  .required {
+    .required();
+  }
+}

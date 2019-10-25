@@ -1,0 +1,35 @@
+// @import '~choerodon-ui/lib/style/themes/default';
+// @import '~choerodon-ui/lib/style/themes';
+
+// 颜色
+@border-color: rgba(0, 0, 0, 0.12);
+@border-color-dark: rgba(0, 0, 0, 0.87);
+@font-color-light: rgba(0, 0, 0, .65);
+@font-color-dark: rgba(0, 0, 0, .87);
+// 字体
+@font-style: 'PingFangSC-Regular';
+
+.c7n-pro-organization-header {
+    width: 100%;
+    height: .4rem;
+    line-height: .4rem;
+    border-bottom: .01rem solid @border-color;
+}
+.c7n-pro-organization-container {
+    padding-left: .24rem;
+}
+.c7n-pro-organization-bread {
+    font-size: .2rem;
+    height: 0.64rem;
+    line-height: .64rem;
+    >span {
+        font-family: @font-style;
+        &:first-child {
+            color: @font-color-light !important;
+        }
+        &:nth-of-type(2) {
+            color: @font-color-dark !important;
+        }
+    }
+}
+

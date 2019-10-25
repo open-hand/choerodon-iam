@@ -1,0 +1,58 @@
+// 颜色
+@box-shadow-style-default: 0 .03rem .01rem -0.02rem rgba(0, 0, 0, 0.2), 0 .02rem .02rem 0 rgba(0, 0, 0, 0.14), 0 .01rem .05rem 0 rgba(0, 0, 0, 0.12);
+@font-color: rgba(0, 0, 0, 0.54);
+@font-color-dark: rgba(0, 0, 0, 1);
+@font-color-light: #e1e1e1;
+@bg-color1: rgba(0, 0, 0, 0.26);
+
+.site-password-content {
+    .c7n-pro-field-required.c7n-pro-field-label::after {
+        content: none;
+    }
+    &.ml-15 {
+        margin-left: .15rem !important;
+    }
+    padding-top: .16rem;
+    label {
+        float: left;
+        width: 2.2rem;
+        font-size: .14rem;
+        color: rgba(0, 0, 0, 0.54);
+        line-height: .20rem;
+    }
+    .c7n-pro-output {
+        line-height: 1;
+    }
+    font-size: .14rem;
+    margin-left: .15rem;
+    tr {
+        td {
+            .c7n-pro-field-wrapper {
+                padding: 0;
+                padding-bottom: .05rem;
+            }
+            padding: 0;
+            padding-bottom: .16rem;
+            &:first-of-type {
+                color: @font-color;
+            }
+            &:nth-of-type(2) {
+                color: @font-color-dark;
+            }
+            &:nth-of-type(3) {
+                color: @font-color;
+            }
+        }
+    }
+}
+
+.site-password-sider {
+    .c7n-pro-validation-message {
+        white-space: inherit;
+    }
+    .hidden-password {
+        & > table > tbody > tr:nth-child(1) {
+          position: absolute;
+        }
+    }
+}

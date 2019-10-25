@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.AccessTokenMapper">
+    <select id="selectTokens" resultType="io.choerodon.base.infra.dto.AccessTokenDTO">
+        SELECT
+        oat.token_id as tokenId,
+        oat.token as token,
+        oat.client_id as clientId,
+        oc.web_server_redirect_uri as redirectUri,
+        oc.access_token_validity as accessTokenValidity
+        FROM
+        oauth_access_token oat
+        JOIN
+        oauth_client oc
+        WHERE
+        oat.client_id = oc.name
+        AND
+        oat.user_name = #{userName}
+        <if test="clientId != null">
+            and oat.client_id like concat(concat('%',#{clientId}),'%')
+        </if>
+        <if test="params!= null">
+            and oat.client_id like concat(concat('%',#{params}),'%')
+        </if>
+    </select>
+
+    <select id="selectTokenList" resultType="io.choerodon.base.infra.dto.AccessTokenDTO">
+        SELECT
+        TOKEN_ID,
+        TOKEN
+        FROM
+        oauth_access_token
+        WHERE
+        TOKEN_ID
+        IN
+        <foreach collection="tokenIds" item="tokenId" index="index" open="(" separator="," close=")">
+            #{tokenId}
+        </foreach>
+    </select>
+</mapper>

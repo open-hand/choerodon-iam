@@ -1,0 +1,122 @@
+@clickedColor:rgba(0, 0, 0, 0.08);
+.c7n-saga {
+  &-img {
+    width: 5.12rem;
+    text-align: center;
+    float: left;
+    &-circle {
+      width: 0.98rem;
+      height: 0.98rem;
+      border: 0.01rem solid #000;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 0.98rem;
+      z-index: 2;
+      display: inline-block;
+      cursor: pointer;
+
+      &.output {
+        cursor: default;
+      }
+    }
+    &-square {
+      padding: 0.10rem;
+      width: 1.02rem;
+      height: 1.02rem;
+      border-radius: 0.10rem;
+      border: 0.01rem solid rgba(0, 0, 0, 0.24);
+      text-align: center;
+      z-index: 2;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      > span {
+        display: block;
+        width: 0.82rem;
+        max-height: 0.82rem;
+        overflow: hidden;
+        word-break: break-all;
+      }
+    }
+    &-squares {
+      border-radius: 0.10rem;
+      border: 0.01rem solid rgba(0, 0, 0, 0.24);
+      text-align: center;
+      z-index: 2;
+      display: inline-block;
+      padding: 0.10rem;
+      > div {
+        margin: 0.10rem;
+        float: left;
+      }
+    }
+    &-line {
+      position: relative;
+      height: 0.37rem;
+      &:before {
+        content: "";
+        height: 0.28rem;
+        width: 0.01rem;
+        border-left: 0.02rem dashed;
+        background: linear-gradient(to right, #c0c0c0, #c0c0c0 6.75px, transparent 6.75px, transparent);
+        background-size: 0.09rem 100%;
+        opacity: .24;
+        position: absolute;
+      }
+      &:after {
+        width: 0;
+        height: 0;
+        opacity: 0.24;
+        border-width: 0.09rem 0.06rem 0;
+        border-style: solid;
+        border-color: rgba(0, 0, 0, 0.78) transparent transparent;
+        transform: translateX(-0.05rem);
+        content: '';
+        bottom: 0;
+        position: absolute;
+        z-index: 1;
+      }
+    }
+  }
+
+  &-img-detail {
+    float: left;
+    margin-left: 0.24rem;
+    height: auto;
+    width: ~'calc(100% - 5.50rem)';
+    background: #fff;
+    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 2px -1px rgba(0, 0, 0, 0.12);
+    border-radius: 0.02rem;
+    padding: 0.24rem 0.24rem 0.23rem 0.23rem;
+
+    &.autoscroll {
+      position: absolute;
+      right: 0;
+    }
+  }
+
+  &-task-active {
+    background: @clickedColor;
+  }
+
+  &-task-detail {
+    color: #000;
+    &-title {
+      font-family: PingFangSC-Regular;
+      font-size: 0.14rem;
+      border-bottom: 0.01rem solid rgba(0, 0, 0, 0.12);
+      padding-bottom: 0.05rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem; // margin 会合并 相等于marginBottom 0.05rem
+    }
+    &-content > div {
+      font-family: PingFangSC-Regular;
+      font-size: 0.13rem;
+      line-height: 0.20rem;
+      margin-top: 0.10rem;
+    }
+  }
+}
+

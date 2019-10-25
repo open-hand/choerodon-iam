@@ -1,0 +1,136 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+// hover 样式
+.hover() {
+  color: #000;
+  &:hover {
+    color: #3f51b5;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+// 分割线样式
+.hr(@marginTop: 0.3rem, @marginBottom: 0.2rem) {
+  box-sizing: content-box;
+  overflow: visible;
+  height: 1px;
+  background: #d8d8d8;
+  border: none;
+  margin: @marginTop -0.2rem @marginBottom -0.2rem;
+  //box-shadow: 0 0.04rem 0.12rem rgba(0, 0, 0, 0.12);
+}
+// logo 与第一个字符的样式
+.logoContainer() {
+  display: inline-block;
+  width: 0.16rem;
+  height: 0.16rem;
+  border-radius: 50%;
+  margin-right: .04rem;
+}
+.firstCharContainer() {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 700;
+  background-color: #c5cbe8;
+  background-position: center;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  color: #3f51b5;
+  text-transform: uppercase;
+  text-align: center;
+  margin-right: 4px;
+}
+// remoteToken 复制 TextArea 样式
+.tokenTextArea() {
+  display: flex;
+  align-items: flex-end;
+  width: 5.12rem;
+  &-text {
+    width: 100%;
+  }
+  &-button {
+    margin-left: 0.12rem;
+  }
+}
+// 版本服务样式
+.serviceContainer() {
+  .@{c7n-pro-prefix}-output-multiple-block {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: .1rem;
+    font-size: 0.12rem;
+    color: #000;
+    line-height: 0.2rem;
+    &.disable {
+      color: #000 !important;
+    }
+  }
+}
+// 版本服务提示样式
+.serviceInfo() {
+  i {
+    font-size: 0.13rem;
+    color: #ffb100;
+    margin-right: 0.04rem;
+  }
+  font-size: 0.12rem;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1.67;
+  margin-bottom: 0.16rem !important;
+}
+// 应用图标样式
+.imgContainer() {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+}
+// 富文本编辑器提示
+.editorTitle() {
+  font-size: 0.12rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  line-height: 1.25;
+  margin-bottom: 0.08rem;
+}
+.required() {
+  .required-title:after {
+    content: '*';
+    font-family: SimSun, sans-serif;
+    margin-left: 2px;
+    color: #d50000;
+  }
+  .required-message {
+    display: inline-block;
+    margin-bottom: 0.08rem;
+    color: #d50000;
+  }
+}
+
+// HTML 显示样式
+.htmlContainer() {
+  width: 100%;
+  p {
+    margin: 0 !important;
+  }
+  img {
+    max-width: 100%;
+  }
+}
+
+// 应用名称+状态 Container
+.statusIconContainer() {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  &-name {
+    display: inline-block;
+    max-width: 1.7rem;
+    margin-right: 0.08rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

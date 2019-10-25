@@ -1,0 +1,72 @@
+.c7n-saga-instance {
+  &-wrap {
+    display: flex;
+
+    &-title {
+      font-family: PingFangSC-Regular;
+      font-size: 20px;
+      color: rgba(0, 0, 0, 0.87);
+      line-height: 20px;
+    }
+
+    &-btns {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      margin-top: 16px;
+
+      .text {
+        display: inline-block;
+        margin-right: 15px;
+      }
+
+      button:nth-child(2) {
+        border-radius: 2px 0 0 2px;
+      }
+
+      button:nth-child(3) {
+        border-radius: 0 2px 2px 0;
+      }
+
+      button.active {
+        background: rgba(140, 158, 255, 0.20);
+      }
+    }
+    &-status {
+      &-content {
+        margin-left: auto;
+        display: flex;
+      }
+      &-wrapper {
+        display: flex;
+      }
+      &-text {
+        padding-bottom: 10px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      &-num {
+        cursor: pointer;
+        border-left: 4px solid;
+        padding: 0 32px 0 6px;
+      }
+
+      &-completed {
+        border-left-color: #00bfa5 !important;
+      }
+
+      &-running {
+        border-left-color: #4d90fe !important;
+      }
+
+      &-stopped {
+        border-left-color: #cecece !important;
+      }
+
+      &-failed {
+        border-left-color: #f44336 !important;
+      }
+    }
+  }
+}

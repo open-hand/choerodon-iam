@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.MenuMapper">
+
+    <resultMap id="Menu" type="io.choerodon.base.infra.dto.MenuDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
+        <collection property="permissions" ofType="io.choerodon.base.infra.dto.PermissionDTO">
+            <id column="permission_id" property="id"/>
+            <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="permission_description" property="description" jdbcType="VARCHAR"/>
+            <result column="permission_type" property="permissionType" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectMenusWithPermission" resultMap="Menu">
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        select
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip2.path as route,
+        ip.id permission_id,
+        ip.code permission_code,
+        ip.description as permission_description,
+        ip.permission_type as permission_type
+        from iam_menu_b imb
+        left join iam_menu_tl imt
+        on imb.id = imt.id
+        and imt.lang = #{lang}
+        left join iam_menu_permission imp
+        left join iam_permission ip
+        on imp.permission_code = ip.code
+        on imb.code = imp.menu_code
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
+        where imb.type != 'top'
+        and imb.resource_level = #{level}
+    </select>
+
+    <select id="selectMenusByPermissionAndCategory" resultType="io.choerodon.base.infra.dto.MenuDTO">
+        select
+        imb.id,
+        imb.code,
+        imb.service_code,
+        imb.parent_code,
+        imb.icon,
+        imb.sort,
+        imb.type,
+        imt.name,
+        imb.resource_level,
+        ip.path as route
+        from
+        iam_menu_b imb left join iam_menu_tl imt on imb.id=imt.id and imt.lang='zh_CN'
+        left join iam_permission ip on imb.page_permission_code=ip.code
+        where
+        imb.resource_level = #{sourceType}
+        and imb.TYPE = 'menu'
+        or (
+        <choose>
+            <when test="admin">
+                1 = 1
+            </when>
+            <otherwise>
+                <!-- 非 Admin 用户通过角色权限检查 -->
+                ( imb.PAGE_PERMISSION_CODE in (
+                select
+                irp.PERMISSION_CODE
+                from
+                iam_role_permission irp
+                left join iam_role ir on
+                irp.ROLE_CODE = ir.CODE
+                left join iam_member_role imr on
+                ir.ID = imr.ROLE_ID
+                where
+                ir.IS_ENABLED = 1
+                and imr.MEMBER_ID = #{userId}
+                and imr.MEMBER_TYPE = 'user'
+                and imr.SOURCE_ID = #{sourceId}
+                and imr.SOURCE_TYPE = #{sourceType})
+                or ip.IS_LOGIN_ACCESS=1 or ip.IS_PUBLIC_ACCESS=1 )
+            </otherwise>
+        </choose>
+        <if test="!categories.isEmpty()">
+            and imb.CODE in (
+            select
+            fcm.MENU_CODE
+            from
+            fd_category_menu fcm
+            where
+            fcm.CATEGORY_CODE in
+            <foreach item="category" index="index" collection="categories" open="(" separator="," close=")">
+                #{category}
+            </foreach>
+            and fcm.RESOURCE_LEVEL=#{sourceType}
+            )
+            <if test="parentCategory != null">
+                and imb.CODE in (
+                select
+                fcm.MENU_CODE
+                from
+                fd_category_menu fcm
+                where
+                fcm.CATEGORY_CODE=#{parentCategory} and fcm.RESOURCE_LEVEL='organization_project')
+            </if>
+        </if>
+        )
+    </select>
+</mapper>

@@ -1,0 +1,297 @@
+.app-market-main-page {
+  display: flex;
+  flex-direction: column;
+
+  .main-banner {
+    background-image: url(./images/paas_market_banner.svg);
+    background-size: cover;
+    height: 3rem;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+
+    &-info-1 {
+      font-size: 0.24rem;
+      color: #fff;
+      letter-spacing: 1px;
+      text-align: center;
+      line-height: 0.32rem;
+      padding-top: 0.8rem;
+      width: fit-content;
+      padding-left: 2rem;
+      padding-bottom: 0.08rem;
+    }
+
+    &-info-2 {
+      font-size: 0.15rem;
+      color: #fff;
+      letter-spacing: 1px;
+      text-align: center;
+      line-height: 0.24rem;
+      width: fit-content;
+      padding-left: 2rem;
+      padding-bottom: 0.27rem;
+    }
+
+    &-info-3 {
+      width: fit-content;
+      padding-left: 2rem;
+
+      .c7n-pro-input-wrapper {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 2px;
+        width: 6.52rem;
+        height: 0.48rem;
+      }
+
+      .c7n-pro-input-wrapper:focus-within {
+        box-shadow: 0 4px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 4px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+        background: #fff;
+      }
+
+      .c7n-pro-input {
+        font-size: 0.15rem;
+        color: rgba(0, 0, 0, 0.54);
+        text-align: left;
+        line-height: 0.44rem;
+        margin: 0 0 0 23px;
+        border: none;
+        height: 0.48rem;
+      }
+
+      .search-icon {
+        font-size: 0.24rem;
+        color: #000;
+        margin-left: 0.16rem;
+      }
+    }
+  }
+
+  .main-content {
+    display: flex;
+
+    &-menu {
+      padding: 0.24rem 0.16rem;
+      width: 1.72rem;
+
+      .c7n-menu-item-group-title {
+        color: rgba(0, 0, 0, 0.54);
+        font-size: 0.12rem;
+      }
+
+      .c7n-menu-item-group-list {
+
+        .c7n-menu-item,
+        .c7n-menu-item .c7n-badge {
+          font-size: 0.14rem;
+          color: rgba(0, 0, 0, 0.65);
+        }
+      }
+
+      .c7n-menu {
+        border: none;
+      }
+
+      .my-download-item {
+        .update-count {
+          .c7n-badge-count {
+            background-color: rgba(244, 67, 54, 1);
+            font-size: 0.1rem;
+            height: 0.14rem;
+            line-height: 0.14rem;
+            min-width: 0.14rem;
+            padding: 0 0.06rem;
+          }
+        }
+      }
+    }
+
+    &-apps {
+      flex: 1;
+
+      .download-record-table {
+        margin: 0.24rem 0.24rem 0.24rem 0;
+
+        .application-wrap {
+          height: inherit;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+
+          .application-image {
+            height: 0.16rem;
+            width: 0.16rem;
+            border-radius: 50%;
+          }
+
+          .application-name {
+            margin-left: 0.06rem;
+          }
+
+          .application-name:hover {
+            color: #3f51b5;
+            text-decoration: underline;
+          }
+        }
+
+        .downloader-wrap {
+          height: inherit;
+          display: flex;
+          align-items: center;
+
+          .downloader-image {
+            height: 0.16rem;
+            width: 0.16rem;
+            border-radius: 50%;
+          }
+
+          .downloader-avatar {
+            width: 0.16rem;
+            height: 0.16rem;
+            line-height: 0.16rem;
+            background: #c5cbe8;
+            color: #6473c3;
+            border-radius: 50%;
+            text-transform: uppercase;
+            display: inline-block;
+            text-align: center;
+            font-size: 12px;
+          }
+
+          .downloader-name {
+            margin-left: 0.06rem;
+          }
+        }
+
+        .download-status-wrap {
+          display: flex;
+          align-items: center;
+          height: inherit;
+
+          .download-success {
+            background: #00bfa5;
+            border-radius: 2px;
+            font-size: 0.1rem;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 0.16rem;
+            width: 0.5rem;
+            height: 0.16rem;
+          }
+
+          .download-ing {
+            background: #4d90fe;
+            border-radius: 2px;
+            font-size: 0.1rem;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 0.16rem;
+            width: 0.5rem;
+            height: 0.16rem;
+          }
+
+          .download-failed {
+            background: #f44336;
+            border-radius: 2px;
+            font-size: 0.1rem;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 0.16rem;
+            width: 0.5rem;
+            height: 0.16rem;
+          }
+        }
+      }
+
+      &-filter {
+        padding: 0.24rem 0 0.04rem 0.1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &-right {
+
+          p {
+            display: inline-block;
+            margin-bottom: 0;
+
+            i {
+              font-size: 0.13rem;
+              line-height: inherit;
+              vertical-align: top;
+            }
+          }
+        }
+
+        &-sort {
+          font-size: 0.13rem;
+          color: #000;
+          text-align: right;
+          padding-right: 0.09rem;
+        }
+
+        &-sort-value {
+          font-size: 0.13rem;
+          color: #3f51b5;
+          padding: 0.08rem 0.12rem;
+          cursor: pointer;
+        }
+
+        &-sort-value:hover,
+        &-sort-value-selected {
+          background: rgba(140, 158, 255, 0.20);
+        }
+
+        &-count {
+          font-size: 0.14rem;
+          color: #000;
+        }
+      }
+
+      &-result {
+        &-card {
+          display: inline-block;
+          margin: 0.12rem;
+          cursor: pointer;
+        }
+      }
+
+      &-get-more {
+        padding-top: 0.1rem;
+        margin: 0 0 0.24rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        button {
+          font-weight: 500 !important;
+        }
+      }
+    }
+  }
+
+  .empty-main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1rem;
+
+    &-info {
+      padding-left: 0.39rem;
+
+      &-1 {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.65);
+        text-align: left;
+        line-height: 20px;
+      }
+
+      &-2 {
+        font-size: 18px;
+        color: #000;
+        text-align: left;
+      }
+    }
+  }
+}

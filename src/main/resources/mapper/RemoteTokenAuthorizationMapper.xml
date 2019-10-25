@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.RemoteTokenAuthorizationMapper">
+
+    <select id="selectLatestToken" resultType="io.choerodon.base.api.vo.RemoteTokenAuthorizationVO">
+        SELECT *
+        FROM
+            fd_remote_token_authorization frta
+        ORDER BY
+            frta.id DESC
+        LIMIT 1
+    </select>
+
+    <select id="fulltextSearch" resultType="io.choerodon.base.api.vo.RemoteTokenAuthorizationVO">
+        SELECT frta.*
+        FROM
+        fd_remote_token_authorization frta
+        <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <where>
+            <if test="name != null">
+                AND frta.name LIKE concat(concat('%',#{name}),'%')
+            </if>
+            <if test="email != null">
+                AND frta.email LIKE concat(concat('%',#{email}),'%')
+            </if>
+            <if test="organizationName != null">
+                AND frta.organization_name LIKE concat(concat('%',#{organizationName}),'%')
+            </if>
+            <if test="status != null">
+                AND frta.status = #{status}
+            </if>
+            <if test="params != null">
+                AND
+                <foreach item="param" index="index" collection="params"
+                         open="(" separator="AND" close=")">
+                    frta.name LIKE concat(concat('%',#{param}),'%')
+                    OR frta.organization_name LIKE concat(concat('%',#{param}),'%')
+                </foreach>
+            </if>
+        </where>
+    </sql>
+</mapper>

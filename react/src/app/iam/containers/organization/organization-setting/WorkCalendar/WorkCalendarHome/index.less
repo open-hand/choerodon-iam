@@ -1,0 +1,52 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.work-calendar {
+  padding-top: 0.16rem;
+  &-sider {
+    .@{c7n-pro-prefix}-modal {
+      &-body {
+        padding: .3rem .2rem;
+        .rc-calendar {
+          width: 5.12rem;
+        }
+      }
+    }
+    .c7n-pro-form > table > tbody {
+      > tr:nth-child(4) {
+        display: inline;
+      }
+      > tr:nth-child(5) {
+        display: inline;
+      }
+      > tr:nth-child(6) {
+        display: inline;
+      }
+    }
+  }
+  .c7n-workCalendar {
+    display: inline-block;
+  }
+  &-form {
+    font-size: .14rem;
+    margin-left: .15rem;
+    .c7n-pro-field-required.c7n-pro-field-label:after {
+        content: '';
+    }
+    tr {
+        td {
+            .c7n-pro-field-wrapper {
+                padding: 0;
+                padding-bottom: .05rem;
+            }
+            padding: 0;
+            padding-bottom: .05rem;
+            &:first-of-type {
+                color: rgba(0, 0, 0, .65);
+            }
+            &:nth-of-type(2) {
+                color: #000;
+            }
+        }
+    }
+  }
+}

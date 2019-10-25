@@ -1,0 +1,23 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-viewVersionDetail {
+  &-form {
+    .viewFormOverload(top);
+  }
+  &-table {
+    .overloadTableColor();
+  }
+  &-img {
+    .imgContainer();
+  }
+  &-serviceContainer {
+    .serviceContainer();
+    .c7n-badge-status-default {
+      background: #3f51b5 !important;
+    }
+  }
+  &-htmlContainer {
+    .htmlContainer();
+  }
+}

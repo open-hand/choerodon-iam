@@ -1,0 +1,73 @@
+@base: #000;
+@baseblue: rgb(172, 177, 206);
+@import '~choerodon-ui/lib/style/themes/default';
+
+.c7n-iam-token-manager {
+  &-content {
+    padding-top: 0;
+  }
+
+  &-name {
+    vertical-align: text-top;
+  }
+
+  &-current {
+
+    width: .32rem;
+    height: .18rem;
+    font-family: PingFangSC-Medium;
+    font-size: 10px;
+    color: #4d90fe;
+    text-align: center;
+    // line-height: 18px;
+    background: rgba(77, 144, 254, 0.10);
+    border: 1px solid #4d90fe;
+    border-radius: .02rem;
+    margin-left: .06rem;
+    // float: right;
+  }
+
+  .page-head .c7n-btn {
+    padding-left: 0;
+  }
+
+  .page-content-header {
+    .title {
+      // margin: .2rem .24rem;
+      color: rgba(0, 0, 0, .87);
+    }
+  }
+
+  table tbody {
+    font-family: PingFangSC-Regular;
+    font-size: 13px;
+    // color: rgba(0, 0, 0, 0.65);
+    // line-height: 20px;
+
+    td {
+      color: fade(@base, 65%);
+    }
+
+    .c7n-iam-status-tag {
+      font-size: 10px;
+    }
+  }
+
+  &-token {
+    >div {
+      display: inline-block;
+      vertical-align: bottom;
+      margin-right: 10px;
+    }
+  }
+
+  &-url {
+    color: #3f51b5;
+
+    &:hover {
+      // color: @baseblue;
+      color: @primary-color;
+      text-decoration: underline;
+    }
+  }
+}

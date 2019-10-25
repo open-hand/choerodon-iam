@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.ApplicationServiceRefMapper">
+
+    <select id="selectServiceByOrgId" resultType="java.lang.Long">
+        SELECT
+        DISTINCT
+        fasr.SERVICE_ID
+        FROM
+        (select
+        innerMavdr.MKT_APP_CODE
+        FROM
+        mkt_app_ver_download_record innerMavdr
+        WHERE
+        innerMavdr.STATUS = 'completed'
+        <if test="organizationId != null">
+            AND innerMavdr.ORGANIZATION_ID = #{organizationId}
+        </if>
+        ) mavdr
+        JOIN fd_application fa ON fa.SOURCE_CODE = mavdr.MKT_APP_CODE
+        JOIN fd_application_service_ref fasr ON fasr.APPLICATION_ID = fa.ID
+        WHERE
+        fa.TYPE = #{appType}
+        OR fa.type = 'mkt_code_deploy'
+    </select>
+
+</mapper>

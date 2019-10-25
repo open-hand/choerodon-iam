@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.ClientMapper">
+    <select id="fulltextSearch" resultType="io.choerodon.base.infra.dto.ClientDTO">
+        select *
+        from oauth_client
+        <where>
+            <if test="clientDTO!= null">
+                <if test="clientDTO.organizationId != null">
+                    AND organization_id = #{clientDTO.organizationId}
+                </if>
+                <if test="clientDTO.name != null">
+                    AND name LIKE concat(concat('%',#{clientDTO.name}),'%')
+                </if>
+            </if>
+            <if test="param != null">
+                AND name LIKE concat(concat('%',#{param}),'%')
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectClientCountFromMemberRoleByOptions" resultType="int"
+            parameterType="io.choerodon.base.api.query.ClientRoleQuery">
+        SELECT COUNT(1) FROM (
+        SELECT DISTINCT client.id FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        ) t
+    </select>
+
+    <select id="selectClientsByRoleIdAndOptions" resultType="io.choerodon.base.infra.dto.ClientDTO">
+        SELECT DISTINCT client.* FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+
+    <resultMap id="simplifiedClientDTO" type="io.choerodon.base.api.dto.SimplifiedClientDTO">
+        <id property="id" column="id"/>
+        <result property="clientName" column="name"/>
+    </resultMap>
+
+    <select id="selectAllClientSimplifiedInfo" resultMap="simplifiedClientDTO">
+        SELECT
+        id,
+        name
+        FROM
+        oauth_client
+        WHERE 1=1
+        <if test="params != null">
+            AND name LIKE concat(concat('%',#{params}),'%')
+        </if>
+    </select>
+</mapper>

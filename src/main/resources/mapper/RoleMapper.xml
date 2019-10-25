@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.RoleMapper">
+    <resultMap id="roleWithPermissionsAndLabels" type="io.choerodon.base.infra.dto.RoleDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
+        <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
+        <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <collection property="permissions" ofType="io.choerodon.base.infra.dto.PermissionDTO">
+            <id column="permission_id" property="id"/>
+            <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="path" property="path" jdbcType="VARCHAR"/>
+            <result column="method" property="method" jdbcType="VARCHAR"/>
+            <result column="permission_level" property="resourceLevel" jdbcType="VARCHAR"/>
+            <result column="action" property="action" jdbcType="VARCHAR"/>
+            <result column="controller" property="controller" jdbcType="VARCHAR"/>
+            <result column="is_public_access" property="publicAccess" jdbcType="BOOLEAN"/>
+            <result column="is_login_access" property="loginAccess" jdbcType="BOOLEAN"/>
+            <result column="service_code" property="serviceCode" jdbcType="VARCHAR"/>
+            <result column="permission_description" property="description" jdbcType="VARCHAR"/>
+        </collection>
+        <collection property="labels" ofType="io.choerodon.base.infra.dto.LabelDTO">
+            <id column="label_id" property="id"/>
+            <result column="label_name" property="name" jdbcType="VARCHAR"/>
+            <result column="label_type" property="type" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <!--建立boolean映射关系-->
+    <resultMap id="RoleDTO" type="io.choerodon.base.infra.dto.RoleDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
+        <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
+        <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+
+    <select id="fulltextSearch" resultMap="RoleDTO">
+        select *
+        from iam_role r
+        <where>
+            r.organization_id is null
+            <if test="name != null">
+                and r.name like concat(concat('%',#{name}), '%')
+            </if>
+            <if test="code != null">
+                and r.code like concat(concat('%',#{code}), '%')
+            </if>
+            <if test="level != null">
+                and r.resource_level LIKE concat(concat('%',#{level}), '%')
+            </if>
+            <if test="enabled != null">
+                and r.is_enabled = #{enabled}
+            </if>
+            <if test="builtIn != null">
+                and r.is_built_in = #{builtIn}
+            </if>
+            <if test="params != null">
+                and (
+                r.name like concat(concat('%',#{params}), '%') OR
+                r.code like concat(concat('%',#{params}), '%')
+                )
+            </if>
+        </where>
+        order by r.id desc
+    </select>
+
+    <select id="pagingQueryOrgRoles" resultMap="RoleDTO">
+        select *
+        from iam_role
+        <where>
+            resource_level = 'organization'
+            and ( (organization_id is null and is_enabled = 1 ) or organization_id = #{orgId} )
+            <if test="name != null">
+                and name like concat(concat('%',#{name}), '%')
+            </if>
+            <if test="code != null">
+                and code like concat(concat('%',#{code}), '%')
+            </if>
+            <if test="enabled != null">
+                and is_enabled = #{enabled}
+            </if>
+            <if test="builtIn != null">
+                and is_built_in = #{builtIn}
+            </if>
+            <if test="params != null">
+                and (
+                name like concat(concat('%',#{params}), '%') or
+                code like concat(concat('%',#{params}), '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="selectRoleWithPermissionsAndLabels" resultMap="roleWithPermissionsAndLabels">
+        SELECT
+        ir.*,
+        ip.id permission_id,
+        ip.code permission_code,
+        ip.path,
+        ip.method,
+        ip.resource_level AS permission_level,
+        ip.action,
+        ip.controller,
+        ip.is_public_access,
+        ip.is_login_access,
+        ip.service_code,
+        ip.description AS permission_description,
+        il.id AS label_id,
+        il.name AS label_name,
+        il.type AS label_type
+        FROM
+        iam_role ir
+        LEFT JOIN iam_role_permission irp ON ir.code = irp.role_code
+        LEFT JOIN iam_permission ip ON irp.permission_code = ip.code
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        LEFT JOIN iam_label il ON irl.label_id = il.id
+        AND il.type = 'role'
+        WHERE ir.id = #{id}
+    </select>
+
+    <select id="rolesLevelCount" resultType="int">
+        SELECT COUNT(DISTINCT resource_level)
+        from iam_role
+        where id in
+        <foreach collection="roleIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryRoleByMember" resultMap="RoleDTO">
+        SELECT r.*
+        FROM iam_member_role m
+        LEFT JOIN iam_role r
+        ON m.role_id=r.id
+        WHERE member_type= #{memberType}
+        AND member_id = #{memberId}
+        AND source_type = #{sourceType}
+        AND source_id = #{sourceId}
+        AND r.is_enabled = 1
+    </select>
+
+    <select id="selectRolesByLabelNameAndType" resultMap="RoleDTO">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        LEFT JOIN iam_label il ON irl.label_id = il.id
+        WHERE il.name = #{name}
+        AND il.type = #{type}
+        <choose>
+            <when test="organizationId != null">
+                AND ir.organization_id = #{organizationId}
+            </when>
+            <otherwise>
+                AND ir.organization_id is null
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="queryRolesInfoByUser" resultMap="RoleDTO">
+        SELECT role.*
+        FROM
+        iam_role role
+        LEFT JOIN iam_member_role imr ON role.id = imr.role_id
+        WHERE
+        imr.member_id = #{userId}
+        AND imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+    </select>
+
+    <select id="selectInitRolesByPermissionCode" resultMap="RoleDTO">
+        SELECT * FROM iam_role ir
+        LEFT JOIN iam_role_permission irp ON ir.code = irp.role_code
+        WHERE irp.permission_code = #{permissionCode}
+        AND ir.is_built_in = 1
+    </select>
+
+    <!--<select id="matchCode" resultType="java.lang.String">-->
+    <!--SELECT code-->
+    <!--FROM iam_role-->
+    <!--WHERE code-->
+    <!--IN-->
+    <!--<foreach item="item" index="index" collection="codeSet"-->
+    <!--open="(" separator="," close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
+    <!--</select>-->
+
+    <!--<select id="queryRoleByOrgId" resultMap="RoleDTO">-->
+    <!--SELECT ir.*-->
+    <!--FROM iam_role ir-->
+    <!--WHERE 1=1-->
+    <!--AND EXISTS-->
+    <!--(SELECT 'X' FROM iam_member_role imr-->
+    <!--WHERE imr.source_id = #{orgId}-->
+    <!--AND imr.source_type ='organization'-->
+    <!--AND ir.id=imr.role_id)-->
+    <!--</select>-->
+
+    <select id="fuzzySearchRolesByName" resultMap="RoleDTO">
+        SELECT ir.*
+        FROM iam_role ir
+        WHERE 1=1
+        AND ir.resource_level = #{sourceType}
+        <if test="sourceType == 'organization' and sourceId != null">
+            AND (ir.organization_id is null or ir.organization_id = #{sourceId})
+        </if>
+        <if test="roleName != null">
+            AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
+        </if>
+        <if test="onlySelectEnable">
+            AND ir.is_enabled = 1
+        </if>
+    </select>
+</mapper>

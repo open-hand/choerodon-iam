@@ -1,0 +1,53 @@
+@import '~choerodon-ui/lib/style/themes/default';
+.c7n-pro-textarea-float-label textarea.c7n-pro-textarea {
+  line-height: .2rem !important;
+}
+.application-management {
+  padding-top: 0;
+  .link:hover {
+    color: @primary-color;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  &-table-editor-drop-down {
+    position: absolute;
+    top: 0.07rem;
+    right: 0.05rem;
+  }
+  &-sider {
+    .c7n-pro-table-cell-dirty .c7n-pro-table-cell-inner::after {
+      display: none;
+    }
+    width: 7.2rem;
+    .@{c7n-pro-prefix}-modal-body {
+      padding: .24rem 0;
+      padding-bottom: .2rem;
+    }
+    .form-content {
+      padding: 0 .24rem;
+      padding-bottom: .1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      form {
+        width: 5.24rem;
+      }
+    }
+    .table-content {
+      width: 5.6rem;
+      padding: 0 .24rem;
+    }
+    .service-title {
+      margin-top: .2rem;
+      margin-left: .24rem;
+      font-size: .16rem;
+      font-weight: 500;
+      line-height: .2rem;
+      &-small {
+        margin-top: .16rem;
+        margin-bottom: .08rem;
+        font-size: .12rem;
+        font-weight: 600;
+        line-height: .15rem;
+      }
+    }
+  }
+}

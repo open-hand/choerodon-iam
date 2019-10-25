@@ -1,0 +1,27 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-confirmApp {
+  .overLoadCollapse();
+  .labelHelp {
+    .customLabelHelp();
+  }
+  .required {
+    .required();
+  }
+  &-hr {
+    .hr(0.1rem);
+  }
+  &-document-title, &-changelog-title, &-overview-title {
+    .editorTitle();
+  }
+  &-document, &-changelog, &-overview {
+    margin-bottom: 0.2rem;
+  }
+  &-serviceContainer {
+    .serviceContainer();
+  }
+  &-table {
+    .overloadTableColor();
+  }
+}

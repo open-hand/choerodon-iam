@@ -1,0 +1,26 @@
+.c7n-market-changelog {
+  padding: 0 16px 20px 16px !important;
+  border: 1px solid rgba(0, 0, 0, 0.20);
+  &-edit {
+    span {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 20px;
+    }
+    .CodeMirror {
+      background: rgba(0, 0, 0, 0.03);
+      height: 232px;
+    }
+  }
+  &-preview {
+    span {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 20px;
+    }
+    p:last-child {
+      height: 232px;
+      overflow: auto;
+    }
+  }
+}

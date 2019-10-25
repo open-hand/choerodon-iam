@@ -1,0 +1,117 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.safe-content {
+    &.ml-15 {
+        margin-left: .15rem !important;
+    }
+    .link:hover {
+        color: @primary-color;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    .form-select-editor-button {
+        width: .32rem;
+    }
+    padding-top: 0;
+    .@{c7n-pro-prefix} {
+        &-form > table {
+            table-layout: auto !important;
+        }
+        &-output-multiple-block {
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            border-radius: .1rem;
+            color: #000;
+            padding: 0 .12rem;
+        }
+        &-output {
+            line-height: inherit;
+        }
+    }
+    .@{c7n-prefix}-row {
+        margin-bottom: 0.16rem;
+    }
+    .policyTitle {
+        font-family: PingFangSC-Medium;
+        display: block;
+        font-size: .16rem;
+        color: #000;
+        margin-top: .1rem;
+        line-height: .24rem;
+        border-bottom: 1px solid #d8d8d8;
+        padding-bottom: .045rem;
+        margin-bottom: .165rem;
+    }
+}
+
+.tab1 {
+        & label {
+        float: left;
+        width: 2.2rem;
+        font-size: .14rem;
+        color: rgba(0, 0, 0, 0.54);
+        line-height: .20rem;
+    }
+}
+.tab2 {
+    & .@{c7n-pro-prefix}-table-cell-inner .@{c7n-pro-prefix}-checkbox-wrapper {
+        float: left;
+        width: 2.2rem;
+        font-size: .14rem;
+        color: rgba(0, 0, 0, 0.54);
+        line-height: .20rem;
+    }
+}
+.form-title {
+    font-size: 16px;
+    color: #000;
+    line-height: 20px;
+    margin-bottom: .16rem;
+    // margin-left: .09rem;
+}
+.safe-modal {
+    .@{c7n-pro-prefix}-validation-message {
+        white-space: inherit;
+    }
+    .@{c7n-pro-prefix}-radio-wrapper {
+        margin-right: .48rem !important;
+    }
+    .@{c7n-pro-prefix}-checkbox-wrapper {
+      margin-right: .16rem;
+    }
+    .divider {
+        color: #e8e8e8;
+        width: 100%;
+        left: 0;
+    }
+    &-form {
+        .c7n-pro-field-wrapper {
+            margin-top: 0 !important;
+            margin-bottom: .2rem !important;
+        }
+        &.hidden-password {
+            & > table > tbody > tr:nth-child(1) {
+              position: abs∂olute;
+            }
+        }
+    }
+    .@{c7n-prefix}-modal {
+        &-content {
+            width: 3.9rem !important;
+            right: 0;
+            left: inherit !important;
+          }
+        &-body {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+        }
+        &-footer {
+            position: absolute;
+            width: 100%;
+            bottom: 0.25rem;
+        }
+    }
+    .c7n-modal-header .c7n-modal-title {
+        margin-left: .14rem !important;
+    }
+}

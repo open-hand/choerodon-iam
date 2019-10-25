@@ -1,0 +1,94 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
+    username: choerodon
+    password: 123456
+  servlet: #设置上传文件最大为10M
+    multipart:
+      max-file-size: 10MB # 单个文件最大上传大小
+      max-request-size: 10MB # 总上传文件最大上传大小
+  redis:
+    host: localhost
+    port: 6379
+    database: 1
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
+choerodon:
+  gateway:
+    url: http://api.staging.saas.hand-china.com
+  category:
+    enabled: true # 是否开启项目/组织类型控制
+  devops:
+    message: true
+  eureka:
+    event:
+      max-cache-size: 300
+      retry-time: 5
+      retry-interval: 3
+      skip-services: config**, **register-server, **gateway**, zipkin**, hystrix**, oauth**
+  saga:
+    consumer:
+      enabled: true # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  schedule:
+    consumer:
+      enabled: true # 启用任务调度消费端
+      thread-num: 1 # 任务调度消费线程数
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  cleanPermission: false
+  market:
+    saas:
+      platform: false
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 10
+    leaseExpirationDurationInSeconds: 30
+    metadata-map:
+      VERSION: v1
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8000/eureka/}
+    registryFetchIntervalSeconds: 10
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 15000
+ribbon:
+  ReadTimeout: 5000
+  ConnectTimeout: 5000
+file-service:
+  ribbon:
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
+notify-service:
+  ribbon:
+    ReadTimeout: 15000
+    ConnectTimeout: 15000
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml
+  configuration: # 数据库下划线转驼峰配置
+    mapUnderscoreToCamelCase: true
+#万历表
+workh:
+  #目前只支持聚合数据
+  type: juhe
+  api-key: dc135fefba469b4e48d07f7100af31e2
+  #false则手动调用api更新
+  enabled: true
+  #执行调度任务的时间间隔 每年12月15号的23点59分59秒维护一次，也可以手动调接口维护
+  cron: 59 59 23 15 12 *
+db:
+  type: mysql
+
+management:
+  health:
+    ldap:
+      enabled: false

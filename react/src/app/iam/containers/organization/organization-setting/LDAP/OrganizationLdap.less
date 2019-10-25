@@ -1,0 +1,161 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+// 颜色
+@font-color-dark: #000;
+@font-color-soDark: #000;
+@font-color-midlle: rgba(0, 0, 0, .54);
+@font-color-black: rgba(0, 0, 0, 1);
+@font-color: rgba(0, 0, 0, .65);
+// 字体样式
+@font-style-regular: 'PingFangSC-Regular';
+@font-style-Medium: 'PingFangSC-Medium';
+// 阴影样式
+@box-shadow-style: 0 .03rem .01rem -.02rem rgba(0, 0, 0, .2), 0 .02rem .02rem 0 rgba(0, 0, 0, .14), 0 .01rem .01rem 0 rgba(0, 0, 0, 0.12);
+.c7n-organization {
+    &-page-content {
+        padding-top: 0.16rem;
+    }
+}
+
+.hidden-password {
+    & > table > tbody > tr:nth-child(1) {
+      position: absolute;
+    }
+}
+
+.c7n-pro-organization-LdapForm-container {
+    .c7n-pro-field-required.c7n-pro-field-label:after {
+        content: '';
+    }
+    margin-left: .15rem;
+    h3 {
+        font-size: .16rem;
+        color: @font-color-soDark;
+        margin-bottom: 0.02rem;
+        padding-bottom: 0.02rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    }
+    .c7n-pro-organization-LdapForm-header {
+        width: 2.04rem;
+        > span {
+            color: @font-color-dark;
+            font-weight: 600;
+            font-size: .14rem;
+            font-family: @font-style-Medium;
+        }
+    }
+    .page-content {
+        padding-top: 0.16rem !important;
+    }
+    .c7n-pro-field-label, .c7n-pro-field-wrapper {
+        padding: .05rem 0 !important;
+    }
+}
+.c7n-pro-organization-LdapForm {
+    table {
+        tr {
+            td {
+                color: @font-color-dark;
+                font-size: .14rem;
+            }
+            td:first-of-type {
+                color: @font-color-midlle;
+            }
+        }
+    }
+}
+.c7n-organization-loader-header {
+    font-size: .16rem;
+    p {
+        color: @font-color;
+        strong {
+            color: @font-color-black;
+        }
+    }
+}
+
+.c7n-organization-loader {
+    margin-top: .24rem;
+    font-family: @font-style-regular;
+    width: 3.4rem;
+    border-radius: .04rem;
+    box-shadow: @box-shadow-style;
+    padding: .2rem;
+    > div > span {
+        margin-top: .2rem;
+        display: block;
+        font-size: .2rem;
+        color: @font-color-black;
+        line-height: .28rem;
+    }
+    p {
+        margin-top: .07rem;
+        color: @font-color-black;
+        font-size: .14rem;
+    }
+}
+
+.c7n-organization-LdapTest-panel {
+    display: block;
+    border-radius: 0.04rem;
+    box-shadow: @box-shadow-style;
+    padding: .25rem .16rem;
+    table {
+        .c7n-pro-field-required.c7n-pro-field-label::after {
+            display: none;
+        }
+    }
+    .c7n-organization-LdapTest-panel-content {
+        display: flex;
+    }
+    form {
+        tr {
+            td {
+                padding: 0;
+                &:first-child {
+                    text-align: start;
+                }
+                .@{c7n-pro-prefix}-field-wrapper {
+                    margin: 0;
+                    padding: 0;
+                }
+            }
+        }
+    }
+}
+.c7n-organization-LdapTest-panel-loading {
+    position: relative;
+    text-align: center;
+    height: 2.74rem;
+    border-radius: 0.04rem;
+    box-shadow: @box-shadow-style;
+    >div {
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        height: 1.2rem;
+        width: 2rem;
+    }
+}
+
+.c7n-organization-LdapFormToTest-lists {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    >li {
+        padding: .042rem 0;
+        >span {
+            &:first-of-type {
+                margin-left: 0.07rem;
+                width: 1rem;
+                display: inline-block;
+            }
+        }
+    }
+}
+.c7n-organization-LdapFormToTest-lists-padding {
+    padding-left: .2rem;
+}

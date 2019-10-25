@@ -1,0 +1,23 @@
+.c7n-iam-confirm-modal {
+  .c7n-modal-body {
+    .c7n-confirm-body-wrapper {
+      .c7n-confirm-title {
+        font-size: 18px;
+        display: block;
+        overflow: auto;
+      }
+
+      .c7n-confirm-content {
+        font-size: 13px;
+        color: #000;
+        margin-top: 16px;
+      }
+    }
+  }
+
+  .c7n-confirm-btns {
+    text-align: right;
+    margin-bottom: -24px;
+    padding: 32px 0 17px;
+  }
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.base.infra.mapper.DashboardMapper">
+
+    <resultMap id="Dashboard" type="io.choerodon.base.infra.dto.DashboardDTO" autoMapping="true">
+        <id column="ID" property="id"></id>
+        <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
+        <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="Dashboard">
+        SELECT d.* FROM IAM_DASHBOARD d
+        WHERE 1=1
+        <if test="dashboard.name != null">
+            AND NAME LIKE concat(concat('%',#{dashboard.name}),'%')
+        </if>
+        <if test="dashboard.code != null">
+            AND CODE LIKE concat(concat('%',#{dashboard.code}),'%')
+        </if>
+        <if test="dashboard.level != null">
+            AND FD_LEVEL = #{dashboard.level}
+        </if>
+        <if test="dashboard.enabled != null">
+            AND IS_ENABLED = #{dashboard.enabled}
+        </if>
+        <if test="dashboard.needRoles != null">
+            AND NEED_ROLES = #{dashboard.needRoles}
+        </if>
+        <if test="dashboard.namespace != null">
+            AND NAMESPACE = #{dashboard.namespace}
+        </if>
+        <if test="param != null">
+            AND
+            NAME LIKE concat(concat('%',#{param}),'%') OR
+            CODE LIKE concat(concat('%',#{param}),'%') OR
+            NAMESPACE LIKE concat(concat('%',#{param}),'%') OR
+            FD_LEVEL = #{param}
+        </if>
+    </select>
+
+    <select id="selectByLevel" resultMap="Dashboard">
+        select
+        d.*,
+        ir.code as role_codes
+        from iam_dashboard d
+        left join iam_dashboard_role idr
+        on d.code = idr.dashboard_code
+        left join iam_role ir
+        on (idr.role_code = ir.code and ir.resource_level = #{level})
+        where d.fd_level in ('site', #{level})
+    </select>
+
+    <select id="selectRoleCodesByDashboard" resultType="java.lang.String">
+        select idr.role_code
+        from iam_dashboard_role idr
+        left join iam_role ir
+        on idr.role_code = ir.code
+        where idr.dashboard_code = #{code}
+        and ir.resource_level = #{level}
+    </select>
+</mapper>

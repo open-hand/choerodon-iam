@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.base.infra.mapper.ProjectMapper">
+
+    <resultMap id="projectDTO" type="io.choerodon.base.infra.dto.ProjectDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="projects" ofType="io.choerodon.base.infra.dto.ProjectDTO">
+            <id property="id" column="project_id"/>
+            <result property="name" column="project_name"/>
+            <result property="code" column="project_code"/>
+            <result property="enabled" column="project_enabled"/>
+            <result property="organizationId" column="project_organization_id"/>
+            <result property="category" column="project_category"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="projectWithRoleDTO" type="io.choerodon.base.infra.dto.ProjectDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="roles" ofType="io.choerodon.base.infra.dto.RoleDTO"
+                    autoMapping="true" notNullColumn="role_id">
+            <id property="id" column="role_id"/>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+            <result property="enabled" column="role_is_enabled"/>
+            <result property="organizationId" column="role_org_id"/>
+            <result property="objectVersionNumber" column="role_version_number"/>
+            <result property="createdBy" column="role_created_by"/>
+            <result property="creationDate" column="role_creation_date"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="projectWithCategoryMap" type="io.choerodon.base.infra.dto.ProjectDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="categories" ofType="io.choerodon.base.infra.dto.ProjectCategoryDTO"
+                    autoMapping="true" notNullColumn="category_id">
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+            <result property="code" column="category_code"/>
+            <result property="organizationId" column="category_org_id"/>
+            <result property="objectVersionNumber" column="category_version_number"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="projectWithRoleAndCategoryDTO" type="io.choerodon.base.infra.dto.ProjectDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="roles" ofType="io.choerodon.base.infra.dto.RoleDTO"
+                    autoMapping="true" notNullColumn="role_id">
+            <id property="id" column="role_id"/>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+            <result property="enabled" column="role_is_enabled"/>
+            <result property="organizationId" column="role_org_id"/>
+            <result property="objectVersionNumber" column="role_version_number"/>
+            <result property="createdBy" column="role_created_by"/>
+            <result property="creationDate" column="role_creation_date"/>
+        </collection>
+        <collection property="categories" ofType="io.choerodon.base.infra.dto.ProjectCategoryDTO"
+                    autoMapping="true" notNullColumn="category_id">
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+            <result property="code" column="category_code"/>
+            <result property="organizationId" column="category_org_id"/>
+            <result property="objectVersionNumber" column="category_version_number"/>
+            <result property="createdBy" column="category_created_by"/>
+            <result property="creationDate" column="category_creation_date"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="listUserIds" resultType="java.lang.Long">
+        SELECT
+        iam_user.id
+        FROM
+        iam_user
+        RIGHT JOIN (
+        SELECT DISTINCT
+        member_id
+        FROM
+        iam_member_role
+        WHERE
+        source_id = #{projectId}
+        AND source_type = 'project'
+        AND member_type = 'user'
+        ) t ON iam_user.id = t.member_id
+    </select>
+
+    <select id="selectUserProjectsUnderOrg" resultMap="projectDTO">
+        SELECT DISTINCT fp.*
+        FROM fd_project fp
+        INNER JOIN iam_member_role imr
+        ON imr.source_id = fp.id
+        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId}
+        <if test="isEnabled != null">
+            AND is_enabled = #{isEnabled}
+        </if>
+    </select>
+
+    <select id="selectProjectsWithRoles" databaseId="mysql" resultMap="projectWithRoleDTO">
+        SELECT
+        fp.id,
+        fp.name,
+        fp.code,
+        fp.organization_id,
+        fo.name as organization_name,
+        fo.code as organization_code,
+        fp.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled,
+        ir.organization_id as role_org_id,
+        ir.object_version_number as role_version_number,
+        ir.created_by as role_created_by,
+        ir.creation_date as role_creation_date
+        FROM fd_project fp
+        INNER JOIN
+        (
+        SELECT DISTINCT source_id FROM iam_member_role
+        WHERE member_id = #{id}
+        AND member_type = 'user'
+        AND source_type = 'project'
+        ORDER BY source_id ASC
+        <if test="start != null and size != null ">
+            LIMIT #{start}, #{size}
+        </if>
+        ) t
+        ON fp.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.source_type = 'project'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
+
+    <!-- 根据databaseId找指定的sql，既不是mysql也不是oracle走这条sql，默认是使用mysql的sql -->
+    <select id="selectProjectsWithRoles" resultMap="projectWithRoleDTO">
+        SELECT
+        fp.id,
+        fp.name,
+        fp.code,
+        fp.organization_id,
+        fo.name AS organization_name,
+        fp.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled,
+        ir.organization_id as role_org_id,
+        ir.object_version_number as role_version_number,
+        ir.created_by as role_created_by,
+        ir.creation_date as role_creation_date
+        FROM fd_project fp
+        INNER JOIN
+        (
+        SELECT DISTINCT source_id FROM iam_member_role
+        WHERE member_id = #{id}
+        AND member_type = 'user'
+        AND source_type = 'project'
+        ORDER BY source_id ASC
+        <if test="start != null and size != null ">
+            LIMIT #{start}, #{size}
+        </if>
+        ) t
+        ON fp.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.source_type = 'project'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
+
+    <select id="selectProjectsWithRoles" databaseId="oracle" resultMap="projectWithRoleDTO">
+        SELECT
+        fp.id,
+        fp.name,
+        fp.code,
+        fp.organization_id,
+        fo.name AS organization_name,
+        fp.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled,
+        ir.organization_id as role_org_id,
+        ir.object_version_number as role_version_number,
+        ir.created_by as role_created_by,
+        ir.creation_date as role_creation_date
+        FROM fd_project fp
+        INNER JOIN
+        (
+        <![CDATA[
+            SELECT *
+            FROM
+            (
+                SELECT TMP_PAGE.*, ROWNUM ROW_ID
+                FROM
+                (
+                    SELECT DISTINCT source_id
+                    FROM iam_member_role
+                    WHERE member_id = #{id}
+                    AND member_type = 'user'
+                    AND source_type = 'project'
+                    ORDER BY source_id ASC
+                ) TMP_PAGE
+                WHERE ROWNUM <= ((#{start} + 1) * #{size})
+            )
+            WHERE ROW_ID > (#{start} * #{size})
+        ]]>
+        ) t
+        ON fp.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.source_type = 'project'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
+
+    <select id="projectEnabled" resultType="java.lang.Boolean">
+        SELECT is_enabled FROM fd_project WHERE id = #{sourceId}
+    </select>
+
+    <select id="selectByIds" resultMap="projectDTO">
+        select * from fd_project
+        where id in
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectProjectNameByType" resultType="java.lang.String">
+        SELECT
+        NAME
+        FROM
+        fd_project
+        WHERE
+        TYPE = #{type}
+        AND organization_id = #{orgId}
+    </select>
+
+    <select id="selectProjectNameNoType" resultType="java.lang.String">
+        SELECT
+        NAME
+        FROM
+        fd_project
+        WHERE
+        TYPE IS NULL
+        AND organization_id = #{orgId};
+    </select>
+
+    <select id="selectProjectsNotGroup" resultMap="projectDTO">
+        SELECT fp.id,fp.name,fp.code,fp.organization_id,fpc.code as category
+        FROM fd_project fp
+        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'))
+        WHERE fp.organization_id = #{orgId} AND fp.is_enabled = 1
+         and  fp.id not in (
+            select fpr.project_id as id
+            from fd_project_relationship fpr
+            where fpr.is_enabled = 1 or fpr.parent_id =  #{projectId}
+        )
+    </select>
+
+    <select id="selectGroupInfoByEnableProject" resultMap="projectDTO">
+        SELECT
+        FP.ID,
+        FP.NAME,
+        FP.ORGANIZATION_ID,
+        FP.CODE,
+        FP.IS_ENABLED,
+        FP.OBJECT_VERSION_NUMBER,
+        FP.IMAGE_URL,
+        FP.CATEGORY
+        FROM FD_PROJECT_RELATIONSHIP FPR
+        INNER JOIN FD_PROJECT FP ON FPR.PROGRAM_ID = FP.ID
+        WHERE FP.ORGANIZATION_ID = #{orgId} AND FPR.PROJECT_ID = #{projectId}
+        AND FPR.IS_ENABLED = 1
+    </select>
+
+    <select id="selectCategoryByPrimaryKey" resultMap="projectWithCategoryMap">
+        select fp.*,
+        fpc.id as category_id,
+        fpc.name as category_name,
+        fpc.code as category_code,
+        fpc.object_version_number as category_version_number,
+        fpc.organization_id as category_org_id
+        from fd_project fp
+        left join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        left join fd_project_category fpc on fpc.id = fpmc.category_id
+        Where fp.id = #{projectId}
+        order by fpmc.id asc
+    </select>
+
+
+    <select id="selectByOrgIdAndCategory" resultType="io.choerodon.base.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        WHERE fp.organization_id=#{organizationId}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and (
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectByOrgIdAndCategoryEnable" resultType="io.choerodon.base.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+        left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
+        WHERE fp.organization_id=#{organizationId}
+        AND fpc.CODE = #{agile}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and (
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectProjectAndCategoryId" resultType="io.choerodon.base.infra.dto.ProjectMapCategoryDTO">
+        select
+        p.id as projectId,
+        pc.id as categoryId
+        from
+        fd_project p
+        left join FD_PROJECT_CATEGORY pc
+        on p.CATEGORY=pc.CODE
+    </select>
+
+    <select id="selectProjectAndCategoryIdByRelationship"
+            resultType="io.choerodon.base.infra.dto.ProjectMapCategoryDTO">
+        select fp.id AS projectId,fpc.id AS categoryId
+        from fd_project_relationship fpr
+        left join fd_project fp ON fp.id = fpr.PROJECT_ID
+        left join fd_project_category fpc ON fpc.code = fp.CATEGORY
+        WHERE fpr.is_enabled=1
+    </select>
+
+    <select id="selectProjectsByUserIdOrAdmin" resultMap="projectWithRoleAndCategoryDTO">
+        SELECT fp.*,
+        iu.real_name as create_user_name,
+        iu.image_url as create_user_image_url,
+        fp2.name as program_name,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled,
+        ir.organization_id as role_org_id,
+        ir.object_version_number as role_version_number,
+        ir.created_by as role_created_by,
+        ir.creation_date as role_creation_date,
+        fpc.id as category_id,
+        fpc.name as category_name,
+        fpc.code as category_code,
+        fpc.object_version_number as category_version_number,
+        fpc.organization_id as category_org_id,
+        fpc.created_by as category_created_by,
+        fpc.creation_date as category_creation_date
+        FROM fd_project fp
+        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        inner join fd_project_category fpc on fpc.id = fpmc.category_id
+        left join fd_project_relationship fpr on ( fp.id = fpr.project_id and fpr.is_enabled)
+        left join fd_project fp2 on fpr.program_id = fp2.id
+        left join iam_user iu on iu.id = fp.created_by
+        <choose>
+            <when test="!isAdmin and !isOrgAdmin">
+                INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+                INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id AND imr.source_type = 'project')
+            </when>
+            <otherwise>
+                LEFT JOIN iam_member_role imr ON (imr.source_id = fp.id and imr.member_id = #{userId})
+                LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id AND imr.source_type = 'project')
+            </otherwise>
+        </choose>
+        <where>
+            fp.organization_id = #{organizationId}
+            <if test="!isAdmin and !isOrgAdmin">
+                and imr.member_id = #{userId}
+            </if>
+            <if test="projectDTO != null">
+                <if test="projectDTO.name != null">
+                    AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
+                </if>
+                <if test="projectDTO.code != null">
+                    AND fp.code LIKE concat(concat('%',#{projectDTO.code}),'%')
+                </if>
+                <if test="projectDTO.category != null">
+                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')
+                </if>
+                <if test="projectDTO.enabled != null">
+                    AND fp.is_enabled = #{projectDTO.enabled}
+                </if>
+                <if test="projectDTO.createdBy != null">
+                    AND fp.created_by = #{userId}
+                </if>
+            </if>
+            <if test="params != null">
+                AND (
+                fp.name LIKE concat(concat('%', #{params}), '%') OR
+                fp.code LIKE concat(concat('%', #{params}), '%')
+                )
+            </if>
+        </where>
+        order by fp.is_enabled desc,fp.creation_date desc, fpmc.id asc
+    </select>
+
+    <select id="selectAllProjectsByUserIdOrAdmin" resultMap="projectWithCategoryMap">
+        SELECT DISTINCT fp.*,
+        fpc.id as category_id,
+        fpc.name as category_name,
+        fpc.code as category_code,
+        fpc.object_version_number as category_version_number,
+        fpc.organization_id as category_org_id
+        FROM fd_project fp
+        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
+        or fpc.code='PROGRAM'))
+        <if test="!isAdmin">
+            inner join iam_member_role imr ON (imr.source_id = fp.id and imr.source_type = 'project'
+            and imr.member_type='user')
+            inner join iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+        </if>
+        <where>
+            <if test="!isAdmin">
+                and imr.member_id = #{userId}
+            </if>
+            <if test="projectDTO != null">
+                <if test="projectDTO.enabled != null">
+                    AND fp.is_enabled = #{projectDTO.enabled}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectProjectsByOptions" resultMap="projectDTO">
+        select fp.*
+        from fd_project fp
+        where fp.organization_id = #{organizationId}
+        <if test="projectDTO != null">
+            <if test="projectDTO.name != null">
+                and fp.name like concat(concat('%',#{projectDTO.name}),'%')
+            </if>
+            <if test="projectDTO.code != null">
+                and fp.code like concat(concat('%',#{projectDTO.code}),'%')
+            </if>
+            <if test="projectDTO.enabled != null">
+                and fp.is_enabled = #{projectDTO.enabled}
+            </if>
+            <if test="params != null">
+                and (
+                fp.name like concat(concat('%', #{params}), '%') OR
+                fp.code like concat(concat('%', #{params}), '%')
+                )
+            </if>
+        </if>
+        order by fp.id desc
+    </select>
+
+    <select id="selectProjectsByUserId" resultMap="projectDTO">
+        select distinct fp.*
+        from fd_project fp
+        inner join iam_member_role imr on (fp.id = imr.source_id and imr.source_type = 'project')
+        inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = 1)
+        <where>
+            imr.member_id = #{userId} and imr.member_type='user'
+            <if test="projectDTO != null">
+                <if test="projectDTO.organizationId != null">
+                    AND fp.organization_id = #{projectDTO.organizationId}
+                </if>
+                <if test="projectDTO.name != null">
+                    AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
+                </if>
+                <if test="projectDTO.enabled != null">
+                    AND fp.is_enabled = #{projectDTO.enabled}
+                </if>
+            </if>
+        </where>
+    </select>
+</mapper>

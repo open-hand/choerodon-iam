@@ -1,0 +1,28 @@
+@jsonBgc:#f1f9ff;
+.c7n-saga {
+  &-detail {
+    &-json {
+      border: 0.01rem solid @jsonBgc;
+      background-color: @jsonBgc;
+      margin: 0.1rem 0;
+      pre {
+        padding: 0.16rem;
+        margin: 0;
+      }
+      code {
+        font-size: 0.14rem;
+        line-height: 2;
+      }
+    }
+  }
+  &-sidebar {
+    &.c7n-modal-sidebar .c7n-modal-body {
+      height: ~'calc(100% - 1.21rem)';
+    }
+  }
+}
+
+.c7n-tabs {
+  // overflow: visible;
+  overflow-x: hidden;
+}

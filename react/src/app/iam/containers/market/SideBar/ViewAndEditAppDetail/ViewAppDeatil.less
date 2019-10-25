@@ -1,0 +1,24 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-viewAppDetail {
+  //&-form > table > tbody > tr > td {
+  //  vertical-align: middle !important;
+  //}
+  //&-form > table > tbody > tr:last-child > td {
+  //  vertical-align: top !important;
+  //}
+  &-form {
+    .viewFormOverload();
+    .multiOverloadNone('publishType', '、');
+    .labelHelp {
+      .customLabelHelp();
+    }
+  }
+  &-img {
+    .imgContainer();
+  }
+  &-htmlContainer {
+    .htmlContainer();
+  }
+}

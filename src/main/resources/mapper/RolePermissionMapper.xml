@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.RolePermissionMapper">
+    <select id="queryExistingPermissionIdsByRoleIds" resultType="Long">
+        SELECT DISTINCT ip.id
+        FROM iam_role_permission irp
+        INNER JOIN iam_permission ip ON ip.code = irp.permission_code
+        INNER JOIN iam_role ir ON ir.code = irp.role_code
+        WHERE ir.id
+        IN
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>

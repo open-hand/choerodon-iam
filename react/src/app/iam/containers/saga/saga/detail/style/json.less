@@ -1,0 +1,18 @@
+@numberColor:#800;
+@nullColor:#00bfa5;
+.c7n-saga {
+  &-detail {
+    &-json {
+      margin: 0;
+      .string,
+      .number {
+        color: @numberColor;
+      }
+      .boolean,
+      .undefined,
+      .null {
+        color: @nullColor;
+      }
+    }
+  }
+}

@@ -1,0 +1,425 @@
+.app-detail-header-btn > .icon {
+  font-size: 0.18rem;
+}
+
+.version-status {
+  border-radius: 0.02rem;
+  font-size: 0.1rem;
+  color: #fff;
+  text-align: center;
+  line-height: 0.16rem;
+  padding: 0 0.04rem;
+  margin-left: 0.06rem;
+  margin-top: 0.02rem;
+}
+
+.app-detail-download-select,
+.app-detail-download-select-option {
+  .unpurchased {
+    background: rgba(0, 0, 0, 0.20);
+  }
+
+  .downloading {
+    background: #4d90fe;
+  }
+
+  .downloaded {
+    background: #00bfa5;
+  }
+
+  .failed {
+    background: #f44336;
+  }
+
+  .upgrade {
+    background: #ffb100;
+  }
+
+  .upgrade-failed {
+    background: #ff7043;
+  }
+}
+
+.app-detail-select-doc-version {
+  margin: 0.1rem 0;
+
+  .c7n-select {
+    width: 3.4rem;
+  }
+}
+
+.c7n-app-market-detail-page-bread {
+  display: flex;
+  align-items: center;
+  height: 64px;
+
+  span {
+    font-size: 20px;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 20px;
+  }
+}
+
+.app-detail-info {
+
+  margin: -24px -24px 0;
+  display: flex;
+  background: rgba(0, 0, 0, 0.04);
+  height: 1.68rem;
+  align-items: center;
+
+  .name-avatar {
+    width: 0.18rem;
+    height: 0.18rem;
+    line-height: 0.18rem;
+    background: #c5cbe8;
+    color: #6473c3;
+    margin-right: 0.05rem;
+    border-radius: 50%;
+    text-transform: uppercase;
+    display: inline-block;
+    text-align: center;
+  }
+
+  .name-img {
+    width: 0.18rem;
+    height: 0.18rem;
+    border-radius: 50%;
+    margin-right: 0.05rem;
+  }
+
+  &-img-wrap {
+    width: 1.2rem;
+    height: 1.2rem;
+    background: #fff;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.20), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    border-radius: 50%;
+    margin-left: 0.24rem;
+
+    img {
+      height: 0.88rem;
+      width: 0.88rem;
+      border-radius: 50%;
+      margin-left: 0.16rem;
+    }
+  }
+
+  &-content {
+    margin-left: 0.32rem;
+    width: 100%;
+    img {
+      max-width: 100% !important;
+    }
+    .info {
+      font-size: 0.13rem;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 0.2rem;
+      padding-top: 0.06rem;
+      .point {
+        padding: 0 0.1rem;
+      }
+      .download-count {
+        padding-left: 0.06rem;
+      }
+    }
+
+    .name {
+      display: flex;
+      align-items: center;
+
+      .title {
+        font-size: 0.2rem;
+        color: #000;
+        line-height: 0.28rem;
+      }
+
+      .free {
+        background: #00bfa5;
+        border-radius: 2px;
+        padding: 0.01rem 0.1rem;
+        font-size: 0.1rem;
+        color: #fff;
+        text-align: center;
+        margin-left: 0.08rem;
+      }
+
+      .charge {
+        background: #ffb100;
+        border-radius: 2px;
+        padding: 0.01rem 0.1rem;
+        font-size: 0.1rem;
+        color: #fff;
+        text-align: center;
+        margin-left: 0.08rem;
+      }
+    }
+
+    .description {
+      font-size: 0.13rem;
+      color: rgba(0, 0, 0, 0.65);
+      text-align: left;
+      line-height: 0.2rem;
+      padding-right: 3rem;
+      padding-top: 0.06rem;
+    }
+  }
+}
+
+.app-detail-description {
+  display: flex;
+  margin-top: 0.16rem;
+
+  &-tabs {
+    flex: 1;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    padding-right: 0.24rem;
+
+    .app-detail-tab-content {
+      padding-left: 0.16rem;
+      img {
+        max-width: 100%;
+      }
+    }
+  }
+
+  &-version-list {
+    margin-left: 16px;
+
+    .publicVersion {
+      box-sizing: border-box;
+      padding-left: 30px;
+      position: relative;
+      margin-bottom: 10px;
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 14px;
+        left: 7px;
+        bottom: 10px;
+        width: 1px;
+        height: auto;
+        background-color: #4a4a4f;
+      }
+
+      &:first-child .publicOracle {
+        background-color: #00bfa5;
+      }
+
+      .publicOracle {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #4d90fe;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1;
+      }
+
+      .publicTabtitle {
+        line-height: 0.2rem;
+        font-size: 0.2rem;
+        color: #000;
+        display: flex;
+        align-items: center;
+
+        .c7n-badge {
+          padding-right: 0.08rem;
+        }
+
+        .version-status {
+          border-radius: 0.02rem;
+          font-size: 0.1rem;
+          color: #fff;
+          text-align: center;
+          line-height: 0.16rem;
+          padding: 0 0.04rem;
+          margin-left: 0.08rem;
+          margin-top: 0.02rem;
+        }
+
+        .unpurchased {
+          background: rgba(0, 0, 0, 0.20);
+        }
+
+        .downloading {
+          background: #4d90fe;
+        }
+
+        .downloaded {
+          background: #00bfa5;
+        }
+
+        .failed {
+          background: #f44336;
+        }
+
+        .upgrade {
+          background: #ffb100;
+        }
+
+        .upgrade-failed {
+          background: #ff7043;
+        }
+      }
+
+      .publishDate {
+        margin-top: 0.04rem;
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.65);
+        text-align: left;
+        line-height: 20px;
+      }
+
+      .services {
+        margin-top: 0.16rem;
+
+        .c7n-collapse-item {
+          border: none;
+
+          .c7n-collapse-header {
+            padding: 0;
+            font-size: 16px;
+            color: #000;
+            line-height: 22px;
+            margin-left: -8px;
+            font-weight: 500;
+
+            i {
+              margin-right: 8px;
+              &:before {
+                content: "\e313" !important;
+              }
+            }
+          }
+
+          .c7n-collapse-content {
+            padding-left: 0;
+
+            .c7n-collapse-content-box {
+              padding: 0;
+            }
+          }
+        }
+
+        &-title {
+          font-size: 16px;
+          color: #000;
+          line-height: 22px;
+        }
+
+        &-table {
+          margin-top: 0.16rem;
+          width: 538px;
+
+          .market-service-versions {
+            .c7n-pro-table-cell-inner {
+              white-space: inherit;
+              height: auto !important;
+            }
+          }
+
+          .version-tag {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 0.21rem;
+            margin: 0;
+            padding: 0 0.1rem;
+            font-size: 0.12rem;
+            line-height: 1.75;
+            background: rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-radius: 0.1rem;
+          }
+        }
+      }
+
+      .changelog {
+        margin-top: 0.24rem;
+        padding-bottom: 0.1rem;
+
+        &-title {
+          font-size: 0.16rem;
+          color: #000;
+          line-height: 0.22rem;
+          padding-bottom: 0.04rem;
+          margin-bottom: 0.16rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+          font-weight: 500;
+        }
+
+        &-content {
+          font-size: 0.13rem;
+          color: #000;
+        }
+      }
+
+      .public-Triangle {
+        width: 0;
+        height: 0;
+        border-top: 8px solid #4a4a4f;
+        border-bottom: 8px solid #fff;
+        border-left: 4px solid #fff;
+        border-right: 4px solid #fff;
+        position: absolute;
+        left: 3.5px;
+        bottom: 0;
+        z-index: 1;
+      }
+    }
+
+    .app-versions-read-more {
+      display: flex;
+      color: #3f51b5;
+      width: max-content;
+      cursor: pointer;
+
+      p {
+        padding-left: 0.06rem;
+      }
+    }
+  }
+
+  &-more {
+    min-width: 2rem;
+    padding-left: 0.24rem;
+    .title {
+      font-size: 0.16rem;
+      color: #000;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      padding-top: 0.16rem;
+      padding-bottom: 0.08rem;
+      font-weight: 500;
+      line-height: 10px;
+    }
+
+    .info-wrap {
+      margin: 16px 0;
+
+      .name {
+        font-size: 0.13rem;
+        color: #000;
+        line-height: 0.2rem;
+        font-weight: 500;
+        margin-bottom: 0.04rem;
+      }
+
+      .value {
+        font-size: 0.13rem;
+        color: rgba(0, 0, 0, 0.65);
+        text-align: left;
+        line-height: 0.2rem;
+      }
+
+      .category {
+        color: #3f51b5;
+        cursor: pointer;
+      }
+    }
+  }
+}

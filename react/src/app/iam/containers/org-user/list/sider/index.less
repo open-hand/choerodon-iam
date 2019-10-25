@@ -1,0 +1,158 @@
+.page-content.org-user {
+  padding-top: 0;
+}
+.base-org-user-sider {
+  .c7n-user-uploading {
+    &-container {
+      margin: .32rem .24rem;
+      padding: 24px 0;
+      border-radius: 4px;
+      box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.20), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+      > .loading {
+        position: relative;
+        margin: 0 auto;
+        width: 50px;
+        height: inherit;
+      }
+      > .text {
+        text-align: center;
+        font-size: 20px;
+        margin-top: 22px;
+        margin-bottom: .12rem;
+      }
+      > .tip {
+        text-align: center;
+        font-size: 14px;
+      }
+    }
+  }
+  .c7n-pro-modal-body {
+    padding: 0;
+  }
+  &-option {
+    display: inline-flex;
+    vertical-align: middle;
+
+    &-avatar {
+      width: 18px;
+      height: 18px;
+      background: rgb(197, 203, 232);
+      color: rgb(100, 115, 195);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 5px;
+      text-align: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &-noavatar {
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        text-align: center;
+        color: rgb(100, 115, 195);
+      }
+    }
+  }
+  &-modal.import-user {
+    h3 {
+      margin-bottom: .16rem;
+    }
+    p {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 20px;
+      margin-bottom: .16rem;
+    }
+    button {
+      margin-top: -0.1rem;
+    }
+    .total-import + .download-detail {
+      margin-bottom: .16rem;
+    }
+    .last-import-time {
+      margin-bottom: .1rem;
+    }
+    .total-import {
+      margin-bottom: .04rem;
+    }
+    .download-detail {
+      display: inline-block;
+    }
+  }
+  &-modal {
+    overflow: hidden;
+    & > button {
+      margin-left: .24rem;
+    }
+    .c7n-upload {
+      & > button {
+        margin-left: .24rem;
+      }
+    }
+    &:first-child {
+      padding-top: .24rem;
+    }
+    h3, p, a,
+    & > form {
+      padding: 0 .24rem;
+    }
+    &-add-type {
+      margin-left: .24rem;
+      & > form {
+        margin-top: .2rem;
+        margin-bottom: .235rem;
+      }
+    }
+    .hidden-password {
+      & > table > tbody > tr:nth-child(1) {
+        position: absolute;
+      }
+    }
+    .c7n-pro-field-wrapper {
+      padding: 0;
+      & > table {
+        width: 100%;
+      }
+    }
+    .import-user {
+      &-time {
+        color: #000;
+      }
+      &-success {
+        color: #00bfa5;
+        font-weight: 500;
+        font-size: .2rem;
+      }
+      &-failed {
+        color: #f44336;
+        font-weight: 500;
+        font-size: .2rem;
+      }
+      &-title {
+        margin-bottom: 0.16rem;
+      }
+    }
+    .divider {
+      width: 3.8rem;
+      height: .01rem;
+      border-bottom: .01rem solid rgba(0, 0, 0, 0.12);
+      margin-bottom: .195rem;
+      left: 0;
+      &-space {
+        margin-bottom: .195rem;
+      }
+    }
+    .c7n-pro-modal {
+      &-body {
+        padding: 0;
+      }
+    }
+  }
+  &-select {
+    width: 3.4rem;
+    margin-bottom: 0.3rem;
+  }
+}

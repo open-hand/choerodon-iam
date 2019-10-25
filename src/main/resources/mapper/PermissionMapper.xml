@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.PermissionMapper">
+
+    <resultMap id="PermissionDTO" type="io.choerodon.base.infra.dto.PermissionDTO" autoMapping="true">
+        <id column="id" property="id"></id>
+        <result property="within" column="is_within" jdbcType="BOOLEAN"/>
+        <result property="publicAccess" column="is_public_access" jdbcType="BOOLEAN"/>
+        <result property="loginAccess" column="is_login_access" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fuzzyQuery" resultMap="PermissionDTO">
+        SELECT * FROM iam_permission ip
+        WHERE ip.is_public_access = 0
+        AND ip.is_login_access = 0
+        <if test="permissionDTO.code != null">
+            AND ip.code LIKE concat(concat('%',#{permissionDTO.code}), '%')
+        </if>
+        <if test="permissionDTO.resourceLevel != null">
+            AND ip.resource_level = #{permissionDTO.resourceLevel}
+        </if>
+        <if test="permissionDTO.controller != null">
+            AND ip.controller LIKE concat(concat('%',#{permissionDTO.controller}), '%')
+        </if>
+        <if test="permissionDTO.serviceCode != null">
+            AND ip.service_code LIKE concat(concat('%',#{permissionDTO.serviceCode}), '%')
+        </if>
+        <if test="param != null">
+            AND (
+            ip.code LIKE concat(concat('%',#{param}), '%') OR
+            ip.description LIKE concat(concat('%',#{param}), '%')
+            )
+        </if>
+    </select>
+
+    <select id="selectByRoleId" resultMap="PermissionDTO">
+        SELECT ip.*
+        FROM iam_role_permission irp
+        INNER JOIN iam_permission ip ON irp.permission_code = ip.code
+        INNER JOIN iam_role ir on ir.code=irp.role_code
+        WHERE ir.id = #{roleId}
+        <if test="params != null">
+            AND (
+            ip.code LIKE concat(concat('%', #{params), '%') OR
+            ip.description LIKE concat(concat('%', #{params), '%')
+            )
+        </if>
+        order by ip.code asc
+    </select>
+
+    <select id="checkPermission" resultType="String">
+        SELECT DISTINCT
+        p.CODE
+        FROM
+        iam_permission p
+        left JOIN iam_role_permission rp ON rp.permission_code = p.code
+        left JOIN iam_role r ON r.code = rp.role_code
+        left JOIN iam_member_role mu ON mu.role_id = r.id
+        WHERE
+        (p.is_login_access=1 OR p.is_public_access=1 OR (
+        p.resource_level = #{source_type}
+        AND member_type = 'user'
+        AND member_id = #{member_id}
+        AND source_type = #{source_type}
+        AND source_id = #{source_id}
+        AND r.is_enabled = 1
+        ))
+        <if test="codes != null and !codes.isEmpty()">
+            AND p.CODE IN
+            <foreach collection="codes" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
+    <select id="selectErrorLevelPermissionByRole" resultMap="PermissionDTO">
+        SELECT ip.*
+        FROM iam_role ir
+        INNER JOIN iam_role_permission irp ON ir.code = irp.role_code
+        INNER JOIN iam_permission ip ON irp.permission_code = ip.code
+        WHERE ir.id = #{role.id}
+        AND ir.resource_level != ip.resource_level
+    </select>
+
+</mapper>

@@ -1,0 +1,156 @@
+.app-market-card {
+  &-container {
+    position: relative;
+    width: 2rem !important;
+    height: 2.32rem !important;
+    min-height: 232px;
+    /* stylelint-disable */
+    /* （请说明禁止检测的理由）前端组件限制类名 */
+    /* stylelint-enable */
+    box-shadow: 0 1px 7px 0 rgba(9, 14, 55, 0.15);
+    border-radius: 2px;
+
+    &-flipper {
+      height: 1.96rem;
+      overflow: hidden;
+
+      &-front,
+      &-back {
+        height: 1.96rem;
+        padding: 28px 16px 0 16px;
+        transform: translateY(0);
+        transition: transform .3s;
+
+        h1 {
+          font-size: 0.16rem;
+          font-weight: 400;
+          color: #252528;
+          line-height: 24px;
+
+          .c7n-badge {
+            font-size: 0.16rem;
+            font-weight: 400;
+          }
+
+          .c7n-badge-dot {
+            width: 0.1rem;
+            height: 0.1rem;
+            background: #f44336;
+          }
+        }
+      }
+
+      &-front {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        //noinspection Stylelint
+        .free-flag {
+          width: 34px;
+          height: 34px;
+          position: absolute;
+          right: 0;
+          top: 0;
+          border-top-width: 0 !important;
+          border-right-style: dashed;
+          border-bottom-style: dashed;
+          border-right-color: rgba(255, 177, 0, 1);
+          border-width: 34px;
+          border-bottom-color: #fff;
+
+          .money-icon {
+            position: fixed;
+            right: 2px;
+            color: #fff;
+            font-size: 0.16rem;
+            top: 2px;
+          }
+        }
+
+        img {
+          margin-bottom: 20px;
+          width: 1rem;
+          height: 1rem;
+          border-radius: 50%;
+        }
+
+        h1 {
+          .title-div {
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 168px;
+            white-space: nowrap;
+          }
+        }
+      }
+
+      &-back {
+        h1 {
+
+          .title-div {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: inherit;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+          }
+        }
+
+        p {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.65);
+          text-align: justify;
+          line-height: 20px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: inherit;
+          display: -webkit-box;
+          -webkit-line-clamp: 5;
+          -webkit-box-orient: vertical;
+        }
+      }
+    }
+  }
+
+  &-side {
+    position: absolute;
+    border-top: 1px solid #e9e9e9;
+    padding: 8px 16px;
+    bottom: 0;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+    &-contributor,
+    &-category {
+      margin-bottom: 0;
+      font-size: 14px;
+      text-align: left;
+      line-height: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70px;
+      white-space: nowrap;
+    }
+
+    &-contributor {
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    &-category {
+      color: #3f51b5;
+    }
+  }
+}
+
+.app-market-card-container-flipper:hover {
+
+  .app-market-card-container-flipper-front,
+  .app-market-card-container-flipper-back {
+    transform: translateY(-196px);
+    transition: transform .3s;
+  }
+}

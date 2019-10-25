@@ -1,0 +1,242 @@
+// 对 choerodon-ui-pro 执行的样式覆盖
+// 覆盖 Header 按钮间距
+.overloadBtn() {
+  .c7n-pro-btn + .c7n-pro-btn {
+    margin-left: 0.2rem !important;
+  }
+}
+// 覆盖 Form 底部线
+.overloadFormHeaderBottomLine() {
+  .c7n-pro-table-header {
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+}
+// 覆盖 Form 中的 TextArea（Remote）
+.overloadFormTextArea() {
+  .c7n-pro-textarea {
+    font-size: 0.13rem !important;
+    color: #000 !important;
+    line-height: 1.57 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+  }
+}
+.createFormOverload(@paddingBottom: 0.1rem) {
+  padding-bottom: @paddingBottom !important;
+  .c7n-pro-form-header:first-child, .c7n-pro-table-header:first-child {
+    padding-top: 0 !important;
+    padding-bottom: 0.16rem;
+    margin-bottom: 0;
+  }
+  .c7n-pro-form-header {
+    font-size: 0.16rem;
+    font-weight: 500;
+    padding-left: 0 !important;
+    border-bottom: none !important;
+  }
+  &-selectBox {
+    .c7n-pro-radio-wrapper {
+      margin-right: 0.6rem !important;
+    }
+  }
+}
+.createTableOverload() {
+  .headerOverload();
+  display: flex;
+  flex-direction: column;
+  .c7n-pro-table-toolbar {
+    padding-top: .1rem;
+    order: 3;
+  }
+}
+.prefixOverload() {
+  .c7n-pro-input-number-prefix {
+    line-height: 0.2rem !important;
+  }
+  .c7n-pro-field-label-wrapper {
+    left: 0.24rem !important;
+  }
+}
+.applyForReleaseHeaderOverload() {
+  .c7n-pro-form-header {
+    padding-bottom: 0.05rem !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+    margin-bottom: 0.16rem !important;
+  }
+}
+.viewFormOverload(@verticalAlign: middle, @paddingBottom: 0.3rem) {
+  font-size: 0.14rem !important;
+  padding-bottom: 0.24rem !important;
+  .c7n-pro-form-header {
+    padding-bottom: 0.16rem !important;
+    margin-bottom: 0 !important;
+  }
+  .createFormOverload(@paddingBottom);
+  .c7n-pro-field-label, .c7n-pro-field-wrapper {
+    padding: 0.04rem 0.05rem !important;
+  }
+  td {
+    vertical-align: @verticalAlign !important;
+  }
+  table > tbody > tr > td {
+    vertical-align: @verticalAlign !important;
+    line-height: 2.15384615;
+  }
+  tr > td > label {
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 1.42;
+  }
+  .c7n-pro-field-label-left {
+    padding: 0.04rem 0.05rem !important;
+    //vertical-align: top !important;
+    //line-height: 1.42;
+  }
+  .c7n-pro-form {
+    .c7n-pro-output {
+      line-height: 1.42;
+    }
+  }
+  tr > td > div {
+    padding: 4px 0 !important;
+  }
+  .c7n-pro-field-required:after {
+    content: '' !important;
+  }
+}
+.viewTableOverload() {
+  .headerOverload();
+}
+.headerOverload() {
+  .c7n-pro-table-header {
+    font-size: 0.16rem;
+    font-weight: 600;
+    padding-left: 0 !important;
+    border-bottom: none !important;
+  }
+}
+.customLabelHelp(@marginBottom: 4px) {
+  i {
+    font-size: 0.14rem;
+    font-weight: 300;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: @marginBottom;
+    margin-left: 4px;
+  }
+}
+.floatLabelAlignCenter() {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+// 覆盖 Step 样式
+.overloadStep() {
+  .c7n-steps {
+    margin-bottom: 0.28rem !important;
+    .c7n-steps-icon {
+      font-size: 0.12rem !important;
+    }
+  }
+}
+
+// 覆盖 Table Select 样式
+.overLoadTableSelectBorder() {
+  .c7n-pro-select-not-editable .c7n-pro-select {
+    border: none !important;
+    padding-left: 0 !important;
+  }
+}
+// 覆盖子Table样式
+.overloadSubTable() {
+  .c7n-pro-table {
+    border-bottom: none !important;
+    border-top: none !important;
+  }
+  .c7n-pro-table-thead {
+    .c7n-pro-table-cell {
+      background: none !important;
+    }
+  }
+}
+// 覆盖 Table Header 标题
+.overloadTableHeader() {
+  .c7n-pro-table-header {
+    font-size: 0.16rem;
+    font-weight: 600;
+    padding-left: 0 !important;
+    border-bottom: none !important;
+    padding-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0.16rem !important;
+  }
+}
+// 覆盖 Table 中的 color
+.overloadTableColor() {
+  .c7n-pro-table {
+    color: rgba(0, 0, 0, 0.65);
+  }
+}
+
+// 覆盖 Tab 底部线
+.overloadTabBottomLine() {
+  .c7n-tabs-bar {
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+}
+
+// Badge 覆盖
+.badgeOverLoad() {
+  .c7n-badge-count {
+    transform: scale(0.8) !important;
+    background: rgba(244, 67, 54, 1) !important;
+  }
+}
+
+// multiBlock 样式覆盖为 None
+.multiOverloadNone(@type, @split) {
+  .c7n-pro-output-multiple-block {
+    color: #000 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .split(@type, @split) when (@type="publishType") {
+    .c7n-pro-output-multiple-block:after {
+      content: @split;
+    }
+    .c7n-pro-output-multiple-block:last-child {
+      &:after {
+        content: none;
+      }
+    }
+  }
+  .split(@type, @split);
+}
+
+// 覆盖 Collapse 样式
+.overLoadCollapse() {
+  .c7n-collapse {
+    .c7n-collapse-content-box {
+      padding-bottom: 0 !important;
+    }
+    .c7n-collapse-header {
+      font-size: 0.16rem;
+      font-weight: 500;
+    }
+    .c7n-collapse-header, .c7n-collapse-content {
+      .c7n-collapse-expand-icon {
+        font-size: 0.24rem !important;
+        &:before {
+          content: "\e313" !important;
+        }
+      }
+      padding: 0 0 0.16rem !important;
+    }
+    .c7n-collapse-item {
+      border: none !important;
+    }
+    margin-bottom: 0.2rem;
+  }
+}

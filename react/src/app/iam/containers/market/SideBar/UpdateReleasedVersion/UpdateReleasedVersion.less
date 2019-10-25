@@ -1,0 +1,30 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-updateVersionDetail {
+  .overLoadCollapse();
+  &-hr {
+    .hr(0.1rem);
+  }
+  .required {
+    .required();
+  }
+  &-serviceContainer {
+    .serviceContainer();
+  }
+  &-document-title, &-changelog-title, &-overview-title {
+    .editorTitle();
+  }
+  &-document, &-changelog, &-overview {
+    margin-bottom: 0.2rem;
+  }
+  &-serviceInfo {
+    .serviceInfo();
+  }
+  &-serviceTable {
+    .overloadTableColor();
+    .c7n-badge-status-default {
+      background: #3f51b5 !important;
+    }
+  }
+}

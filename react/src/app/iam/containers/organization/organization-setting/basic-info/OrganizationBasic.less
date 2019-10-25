@@ -1,0 +1,115 @@
+// 颜色
+@box-shadow-style-default: 0 .03rem .01rem -0.02rem rgba(0, 0, 0, 0.2), 0 .02rem .02rem 0 rgba(0, 0, 0, 0.14), 0 .01rem .05rem 0 rgba(0, 0, 0, 0.12);
+@font-color: rgba(0, 0, 0, 0.54);
+@font-color-dark: rgba(0, 0, 0, 1);
+@font-color-light: #e1e1e1;
+@bg-color1: rgba(0, 0, 0, 0.26);
+
+.c7n-organization {
+    &-page-content {
+        padding-top: 0.16rem;
+    }
+}
+.c7n-organization-formImg {
+    width: .8rem !important;
+    height: .8rem;
+    border-radius: 50%;
+    box-shadow: @box-shadow-style-default;
+    padding: .08rem;
+    &-wrapper {
+        position: absolute;
+        background: #c5cbe8;
+        text-transform: uppercase;
+        user-select: none;
+      width: .64rem;
+      height: .64rem;
+      border-radius: 50%;
+      font-size: .4rem;
+      line-height: .64rem;
+      font-weight: 700;
+      background-size: 100%;
+      background-position: center;
+      text-decoration: none;
+      background-repeat: no-repeat;
+      color: #3f51b5;
+      text-align: center;
+    }
+    img {
+        width: 100%;
+        border: .4rem;
+        border-radius: 50%;
+    }
+}
+
+.c7n-organization-form {
+    font-size: .14rem;
+    margin-left: .15rem;
+    .c7n-pro-field-required.c7n-pro-field-label:after {
+        content: '';
+    }
+    tr {
+        td {
+            .c7n-pro-field-wrapper {
+                padding: 0;
+                padding-bottom: .05rem;
+            }
+            padding: 0;
+            padding-bottom: .05rem;
+            &:first-of-type {
+                color: @font-color;
+            }
+            &:nth-of-type(2) {
+                color: @font-color-dark;
+            }
+            &:nth-of-type(3) {
+                color: @font-color;
+            }
+        }
+    }
+}
+.c7n-organization-avater {
+    background-size: cover;
+    width: .8rem;
+    height: .8rem;
+    display: block;
+    margin: 0 auto;
+    border-radius: 50px;
+    &:hover {
+        button {
+            opacity: 1;
+        }
+    }
+    button {
+        opacity: 0;
+        transition: .2s;
+        padding: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: @bg-color1;
+        border-radius: 50%;
+        color: @font-color-light;
+        &:hover {
+            background: @bg-color1;
+        }
+        i {
+            font-size: 0.3rem;
+        }
+    }
+}
+
+.c7n-organization-infoForm {
+    form {
+        table {
+            tbody {
+                tr:first-child {
+                    td {
+                        label {
+                            display: none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

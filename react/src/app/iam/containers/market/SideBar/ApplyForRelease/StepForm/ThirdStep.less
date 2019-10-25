@@ -1,0 +1,19 @@
+@import (reference) '../../../../../utils/overloadStyle.less';
+@import (reference) '../../../../../utils/component.less';
+
+.c7n-market-thirdStep {
+  &-viewForm {
+    .viewFormOverload(top, 0.24);
+    .applyForReleaseHeaderOverload();
+    .multiOverloadNone('publishType', '、');
+  }
+  &-hr {
+    .hr();
+  }
+  &-imgContainer {
+    .imgContainer();
+  }
+  &-table {
+    .overloadTableColor();
+  }
+}

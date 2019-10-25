@@ -1,0 +1,42 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.project-user {
+  .link {
+    color: #000;
+    cursor: pointer;
+    &:hover {
+      color: @primary-color;
+      text-decoration: underline;
+    }
+  }
+  .text-gray {
+    color: rgba(0, 0, 0, 0.65);
+  }
+  &-roles {
+    .@{c7n-pro-prefix}-output-multiple-block {
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: .1rem;
+      font-size: 0.12rem;
+      color: #000;
+      line-height: 0.2rem;
+      &.disable {
+        color: rgba(0, 0, 0, 0.36) !important;
+      }
+    }
+  }
+  &-external-user {
+    display: inline-block;
+    background: rgba(77, 144, 254, 0.10);
+    border: 1px solid #4d90fe;
+    border-radius: 2px;
+    font-size: 10px;
+    color: #4d90fe;
+    text-align: left;
+    line-height: 18px;
+    margin-left: 6px;
+    &-text {
+      display: inline-block;
+      transform: scale(0.84);
+    }
+  }
+}

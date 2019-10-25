@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.ProjectCategoryMapper">
+    <select id="selectProjectCategoriesByOrgId" resultType="io.choerodon.base.infra.dto.ProjectCategoryDTO">
+        SELECT fpc.*
+        FROM
+        fd_project_category fpc
+        WHERE
+        fpc.organization_id = #{organizationId}
+        <if test="projectCategoryDTO.name != null">
+            AND fpc.name LIKE concat(concat('%',#{projectCategoryDTO.name}),'%')
+        </if>
+        <if test="projectCategoryDTO.code != null">
+            AND fpc.code LIKE concat(concat('%',#{projectCategoryDTO.code}),'%')
+        </if>
+        <if test="projectCategoryDTO.description != null">
+            AND fpc.description LIKE concat(concat('%',#{projectCategoryDTO.description}),'%')
+        </if>
+        <if test="param != null">
+            AND name LIKE concat(concat('%',#{param}),'%')
+        </if>
+    </select>
+
+    <select id="selectProjectCategoriesListByOrgId" resultType="io.choerodon.base.infra.dto.ProjectCategoryDTO">
+        SELECT fpc.*
+        FROM
+        fd_project_category fpc
+        WHERE
+        fpc.organization_id = #{organizationId}
+        <if test="param != null">
+            AND name LIKE concat(concat('%',#{param}),'%')
+        </if>
+        AND DISPLAY_FLAG = '1'
+        UNION
+        SELECT fpc.*
+        FROM
+        fd_project_category fpc
+        WHERE
+        fpc.organization_id = 0
+        <if test="param != null">
+            AND name LIKE concat(concat('%',#{param}),'%')
+        </if>
+        AND DISPLAY_FLAG = '1'
+    </select>
+
+    <select id="selectByParam" resultType="io.choerodon.base.infra.dto.ProjectCategoryDTO">
+        SELECT
+        *
+        FROM
+        fd_project_category foc
+        where
+        1=1
+        AND foc.organization_id = 0
+        <if test="projectCategoryDTO.name != null">
+            AND foc.name LIKE concat(concat('%',#{projectCategoryDTO.name}),'%')
+        </if>
+        <if test="projectCategoryDTO.code != null">
+            AND foc.code LIKE concat(concat('%',#{projectCategoryDTO.code}),'%')
+        </if>
+        <if test="projectCategoryDTO.description != null">
+            AND foc.description LIKE concat(concat('%',#{projectCategoryDTO.description}),'%')
+        </if>
+        <if test="param != null">
+            AND name LIKE concat(concat('%',#{param}),'%')
+        </if>
+    </select>
+
+    <select id="getIdByCode" resultType="java.lang.Long">
+        select id
+        from fd_project_category
+        where code =#{agile}
+    </select>
+</mapper>

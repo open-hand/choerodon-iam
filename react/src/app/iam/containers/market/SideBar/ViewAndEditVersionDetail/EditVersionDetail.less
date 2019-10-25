@@ -1,0 +1,36 @@
+@import (reference) '../../../../utils/overloadStyle.less';
+@import (reference) '../../../../utils/component.less';
+
+.c7n-market-editVersionDetail {
+  .overLoadCollapse();
+  &-img {
+    .imgContainer();
+  }
+  &-form {
+    .createFormOverload(0);
+    .labelHelp {
+      .customLabelHelp();
+    }
+  }
+  &-document-title, &-changelog-title, &-overview-title {
+    .editorTitle();
+  }
+  &-document, &-changelog, &-overview {
+    margin-bottom: 0.2rem;
+  }
+  .required {
+    .required();
+  }
+  &-hr {
+    .hr(0.1rem);
+  }
+  &-serviceContainer {
+    .serviceContainer();
+  }
+  &-serviceInfo {
+    .serviceInfo();
+  }
+  &-table {
+    .overloadTableColor();
+  }
+}

@@ -1,0 +1,107 @@
+$drop-gradient: rgba(140, 158, 255, 0.16);
+.page-content.menu-setting {
+  padding-top: 0;
+}
+.permission-list {
+  &-modal {
+    .c7n-form-item {
+      margin-bottom: .05rem;
+    }
+    .c7n-form-item.c7n-form-item-with-help {
+      margin-bottom: .25rem;
+    }
+    .sidebar-content .detailForm {
+      .c7n-pro-field-label {
+        > label {
+          font-size: .14rem !important;
+          color: rgba(0, 0, 0, 0.54) !important;
+        }
+      }
+      .c7n-pro-output {
+        font-size: .14rem;
+      }
+      .c7n-pro-field-label, .c7n-pro-field-wrapper {
+        padding: 0 .05rem;
+      }
+    }
+    .c7n-modal {
+      &-header {
+        height: .55rem;
+        min-height: .55rem;
+        .c7n-modal-title {
+          font-weight: 500;
+        }
+      }
+      &-content {
+          width: 3.8rem !important;
+          right: 0;
+          left: inherit !important;
+        }
+      &-body {
+          padding-left: 0.2rem;
+          padding-right: 0.2rem;
+      }
+      &-footer {
+          position: absolute;
+          width: 100%;
+          bottom: 0.25rem;
+      }
+    }
+  }
+  p {
+    color: rgba(0, 0, 0, 0.54);
+    margin-top: 6px;
+    font-size: 14px;
+    margin-left: 5px;
+  }
+  div > span {
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: .12rem;
+  }
+  div + div > span {
+    margin-top: 6px;
+  }
+}
+
+.c7n-iam-menusetting-name {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.drag-cell {
+  cursor: move;
+}
+
+.drop-row {
+  &-before {
+    box-shadow: 0 16px 20px $drop-gradient inset, 0 0 0 $drop-gradient inset;
+  }
+  &-in {
+    box-shadow: 0 12px 20px $drop-gradient inset, 0 -12px 20px $drop-gradient inset;
+  }
+  &-after {
+    box-shadow: 0 0 0 $drop-gradient inset, 0 -16px 20px $drop-gradient inset;
+  }
+}
+
+ .c7n-pro-icon-picker-float-label .c7n-pro-field-label::after {
+  // display: inline-block;
+  width: 0.08rem;
+  margin-left: 0.04rem;
+  color: #d50000;
+  font-size: 0.13rem;
+  font-family: SimSun, sans-serif;
+  line-height: 1;
+  content: '*';
+ }
+.menu-table {
+  .c7n-table-row-spaced:after {
+    content: '';
+  }
+  &-icon {
+    color: rgba(0, 0, 0, 0.65);
+  }
+}

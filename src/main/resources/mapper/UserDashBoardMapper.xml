@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.base.infra.mapper.UserDashboardMapper">
+
+    <resultMap id="UserDashboardDTO" type="io.choerodon.base.infra.dto.UserDashboardDTO" autoMapping="true">
+        <id column="id" property="id"></id>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectWithDashboard" resultMap="UserDashboardDTO">
+		SELECT
+			CASE
+				WHEN
+					ud.is_visible IS NULL
+				THEN 1
+				ELSE ud.is_visible
+			END
+			AS visible,
+			ud.position,
+			ud.id,
+			ud.user_id,
+			ud.source_id,
+			ud.object_version_number,
+			ud.dashboard_id dashboard_id,
+			ud.sort sort,
+			ud.fd_level,
+			d.code dashboard_code,
+			d.name dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon,
+			d.NEED_ROLES NEED_ROLES
+		FROM
+			iam_dashboard d,
+			iam_user_dashboard ud
+		WHERE
+			d.id = ud.dashboard_id
+			AND ud.fd_level = #{userDashboard.level}
+			AND ud.user_id = #{userDashboard.userId}
+			AND source_id = #{userDashboard.sourceId}
+			AND d.is_enabled = 1
+	</select>
+
+    <select id="selectWithDashboardNotExist" resultMap="UserDashboardDTO">
+		SELECT
+			#{userDashboard.userId} user_id,
+			#{userDashboard.sourceId} source_id,
+			1 visible,
+			1 object_version_number,
+			d.id dashboard_id,
+			d.sort,
+			d.fd_level,
+			d.position,
+			d.code dashboard_code,
+			d.name dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon,
+			d.NEED_ROLES NEED_ROLES
+		FROM
+			iam_dashboard d
+		WHERE
+			d.fd_level = #{userDashboard.level}
+			AND d.is_enabled = 1
+	</select>
+
+    <delete id="deleteWithDashboard">
+		DELETE FROM iam_user_dashboard
+		WHERE user_id = #{userDashboard.userId}
+		AND source_id = #{userDashboard.sourceId}
+		AND fd_level = #{userDashboard.level}
+	</delete>
+</mapper>
+
+

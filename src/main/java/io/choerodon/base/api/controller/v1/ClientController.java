@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ClientVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,6 +112,13 @@ public class ClientController extends BaseController {
                                                  @PathVariable("client_id") Long clientId,
                                                  @RequestBody List<Long> roleIds) {
         return ResponseEntity.ok(clientService.assignRoles(organizationId, clientId, roleIds));
+    }
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据类型创建客户端")
+    @PostMapping("/wih_type")
+    public ResponseEntity<ClientDTO> createClientWithType(@PathVariable("organization_id") Long organizationId,
+                                                          @RequestBody @Valid ClientVO clientVO) {
+        return new ResponseEntity<>(clientService.createClientWithType(organizationId, clientVO), HttpStatus.OK);
     }
 
 }

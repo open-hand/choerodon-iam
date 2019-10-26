@@ -1,27 +1,20 @@
-package io.choerodon.base.infra.dto;
+package io.choerodon.base.api.vo;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 /**
- * @author superlee
- * @since 2019-04-22
+ * wanghao
  */
-@Table(name = "oauth_client")
-public class ClientDTO extends BaseDTO {
+public class ClientVO {
 
     private static final String regex = "^[a-z0-9A-Z]+$";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty(value = "客户端ID/非必填")
     private Long id;
 
@@ -65,17 +58,14 @@ public class ClientDTO extends BaseDTO {
     @ApiModelProperty(value = "自动授权域/非必填")
     private String autoApprove;
 
-    @ApiModelProperty(value = "集群id")
+    @ApiModelProperty(value = "资源id")
+    @NotNull(message = "error.sourceId.null")
     private Long sourceId;
 
     @ApiModelProperty(value = "client类型")
+    @NotEmpty(message = "error.sourceType.null")
     private String sourceType;
-    @Transient
-    private List<RoleDTO> roles;
 
-    @JsonIgnore
-    @Transient
-    private String param;
 
     public Long getId() {
         return id;
@@ -173,26 +163,6 @@ public class ClientDTO extends BaseDTO {
         this.autoApprove = autoApprove;
     }
 
-    public List<RoleDTO> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<RoleDTO> roles) {
-        this.roles = roles;
-    }
-
-    public String getParam() {
-        return param;
-    }
-
-    public void setParam(String param) {
-        this.param = param;
-    }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
     public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
     }
@@ -203,5 +173,9 @@ public class ClientDTO extends BaseDTO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
     }
 }

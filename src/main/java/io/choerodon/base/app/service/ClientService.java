@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ClientVO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.api.query.ClientRoleQuery;
@@ -63,4 +64,12 @@ public interface ClientService {
      * @return
      */
     ClientDTO assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
+    /**
+     * 创建带类型的客户端
+     * @param organizationId
+     * @param clientVO
+     * @return
+     */
+    ClientDTO createClientWithType(Long organizationId, ClientVO clientVO);
+
 }

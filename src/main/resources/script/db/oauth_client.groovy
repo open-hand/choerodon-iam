@@ -37,4 +37,11 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_client.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-oauth-client-add-remark') {
         setTableRemarks(tableName:"OAUTH_CLIENT",remarks: "oauth客户端表")
     }
+
+    changeSet(author: 'wanghao', id: '2019-10-23-oauth-client-add-column') {
+        addColumn(tableName: 'OAUTH_CLIENT') {
+            column(name: "SOURCE_ID", type: "BIGINT UNSIGNED",remarks: "集群id")
+            column(name: "SOURCE_TYPE", type: "VARCHAR(32)",remarks: "客户端类型：cluster(集群类型)")
+        }
+    }
 }

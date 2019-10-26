@@ -1,15 +1,13 @@
 package io.choerodon.base.app.service.impl;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import org.apache.commons.lang.RandomStringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +15,10 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.base.api.dto.SimplifiedClientDTO;
 import io.choerodon.base.api.query.ClientRoleQuery;
+import io.choerodon.base.api.vo.ClientVO;
 import io.choerodon.base.app.service.ClientService;
 import io.choerodon.base.app.service.RoleMemberService;
+import io.choerodon.base.infra.enums.ClientTypeEnum;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.asserts.ClientAssertHelper;
 import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
@@ -42,13 +42,14 @@ import io.choerodon.core.exception.ext.*;
 public class ClientServiceImpl implements ClientService {
 
     private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
+    private static final String SOURCETYPE_INVALID_EXCEPTION = "error.sourceType.invalid";
 
     private OrganizationAssertHelper organizationAssertHelper;
     private ClientAssertHelper clientAssertHelper;
     private ClientMapper clientMapper;
     private MemberRoleMapper memberRoleMapper;
     private RoleMemberService roleMemberService;
-
+    private ModelMapper modelMapper = new ModelMapper();
     private RoleMapper roleMapper;
 
     public ClientServiceImpl(OrganizationAssertHelper organizationAssertHelper,
@@ -167,6 +168,16 @@ public class ClientServiceImpl implements ClientService {
         roleMemberService.createOrUpdateRolesByMemberIdOnOrganizationLevel(true, organizationId, Collections.singletonList(clientId), memberRoles, MemberType.CLIENT.value());
         return clientDTO;
     }
+    @Override
+    public ClientDTO createClientWithType(Long organizationId, ClientVO clientVO) {
+        // 校验sourceType
+        if (Arrays.stream(ClientTypeEnum.values()).noneMatch(t -> t.value().equals(clientVO.getSourceType()))) {
+            throw new CommonException(SOURCETYPE_INVALID_EXCEPTION);
+        }
+        ClientDTO clientDTO = modelMapper.map(clientVO, ClientDTO.class);
+        return create(organizationId,clientDTO);
+    }
+
 
     private List<MemberRoleDTO> validateRoles(Long organizationId, Long clientId, List<Long> roleIds) {
         //查询当前组织下允许分配的所有角色

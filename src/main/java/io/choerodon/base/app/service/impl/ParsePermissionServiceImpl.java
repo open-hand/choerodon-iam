@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -233,6 +234,11 @@ public class ParsePermissionServiceImpl implements UploadHistoryService.ParsePer
                 deleteExample.setServiceCode(service);
                 deleteExample.setPermissionType("api");
                 permissionMapper.delete(deleteExample);
+                RolePermissionDTO rolePermissionDTO=new RolePermissionDTO();
+                rolePermissionDTO.setPermissionCode(code);
+                if (!CollectionUtils.isEmpty(rolePermissionMapper.select(rolePermissionDTO))&&rolePermissionMapper.delete(rolePermissionDTO)<1){
+                    throw new CommonException("error.role.permission.delete");
+                }
                 logger.debug("Delete deprecated permission {} on {}.", code, service);
             }
         });

@@ -15,10 +15,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_route_rule.groovy') {
             }
             column(name: 'NAME', type: 'VARCHAR(32)', remarks: '路由名称') {
                 constraints(nullable: false)
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_RULE_U1')
             }
             column(name: 'CODE', type: 'VARCHAR(64)', remarks: '路由编码(自动生成的UUID)') {
                 constraints(nullable: false)
-                constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_RULE_U1')
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_RULE_U2')
             }
             column(name: 'DESCRIPTION', type: 'VARCHAR(255)', remarks: '路由描述')
 

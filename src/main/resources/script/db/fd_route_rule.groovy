@@ -13,13 +13,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_route_rule.groovy') {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_ROUTE_RULE')
             }
-            column(name: 'NAME', type: 'VARCHAR(32)', remarks: '路由名称') {
+            column(name: 'CODE', type: 'VARCHAR(64)', remarks: '路由编码') {
                 constraints(nullable: false)
                 constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_RULE_U1')
-            }
-            column(name: 'CODE', type: 'VARCHAR(64)', remarks: '路由编码(自动生成的UUID)') {
-                constraints(nullable: false)
-                constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_RULE_U2')
             }
             column(name: 'DESCRIPTION', type: 'VARCHAR(255)', remarks: '路由描述')
 

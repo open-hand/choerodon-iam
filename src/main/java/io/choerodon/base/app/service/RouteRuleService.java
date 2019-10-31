@@ -5,6 +5,8 @@ import io.choerodon.base.api.vo.RouteRuleVO;
 import io.choerodon.base.infra.dto.RouteRuleDTO;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 /**
  * RouteRuleService
  *
@@ -15,15 +17,10 @@ public interface RouteRuleService {
     /**
      * 分页查询路由规则信息
      *
-     * @param pageable        分页参数
-     * @param name            路由名称
-     * @param description     路由描述
-     * @param hostNumber      主机数
-     * @param userNumber      用户数
-     * @param params          全局搜索参数
+     * @param code            路由编码
      * @return                路由信息列表
      */
-    PageInfo<RouteRuleVO> listRouteRules(Pageable pageable, String name, String description, Long hostNumber, Long userNumber, String[] params);
+    List<RouteRuleVO> listRouteRules(String code);
 
     /**
      * 根据ID查询路由的详细信息
@@ -39,7 +36,7 @@ public interface RouteRuleService {
      * @param routeRuleVO    路由规则DTO
      * @return                添加成功返回添加成功的routeRuleDTO
      */
-    RouteRuleVO routeRuleInsert(RouteRuleVO routeRuleVO);
+    RouteRuleVO insertRouteRule(RouteRuleVO routeRuleVO);
 
     /**
      * 根据路由ID删除路由信息
@@ -55,15 +52,15 @@ public interface RouteRuleService {
      * @param routeRuleVO    更新路由信息
      * @return                更新完成路由规则信息
      */
-    RouteRuleVO routeRuleUpdate(RouteRuleVO routeRuleVO, Long ObjectVersionNumber);
+    RouteRuleVO updateRouteRule(RouteRuleVO routeRuleVO, Long ObjectVersionNumber);
 
     /**
-     * 路由名称重复校验
+     * 路由code重复校验
      *
      * @param routeRuleDTO  校验信息
      * @return             校验结果
      */
-    Boolean checkName(RouteRuleDTO routeRuleDTO);
+    Boolean checkCode(RouteRuleDTO routeRuleDTO);
 
     /**
      * 检验路由是否存在

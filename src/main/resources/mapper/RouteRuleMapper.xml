@@ -3,23 +3,12 @@
 <mapper namespace="io.choerodon.base.infra.mapper.RouteRuleMapper">
 
     <select id="listRouteRules" resultType="io.choerodon.base.api.vo.RouteRuleVO">
-        select `ID`, `NAME`, `CODE`, `DESCRIPTION`, `OBJECT_VERSION_NUMBER`
-        from fd_route_rule
+        select frr.`ID` AS `ID`, frr.`CODE` AS `CODE`, frr.`DESCRIPTION` AS `DESCRIPTION`, frr.`CREATION_DATE` AS `CREATION_DATE`,
+                (SELECT count(id) FROM FD_ROUTE_MEMBER_RULE frmr WHERE frmr.`ROUTE_RULE_CODE` = frr.`CODE`) AS `USER_NUMBER`, frr.`OBJECT_VERSION_NUMBER` AS `OBJECT_VERSION_NUMBER`
+        from fd_route_rule frr
         <where>
-            <if test="name != null">
-                AND `name` LIKE concat(concat('%', #{name}), '%')
-            </if>
-            <if test="description != null">
-                AND `DESCRIPTION` LIKE concat(concat('%', #{description}), '%')
-            </if>
-            <if test="params != null">
-                <foreach collection="params" item="param" index="index">
-                    AND (
-                        `NAME` LIKE concat('%', concat(#{param}), '%')
-                        OR
-                        `DESCRIPTION` LIKE concat(concat('%', #{param}), '%')
-                    )
-                </foreach>
+            <if test="code != null">
+                AND `code` LIKE concat(concat('%', #{name}), '%')
             </if>
         </where>
     </select>

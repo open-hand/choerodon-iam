@@ -3,9 +3,11 @@ package io.choerodon.base.infra.dto;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.entity.BaseDTO;
+
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
+import javax.validation.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -24,15 +26,17 @@ public class LookupDTO extends BaseDTO {
     private Long id;
 
     @ApiModelProperty(value = "快码code")
-    @NotEmpty(message = "error.code.empty")
+    @NotEmpty(message = "error.lookup.code.empty")
     @Size(max = 32, min = 1, message = "error.code.length")
     private String code;
 
     @MultiLanguageField
+    @NotEmpty(message = "error.lookup.description.empty")
     @ApiModelProperty(value = "描述")
     private String description;
 
     @Transient
+    @Valid
     @ApiModelProperty(value = "快码值")
     private List<LookupValueDTO> lookupValues;
 

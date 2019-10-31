@@ -2,6 +2,7 @@ package io.choerodon.base.infra.mapper;
 
 import io.choerodon.base.infra.dto.LookupDTO;
 import io.choerodon.mybatis.common.Mapper;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -11,8 +12,13 @@ import java.util.List;
  */
 public interface LookupMapper extends Mapper<LookupDTO> {
 
-    List<LookupDTO> fulltextSearch(@Param("lookupDTO") LookupDTO lookupDTO,
+    List<LookupDTO> fulltextSearch(@Param("code") String code,
+                                   @Param("description") String description,
                                    @Param("param") String param);
 
-    LookupDTO selectByCodeWithLookupValues(String code);
+    LookupDTO queryByCode(@Param("code") String code);
+
+    LookupDTO queryByDes(@Param("des") String des);
+
+    Long check(@Param("lookupId") Long lookupId, @Param("code") String code);
 }

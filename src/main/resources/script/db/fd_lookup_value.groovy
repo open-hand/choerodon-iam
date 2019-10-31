@@ -63,4 +63,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
             column(name: 'DISPLAY_ORDER', type: "decimal(20,0)", remarks: '显示顺序')
         }
     }
+
+    changeSet(author: "bgzyy", id: "2019-10-30-fd-lookup-value-upd-column") {
+        renameColumn(tableName: 'FD_LOOKUP_VALUE', oldColumnName: 'DISPLAY_ORDER', newColumnName: 'DISPLAY_ORDER', columnDataType: 'INT UNSIGNED')
+        addDefaultValue(tableName: 'FD_LOOKUP_VALUE', columnName: 'DISPLAY_ORDER', defaultValue: '1')
+    }
 }

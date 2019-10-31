@@ -24,7 +24,7 @@ public class LookupValueDTO extends BaseDTO {
     private Long id;
 
     @ApiModelProperty(value = "快码值code")
-    @NotEmpty(message = "error.code.empty")
+    @NotEmpty(message = "error.lookup.code.empty")
     private String code;
 
     @ApiModelProperty(value = "所属快码id", hidden = true)
@@ -32,7 +32,11 @@ public class LookupValueDTO extends BaseDTO {
 
     @MultiLanguageField
     @ApiModelProperty(value = "快码值描述")
+    @NotEmpty(message = "error.lookup.description.empty")
     private String description;
+
+    @ApiModelProperty(value = "排列顺序")
+    private Integer displayOrder;
 
     public Long getId() {
         return id;
@@ -64,5 +68,13 @@ public class LookupValueDTO extends BaseDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }

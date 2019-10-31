@@ -27,13 +27,13 @@
         </if>
         <if test="param != null">
             AND (
-            code LIKE concat(concat('%',#{param}),'%') OR
-            description LIKE concat(concat('%',#{param}),'%')
+            code LIKE concat(concat('%',${param}),'%') OR
+            description LIKE concat(concat('%',${param}),'%')
             )
         </if>
     </select>
 
-    <select id="selectByCodeWithLookupValues" resultMap="lookupWithValues">
+    <select id="queryByCode" resultMap="lookupWithValues">
         SELECT
         fl.id,
         fl.code,
@@ -42,9 +42,41 @@
         flv.id AS value_id,
         flv.lookup_id,
         flv.code AS value_code,
-        flv.description AS value_description
+        flv.description AS value_description,
+        flv.display_order
         FROM fd_lookup fl
         LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
-        WHERE fl.code = #{code}
+        WHERE fl.code = ${code}
+        ORDER BY flv.DISPLAY_ORDER
+    </select>
+    <select id="queryByDes" resultMap="lookupWithValues">
+        SELECT
+            fl.id,
+            fl.code,
+            fl.description,
+            fl.object_version_number,
+            flv.id AS value_id,
+            flv.lookup_id,
+            flv.code AS value_code,
+            flv.description AS value_description,
+            flv.display_order
+        FROM fd_lookup fl
+                 LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
+        WHERE fl.description = ${des}
+        ORDER BY flv.DISPLAY_ORDER
+    </select>
+
+    <select id="check" resultType="java.lang.Long">
+        select count(*) from
+        <choose>
+            <when test="lookupId != null">
+                fd_lookup_value
+                where lookup_id = ${lookupId} and code = ${code}
+            </when>
+            <otherwise>
+                fd_lookup
+                where code = ${code}
+            </otherwise>
+        </choose>
     </select>
 </mapper>

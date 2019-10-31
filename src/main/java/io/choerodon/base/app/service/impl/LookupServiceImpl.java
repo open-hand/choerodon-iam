@@ -15,6 +15,7 @@ import io.choerodon.base.infra.dto.LookupDTO;
 import io.choerodon.base.infra.dto.LookupValueDTO;
 import io.choerodon.base.infra.mapper.LookupMapper;
 import io.choerodon.base.infra.mapper.LookupValueMapper;
+import io.choerodon.core.exception.*;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -98,6 +99,7 @@ public class LookupServiceImpl implements LookupService {
                     if (d.getId().equals(v.getId())) {
                         d.setCode(v.getCode());
                         d.setDescription(v.getDescription());
+                        d.setDisplayOrder(v.getDisplayOrder());
                         lookupValueMapper.updateByPrimaryKeySelective(d);
                     }
                 });
@@ -108,19 +110,20 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public LookupDTO queryById(Long id) {
-        LookupDTO lookup = lookupMapper.selectByPrimaryKey(id);
-        if (lookup == null) {
-            return null;
-        }
-        LookupValueDTO lookupValue = new LookupValueDTO();
-        lookupValue.setLookupId(id);
-        lookup.setLookupValues(lookupValueMapper.select(lookupValue));
-        return lookup;
+    public LookupDTO  queryByDes(String des) {
+        return lookupMapper.queryByDes(des);
     }
 
     @Override
-    public LookupDTO listByCodeWithLookupValues(String code) {
-        return lookupMapper.selectByCodeWithLookupValues(code);
+    public LookupDTO queryByCode(String code) {
+        return lookupMapper.queryByCode(code);
+    }
+
+    @Override
+    public void check(Long lookupId, String code) {
+        Long count = lookupMapper.check(lookupId, code);
+        if (count >= 1) {
+            throw new CommonException("error.lookup.code.duplication");
+        }
     }
 }

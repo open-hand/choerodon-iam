@@ -63,4 +63,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
             column(name: 'DISPLAY_ORDER', type: "decimal(20,0)", remarks: '显示顺序')
         }
     }
+
+    changeSet(author: "bgzyy", id: "2019-10-30-fd-lookup-value-upd-column") {
+        dropColumn(tableName: 'FD_LOOKUP_VALUE', ColumnName: 'DISPLAY_ORDER')
+        addColumn(tableName: 'FD_LOOKUP_VALUE') {
+            column(name: 'DISPLAY_ORDER', type: "INT", remarks: '显示顺序')
+        }
+    }
 }

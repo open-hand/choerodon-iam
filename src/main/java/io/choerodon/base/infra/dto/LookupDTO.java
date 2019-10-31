@@ -3,6 +3,7 @@ package io.choerodon.base.infra.dto;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.entity.BaseDTO;
+
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;

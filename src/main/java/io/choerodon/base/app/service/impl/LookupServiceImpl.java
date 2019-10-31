@@ -62,9 +62,9 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public PageInfo<LookupDTO> pagingQuery(Pageable pageable, LookupDTO lookupDTO, String param) {
+    public PageInfo<LookupDTO> pagingQuery(Pageable pageable, String code, String description, String param) {
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                .doSelectPageInfo(() -> lookupMapper.fulltextSearch(lookupDTO, param));
+                .doSelectPageInfo(() -> lookupMapper.fulltextSearch(code, description, param));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -110,7 +110,7 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public LookupDTO  queryByDes(String des) {
+    public LookupDTO queryByDes(String des) {
         return lookupMapper.queryByDes(des);
     }
 

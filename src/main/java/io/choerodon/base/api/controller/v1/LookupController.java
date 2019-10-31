@@ -1,17 +1,22 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.core.annotation.Permission;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.base.app.service.LookupService;
 import io.choerodon.base.infra.dto.LookupDTO;
+
 import org.springframework.data.web.SortDefault;
+
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,18 +81,21 @@ public class LookupController extends BaseController {
     /**
      * 分页查询lookupType 数据
      *
-     * @param lookupDTO 查询封装对象
-     * @return 返回信息
+     * @param Pageable
+     * @param code
+     * @param description
+     * @param param
+     * @return
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询快码")
     @GetMapping
-    @CustomPageRequest
     public ResponseEntity<PageInfo<LookupDTO>> list(@ApiIgnore
                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-                                                    @RequestBody(required = false) LookupDTO lookupDTO,
+                                                    @RequestParam(required = false) String code,
+                                                    @RequestParam(required = false) String description,
                                                     @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(lookupService.pagingQuery(Pageable, lookupDTO, param), HttpStatus.OK);
+        return new ResponseEntity<>(lookupService.pagingQuery(Pageable, code, description, param), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
@@ -111,8 +119,9 @@ public class LookupController extends BaseController {
 
     /**
      * 校验 code || code + lookupId 是否已存在
+     *
      * @param lookupId 传入 lookupId 则校验 lookupValue 表，即 code + lookupId
-     * @param code 默认校验 lookup 表
+     * @param code     默认校验 lookup 表
      * @return
      */
     @Permission(type = ResourceType.SITE)

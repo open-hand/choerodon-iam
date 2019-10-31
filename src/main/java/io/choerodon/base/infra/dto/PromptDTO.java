@@ -14,7 +14,7 @@ import javax.validation.constraints.NotEmpty;
  * @since 2019/10/30
  **/
 @Table(name = "fd_prompt")
-public class LanguageSpaceDTO extends BaseDTO {
+public class PromptDTO extends BaseDTO {
 
     @Id
     @GeneratedValue

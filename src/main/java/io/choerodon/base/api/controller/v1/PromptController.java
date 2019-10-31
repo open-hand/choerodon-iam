@@ -65,7 +65,7 @@ public class PromptController {
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询多语言映射")
-    @GetMapping
+    @PostMapping("/search")
     @CustomPageRequest
     public ResponseEntity<PageInfo<PromptDTO>> pagingQueryByOptions(@RequestBody PromptDTO promptDTO,
                                                                    @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -92,7 +92,7 @@ public class PromptController {
      * @param id
      */
     @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "删除对应的多语言映射关系")
+    @ApiOperation(value = "查询id对应的多语言映射关系")
     @GetMapping("/{id}")
     public ResponseEntity<PromptDTO> queryById(@PathVariable("id") Long id) {
         return new ResponseEntity(promptService.queryById(id), HttpStatus.OK);

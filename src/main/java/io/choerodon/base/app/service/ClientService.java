@@ -72,4 +72,11 @@ public interface ClientService {
      */
     ClientDTO createClientWithType(Long organizationId, ClientVO clientVO);
 
+    /**
+     * 根据source_id查询客户端信息
+     * @param organizationId
+     * @param sourceId
+     * @return
+     */
+    ClientDTO queryClientBySourceId(Long organizationId, Long sourceId);
 }

@@ -8,7 +8,7 @@
         from fd_route_rule frr
         <where>
             <if test="code != null">
-                AND `code` LIKE concat(concat('%', #{name}), '%')
+                AND `code` LIKE concat(concat('%', #{code}), '%')
             </if>
         </where>
     </select>

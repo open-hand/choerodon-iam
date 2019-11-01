@@ -15,5 +15,5 @@ import java.util.List;
  */
 public interface RouteRuleMapper extends Mapper<RouteRuleDTO> {
 
-    List<RouteRuleVO> listRouteRules(@Param("code") String name);
+    List<RouteRuleVO> listRouteRules(@Param("code") String code);
 }

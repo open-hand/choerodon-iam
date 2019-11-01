@@ -1,6 +1,6 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'script/db/fd_route.groovy') {
+databaseChangeLog(logicalFilePath: 'script/db/fd_service.groovy') {
 
     changeSet(author: "xausky", id: "2019-09-10-add-fd-route") {
         createTable(tableName: "FD_ROUTE", remarks: '服务路由表') {

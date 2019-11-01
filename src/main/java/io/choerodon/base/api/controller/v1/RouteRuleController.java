@@ -8,8 +8,6 @@ import io.choerodon.base.api.vo.RouteRuleVO;
 import io.choerodon.base.app.service.RouteRuleService;
 import io.choerodon.base.infra.dto.RouteRuleDTO;
 import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -66,9 +64,8 @@ public class RouteRuleController {
     @PostMapping("/update")
     @ApiOperation(value = "更新路由规则信息")
     @Permission(permissionWithin = true)
-    public ResponseEntity<RouteRuleVO>updateRouteRule(@RequestBody @Validated(Update.class) RouteRuleVO routeRuleVO,
-                                                        @RequestParam(value = "object_version_number") Long objectVersionNumber) {
-        return new ResponseEntity<>(routeRuleService.updateRouteRule(routeRuleVO, objectVersionNumber), HttpStatus.OK);
+    public ResponseEntity<RouteRuleVO>updateRouteRule(@RequestBody @Validated(Update.class) RouteRuleVO routeRuleVO) {
+        return new ResponseEntity<>(routeRuleService.updateRouteRule(routeRuleVO), HttpStatus.OK);
     }
 
     @PostMapping("/check")

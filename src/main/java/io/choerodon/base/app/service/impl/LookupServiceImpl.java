@@ -80,7 +80,12 @@ public class LookupServiceImpl implements LookupService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public LookupDTO update(LookupDTO lookupDTO) {
-        assertHelper.objectVersionNumberNotNull(lookupDTO.getObjectVersionNumber());
+
+        LookupDTO dbLookupDTO = lookupMapper.selectByPrimaryKey(lookupDTO);
+        if (ObjectUtils.isEmpty(dbLookupDTO)) {
+            throw new CommonException("error.lookup.not.exist");
+        }
+        lookupDTO.setObjectVersionNumber(dbLookupDTO.getObjectVersionNumber());
         List<LookupValueDTO> values = lookupDTO.getLookupValues();
         if (lookupMapper.updateByPrimaryKeySelective(lookupDTO) != 1) {
             throw new UpdateException("error.repo.lookup.update");
@@ -93,7 +98,10 @@ public class LookupServiceImpl implements LookupService {
         if (!ObjectUtils.isEmpty(values)) {
             values.forEach(v -> {
                 if (v.getId() == null) {
-                    throw new EmptyParamException("error.lookupValue.id.null");
+                    v.setLookupId(lookupDTO.getId());
+                    if (lookupValueMapper.insertSelective(v) != 1) {
+                        throw new CommonException("error.lookupValue.insert");
+                    }
                 }
                 list.forEach(d -> {
                     if (d.getId().equals(v.getId())) {

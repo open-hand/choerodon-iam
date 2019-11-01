@@ -44,7 +44,7 @@
         flv.display_order
         FROM fd_lookup fl
         LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
-        WHERE fl.code = ${code}
+        WHERE fl.code = #{code}
         ORDER BY flv.DISPLAY_ORDER
     </select>
     <select id="queryByDes" resultMap="lookupWithValues">
@@ -60,7 +60,7 @@
             flv.display_order
         FROM fd_lookup fl
                  LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
-        WHERE fl.description = ${des}
+        WHERE fl.description = #{des}
         ORDER BY flv.DISPLAY_ORDER
     </select>
 
@@ -69,11 +69,11 @@
         <choose>
             <when test="lookupId != null">
                 fd_lookup_value
-                where lookup_id = ${lookupId} and code = ${code}
+                where lookup_id = #{lookupId} and code = #{code}
             </when>
             <otherwise>
                 fd_lookup
-                where code = ${code}
+                where code = #{code}
             </otherwise>
         </choose>
     </select>

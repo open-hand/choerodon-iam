@@ -60,7 +60,7 @@ public class LookupController extends BaseController {
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "删除快码")
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
         lookupService.delete(id);
         return new ResponseEntity(HttpStatus.OK);
@@ -71,7 +71,7 @@ public class LookupController extends BaseController {
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改快码")
-    @PutMapping(value = "/{id}")
+    @PutMapping(value = "/update/{id}")
     public ResponseEntity<LookupDTO> update(@PathVariable Long id,
                                             @RequestBody @Valid LookupDTO lookupDTO) {
         lookupDTO.setId(id);

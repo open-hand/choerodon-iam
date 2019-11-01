@@ -1,10 +1,9 @@
 package io.choerodon.base.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import io.choerodon.mybatis.entity.*;
 
 /**
  * @author bgzyy
@@ -15,13 +14,25 @@ public class LovGridFieldDTO extends BaseDTO {
     @Id
     @GeneratedValue
     private Long id;
+    @NotEmpty(message = "lov.grid.code.empty")
     private String lovCode;
     private Boolean gridFieldDisplayFlag;
+    @NotEmpty(message = "lov.grid.label.empty")
     private String gridFieldLabel;
+    @NotEmpty(message = "lov.grid.name.empty")
     private String gridFieldName;
+    @NotEmpty(message = "lov.grid.order.empty")
     private Double gridFieldOrder;
     private String gridFieldAlign;
     private Double gridFieldWidth;
+    private Boolean gridFieldQueryFlag;
+
+    public LovGridFieldDTO() {
+    }
+
+    public LovGridFieldDTO(@NotEmpty(message = "lov.grid.code.empty") String lovCode) {
+        this.lovCode = lovCode;
+    }
 
     public Long getId() {
         return id;
@@ -85,5 +96,13 @@ public class LovGridFieldDTO extends BaseDTO {
 
     public void setGridFieldWidth(Double gridFieldWidth) {
         this.gridFieldWidth = gridFieldWidth;
+    }
+
+    public Boolean getGridFieldQueryFlag() {
+        return gridFieldQueryFlag;
+    }
+
+    public void setGridFieldQueryFlag(Boolean gridFieldQueryFlag) {
+        this.gridFieldQueryFlag = gridFieldQueryFlag;
     }
 }

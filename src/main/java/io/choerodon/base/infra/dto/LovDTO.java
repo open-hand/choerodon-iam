@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.*;
 import java.util.List;
 
 /**
@@ -14,16 +15,22 @@ import java.util.List;
  */
 @Table(name = "FD_LOV")
 public class LovDTO extends BaseDTO {
-
     @Id
     @GeneratedValue
     private Long id;
+    @NotEmpty(message = "error.lov.code.empty")
     private String code;
+    @NotEmpty(message = "error.lov.description.empty")
     private String description;
+    @NotEmpty(message = "error.lov.level.empty")
     private String resourceLevel;
+    @NotEmpty(message = "error.lov.permission.empty")
     private String permissionCode;
+    @NotEmpty(message = "error.lov.value.empty")
     private String valueField;
+    @NotEmpty(message = "error.lov.text.empty")
     private String textField;
+    @NotEmpty(message = "error.lov.title.empty")
     private String title;
     private Double width;
     private Double height;
@@ -33,6 +40,9 @@ public class LovDTO extends BaseDTO {
     private Boolean treeFlag;
     private String idField;
     private String parentField;
+    private Boolean pageFlag;
+    private Integer pageSize;
+    private Boolean multipleFlag;
 
     @Transient
     private String url;
@@ -201,5 +211,29 @@ public class LovDTO extends BaseDTO {
 
     public void setParentField(String parentField) {
         this.parentField = parentField;
+    }
+
+    public Boolean getPageFlag() {
+        return pageFlag;
+    }
+
+    public void setPageFlag(Boolean pageFlag) {
+        this.pageFlag = pageFlag;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public Boolean getMultipleFlag() {
+        return multipleFlag;
+    }
+
+    public void setMultipleFlag(Boolean multipleFlag) {
+        this.multipleFlag = multipleFlag;
     }
 }

@@ -39,7 +39,6 @@ public class RouteRuleController {
     @Permission(permissionWithin = true)
     public ResponseEntity<PageInfo<RouteRuleVO>> listRouteRules(@SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
                                                                 @RequestParam(value = "code", required = false) String code) {
-        System.out.println("size:" + pageable.getPageSize() + "pageNum:" + pageable.getPageNumber() + "sort:" + pageable.getSort().toString());
         return new ResponseEntity<>(routeRuleService.listRouteRules(pageable, code), HttpStatus.OK);
     }
 

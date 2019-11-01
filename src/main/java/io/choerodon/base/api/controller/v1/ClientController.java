@@ -74,6 +74,12 @@ public class ClientController extends BaseController {
     public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
         return new ResponseEntity<>(clientService.query(organizationId, clientId), HttpStatus.OK);
     }
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "通过source_id查询客户端")
+    @GetMapping(value = "/source/{source_id}")
+    public ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId) {
+        return new ResponseEntity<>(clientService.queryClientBySourceId(organizationId, sourceId), HttpStatus.OK);
+    }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "通过名称查询客户端")

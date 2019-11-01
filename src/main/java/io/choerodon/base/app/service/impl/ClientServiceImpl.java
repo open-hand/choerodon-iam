@@ -43,6 +43,7 @@ public class ClientServiceImpl implements ClientService {
 
     private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
     private static final String SOURCETYPE_INVALID_EXCEPTION = "error.sourceType.invalid";
+    private static final String SOURCE_NOT_FOUND_EXCEPTION = "error.source.not.found";
 
     private OrganizationAssertHelper organizationAssertHelper;
     private ClientAssertHelper clientAssertHelper;
@@ -176,6 +177,18 @@ public class ClientServiceImpl implements ClientService {
         }
         ClientDTO clientDTO = modelMapper.map(clientVO, ClientDTO.class);
         return create(organizationId,clientDTO);
+    }
+
+    @Override
+    public ClientDTO queryClientBySourceId(Long organizationId, Long sourceId) {
+        ClientDTO record = new ClientDTO();
+        record.setOrganizationId(organizationId);
+        record.setSourceId(sourceId);
+        ClientDTO clientDTO = clientMapper.selectOne(record);
+        if (clientDTO == null) {
+            throw new CommonException(SOURCE_NOT_FOUND_EXCEPTION);
+        }
+        return clientDTO;
     }
 
 

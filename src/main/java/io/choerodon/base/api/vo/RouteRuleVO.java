@@ -3,6 +3,7 @@ package io.choerodon.base.api.vo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.choerodon.base.api.validator.Check;
 import io.choerodon.base.api.validator.Insert;
+import io.choerodon.base.api.validator.Update;
 import io.choerodon.base.infra.dto.RouteMemberRuleDTO;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -24,14 +25,14 @@ import static io.choerodon.base.infra.utils.RegularExpression.ROUTE_RULE_ALL_SYM
  */
 public class RouteRuleVO {
     @ApiModelProperty(value = "主键ID")
-    @NotNull(message = "error.route.rule.update.id.can.not.be.null", groups = {Check.class})
+    @NotNull(message = "error.route.rule.update.id.can.not.be.null", groups = {Update.class})
     private Long id;
     @ApiModelProperty(value = "路由编码/必填")
-    @NotEmpty(message = "error.route.rule.code.can.not.be.empty", groups = {Insert.class})
-    @Pattern(regexp = ALPHANUMERIC_AND_SPACE_SYMBOLS,message = "error.route.rule.code.format.incorrect", groups = {Insert.class})
+    @NotEmpty(message = "error.route.rule.code.can.not.be.empty", groups = {Insert.class, Check.class})
+    @Pattern(regexp = ALPHANUMERIC_AND_SPACE_SYMBOLS,message = "error.route.rule.code.format.incorrect", groups = {Insert.class, Check.class})
     private String code;
     @ApiModelProperty(value = "路由描述/选填")
-    @Pattern(regexp = ROUTE_RULE_ALL_SYMBOLS_200, message = "error.route.rule.description.format.incorrect", groups = {Insert.class, Check.class})
+    @Pattern(regexp = ROUTE_RULE_ALL_SYMBOLS_200, message = "error.route.rule.description.format.incorrect", groups = {Insert.class, Update.class})
     private String description;
 
     @ApiModelProperty(value = "该路由下配置的用户信息")

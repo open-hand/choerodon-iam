@@ -17,10 +17,11 @@ public interface RouteRuleService {
     /**
      * 分页查询路由规则信息
      *
+     * @param pageable        分页信息
      * @param code            路由编码
      * @return                路由信息列表
      */
-    List<RouteRuleVO> listRouteRules(String code);
+    PageInfo<RouteRuleVO> listRouteRules(Pageable pageable, String code);
 
     /**
      * 根据ID查询路由的详细信息
@@ -52,7 +53,7 @@ public interface RouteRuleService {
      * @param routeRuleVO    更新路由信息
      * @return                更新完成路由规则信息
      */
-    RouteRuleVO updateRouteRule(RouteRuleVO routeRuleVO, Long ObjectVersionNumber);
+    RouteRuleVO updateRouteRule(RouteRuleVO routeRuleVO, Long objectVersionNumber);
 
     /**
      * 路由code重复校验

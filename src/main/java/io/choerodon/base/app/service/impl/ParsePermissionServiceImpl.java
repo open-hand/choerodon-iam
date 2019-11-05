@@ -1,19 +1,7 @@
 package io.choerodon.base.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-
 import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.base.app.service.UploadHistoryService;
@@ -29,6 +17,25 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.eureka.event.EurekaEventPayload;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhipeng.zuo
@@ -233,6 +240,11 @@ public class ParsePermissionServiceImpl implements UploadHistoryService.ParsePer
                 deleteExample.setServiceCode(service);
                 deleteExample.setPermissionType("api");
                 permissionMapper.delete(deleteExample);
+                RolePermissionDTO rolePermissionDTO = new RolePermissionDTO();
+                rolePermissionDTO.setPermissionCode(code);
+                if (!CollectionUtils.isEmpty(rolePermissionMapper.select(rolePermissionDTO)) && rolePermissionMapper.delete(rolePermissionDTO) < 1) {
+                    throw new CommonException("error.role.permission.delete");
+                }
                 logger.debug("Delete deprecated permission {} on {}.", code, service);
             }
         });

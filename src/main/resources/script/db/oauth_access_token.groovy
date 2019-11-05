@@ -34,4 +34,9 @@ databaseChangeLog(logicalFilePath: 'oauth_access_token.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-oauth-access-token-add-remark') {
         setTableRemarks(tableName:"OAUTH_ACCESS_TOKEN",remarks: "oauth认证access token表")
     }
+
+    changeSet(author: 'wkj', id: '2019-11-05-oauth-access-token-add-constraint') {
+        addUniqueConstraint(tableName: 'OAUTH_ACCESS_TOKEN', columnNames: 'AUTHENTICATION_ID', constraintName: 'UK_OAUTH_ACCESS_TOKEN_U1')
+    }
+
 }

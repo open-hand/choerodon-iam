@@ -43,6 +43,7 @@ public class RouteRuleVO {
     private Long objectVersionNumber;
     private Date creationDate;
     private Long userNumber;
+    private Long hostNumber;
 
     // 配置的用户、主机信息
     private Long[] userIds;
@@ -126,6 +127,15 @@ public class RouteRuleVO {
 
     public RouteRuleVO setHostIds(Long[] hostIds) {
         this.hostIds = hostIds;
+        return this;
+    }
+
+    public Long getHostNumber() {
+        return hostNumber;
+    }
+
+    public RouteRuleVO setHostNumber(Long hostNumber) {
+        this.hostNumber = hostNumber;
         return this;
     }
 }

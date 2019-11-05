@@ -1,25 +1,8 @@
 package io.choerodon.base.app.service.impl;
 
-import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
-import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -42,6 +25,22 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -192,6 +191,11 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return projectMapper.selectByIds(ids);
         }
+    }
+
+    @Override
+    public List<Long> getProListByName(String name) {
+        return projectMapper.getProListByName(name);
     }
 
     @Override

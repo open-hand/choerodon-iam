@@ -1,28 +1,34 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.app.service.ProjectService;
+import io.choerodon.base.infra.dto.ProjectDTO;
+import io.choerodon.base.infra.dto.UserDTO;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Set;
-
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.base.app.service.ProjectService;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.base.infra.dto.ProjectDTO;
-import io.choerodon.base.infra.dto.UserDTO;
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import org.springframework.data.web.SortDefault;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author flyleft
@@ -117,5 +123,11 @@ public class ProjectController extends BaseController {
     @GetMapping(value = "/check/{code}")
     public ResponseEntity<Boolean> checkProjCode(@PathVariable(name = "code") String code) {
         return new ResponseEntity<>(projectService.checkProjCode(code), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @GetMapping(value = "/list/by_name")
+    public ResponseEntity<List<Long>> getProListByName(@RequestParam(required = false) String name) {
+        return new ResponseEntity<>(projectService.getProListByName(name), HttpStatus.OK);
     }
 }

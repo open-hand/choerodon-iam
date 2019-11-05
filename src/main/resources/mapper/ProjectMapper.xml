@@ -504,4 +504,13 @@
             </if>
         </where>
     </select>
+
+    <select id="getProListByName" resultType="java.lang.Long">
+        select fp.id
+        from fd_project fp
+        WHERE 1=1
+        <if test="name != null">
+            AND fp.name LIKE concat(concat('%',#{name}),'%')
+        </if>
+    </select>
 </mapper>

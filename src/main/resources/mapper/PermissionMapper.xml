@@ -49,7 +49,7 @@
     </select>
 
     <select id="checkPermission" resultType="String">
-        SELECT DISTINCT
+        SELECT
         p.CODE
         FROM
         iam_permission p

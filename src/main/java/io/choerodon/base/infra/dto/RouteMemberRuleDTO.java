@@ -27,7 +27,10 @@ public class RouteMemberRuleDTO extends BaseDTO {
     private String routeRuleCode;
 
     @Transient
-    private String userName;
+    private String realName;
+
+    @Transient
+    private String loginName;
 
     @Transient
     private String imageUrl;
@@ -62,12 +65,21 @@ public class RouteMemberRuleDTO extends BaseDTO {
         return this;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getRealName() {
+        return realName;
     }
 
-    public RouteMemberRuleDTO setUserName(String userName) {
-        this.userName = userName;
+    public RouteMemberRuleDTO setRealName(String realName) {
+        this.realName = realName;
+        return this;
+    }
+
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public RouteMemberRuleDTO setLoginName(String loginName) {
+        this.loginName = loginName;
         return this;
     }
 

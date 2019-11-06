@@ -14,7 +14,7 @@ import static io.choerodon.base.infra.template.MarketAppNoticePmTemplate.BUSINES
  */
 
 @NotifyBusinessType(code = BUSINESS_TYPE_CODE, name = "应用市场通知", level = Level.PROJECT,
-        description = "应用市场通知", isAllowConfig = false, isManualRetry = true)
+        description = "应用市场通知", isAllowConfig = false, isManualRetry = true,categoryCode = "app-market-notice")
 @Component
 public class MarketAppNoticePmTemplate implements PmTemplate {
     public static final String BUSINESS_TYPE_CODE = "marketApplicationNotice-base";

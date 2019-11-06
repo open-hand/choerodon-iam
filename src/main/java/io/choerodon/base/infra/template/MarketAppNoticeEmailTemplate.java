@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import static io.choerodon.base.infra.template.MarketAppNoticeEmailTemplate.BUSINESS_TYPE_CODE;
 
 
-@NotifyBusinessType(code = BUSINESS_TYPE_CODE, name = "应用市场通知", level = Level.PROJECT,
-        description = "应用市场通知", isAllowConfig = false, isManualRetry = true)
+@NotifyBusinessType(code = BUSINESS_TYPE_CODE, name = "base应用市场通知", level = Level.PROJECT,
+        description = "base应用市场通知", isAllowConfig = false, isManualRetry = true,categoryCode = "app-market-notice")
 @Component
 public class MarketAppNoticeEmailTemplate implements EmailTemplate {
     public static final String BUSINESS_TYPE_CODE = "marketApplicationNotice-base";

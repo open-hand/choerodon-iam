@@ -83,7 +83,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")
     public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
-                                              @RequestBody UserDTO userDTO) {
+                                              @RequestBody @Validated({UserValidator.UserGroup.class}) UserDTO userDTO) {
         userDTO.setId(id);
         if (userDTO.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.null");

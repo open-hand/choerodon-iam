@@ -45,7 +45,7 @@ public class RouteRuleController {
         return new ResponseEntity<>(routeRuleService.queryRouteRuleDetailById(id), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/")
+    @PostMapping
     @ApiOperation(value = "添加路由规则")
     @Permission(permissionWithin = true)
     public ResponseEntity<RouteRuleVO> createRouteRule(@RequestBody @Validated({Insert.class}) RouteRuleVO routeRuleVO) {

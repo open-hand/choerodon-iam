@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -47,10 +48,6 @@ import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
-import io.choerodon.base.infra.mapper.MemberRoleMapper;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
-import io.choerodon.base.infra.mapper.ProjectMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
 import io.choerodon.base.infra.utils.ImageUtils;
 import io.choerodon.base.infra.utils.PageUtils;
 import io.choerodon.base.infra.utils.ParamUtils;
@@ -96,6 +93,7 @@ public class UserServiceImpl implements UserService {
     private final ObjectMapper mapper = new ObjectMapper();
     private NotifyFeignClient notifyFeignClient;
     private UserMapper userMapper;
+    private RouteMemberRuleMapper routeMemberRuleMapper;
 
     private UserAssertHelper userAssertHelper;
 
@@ -129,7 +127,8 @@ public class UserServiceImpl implements UserService {
                            ProjectAssertHelper projectAssertHelper,
                            RoleAssertHelper roleAssertHelper,
                            RoleMemberService roleMemberService,
-                           TransactionalProducer producer) {
+                           TransactionalProducer producer,
+                           RouteMemberRuleMapper routeMemberRuleMapper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.sagaClient = sagaClient;
@@ -147,6 +146,7 @@ public class UserServiceImpl implements UserService {
         this.roleAssertHelper = roleAssertHelper;
         this.roleMemberService = roleMemberService;
         this.producer = producer;
+        this.routeMemberRuleMapper = routeMemberRuleMapper;
     }
 
     @Override
@@ -1072,5 +1072,14 @@ public class UserServiceImpl implements UserService {
         organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
                 .stream().map(p -> OrganizationProjectDTO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
         return organizationProjectDTO;
+    }
+
+    @Override
+    public List<UserDTO> listEnableUsersByRouteRuleCode(String userName) {
+        List<Long> userIds = new ArrayList<>();
+        List<UserDTO> userDTOS = listEnableUsersByName(ResourceLevel.SITE.value(), 0L, userName);
+        routeMemberRuleMapper.selectAll().parallelStream().forEach(v -> userIds.add(v.getUserId()));
+
+        return userDTOS.parallelStream().filter(v -> !userIds.contains(v.getId())).collect(Collectors.toList());
     }
 }

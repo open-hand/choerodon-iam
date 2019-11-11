@@ -10,3 +10,4 @@
 
 - 删除权限时级联删除角色权限
 - 删除多余依赖
+- 在oauth_access_token表添加了索引，修改了permission表查询

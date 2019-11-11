@@ -1,6 +1,5 @@
 package io.choerodon.base.api.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.choerodon.base.api.validator.Check;
 import io.choerodon.base.api.validator.Insert;
 import io.choerodon.base.api.validator.Update;

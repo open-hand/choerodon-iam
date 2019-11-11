@@ -1,12 +1,10 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.api.validator.Check;
 import io.choerodon.base.api.validator.Insert;
 import io.choerodon.base.api.validator.Update;
 import io.choerodon.base.api.vo.RouteRuleVO;
 import io.choerodon.base.app.service.RouteRuleService;
-import io.choerodon.base.infra.dto.RouteRuleDTO;
 import io.choerodon.core.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;

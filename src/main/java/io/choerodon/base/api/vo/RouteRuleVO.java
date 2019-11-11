@@ -1,6 +1,5 @@
 package io.choerodon.base.api.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.choerodon.base.api.validator.Check;
 import io.choerodon.base.api.validator.Insert;
 import io.choerodon.base.api.validator.Update;
@@ -25,7 +24,6 @@ import static io.choerodon.base.infra.utils.RegularExpression.ROUTE_RULE_ALL_SYM
  */
 public class RouteRuleVO {
     @ApiModelProperty(value = "主键ID")
-    @NotNull(message = "error.route.rule.update.id.can.not.be.null", groups = {Update.class})
     private Long id;
     @ApiModelProperty(value = "路由编码/必填")
     @NotEmpty(message = "error.route.rule.code.can.not.be.empty", groups = {Insert.class, Check.class})

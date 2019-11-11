@@ -235,4 +235,6 @@ public interface UserService {
     List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled);
 
     OrganizationProjectDTO queryOrganizationProjectByUserId(Long userId);
+
+    List<UserDTO> listEnableUsersByRouteRuleCode(String userName);
 }

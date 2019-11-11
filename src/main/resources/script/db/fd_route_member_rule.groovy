@@ -15,6 +15,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_route_member_rule.groovy') {
             }
             column(name: 'USER_ID', type: 'BIGINT UNSIGNED', remarks: '用户ID') {
                 constraints(nullable: false)
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_ROUTE_MEMBER_RULE_U1')
             }
             column(name: 'ROUTE_RULE_CODE', type: 'VARCHAR(64)', remarks: '路由编码') {
                 constraints(nullable: false)

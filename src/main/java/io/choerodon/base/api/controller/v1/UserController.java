@@ -372,4 +372,11 @@ public class UserController extends BaseController {
     public ResponseEntity<OrganizationProjectDTO> queryOrganizationProjectByUserId(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userService.queryOrganizationProjectByUserId(id), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/enable_user/route_rule_unused")
+    @ApiOperation(value = "查询可用于路由配置的用户信息")
+    @Permission(type = ResourceType.SITE)
+    public ResponseEntity<List<UserDTO>> listEnableUsersByRouteRuleCode(@RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userService.listEnableUsersByRouteRuleCode(userName), HttpStatus.OK);
+    }
 }

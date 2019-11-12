@@ -1,16 +1,16 @@
 package io.choerodon.base.infra.dto;
 
-import io.choerodon.mybatis.annotation.MultiLanguage;
-import io.choerodon.mybatis.annotation.MultiLanguageField;
-import io.choerodon.mybatis.entity.BaseDTO;
-
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.*;
 import javax.persistence.*;
 import javax.validation.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-import java.util.List;
+import javax.validation.constraints.*;
+
+import io.choerodon.mybatis.annotation.*;
+import io.choerodon.mybatis.entity.*;
+
+import static io.choerodon.base.infra.utils.RegularExpression.*;
 
 /**
  * @author superlee
@@ -28,6 +28,7 @@ public class LookupDTO extends BaseDTO {
     @ApiModelProperty(value = "快码code")
     @NotEmpty(message = "error.lookup.code.empty")
     @Size(max = 32, min = 1, message = "error.code.length")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.lookup.code.format.incorrect")
     private String code;
 
     @MultiLanguageField

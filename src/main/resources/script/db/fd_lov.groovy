@@ -89,8 +89,26 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lov.groovy') {
 
     changeSet(author: 'xausky', id: '2019-09-17-add-query-field-default-value'){
         addColumn(tableName: 'FD_LOV_QUERY_FIELD'){
-            column(name: "QUERY_FIELD_PARAM_TYPE", type: "varchar(16)", remarks: "查询字段参数类型") //Query, Body
+            column(name: "QUERY_FIELD_PARAM_TYPE", type: "varchar(16)", remarks: "查询字段参数类型") //Query, PATH
             column(name: "QUERY_FIELD_DEFAULT", type: "varchar(255)", remarks: "查询字段默认值")
         }
+    }
+
+    changeSet(author: 'bgzyy', id: '2019-10-31-lov-add-column') {
+        addColumn(tableName: 'FD_LOV') {
+            column(name: "PAGE_FLAG", type: "TINYINT UNSIGNED", defaultValue: "1", remarks: "是否分页")
+            column(name: "PAGE_SIZE", type: "INT UNSIGNED", defaultValue: "10", remarks: "每页默认记录数")
+            column(name: "MULTIPLE_FLAG", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: "是否多选")
+        }
+    }
+
+    changeSet(author: 'bgzyy', id: '2019-10-31-lov-grid-add-column') {
+        addColumn(tableName: 'FD_LOV_GRID_FIELD') {
+            column(name: "GRID_FIELD_QUERY_FLAG", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: "是否为查询字段")
+        }
+    }
+
+    changeSet(author: 'bgzyy', id: '2019-10-31-lov-query-rename-column') {
+        renameColumn(tableName: 'FD_LOV_QUERY_FIELD', oldColumnName: 'QUERY_FIELD_LOOKUP_TYPE', newColumnName: 'QUERY_FIELD_LOOKUP_CODE', columnDataType: 'varchar(80)')
     }
 }

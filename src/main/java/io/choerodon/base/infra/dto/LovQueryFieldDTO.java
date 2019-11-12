@@ -1,10 +1,15 @@
 package io.choerodon.base.infra.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.*;
+
+import static io.choerodon.base.infra.utils.RegularExpression.*;
 
 /**
  * @author bgzyy
@@ -15,18 +20,42 @@ public class LovQueryFieldDTO extends BaseDTO {
     @Id
     @GeneratedValue
     private Long id;
+    @NotEmpty(message = "lov.query.code.empty")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.lov.code.format.incorrect")
     private String lovCode;
+    @ApiModelProperty(value = "是否显示")
     private Boolean queryFieldDisplayFlag;
+    @ApiModelProperty(value = "是否必输")
     private Boolean queryFieldRequiredFlag;
+    @ApiModelProperty(value = "组件 label")
     private String queryFieldLabel;
+    @ApiModelProperty(value = "1")
+    @NotEmpty(message = "lov.query.name.empty")
     private String queryFieldName;
+    @ApiModelProperty(value = "组件宽度")
     private Double queryFieldWidth;
+    @ApiModelProperty(value = "组件类型")
+    @NotEmpty(message = "lov.query.type.empty")
     private String queryFieldType;
+    @ApiModelProperty(value = "组件默认值")
     private String queryFieldDefault;
+    @ApiModelProperty(value = "参数类型")
     private String queryFieldParamType;
-    private String queryFieldLookupType;
+    @ApiModelProperty(value = "paramType 为 lookup 时该项必填")
+    @NotEmpty(message = "lov.query.lookup.empty")
+    private String queryFieldLookupCode;
+    @ApiModelProperty(value = "paramType 为 lov 时该项必填")
+    @NotEmpty(message = "lov.query.lov.empty")
     private String queryFieldLovCode;
+    @ApiModelProperty(value = "组件排序号")
     private Double queryFieldOrder;
+
+    public LovQueryFieldDTO() {
+    }
+
+    public LovQueryFieldDTO(@NotEmpty(message = "lov.query.code.empty") String lovCode) {
+        this.lovCode = lovCode;
+    }
 
     public Long getId() {
         return id;
@@ -84,12 +113,12 @@ public class LovQueryFieldDTO extends BaseDTO {
         this.queryFieldType = queryFieldType;
     }
 
-    public String getQueryFieldLookupType() {
-        return queryFieldLookupType;
+    public String getQueryFieldLookupCode() {
+        return queryFieldLookupCode;
     }
 
-    public void setQueryFieldLookupType(String queryFieldLookupType) {
-        this.queryFieldLookupType = queryFieldLookupType;
+    public void setQueryFieldLookupCode(String queryFieldLookupCode) {
+        this.queryFieldLookupCode = queryFieldLookupCode;
     }
 
     public String getQueryFieldLovCode() {

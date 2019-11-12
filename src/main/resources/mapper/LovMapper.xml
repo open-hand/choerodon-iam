@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.LovMapper">
+
+    <select id="selectLovList" resultType="io.choerodon.base.infra.dto.LovDTO">
+        SELECT *
+        FROM fd_lov
+        WHERE 1 = 1
+        <if test="code != null">
+            AND code LIKE concat(concat('%',#{code}),'%')
+        </if>
+        <if test="description != null">
+            AND description LIKE concat(concat('%',#{description}),'%')
+        </if>
+        <if test="level != null">
+            AND resource_level LIKE concat(concat('%',#{level}),'%')
+        </if>
+        <if test="param != null">
+            AND (
+            code LIKE concat(concat('%',#{code}),'%') OR
+            description LIKE concat(concat('%',#{description}),'%') OR
+            resource_level LIKE concat(concat('%',#{level}),'%')
+            )
+        </if>
+    </select>
+</mapper>

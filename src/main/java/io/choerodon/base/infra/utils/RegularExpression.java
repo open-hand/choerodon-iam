@@ -56,4 +56,9 @@ public final class RegularExpression {
      * 路由描述正则校验 任意字符 限制200长度
      */
     public static final String ROUTE_RULE_ALL_SYMBOLS_200 = "^.{0,200}$";
+
+    /**
+     * code 校验
+     */
+    public static final String CODE_REGULAR_EXPRESSION = "^[a-zA-Z][a-zA-Z0-9-_.]*$";
 }

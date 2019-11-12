@@ -1,6 +1,8 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.validator.Insert;
+import io.choerodon.base.api.validator.Update;
 import io.choerodon.base.app.service.PromptService;
 import io.choerodon.base.infra.dto.PromptDTO;
 import io.choerodon.core.annotation.Permission;
@@ -38,7 +40,7 @@ public class PromptController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "创建多语言映射")
     @PostMapping
-    public ResponseEntity<PromptDTO> create(@RequestBody @Validated PromptDTO promptDTO) {
+    public ResponseEntity<PromptDTO> create(@RequestBody @Validated({Insert.class}) PromptDTO promptDTO) {
         return new ResponseEntity<>(promptService.create(promptDTO), HttpStatus.OK);
     }
 
@@ -52,7 +54,7 @@ public class PromptController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改多语言映射")
     @PutMapping(value = "/{id}")
-    public ResponseEntity<PromptDTO> update(@PathVariable("id") Long id, @RequestBody PromptDTO promptDTO) {
+    public ResponseEntity<PromptDTO> update(@PathVariable("id") Long id, @RequestBody @Validated({Update.class}) PromptDTO promptDTO) {
         return new ResponseEntity<>(promptService.update(id, promptDTO), HttpStatus.OK);
     }
 
@@ -60,17 +62,25 @@ public class PromptController {
     /**
      * 分页查询多语言映射表
      *
-     * @param promptDTO
-     * @return PromptDTO
+     * @param promptCode
+     * @param lang
+     * @param serviceCode
+     * @param description
+     * @param pageable
+     * @param params
+     * @return
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询多语言映射")
-    @PostMapping("/search")
+    @GetMapping
     @CustomPageRequest
-    public ResponseEntity<PageInfo<PromptDTO>> pagingQueryByOptions(@RequestBody PromptDTO promptDTO,
-                                                                   @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                   @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(promptService.queryByOptions(promptDTO, pageable, param), HttpStatus.OK);
+    public ResponseEntity<PageInfo<PromptDTO>> pagingQueryByOptions(@RequestParam(required = false) String promptCode,
+                                                                    @RequestParam(required = false) String lang,
+                                                                    @RequestParam(required = false) String serviceCode,
+                                                                    @RequestParam(required = false) String description,
+                                                                    @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                    @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(promptService.queryByOptions(promptCode, lang, serviceCode, description, pageable, params), HttpStatus.OK);
     }
 
     /**
@@ -96,6 +106,20 @@ public class PromptController {
     @GetMapping("/{id}")
     public ResponseEntity<PromptDTO> queryById(@PathVariable("id") Long id) {
         return new ResponseEntity(promptService.queryById(id), HttpStatus.OK);
+    }
+
+
+    /**
+     * 根据编码查询多语言映射关系
+     *
+     * @param code
+     */
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "查询编码对应的多语言映射关系")
+    @GetMapping("/code")
+    public ResponseEntity<PromptDTO> queryByCode(@RequestParam("code") String code,
+                                                 @RequestParam(value = "lang", required = false) String lang) {
+        return new ResponseEntity(promptService.queryByCode(code, lang), HttpStatus.OK);
     }
 
 }

@@ -6,8 +6,15 @@
 
 ## 后端
 
+### 新增
+
+- `OAUTH_ACCESS_TOKEN` 表添加了关于列 `AUTHENTICATION_ID` 的索引
+
 ### 修改
 
-- 删除权限时级联删除角色权限
-- 删除多余依赖
-- 在oauth_access_token表添加了索引，修改了permission表查询
+- 初始化权限，删除权限时级联删除角色权限
+- 优化了`CHECKPERMISSION` 的查询
+
+### 移除
+
+- 移除了依赖`low-code-sdk`

@@ -5,7 +5,7 @@ package script.db
  * 用户_路由规则表 (id，user_id，route_rule_code)
  */
 databaseChangeLog(logicalFilePath: 'script/db/fd_route_member_rule.groovy') {
-    changeSet(author: 'relaxingchu@qq.com', id: '2019-10-25-add_table_fd_route_member_rule') {
+    changeSet(author: 'relaxingchu@qq.com', id: '2019-10-25-add-table-fd-route-member-rule') {
         if (helper.dbType().isSupportSequence()) {
             createSequence(sequenceName: 'FD_ROUTE_MEMBER_RULE_S', startValue: "1")
         }

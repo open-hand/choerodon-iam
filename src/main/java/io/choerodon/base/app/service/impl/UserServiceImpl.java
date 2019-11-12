@@ -1076,10 +1076,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> listEnableUsersByRouteRuleCode(String userName) {
-        List<Long> userIds = new ArrayList<>();
         List<UserDTO> userDTOS = listEnableUsersByName(ResourceLevel.SITE.value(), 0L, userName);
-        routeMemberRuleMapper.selectAll().parallelStream().forEach(v -> userIds.add(v.getUserId()));
+        List<Long> userIds = new ArrayList<>();
+        routeMemberRuleMapper.selectAll().forEach(v -> userIds.add(v.getUserId()));
 
-        return userDTOS.parallelStream().filter(v -> !userIds.contains(v.getId())).collect(Collectors.toList());
+        return userDTOS.stream().filter(v -> !userIds.contains(v.getId())).collect(Collectors.toList());
     }
 }

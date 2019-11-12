@@ -19,7 +19,7 @@ public interface LookupService {
 
     LookupDTO update(LookupDTO lookupDTO);
 
-    LookupDTO queryByDes(String des);
+    LookupDTO queryById(Long id);
 
     LookupDTO queryByCode(String code);
 

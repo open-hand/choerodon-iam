@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.*;
 
+import static io.choerodon.base.infra.utils.RegularExpression.*;
+
 /**
  * @author bgzyy
  * @since 2019/9/9
@@ -19,6 +21,7 @@ public class LovQueryFieldDTO extends BaseDTO {
     @GeneratedValue
     private Long id;
     @NotEmpty(message = "lov.query.code.empty")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.lov.code.format.incorrect")
     private String lovCode;
     @ApiModelProperty(value = "是否显示")
     private Boolean queryFieldDisplayFlag;

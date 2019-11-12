@@ -33,21 +33,22 @@
 
     <select id="queryByCode" resultMap="lookupWithValues">
         SELECT
-        fl.id,
-        fl.code,
-        fl.description,
-        fl.object_version_number,
-        flv.id AS value_id,
-        flv.lookup_id,
-        flv.code AS value_code,
-        flv.description AS value_description,
-        flv.display_order
+            fl.id,
+            fl.code,
+            fl.description,
+            fl.object_version_number,
+            flv.id AS value_id,
+            flv.lookup_id,
+            flv.code AS value_code,
+            flv.description AS value_description,
+            flv.display_order
         FROM fd_lookup fl
-        LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
+                 LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
         WHERE fl.code = #{code}
         ORDER BY flv.DISPLAY_ORDER
     </select>
-    <select id="queryByDes" resultMap="lookupWithValues">
+
+    <select id="queryById" resultMap="lookupWithValues">
         SELECT
             fl.id,
             fl.code,
@@ -60,20 +61,20 @@
             flv.display_order
         FROM fd_lookup fl
                  LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
-        WHERE fl.description = #{des}
+        WHERE fl.id = #{id}
         ORDER BY flv.DISPLAY_ORDER
     </select>
 
-    <select id="check" resultType="java.lang.Long">
+    <select id="check" databaseId="mysql" resultType="java.lang.Long">
         select count(*) from
         <choose>
             <when test="lookupId != null">
                 fd_lookup_value
-                where lookup_id = #{lookupId} and code = #{code}
+                where lookup_id = #{lookupId} and BINARY code = #{code}
             </when>
             <otherwise>
                 fd_lookup
-                where code = #{code}
+                where BINARY code = #{code}
             </otherwise>
         </choose>
     </select>

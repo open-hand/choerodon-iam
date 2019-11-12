@@ -1,28 +1,21 @@
 package io.choerodon.base.app.service.impl;
 
-import io.choerodon.base.api.validator.*;
-import io.choerodon.base.app.service.LovService;
-import io.choerodon.base.infra.asserts.*;
-import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.enums.*;
-import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.*;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.mybatis.entity.*;
-
-import com.github.pagehelper.ISelect;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+
+import io.choerodon.base.api.validator.*;
+import io.choerodon.base.app.service.*;
+import io.choerodon.base.infra.asserts.*;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.core.exception.*;
 
 @Service
 public class LovServiceImpl implements LovService {
@@ -66,7 +59,17 @@ public class LovServiceImpl implements LovService {
         }
         LovGridFieldDTO gridExample = new LovGridFieldDTO();
         gridExample.setLovCode(result.getCode());
-        result.setGridFields(lovGridFieldMapper.select(gridExample));
+        List<LovGridFieldDTO> gridFieldDTOList = lovGridFieldMapper.select(gridExample);
+        Collections.sort(gridFieldDTOList, (o1, o2) -> {
+            Double diff = o1.getGridFieldOrder() - o2.getGridFieldOrder();
+            if (diff > 0) {
+                return -1;
+            } else if (diff < 0) {
+                return 1;
+            }
+            return 0;
+        });
+        result.setGridFields(gridFieldDTOList);
         LovQueryFieldDTO queryExample = new LovQueryFieldDTO();
         queryExample.setLovCode(result.getCode());
         result.setQueryFields(lovQueryFieldMapper.select(queryExample));
@@ -111,11 +114,8 @@ public class LovServiceImpl implements LovService {
     }
 
     @Override
-    public PageInfo<PermissionDTO> queryApiByLevel(Pageable pageable, String level) {
-        PermissionDTO example = new PermissionDTO();
-        example.setResourceLevel(level);
-        example.setPermissionType(PERMISSION_TYPE);
-        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> permissionMapper.select(example));
+    public PageInfo<List<PermissionDTO>> queryApiByLevel(Pageable pageable, String level, String params) {
+        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> permissionMapper.queryByLevelAndCode(level, params));
     }
 
     @Override
@@ -131,7 +131,6 @@ public class LovServiceImpl implements LovService {
         List<LovQueryFieldDTO> queryFieldDTOS = lovDTO.getQueryFields();
 //        数据库存储的值
         List<LovGridFieldDTO> dbGridFieldDTOS = lovGridFieldMapper.select(new LovGridFieldDTO(lovDTO.getCode()));
-        List<LovQueryFieldDTO> dbQueryFieldDTOS = lovQueryFieldMapper.select(new LovQueryFieldDTO(lovDTO.getCode()));
 
         lovDTO.setId(id);
         LovDTO dbLovDTO = lovMapper.selectByPrimaryKey(lovDTO);
@@ -148,7 +147,7 @@ public class LovServiceImpl implements LovService {
         if (!ObjectUtils.isEmpty(gridFieldDTOS)) {
             for (LovGridFieldDTO lovGridFieldDTO : gridFieldDTOS) {
 //                如果 id 为 null 则插入
-                if (lovGridFieldDTO.getId() == null) {
+                if (lovGridFieldDTO.getId() == null && "add".equals(lovGridFieldDTO.get__status())) {
                     LovValidator.checkGridEmpty(lovGridFieldDTO, queryFieldDTOS);
                     lovGridFieldDTO.setLovCode(lovDTO.getCode());
                     if (lovGridFieldMapper.insertSelective(lovGridFieldDTO) != 1) {
@@ -156,13 +155,33 @@ public class LovServiceImpl implements LovService {
                     }
                 }
 //                如果是否为查询字段为 false，则删除 fd_query_field 对应的数据
-                if (BooleanUtils.isFalse(lovGridFieldDTO.getGridFieldQueryFlag())) {
-                    if (lovQueryFieldMapper.delete(new LovQueryFieldDTO(lovDTO.getCode())) != 1) {
-                        throw new CommonException("error.query.delete");
-                    }
-                }
+
                 for (LovGridFieldDTO dbGridFieldDTO : dbGridFieldDTOS) {
-                    if (dbGridFieldDTO.getId().equals(lovGridFieldDTO.getId())) {
+                    Boolean isDelete = false;
+
+//                    有 id，且 __status 为 delete 时，删除 grid 和 query 对应数据
+                    if (dbGridFieldDTO.getId().equals(lovGridFieldDTO.getId()) && "delete".equals(lovGridFieldDTO.get__status())) {
+                        LovQueryFieldDTO queryFieldDTO = new LovQueryFieldDTO();
+                        queryFieldDTO.setLovCode(lovDTO.getCode());
+                        queryFieldDTO.setQueryFieldName(dbGridFieldDTO.getGridFieldName());
+                        if (lovGridFieldMapper.deleteByPrimaryKey(dbGridFieldDTO.getId()) != 1) {
+                            throw new CommonException("error.grid.delete");
+                        }
+
+                        lovQueryFieldMapper.delete(queryFieldDTO);
+//                        表示已经删除了 query 中的数据
+                        isDelete = true;
+                    }
+
+                    if (!isDelete) {
+                        if (BooleanUtils.isFalse(lovGridFieldDTO.getGridFieldQueryFlag())) {
+                            LovQueryFieldDTO queryFieldDTO = new LovQueryFieldDTO();
+                            queryFieldDTO.setLovCode(lovDTO.getCode());
+                            queryFieldDTO.setQueryFieldName(lovGridFieldDTO.getGridFieldName());
+                            lovQueryFieldMapper.delete(queryFieldDTO);
+                        }
+                    }
+                    if (dbGridFieldDTO.getId().equals(lovGridFieldDTO.getId()) && "update".equals(lovGridFieldDTO.get__status())) {
                         dbGridFieldDTO.setGridFieldAlign(lovGridFieldDTO.getGridFieldAlign());
                         dbGridFieldDTO.setGridFieldDisplayFlag(lovGridFieldDTO.getGridFieldDisplayFlag());
                         dbGridFieldDTO.setGridFieldLabel(lovGridFieldDTO.getGridFieldLabel());
@@ -177,7 +196,8 @@ public class LovServiceImpl implements LovService {
                 }
             }
         }
-
+//        更新 fd_grid_field 时，query_flag 可能被更新为 false，从而会删 fd_query_field 表数据，所以在此处获取数据库中的数据
+        List<LovQueryFieldDTO> dbQueryFieldDTOS = lovQueryFieldMapper.select(new LovQueryFieldDTO(lovDTO.getCode()));
 //        更新 fd_query_field
         if (!ObjectUtils.isEmpty(queryFieldDTOS)) {
             for (LovQueryFieldDTO lovQueryFieldDTO : queryFieldDTOS) {
@@ -219,12 +239,8 @@ public class LovServiceImpl implements LovService {
             throw new CommonException("error.lov.delete");
         }
 
-        if (lovGridFieldMapper.delete(new LovGridFieldDTO(lovDTO.getCode())) != 1) {
-            throw new CommonException("error.grid.delete");
-        }
+        lovGridFieldMapper.delete(new LovGridFieldDTO(lovDTO.getCode()));
 
-        if (lovQueryFieldMapper.delete(new LovQueryFieldDTO(lovDTO.getCode())) != 1) {
-            throw new CommonException("error.query.delete");
-        }
+        lovQueryFieldMapper.delete(new LovQueryFieldDTO(lovDTO.getCode()));
     }
 }

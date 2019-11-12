@@ -5,6 +5,8 @@ import javax.validation.constraints.*;
 
 import io.choerodon.mybatis.entity.*;
 
+import static io.choerodon.base.infra.utils.RegularExpression.*;
+
 /**
  * @author bgzyy
  * @since 2019/9/9
@@ -15,6 +17,7 @@ public class LovGridFieldDTO extends BaseDTO {
     @GeneratedValue
     private Long id;
     @NotEmpty(message = "lov.grid.code.empty")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.lov.code.format.incorrect")
     private String lovCode;
     private Boolean gridFieldDisplayFlag;
     @NotEmpty(message = "lov.grid.label.empty")

@@ -3,6 +3,8 @@ package io.choerodon.base.app.service;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
+import java.util.*;
+
 import io.choerodon.base.infra.dto.*;
 
 public interface LovService {
@@ -10,7 +12,7 @@ public interface LovService {
 
     LovDTO createLov(LovDTO lovDTO);
 
-    PageInfo<PermissionDTO> queryApiByLevel(Pageable pageable, String level);
+    PageInfo<List<PermissionDTO>> queryApiByLevel(Pageable pageable, String level, String params);
 
     PageInfo<LovDTO> queryLovList(Pageable pageable, String code, String description, String level, String param);
 

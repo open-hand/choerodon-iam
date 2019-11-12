@@ -9,6 +9,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.*;
 import java.util.List;
 
+import static io.choerodon.base.infra.utils.RegularExpression.*;
+
 /**
  * @author bgzyy
  * @since 2019/9/9
@@ -19,6 +21,7 @@ public class LovDTO extends BaseDTO {
     @GeneratedValue
     private Long id;
     @NotEmpty(message = "error.lov.code.empty")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.lov.code.format.incorrect")
     private String code;
     @NotEmpty(message = "error.lov.description.empty")
     private String description;

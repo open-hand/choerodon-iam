@@ -14,7 +14,7 @@ import io.choerodon.core.exception.*;
  * @since 2019/11/1
  */
 public class LovValidator {
-//    如果 lov_grid_field 是查询字段，则 queryField 不能为空
+    //    如果 lov_grid_field 是查询字段，则 queryField 不能为空
     public static Boolean checkQuery(String gridFieldName, List<LovQueryFieldDTO> queryFields) {
         Boolean result = false;
 
@@ -29,7 +29,7 @@ public class LovValidator {
     }
 
     public static void checkGridEmpty(LovGridFieldDTO lovGridFieldDTO, List<LovQueryFieldDTO> queryFields) {
-        if (!(lovGridFieldDTO.getGridFieldQueryFlag() && checkQuery(lovGridFieldDTO.getGridFieldName(), queryFields))) {
+        if (lovGridFieldDTO.getGridFieldQueryFlag() && !checkQuery(lovGridFieldDTO.getGridFieldName(), queryFields)) {
             throw new CommonException("error.lov.query.empty");
         }
     }

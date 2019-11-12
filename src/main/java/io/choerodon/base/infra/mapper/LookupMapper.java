@@ -16,9 +16,9 @@ public interface LookupMapper extends Mapper<LookupDTO> {
                                    @Param("description") String description,
                                    @Param("param") String param);
 
-    LookupDTO queryByCode(@Param("code") String code);
+    LookupDTO queryById(@Param("id") Long id);
 
-    LookupDTO queryByDes(@Param("des") String des);
+    LookupDTO queryByCode(@Param("code") String code);
 
     Long check(@Param("lookupId") Long lookupId, @Param("code") String code);
 }

@@ -23,4 +23,6 @@ public interface PermissionMapper extends Mapper<PermissionDTO> {
                                 @Param("source_id") Long sourceId, @Param("codes") Set<String> codes);
 
     List<PermissionDTO> selectErrorLevelPermissionByRole(@Param("role") RoleDTO role);
+
+    List<PermissionDTO> queryByLevelAndCode(@Param("level") String level, @Param("params") String params);
 }

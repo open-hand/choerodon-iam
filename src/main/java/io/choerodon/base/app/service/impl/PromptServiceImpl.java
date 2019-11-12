@@ -5,12 +5,15 @@ import com.github.pagehelper.page.PageMethod;
 import io.choerodon.base.app.service.PromptService;
 import io.choerodon.base.infra.asserts.AssertHelper;
 import io.choerodon.base.infra.dto.PromptDTO;
+import io.choerodon.base.infra.enums.Language;
 import io.choerodon.base.infra.mapper.PromptMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.InsertException;
+import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.exception.ext.UpdateException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 
 /**
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class PromptServiceImpl implements PromptService {
     private PromptMapper promptMapper;
     private AssertHelper assertHelper;
+
     public PromptServiceImpl(PromptMapper promptMapper, AssertHelper assertHelper) {
         this.promptMapper = promptMapper;
         this.assertHelper = assertHelper;
@@ -29,14 +33,17 @@ public class PromptServiceImpl implements PromptService {
 
     @Override
     public PromptDTO create(PromptDTO promptDTO) {
+        if (!Language.contains(promptDTO.getLang())) {
+            throw new CommonException("error.language.not.match");
+        }
         promptDTO.setId(null);
         PromptDTO prompt = new PromptDTO();
         prompt.setPromptCode(promptDTO.getPromptCode());
         prompt.setLang(promptDTO.getLang());
-        if(promptMapper.selectOne(prompt) != null) {
+        if (promptMapper.selectOne(prompt) != null) {
             throw new InsertException("error.prompt.exist");
         }
-        if(promptMapper.insertSelective(promptDTO) != 1) {
+        if (promptMapper.insertSelective(promptDTO) != 1) {
             throw new InsertException("error.prompt.insert");
         }
         return promptDTO;
@@ -44,32 +51,41 @@ public class PromptServiceImpl implements PromptService {
 
     @Override
     public PromptDTO update(Long id, PromptDTO promptDTO) {
+        if (promptDTO.getLang() != null && !Language.contains(promptDTO.getLang())) {
+            throw new CommonException("error.language.not.match");
+        }
         assertHelper.objectVersionNumberNotNull(promptDTO.getObjectVersionNumber());
-        if(promptMapper.selectByPrimaryKey(id) == null) {
+        PromptDTO prompt;
+        if ((prompt = promptMapper.selectByPrimaryKey(id)) == null) {
             throw new UpdateException("errror.prompt.not.exist");
         }
-        PromptDTO prompt = new PromptDTO();
-        prompt.setPromptCode(promptDTO.getPromptCode());
-        prompt.setLang(promptDTO.getLang());
-        if(promptMapper.selectOne(prompt) != null) {
-            throw new UpdateException("error.constraint.not.obey");
+        if (prompt.getObjectVersionNumber() != promptDTO.getObjectVersionNumber()) {
+            throw new UpdateException("error.update.dataObject.objectVersionNumber.not.equal");
         }
-        if(promptMapper.updateByPrimaryKey(promptDTO) != 1) {
+        if (!(prompt.getPromptCode().equals(promptDTO.getPromptCode()) && prompt.getLang().equals(promptDTO.getLang()))) {
+            prompt = new PromptDTO();
+            prompt.setPromptCode(promptDTO.getPromptCode());
+            prompt.setLang(promptDTO.getLang());
+            if (promptMapper.selectOne(prompt) != null) {
+                throw new UpdateException("error.prompt.constraint.not.obey");
+            }
+        }
+        if (promptMapper.updateByPrimaryKeySelective(promptDTO) != 1) {
             throw new UpdateException("error.prompt.update");
         }
         return promptDTO;
     }
 
     @Override
-    public PageInfo<PromptDTO> queryByOptions(PromptDTO promptDTO, Pageable pageable, String param) {
-        return PageMethod.startPage(pageable.getPageNumber(),pageable.getPageSize())
-                .doSelectPageInfo(() -> promptMapper.fulltextSearch(promptDTO, param));
+    public PageInfo<PromptDTO> queryByOptions(String promptCode, String lang, String serviceCode, String description, Pageable pageable, String param) {
+        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
+                .doSelectPageInfo(() -> promptMapper.fulltextSearch(promptCode, lang, serviceCode, description, param));
     }
 
     @Override
     public PromptDTO queryById(Long id) {
         PromptDTO promptDTO;
-        if((promptDTO = promptMapper.selectByPrimaryKey(id)) == null) {
+        if ((promptDTO = promptMapper.selectByPrimaryKey(id)) == null) {
             throw new CommonException("error.prompt.not.exist");
         }
         return promptDTO;
@@ -77,8 +93,23 @@ public class PromptServiceImpl implements PromptService {
 
     @Override
     public void delete(Long id) {
-        if(promptMapper.deleteByPrimaryKey(id) != 1 ) {
+        if (promptMapper.deleteByPrimaryKey(id) != 1) {
             throw new CommonException("error.prompt.delete");
         }
+    }
+
+    @Override
+    public PromptDTO queryByCode(String code, String lang) {
+        if (ObjectUtils.isEmpty(lang)) {
+            lang = Language.Chinese.getValue();
+        }
+        if (!Language.contains(lang)) {
+            throw new CommonException("error.language.invalid");
+        }
+        PromptDTO promptDTO = promptMapper.selectOne(new PromptDTO().setPromptCode(code).setLang(lang));
+        if (ObjectUtils.isEmpty(promptDTO)) {
+            throw new NotExistedException("error.prompt.not.exist");
+        }
+        return promptDTO;
     }
 }

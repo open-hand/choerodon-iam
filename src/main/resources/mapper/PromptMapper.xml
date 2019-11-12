@@ -5,17 +5,17 @@
         SELECT *
         FROM fd_prompt
         <where>
-            <if test="promptDTO.promptCode != null">
-                AND prompt_code LIKE concat(concat('%',#{promptDTO.promptCode}),'%')
+            <if test="promptCode != null">
+                AND prompt_code LIKE concat(concat('%',#{promptCode}),'%')
             </if>
-            <if test="promptDTO.lang != null">
-                AND lang LIKE concat(concat('%',#{promptDTO.lang}),'%')
+            <if test="lang != null">
+                AND lang LIKE concat(concat('%',#{lang}),'%')
             </if>
-            <if test="promptDTO.description != null">
-                AND description LIKE concat(concat('%',#{promptDTO.description}),'%')
+            <if test="description != null">
+                AND description LIKE concat(concat('%',#{description}),'%')
             </if>
-            <if test="promptDTO.serviceCode != null">
-                AND service_code LIKE concat(concat('%',#{promptDTO.serviceCode}),'%')
+            <if test="serviceCode != null">
+                AND service_code LIKE concat(concat('%',#{serviceCode}),'%')
             </if>
             <if test="param != null">
                 AND (

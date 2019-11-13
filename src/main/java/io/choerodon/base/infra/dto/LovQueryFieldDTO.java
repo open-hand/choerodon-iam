@@ -1,15 +1,15 @@
 package io.choerodon.base.infra.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.entity.BaseDTO;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
-import static io.choerodon.base.infra.utils.RegularExpression.*;
+import static io.choerodon.base.infra.utils.RegularExpression.CODE_REGULAR_EXPRESSION;
 
 /**
  * @author bgzyy
@@ -69,8 +69,9 @@ public class LovQueryFieldDTO extends BaseDTO {
         return lovCode;
     }
 
-    public void setLovCode(String lovCode) {
+    public LovQueryFieldDTO setLovCode(String lovCode) {
         this.lovCode = lovCode;
+        return this;
     }
 
     public Boolean getQueryFieldDisplayFlag() {

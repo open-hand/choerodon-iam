@@ -7,6 +7,7 @@ import io.choerodon.base.app.service.LovService;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.web.util.PageableHelper;
 import org.apache.commons.lang.BooleanUtils;
@@ -47,6 +48,36 @@ public class LovServiceImpl implements LovService {
         if (result == null) {
             throw new CommonException("error.lov.notFound");
         }
+        setPermission(result);
+        result.setGridFields(getGridByLang(getGridFieldDTOList(result.getCode())));
+        result.setQueryFields(lovQueryFieldMapper.select(new LovQueryFieldDTO().setLovCode(result.getCode())));
+        // 多语言适配标题
+        PromptDTO prompt = getPrompt(result.getTitle());
+        if (!ObjectUtils.isEmpty(prompt)) {
+            result.setTitle(prompt.getDescription());
+        }
+        return result;
+    }
+
+    @Override
+    public LovDTO queryLovById(Long id) {
+        LovDTO result = lovMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(result)) {
+            throw new NotExistedException("error.lov.does.not.existed");
+        }
+        setPermission(result);
+        result.setGridFields(getGridFieldDTOList(result.getCode()));
+        result.setQueryFields(lovQueryFieldMapper.select(new LovQueryFieldDTO().setLovCode(result.getCode())));
+        // 多语言适配标题
+        PromptDTO prompt = getPrompt(result.getTitle());
+        if (!ObjectUtils.isEmpty(prompt)) {
+            result.setTitle(prompt.getDescription());
+        }
+        return result;
+    }
+
+
+    private void setPermission(LovDTO result) {
         PermissionDTO permissionExample = new PermissionDTO();
         permissionExample.setCode(result.getPermissionCode());
         PermissionDTO permission = permissionMapper.selectOne(permissionExample);
@@ -59,8 +90,11 @@ public class LovServiceImpl implements LovService {
             }
             result.setMethod(permission.getMethod());
         }
+    }
+
+    private List<LovGridFieldDTO> getGridFieldDTOList(String lovCode) {
         LovGridFieldDTO gridExample = new LovGridFieldDTO();
-        gridExample.setLovCode(result.getCode());
+        gridExample.setLovCode(lovCode);
         List<LovGridFieldDTO> gridFieldDTOList = lovGridFieldMapper.select(gridExample);
         Collections.sort(gridFieldDTOList, (o1, o2) -> {
             Double diff = o1.getGridFieldOrder() - o2.getGridFieldOrder();
@@ -71,17 +105,9 @@ public class LovServiceImpl implements LovService {
             }
             return 0;
         });
-        result.setGridFields(getGridByLang(gridFieldDTOList));
-        LovQueryFieldDTO queryExample = new LovQueryFieldDTO();
-        queryExample.setLovCode(result.getCode());
-        result.setQueryFields(lovQueryFieldMapper.select(queryExample));
-        // 多语言适配标题
-        PromptDTO prompt = getPrompt(result.getTitle());
-        if (!ObjectUtils.isEmpty(prompt)) {
-            result.setTitle(prompt.getDescription());
-        }
-        return result;
+        return gridFieldDTOList;
     }
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -273,9 +299,9 @@ public class LovServiceImpl implements LovService {
             return gridFieldDTOList;
         }
         gridFieldDTOList.forEach(g -> {
-            PromptDTO prompt = getPrompt(g.getGridFieldName());
+            PromptDTO prompt = getPrompt(g.getGridFieldLabel());
             if (!ObjectUtils.isEmpty(prompt)) {
-                g.setGridFieldName(prompt.getDescription());
+                g.setGridFieldLabel(prompt.getDescription());
             }
         });
         return gridFieldDTOList;

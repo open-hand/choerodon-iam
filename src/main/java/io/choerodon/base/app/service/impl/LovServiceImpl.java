@@ -8,10 +8,12 @@ import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.web.util.PageableHelper;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Collections;
@@ -69,15 +71,14 @@ public class LovServiceImpl implements LovService {
             }
             return 0;
         });
-        result.setGridFields(gridFieldDTOList);
+        result.setGridFields(getGridByLang(gridFieldDTOList));
         LovQueryFieldDTO queryExample = new LovQueryFieldDTO();
         queryExample.setLovCode(result.getCode());
         result.setQueryFields(lovQueryFieldMapper.select(queryExample));
         // 多语言适配标题
-        String lang = DetailsHelper.getUserDetails().getLanguage();
-        PromptDTO promptDTO = promptMapper.selectOne(new PromptDTO().setPromptCode(result.getTitle()).setLang(lang));
-        if (!ObjectUtils.isEmpty(promptDTO)) {
-            result.setTitle(promptDTO.getDescription());
+        PromptDTO prompt = getPrompt(result.getTitle());
+        if (!ObjectUtils.isEmpty(prompt)) {
+            result.setTitle(prompt.getDescription());
         }
         return result;
     }
@@ -126,7 +127,7 @@ public class LovServiceImpl implements LovService {
 
     @Override
     public PageInfo<LovDTO> queryLovList(Pageable pageable, String code, String description, String level, String param) {
-        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> lovMapper.selectLovList(code, description, level, param));
+        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort())).doSelectPageInfo(() -> lovMapper.selectLovList(code, description, level, param));
     }
 
     @Override
@@ -226,7 +227,7 @@ public class LovServiceImpl implements LovService {
                         dbQueryFieldDTO.setQueryFieldDisplayFlag(lovQueryFieldDTO.getQueryFieldDisplayFlag());
                         dbQueryFieldDTO.setQueryFieldLookupCode(lovQueryFieldDTO.getQueryFieldLookupCode());
                         dbQueryFieldDTO.setQueryFieldLovCode(lovQueryFieldDTO.getQueryFieldLovCode());
-
+                        dbQueryFieldDTO.setQueryFieldLabel(lovQueryFieldDTO.getQueryFieldLabel());
                         if (lovQueryFieldMapper.updateByPrimaryKeySelective(dbQueryFieldDTO) != 1) {
                             throw new CommonException("error.query.update");
                         }
@@ -248,5 +249,35 @@ public class LovServiceImpl implements LovService {
         lovGridFieldMapper.delete(new LovGridFieldDTO(lovDTO.getCode()));
 
         lovQueryFieldMapper.delete(new LovQueryFieldDTO(lovDTO.getCode()));
+    }
+
+    /**
+     * 查询Prompt
+     *
+     * @param code
+     * @return
+     */
+    private PromptDTO getPrompt(String code) {
+        String lang = DetailsHelper.getUserDetails().getLanguage();
+        return promptMapper.selectOne(new PromptDTO().setPromptCode(code).setLang(lang));
+    }
+
+    /**
+     * 维护列属性的多语言
+     *
+     * @param gridFieldDTOList
+     * @return
+     */
+    private List<LovGridFieldDTO> getGridByLang(List<LovGridFieldDTO> gridFieldDTOList) {
+        if (CollectionUtils.isEmpty(gridFieldDTOList)) {
+            return gridFieldDTOList;
+        }
+        gridFieldDTOList.forEach(g -> {
+            PromptDTO prompt = getPrompt(g.getGridFieldName());
+            if (!ObjectUtils.isEmpty(prompt)) {
+                g.setGridFieldName(prompt.getDescription());
+            }
+        });
+        return gridFieldDTOList;
     }
 }

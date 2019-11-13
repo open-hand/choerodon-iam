@@ -11,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.web.util.PageableHelper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -78,7 +79,7 @@ public class PromptServiceImpl implements PromptService {
 
     @Override
     public PageInfo<PromptDTO> queryByOptions(String promptCode, String lang, String serviceCode, String description, Pageable pageable, String param) {
-        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
+        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort()))
                 .doSelectPageInfo(() -> promptMapper.fulltextSearch(promptCode, lang, serviceCode, description, param));
     }
 

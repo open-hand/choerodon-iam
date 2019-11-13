@@ -1,14 +1,16 @@
 package io.choerodon.base.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.infra.dto.LovDTO;
+import io.choerodon.base.infra.dto.PermissionDTO;
 import org.springframework.data.domain.Pageable;
 
-import java.util.*;
-
-import io.choerodon.base.infra.dto.*;
+import java.util.List;
 
 public interface LovService {
     LovDTO queryLovByCode(String code);
+
+    LovDTO queryLovById(Long id);
 
     LovDTO createLov(LovDTO lovDTO);
 

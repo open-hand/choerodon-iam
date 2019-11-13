@@ -1,10 +1,15 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.app.service.LovService;
+import io.choerodon.base.infra.dto.LovDTO;
+import io.choerodon.base.infra.dto.PermissionDTO;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.*;
-
-import io.choerodon.base.app.service.*;
-import io.choerodon.base.infra.dto.*;
-import io.choerodon.core.annotation.*;
-import io.choerodon.core.enums.*;
-import io.choerodon.core.exception.*;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/v1/lov")
@@ -35,6 +34,13 @@ public class LovController {
     @GetMapping(value = "/code")
     public ResponseEntity<LovDTO> queryByCode(@RequestParam(name = "code") String code) {
         return new ResponseEntity<>(lovService.queryLovByCode(code), HttpStatus.OK);
+    }
+
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "通过ID查询LOV")
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<LovDTO> queryById(@PathVariable Long id) {
+        return new ResponseEntity<>(lovService.queryLovById(id), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)

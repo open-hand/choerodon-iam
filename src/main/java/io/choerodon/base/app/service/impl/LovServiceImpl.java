@@ -2,20 +2,20 @@ package io.choerodon.base.app.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.api.validator.LovValidator;
+import io.choerodon.base.app.service.LovService;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-
-import io.choerodon.base.api.validator.*;
-import io.choerodon.base.app.service.*;
-import io.choerodon.base.infra.asserts.*;
-import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.mapper.*;
-import io.choerodon.core.exception.*;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class LovServiceImpl implements LovService {
@@ -24,17 +24,17 @@ public class LovServiceImpl implements LovService {
     private LovGridFieldMapper lovGridFieldMapper;
     private LovQueryFieldMapper lovQueryFieldMapper;
     private PermissionMapper permissionMapper;
-    private AssertHelper assertHelper;
+    private PromptMapper promptMapper;
 
     private static final String PERMISSION_TYPE = "api";
 
-    public LovServiceImpl(RouteMapper routeMapper, LovMapper lovMapper, LovGridFieldMapper lovGridFieldMapper, LovQueryFieldMapper lovQueryFieldMapper, PermissionMapper permissionMapper, AssertHelper assertHelper) {
+    public LovServiceImpl(RouteMapper routeMapper, LovMapper lovMapper, LovGridFieldMapper lovGridFieldMapper, LovQueryFieldMapper lovQueryFieldMapper, PermissionMapper permissionMapper, PromptMapper promptMapper) {
         this.routeMapper = routeMapper;
         this.lovMapper = lovMapper;
         this.lovGridFieldMapper = lovGridFieldMapper;
         this.lovQueryFieldMapper = lovQueryFieldMapper;
         this.permissionMapper = permissionMapper;
-        this.assertHelper = assertHelper;
+        this.promptMapper = promptMapper;
     }
 
     @Override
@@ -73,6 +73,12 @@ public class LovServiceImpl implements LovService {
         LovQueryFieldDTO queryExample = new LovQueryFieldDTO();
         queryExample.setLovCode(result.getCode());
         result.setQueryFields(lovQueryFieldMapper.select(queryExample));
+        // 多语言适配标题
+        String lang = DetailsHelper.getUserDetails().getLanguage();
+        PromptDTO promptDTO = promptMapper.selectOne(new PromptDTO().setPromptCode(result.getTitle()).setLang(lang));
+        if (!ObjectUtils.isEmpty(promptDTO)) {
+            result.setTitle(promptDTO.getDescription());
+        }
         return result;
     }
 

@@ -481,7 +481,11 @@
                 )
             </if>
         </if>
-        order by fp.id desc
+        order by
+        <if test="orderBy != null and orderBy != ''">
+            ${orderBy},
+        </if>
+        fp.id desc
     </select>
 
     <select id="selectProjectsByUserId" resultMap="projectDTO">

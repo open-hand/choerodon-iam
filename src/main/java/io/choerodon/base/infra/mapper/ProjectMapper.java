@@ -106,6 +106,7 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
 
     List<ProjectDTO> selectProjectsByOptions(@Param("organizationId") Long organizationId,
                                              @Param("projectDTO") ProjectDTO projectDTO,
+                                             @Param("orderBy") String orderBy,
                                              @Param("params") String params);
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,

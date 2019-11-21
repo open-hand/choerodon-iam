@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -40,6 +41,7 @@ import io.choerodon.base.infra.enums.RoleLabel;
 import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -558,14 +560,29 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
+        String sortString = getSortStringForPageQuery(pageable.getSort());
         if (doPage) {
-            return PageMethod.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, params));
+            return PageMethod.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
         } else {
             Page<ProjectDTO> result = new Page<>();
-            result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, params));
+            result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
             result.setTotal(result.size());
             return result.toPageInfo();
         }
+    }
+
+    private String getSortStringForPageQuery(Sort sort) {
+        return sort.stream().map(t -> {
+            String field;
+            if ("name".equals(t.getProperty())) {
+                field = "fp.name";
+            } else if ("id".equals(t.getProperty())) {
+                field = "fp.id";
+            } else {
+                throw new FeignException("error.field.not.supported.for.sort", t.getProperty());
+            }
+            return field + " " + t.getDirection();
+        }).collect(Collectors.joining(","));
     }
 
 }

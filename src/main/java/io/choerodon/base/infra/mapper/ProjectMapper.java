@@ -114,4 +114,11 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
 
 
     List<Long> getProListByName(@Param("name") String name);
+
+    /**
+     * 批量更新敏捷项目code, 如果项目id对应的agileProjectCode已经不为空则不更新
+     *
+     * @param projects 项目信息中包含项目id和敏捷项目code
+     */
+    void batchUpdateAgileProjectCode(@Param("projects") List<ProjectDTO> projects);
 }

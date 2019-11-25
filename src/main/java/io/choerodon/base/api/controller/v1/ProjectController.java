@@ -1,6 +1,19 @@
 package io.choerodon.base.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.app.service.ProjectService;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.UserDTO;
@@ -10,25 +23,6 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author flyleft
@@ -130,4 +124,17 @@ public class ProjectController extends BaseController {
     public ResponseEntity<List<Long>> getProListByName(@RequestParam(required = false) String name) {
         return new ResponseEntity<>(projectService.getProListByName(name), HttpStatus.OK);
     }
+
+    /**
+     * 批量更新敏捷项目code, 如果项目id对应的agileProjectCode已经不为空则不更新
+     *
+     * @param projects 项目信息中包含项目id和敏捷项目code
+     */
+    @Permission(permissionWithin = true)
+    @PutMapping(value = "/batch_update_agile_project_code")
+    public ResponseEntity batchUpdateAgileProjectCode(@RequestBody List<ProjectDTO> projects) {
+        projectService.batchUpdateAgileProjectCode(projects);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
 }

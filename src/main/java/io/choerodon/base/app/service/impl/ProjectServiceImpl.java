@@ -1,13 +1,29 @@
 package io.choerodon.base.app.service.impl;
 
+import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.api.dto.payload.ProjectEventPayload;
-import io.choerodon.base.api.vo.AgileProjectInfoVO;
 import io.choerodon.base.app.service.OrganizationProjectService;
 import io.choerodon.base.app.service.ProjectService;
 import io.choerodon.base.infra.asserts.DetailsHelperAssert;
@@ -16,7 +32,6 @@ import io.choerodon.base.infra.asserts.UserAssertHelper;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.UserDTO;
-import io.choerodon.base.infra.feign.AgileFeignClient;
 import io.choerodon.base.infra.mapper.OrganizationMapper;
 import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectMapper;
@@ -25,22 +40,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
-import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -72,7 +71,6 @@ public class ProjectServiceImpl implements ProjectService {
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private UserAssertHelper userAssertHelper;
     private OrganizationMapper organizationMapper;
-    private AgileFeignClient agileFeignClient;
 
     public ProjectServiceImpl(OrganizationProjectService organizationProjectService,
                               SagaClient sagaClient,
@@ -81,8 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
                               ProjectAssertHelper projectAssertHelper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               UserAssertHelper userAssertHelper,
-                              OrganizationMapper organizationMapper,
-                              AgileFeignClient agileFeignClient) {
+                              OrganizationMapper organizationMapper) {
         this.organizationProjectService = organizationProjectService;
         this.sagaClient = sagaClient;
         this.userMapper = userMapper;
@@ -91,7 +88,6 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
-        this.agileFeignClient = agileFeignClient;
     }
 
     @Override
@@ -104,17 +100,6 @@ public class ProjectServiceImpl implements ProjectService {
         if (createdUser != null) {
             dto.setCreateUserName(createdUser.getRealName());
             dto.setCreateUserImageUrl(createdUser.getImageUrl());
-        }
-        try {
-            ResponseEntity<AgileProjectInfoVO> agileProjectResponse = agileFeignClient.queryProjectInfoByProjectId(projectId);
-            if (agileProjectResponse.getStatusCode().is2xxSuccessful()) {
-                AgileProjectInfoVO agileProject = agileProjectResponse.getBody();
-                dto.setAgileProjectId(agileProject.getInfoId());
-                dto.setAgileProjectCode(agileProject.getProjectCode());
-                dto.setAgileProjectObjectVersionNumber(agileProject.getObjectVersionNumber());
-            }
-        } catch (Exception e) {
-            LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
         }
         return dto;
     }
@@ -129,17 +114,6 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
-        if (projectDTO.getAgileProjectId() != null) {
-            AgileProjectInfoVO agileProject = new AgileProjectInfoVO();
-            agileProject.setInfoId(projectDTO.getAgileProjectId());
-            agileProject.setProjectCode(projectDTO.getAgileProjectCode());
-            agileProject.setObjectVersionNumber(projectDTO.getAgileProjectObjectVersionNumber());
-            try {
-                agileFeignClient.updateProjectInfo(projectDTO.getId(), agileProject);
-            } catch (Exception e) {
-                LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
-            }
-        }
         if (devopsMessage) {
             ProjectDTO dto = new ProjectDTO();
             CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
@@ -171,6 +145,25 @@ public class ProjectServiceImpl implements ProjectService {
             return organizationProjectService.updateSelective(projectDTO);
         }
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void batchUpdateAgileProjectCode(List<ProjectDTO> projects) {
+        if (CollectionUtils.isEmpty(projects)) {
+            LOGGER.info("Projects to update agile project code is an unexpected empty list.");
+            return;
+        }
+        projects.forEach(projectDTO -> {
+            if (projectDTO == null) {
+                throw new CommonException("error.project.update.data.is.invalid", true, null, null);
+            }
+            if (projectDTO.getId() == null || projectDTO.getAgileProjectCode() == null) {
+                throw new CommonException("error.project.update.data.is.invalid", false, projectDTO.getId(), projectDTO.getAgileProjectCode());
+            }
+        });
+        projectMapper.batchUpdateAgileProjectCode(projects);
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

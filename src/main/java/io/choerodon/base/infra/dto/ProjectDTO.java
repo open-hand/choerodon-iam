@@ -92,7 +92,6 @@ public class ProjectDTO extends BaseDTO {
 
     private Date creationDate;
 
-    @Transient
     @ApiModelProperty("敏捷项目问题前缀")
     private String agileProjectCode;
 

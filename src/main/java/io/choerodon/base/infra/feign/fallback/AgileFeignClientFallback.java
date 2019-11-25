@@ -1,19 +1,16 @@
 package io.choerodon.base.infra.feign.fallback;
 
-import io.choerodon.base.api.vo.AgileProjectInfoVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.base.api.vo.ProductVersionVO;
 import io.choerodon.base.infra.dto.TimeZoneWorkCalendarDTO;
 import io.choerodon.base.infra.dto.TimeZoneWorkCalendarRefDTO;
 import io.choerodon.base.infra.dto.WorkCalendarHolidayRefDTO;
 import io.choerodon.base.infra.feign.AgileFeignClient;
+import io.choerodon.core.exception.CommonException;
 
 /**
  * @author jiameng.cao
@@ -40,15 +37,5 @@ public class AgileFeignClientFallback implements AgileFeignClient {
     @Override
     public ResponseEntity<List<ProductVersionVO>> listByProjectId(Long projectId) {
         throw new CommonException("error.agile.listByProjectId");
-    }
-
-    @Override
-    public ResponseEntity<AgileProjectInfoVO> updateProjectInfo(Long projectId, AgileProjectInfoVO agileProjectInfoVO) {
-        throw new CommonException("error.agile.updateProjectInfo");
-    }
-
-    @Override
-    public ResponseEntity<AgileProjectInfoVO> queryProjectInfoByProjectId(Long projectId) {
-        throw new CommonException("error.agile.queryProjectInfoByProjectId");
     }
 }

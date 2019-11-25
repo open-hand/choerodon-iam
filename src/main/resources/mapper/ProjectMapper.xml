@@ -517,4 +517,19 @@
             AND fp.name LIKE concat(concat('%',#{name}),'%')
         </if>
     </select>
+
+    <update id="batchUpdateAgileProjectCode">
+        UPDATE fd_project
+        SET AGILE_PROJECT_CODE = CASE id
+        <foreach collection="projects" item="project">
+            WHEN #{project.id} THEN #{project.agileProjectCode}
+        </foreach>
+        END
+        WHERE AGILE_PROJECT_CODE IS NULL AND
+        ID IN
+        <foreach collection="projects" item="project" separator="," open="(" close=")">
+            #{project.id}
+        </foreach>
+    </update>
+
 </mapper>

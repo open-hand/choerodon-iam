@@ -1,39 +1,30 @@
-package io.choerodon.base.app.service.impl
+package io.choerodon.base.impl
 
-import com.netflix.discovery.converters.Auto
-import io.choerodon.asgard.saga.dto.StartInstanceDTO
-import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.base.IntegrationTestConfiguration
-import io.choerodon.base.app.service.OrganizationProjectService
-import io.choerodon.base.app.service.ProjectService
-import io.choerodon.base.infra.asserts.ProjectAssertHelper
-import io.choerodon.base.infra.asserts.UserAssertHelper
-import io.choerodon.base.infra.common.utils.SpockUtils
-import io.choerodon.base.infra.dto.OrganizationDTO
-import io.choerodon.base.infra.dto.ProjectDTO
-import io.choerodon.base.infra.dto.UserDTO
-import io.choerodon.base.infra.mapper.OrganizationMapper
-import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper
-import io.choerodon.base.infra.mapper.ProjectMapper
-import io.choerodon.base.infra.mapper.UserMapper
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+import java.lang.reflect.Field
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
-import java.lang.reflect.Field
-
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.base.IntegrationTestConfiguration
+import io.choerodon.base.app.service.OrganizationProjectService
+import io.choerodon.base.app.service.ProjectService
+import io.choerodon.base.app.service.impl.ProjectServiceImpl
+import io.choerodon.base.infra.asserts.ProjectAssertHelper
+import io.choerodon.base.infra.asserts.UserAssertHelper
+import io.choerodon.base.infra.dto.ProjectDTO
+import io.choerodon.base.infra.mapper.OrganizationMapper
+import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper
+import io.choerodon.base.infra.mapper.ProjectMapper
+import io.choerodon.base.infra.mapper.UserMapper
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.core.oauth.DetailsHelper
 
 /**
  * @author dengyouquan*      */
@@ -117,5 +108,46 @@ class ProjectServiceImplSpec extends Specification {
         then: "校验结果"
         noExceptionThrown()
     }
+
+    def "batchUpdateAgileProjectCode"() {
+        given: "构造"
+        def newAgileCode = "agile-code"
+        insertMockProject(10000L, "aaa", "aaa", null)
+        insertMockProject(10001L, "bbb", "bbb", "bbb")
+        List<ProjectDTO> updateList = new ArrayList<>()
+        updateList.add(constructProject(10000L, null, null, newAgileCode))
+        updateList.add(constructProject(10001L, null, null, newAgileCode))
+
+        when: "调用方法"
+        projectService.batchUpdateAgileProjectCode(updateList)
+
+        then: "校验结果"
+        projectMapper.selectByPrimaryKey(10000L).getAgileProjectCode() == newAgileCode
+        projectMapper.selectByPrimaryKey(10001L).getAgileProjectCode() == "bbb"
+
+        and: "构造错误数据"
+        updateList.get(0).setId(null)
+
+        when: "调用错误的数据"
+        projectService.batchUpdateAgileProjectCode(updateList)
+
+        then: "抛出异常"
+        thrown(CommonException)
+    }
+
+    private insertMockProject(Long id, String name, String code, String agileProjectCode) {
+        ProjectDTO projectDTO = constructProject(id, name, code, agileProjectCode)
+        projectMapper.insertSelective(projectDTO)
+    }
+
+    private static ProjectDTO constructProject(Long id, String name, String code, String agileProjectCode) {
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setId(id)
+        projectDTO.setName(name)
+        projectDTO.setCode(code)
+        projectDTO.setAgileProjectCode(agileProjectCode)
+        return projectDTO
+    }
+
 }
 

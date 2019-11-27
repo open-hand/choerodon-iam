@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.infra.enums.RoleEnum;
 import io.choerodon.base.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1081,5 +1082,15 @@ public class UserServiceImpl implements UserService {
         routeMemberRuleMapper.selectAll().forEach(v -> userIds.add(v.getUserId()));
 
         return userDTOS.stream().filter(v -> !userIds.contains(v.getId())).collect(Collectors.toList());
+    }
+    @Override
+    public ProjectDTO queryProjectById(Long id, Long projectId) {
+        return  userMapper.selectProjectByUidAndProjectId(id, projectId);
+    }
+
+    @Override
+    public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        List<RoleDTO> roleDTOList =  userMapper.selectRolesByUidAndProjectId(id, projectId);
+        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.equals(v.getCode()));
     }
 }

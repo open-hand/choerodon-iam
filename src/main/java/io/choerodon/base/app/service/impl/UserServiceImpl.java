@@ -1091,6 +1091,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
         List<RoleDTO> roleDTOList =  userMapper.selectRolesByUidAndProjectId(id, projectId);
-        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.equals(v.getCode()));
+        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
     }
 }

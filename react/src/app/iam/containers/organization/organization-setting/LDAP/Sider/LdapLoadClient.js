@@ -82,10 +82,10 @@ const LdapLoadClient = observer(() => {
   // 取消加载
   function cancelLoadClient() {
     clearInterval(intervalId);
-    axios.put(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/stop`);
+    axios.put(`/base/v1/organizations/${orgId}/ldaps/stop`);
   }
   modal.handleOk(async () => {
-    const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/sync_users`);
+    const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/sync_users`);
     if (!result.failed) {
       pollHistory();
       setDelay(3000);

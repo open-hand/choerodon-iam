@@ -4,7 +4,7 @@ export default ({ orgId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${orgId}/ldaps/2/history?sort=id%2Cdesc`,
+      url: `/base/v1/organizations/${orgId}/ldaps/history?sort=id%2Cdesc`,
       method: 'get',
     },
   },

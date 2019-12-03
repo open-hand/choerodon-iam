@@ -4,7 +4,7 @@ export default ({ orgId, ldapId }) => ({
   autoQuery: true,
   transport: {
     read: {
-      url: `/base/v1/organizations/${orgId}/ldaps/${ldapId}/history?sort=id%2Cdesc`,
+      url: `/base/v1/organizations/${orgId}/ldaps/history?sort=id%2Cdesc`,
       method: 'get',
     },
   },

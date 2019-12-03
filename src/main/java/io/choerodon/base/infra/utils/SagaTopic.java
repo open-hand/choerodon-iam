@@ -78,6 +78,11 @@ public final class SagaTopic {
         //更新组织
         public static final String ORG_UPDATE = "iam-update-organization";
 
+        //处理ldap自动同步创建task
+        public static final String TASK_CREATE_LDAP_AUTO = "task-create-ldap-auto";
+
+        public static final String CREATE_LDAP_AUTO = "create-ldap-auto";
+
     }
 
     public static class SystemSetting {

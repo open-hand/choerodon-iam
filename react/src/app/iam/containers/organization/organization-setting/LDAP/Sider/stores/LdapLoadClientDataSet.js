@@ -1,5 +1,6 @@
-export default ({ orgId, ldapId }) => ({
+export default ({ orgId }) => ({
   autoQuery: false,
+  paging: false,
   transport: {
     read: {
       url: `/base/v1/organizations/${orgId}/ldaps/latest_history`,

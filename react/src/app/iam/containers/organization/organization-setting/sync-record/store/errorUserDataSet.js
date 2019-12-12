@@ -2,6 +2,7 @@
 export default (id => ({
   autoCreate: true,
   autoQuery: true,
+  selection: false,
   transport: {
     read: () => ({
       url: `/base/v1/organizations/2/ldap_histories/${id}/error_users?__id=`,

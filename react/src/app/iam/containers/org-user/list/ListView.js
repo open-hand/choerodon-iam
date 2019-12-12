@@ -15,7 +15,7 @@ import './index.less';
 const modalKey = Modal.key();
 const syncModalKey = Modal.key();
 const modalStyle = {
-  width: 380,
+  width: 740,
 };
 
 const { Column } = Table;

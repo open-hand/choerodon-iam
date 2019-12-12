@@ -2,9 +2,11 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
+import { Button } from 'choerodon-ui/pro';
 import { useLdapStore } from './stores';
 import ManualContent from './ManualContent';
 import AutoContent from './AutoContent';
+import SyncRecord from './SyncRecord';
 
 import './index.less';
 
@@ -18,11 +20,45 @@ const ldapSetting = withRouter(observer((props) => {
       getTabKey,
       setTabKey,
     },
+    recordTableDs,
   } = useLdapStore();
+
+  function linkToLDAP() {
+    const {
+      history,
+      location: {
+        search,
+      },
+    } = props;
+    history.push(`/base/organization-setting/ldap${search}`);
+  }
   
   function handleTabChange(value) {
     setTabKey(value);
-    modal.update({ okText: value === 'manual' ? '手动同步' : '保存' });
+    if (value === 'record') {
+      recordTableDs.query();
+      modal.update({
+        footer: (okBtn, cancelBtn) => (
+          <div>
+            <Button
+              color="primary"
+              funcType="raised"
+              onClick={linkToLDAP}
+            >
+              转至LDAP设置
+            </Button>
+            {cancelBtn}
+          </div>
+        ),
+      });
+    } else if (value === 'auto') {
+      modal.update({
+        okText: '保存',
+        cancelText: '取消',
+      });
+    } else {
+      modal.update({ okText: '手动同步' });
+    }
   }
   
   return (
@@ -36,6 +72,9 @@ const ldapSetting = withRouter(observer((props) => {
         </TabPane>
         <TabPane tab="自动同步" key="auto">
           <AutoContent />
+        </TabPane>
+        <TabPane tab="同步记录" key="record">
+          <SyncRecord />
         </TabPane>
       </Tabs>
     </div>

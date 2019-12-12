@@ -125,6 +125,7 @@ const manualContent = observer((props) => {
       const syncBeginTime = record.get('syncBeginTime');
       const newUserCount = record.get('newUserCount');
       const errorUserCount = record.get('errorUserCount');
+      const updateUserCount = record.get('updateUserCount');
       return (
         <div className={`${prefixCls}-manual-record`} style={{ display: syncEndTime ? 'block' : 'none' }}>
           <div className={`${prefixCls}-manual-record-text`}>
@@ -134,7 +135,7 @@ const manualContent = observer((props) => {
           </div>
           <div>
             共同步
-            <span className={`${prefixCls}-manual-record-number-success`}>{newUserCount || 0}</span>
+            <span className={`${prefixCls}-manual-record-number-success`}>{newUserCount + updateUserCount || 0}</span>
             个用户成功，
             <span className={`${prefixCls}-manual-record-number-failed`}>{errorUserCount || 0}</span>
             个用户失败

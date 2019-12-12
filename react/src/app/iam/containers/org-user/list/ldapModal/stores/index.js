@@ -5,6 +5,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
 import SyncRecordDataSet from './SyncRecordDataSet';
 import SyncFormDataSet from './SyncFormDataSet';
+import SyncRecordTableDataSet from './SyncRecordTableDataSet';
 
 const Store = createContext();
 
@@ -22,6 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const ldapStore = useStore();
     const syncRecordDs = useMemo(() => new DataSet(SyncRecordDataSet({ orgId })), [orgId]);
     const syncFormDs = useMemo(() => new DataSet(SyncFormDataSet({ orgId })), [orgId]);
+    const recordTableDs = useMemo(() => new DataSet(SyncRecordTableDataSet({ orgId })), [orgId]);
 
     useEffect(() => {
       if (!syncFormDs.current) {
@@ -35,6 +37,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ldapStore,
       syncRecordDs,
       syncFormDs,
+      recordTableDs,
     };
     return (
       <Store.Provider value={value}>

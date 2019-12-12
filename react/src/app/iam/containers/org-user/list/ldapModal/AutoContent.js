@@ -5,9 +5,8 @@ import { useLdapStore } from './stores';
 
 const { Option } = SelectBox;
 
-const autoContent = observer((props) => {
+const autoContent = observer(() => {
   const {
-    syncRecordDs,
     syncFormDs,
     prefixCls,
     modal,
@@ -34,8 +33,8 @@ const autoContent = observer((props) => {
     <div className={`${prefixCls}-auto-content`}>
       <Form dataSet={syncFormDs}>
         <SelectBox name="active">
-          <Option value>是</Option>
-          <Option value={false}>否</Option>
+          <Option value><span className={`${prefixCls}-auto-content-radio`}>是</span></Option>
+          <Option value={false}><span className={`${prefixCls}-auto-content-radio`}>否</span></Option>
         </SelectBox>
         <Select name="frequency">
           <Option value="DAY">一天一次</Option>

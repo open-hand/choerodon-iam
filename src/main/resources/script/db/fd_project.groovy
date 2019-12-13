@@ -60,10 +60,4 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-fd-project-add-remark') {
         setTableRemarks(tableName: "FD_PROJECT", remarks: "项目表")
     }
-
-    changeSet(author: 'zmf', id: '2019-11-22-fd-project-add-agile-project-code') {
-        addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'AGILE_PROJECT_CODE', type: 'VARCHAR(255)', remarks: '敏捷项目问题前缀', afterColumn: 'ORGANIZATION_ID')
-        }
-    }
 }

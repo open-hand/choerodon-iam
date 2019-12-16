@@ -17,6 +17,7 @@ import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.base.infra.feign.AgileFeignClient;
+import io.choerodon.base.infra.feign.TestManagerFeignClient;
 import io.choerodon.base.infra.mapper.OrganizationMapper;
 import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectMapper;
@@ -73,6 +74,7 @@ public class ProjectServiceImpl implements ProjectService {
     private UserAssertHelper userAssertHelper;
     private OrganizationMapper organizationMapper;
     private AgileFeignClient agileFeignClient;
+    private TestManagerFeignClient testManagerFeignClient;
 
     public ProjectServiceImpl(OrganizationProjectService organizationProjectService,
                               SagaClient sagaClient,
@@ -82,6 +84,7 @@ public class ProjectServiceImpl implements ProjectService {
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               UserAssertHelper userAssertHelper,
                               OrganizationMapper organizationMapper,
+                              TestManagerFeignClient testManagerFeignClient,
                               AgileFeignClient agileFeignClient) {
         this.organizationProjectService = organizationProjectService;
         this.sagaClient = sagaClient;
@@ -92,6 +95,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
         this.agileFeignClient = agileFeignClient;
+        this.testManagerFeignClient = testManagerFeignClient;
     }
 
     @Override
@@ -136,6 +140,7 @@ public class ProjectServiceImpl implements ProjectService {
             agileProject.setObjectVersionNumber(projectDTO.getAgileProjectObjectVersionNumber());
             try {
                 agileFeignClient.updateProjectInfo(projectDTO.getId(), agileProject);
+                testManagerFeignClient.updateProjectInfo(projectDTO.getId(), agileProject);
             } catch (Exception e) {
                 LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
             }

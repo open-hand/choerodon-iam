@@ -35,4 +35,10 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap_history.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-oauth-ldap-history-add-remark') {
         setTableRemarks(tableName:"OAUTH_LDAP_HISTORY",remarks: "ldap同步历史记录表")
     }
+
+    changeSet(author: 'scp', id: '2019-12-10-oauth-ldap-history-add-column') {
+        addColumn(tableName: 'OAUTH_LDAP_HISTORY') {
+            column(name: 'TYPE', type: "VARCHAR(8)", defaultValue: "hand", remarks: '同步类型', afterColumn: 'SYNC_END_TIME');
+        }
+    }
 }

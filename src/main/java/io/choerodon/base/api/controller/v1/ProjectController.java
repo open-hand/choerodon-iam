@@ -97,7 +97,7 @@ public class ProjectController extends BaseController {
             throw new CommonException("error.project.name.empty");
         }
         if (projectDTO.getName().length() < 1 || projectDTO.getName().length() > 32) {
-            throw new CommonException("error.project.code.size");
+            throw new CommonException("error.project.name.size");
         }
         if (projectDTO.getObjectVersionNumber() == null) {
             throw new CommonException("error.objectVersionNumber.null");

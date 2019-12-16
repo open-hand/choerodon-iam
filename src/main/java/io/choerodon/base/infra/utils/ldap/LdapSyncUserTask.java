@@ -61,13 +61,18 @@ public class LdapSyncUserTask {
     }
 
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDTO ldap, String syncType, FinishFallback fallback) {
+    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDTO ldap, String syncType, FinishFallback fallback, String ldapType) {
         logger.info("@@@ start to sync users from ldap server, sync type: {}", syncType);
         LdapSyncReport ldapSyncReport = initLdapSyncReport(ldap);
         LdapHistoryDTO ldapHistory = initLdapHistory(ldap.getId());
-        syncUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId(), syncType);
-        logger.info("@@@ syncing users has been finished, sync type: {}, ldapSyncReport: {}", syncType, ldapSyncReport);
-        fallback.callback(ldapSyncReport, ldapHistory);
+        ldapHistory.setType(ldapType);
+        try {
+            syncUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId(), syncType);
+            logger.info("@@@ syncing users has been finished, sync type: {}, ldapSyncReport: {}", syncType, ldapSyncReport);
+        } finally {
+            fallback.callback(ldapSyncReport, ldapHistory);
+        }
+
     }
 
     private void syncUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDTO ldap,
@@ -316,10 +321,22 @@ public class LdapSyncUserTask {
                 }
             } else {
                 UserDTO userDTO = selectByLoginName(loginName);
-                //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
-                if (userDTO.getLastUpdatedBy().equals(0L) && !userDTO.getEnabled()) {
-                    organizationUserService.enableUser(ldapSyncReport.getOrganizationId(), userDTO.getId());
-                    ldapSyncReport.incrementUpdate();
+                if (!userDTO.getOrganizationId().equals(ldapSyncReport.getOrganizationId())) {
+                    ldapSyncReport.incrementError();
+                    LdapErrorUserDTO errorUser = new LdapErrorUserDTO();
+                    errorUser.setUuid(user.getUuid());
+                    errorUser.setLoginName(loginName);
+                    errorUser.setEmail(user.getEmail());
+                    errorUser.setRealName(user.getRealName());
+                    errorUser.setPhone(user.getPhone());
+                    errorUser.setCause(LdapErrorUserCause.LOGIN_NAME_ALREADY_EXIST.value());
+                    errorUsers.add(errorUser);
+                } else {
+                    //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
+                    if (userDTO.getLastUpdatedBy().equals(0L) && !userDTO.getEnabled()) {
+                        organizationUserService.enableUser(ldapSyncReport.getOrganizationId(), userDTO.getId());
+                        ldapSyncReport.incrementUpdate();
+                    }
                 }
             }
 

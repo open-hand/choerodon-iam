@@ -57,6 +57,9 @@ public class ScheduleTaskDTO {
     @ApiModelProperty(value = "启用/禁用状态")
     private String status;
 
+    @ApiModelProperty(value = "用于feign传递时间，相差8小时")
+    private String startTimeStr;
+
     private NotifyUser notifyUser;
 
     private Long[] assignUserIds;
@@ -183,6 +186,14 @@ public class ScheduleTaskDTO {
 
     public ScheduleTaskDTO() {
         this.methodId = 0L;
+    }
+
+    public String getStartTimeStr() {
+        return startTimeStr;
+    }
+
+    public void setStartTimeStr(String startTimeStr) {
+        this.startTimeStr = startTimeStr;
     }
 
     public ScheduleTaskDTO(Long methodId, Map<String, Object> params, String name, String description, Date startTime) {

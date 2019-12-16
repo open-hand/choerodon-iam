@@ -4,13 +4,20 @@
 
     <select id="selectAllEnd" resultType="io.choerodon.base.infra.dto.LdapHistoryDTO">
         SELECT
-            *
+            olh.id,
+            olh.LDAP_ID,
+            olh.NEW_USER_COUNT,
+            olh.UPDATE_USER_COUNT,
+            olh.ERROR_USER_COUNT,
+            olh.SYNC_BEGIN_TIME,
+            olh.SYNC_END_TIME,
+            if(olh.TYPE = 'auto', 'auto', 'hand') as TYPE
         FROM
-            oauth_ldap_history
+            oauth_ldap_history olh
         WHERE
-            ldap_id = #{ldapId}
-        AND sync_end_time IS NOT NULL
-        order by id desc
+            olh.ldap_id = #{ldapId}
+            AND olh.sync_end_time IS NOT NULL
+        order by olh.id desc
     </select>
 
 </mapper>

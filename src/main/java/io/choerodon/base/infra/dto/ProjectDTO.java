@@ -30,7 +30,7 @@ public class ProjectDTO extends BaseDTO {
 
     @ApiModelProperty(value = "项目名/必填")
     @NotEmpty(message = "error.project.name.empty")
-    @Size(min = 1, max = 32, message = "error.project.code.size")
+    @Size(min = 1, max = 32, message = "error.project.name.size")
     @Pattern(regexp = PROJECT_NAME_REG, message = "error.project.name.regex")
     private String name;
 

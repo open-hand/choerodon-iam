@@ -55,6 +55,7 @@ import io.choerodon.base.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.base.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.base.infra.enums.LdapAutoFrequencyType;
 import io.choerodon.base.infra.enums.LdapSyncType;
+import io.choerodon.base.infra.enums.LdapType;
 import io.choerodon.base.infra.factory.MessageSourceFactory;
 import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.base.infra.mapper.*;
@@ -233,7 +234,7 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(LdapServiceImpl.LDAP_TEMPLATE);
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, LdapSyncType.SYNC.value(), finishFallback);
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, LdapSyncType.SYNC.value(), finishFallback, LdapType.HAND.value());
     }
 
     @Override
@@ -295,6 +296,9 @@ public class LdapServiceImpl implements LdapService {
     @Override
     public PageInfo<LdapHistoryDTO> pagingQueryHistories(Pageable pageable, Long organizationId) {
         LdapHistoryDTO ldapHistoryDTO = queryLatestHistory(organizationId);
+        if (ldapHistoryDTO == null) {
+            return new PageInfo<>();
+        }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> ldapHistoryMapper.selectAllEnd(ldapHistoryDTO.getLdapId()));
     }
@@ -346,10 +350,14 @@ public class LdapServiceImpl implements LdapService {
         ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
         scheduleTaskDTO.setName(String.format(TASK_FORMAT, organizationDTO.getName()));
         scheduleTaskDTO.setDescription(TASK_DESCRIPTION);
-        scheduleTaskDTO.setStartTime(ldapAutoDTO.getStartTime());
         scheduleTaskDTO.setCronExpression(getAutoLdapCron(ldapAutoDTO));
         scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
         scheduleTaskDTO.setExecuteStrategy(STOP);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateString = formatter.format(ldapAutoDTO.getStartTime());
+        scheduleTaskDTO.setStartTimeStr(dateString);
+
         if (ldapAutoTaskEventPayload.getActive() != null && !ldapAutoTaskEventPayload.getActive()) {
             scheduleTaskDTO.setStatus(QuartzDefinition.TaskStatus.DISABLE.name());
         }

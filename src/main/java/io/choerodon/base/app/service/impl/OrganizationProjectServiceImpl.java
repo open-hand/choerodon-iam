@@ -304,7 +304,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             throw new EmptyParamException("error.project.name.empty");
         }
         if (name.length() < 1 || name.length() > 32) {
-            throw new IllegalArgumentException("error.project.code.size");
+            throw new IllegalArgumentException("error.project.name.size");
         }
     }
 

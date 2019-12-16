@@ -9,7 +9,9 @@ import io.choerodon.base.infra.dto.LdapDTO;
 import io.choerodon.base.infra.dto.LdapHistoryDTO;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.enums.LdapSyncType;
+import io.choerodon.base.infra.enums.LdapType;
 import io.choerodon.base.infra.mapper.LdapHistoryMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.LdapTemplate;
@@ -24,6 +26,7 @@ import io.choerodon.base.app.service.LdapService;
 import io.choerodon.base.infra.utils.ldap.LdapSyncReport;
 import io.choerodon.base.infra.utils.ldap.LdapSyncUserTask;
 import io.choerodon.base.infra.mapper.OrganizationMapper;
+
 import org.springframework.util.StringUtils;
 
 /**
@@ -114,7 +117,7 @@ public class LdapSyncUserQuartzTask {
             latch.countDown();
             LdapSyncUserTask.FinishFallback fallback = ldapSyncUserTask.new FinishFallbackImpl(ldapHistoryMapper);
             return fallback.callback(ldapSyncReport, ldapHistoryDTO);
-        });
+        }, LdapType.AUTO.value());
         try {
             latch.await();
         } catch (InterruptedException e) {

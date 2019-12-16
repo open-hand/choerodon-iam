@@ -38,7 +38,12 @@ public enum LdapErrorUserCause {
     /**
      * 禁用用户发送事件失败
      */
-    SEND_MESSAGE_FAILED("send_message_failed");
+    SEND_MESSAGE_FAILED("send_message_failed"),
+
+    /**
+     * LoginName已存在
+     */
+    LOGIN_NAME_ALREADY_EXIST("login_name_already_exist");
 
 
     private String value;

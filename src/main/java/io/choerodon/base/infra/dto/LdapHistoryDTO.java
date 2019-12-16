@@ -23,6 +23,7 @@ public class LdapHistoryDTO extends BaseDTO {
     private Long errorUserCount;
     private Date syncBeginTime;
     private Date syncEndTime;
+    private String type;
 
     public Long getId() {
         return id;
@@ -78,5 +79,13 @@ public class LdapHistoryDTO extends BaseDTO {
 
     public void setSyncEndTime(Date syncEndTime) {
         this.syncEndTime = syncEndTime;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

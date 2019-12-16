@@ -235,4 +235,21 @@ public interface UserService {
     List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled);
 
     OrganizationProjectDTO queryOrganizationProjectByUserId(Long userId);
+
+    List<UserDTO> listEnableUsersByRouteRuleCode(String userName);
+    /**
+     * 查询用户下指定项目，
+     * @param id
+     * @param projectId
+     * @return null (项目不存在或者用户没有项目权限)
+     */
+    ProjectDTO queryProjectById(Long id, Long projectId);
+
+    /**
+     * 校验用户是否是项目的所有者
+     * @param id
+     * @param projectId
+     * @return true 是
+     */
+    Boolean checkIsProjectOwner(Long id, Long projectId);
 }

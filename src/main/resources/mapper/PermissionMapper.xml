@@ -41,8 +41,8 @@
         WHERE ir.id = #{roleId}
         <if test="params != null">
             AND (
-            ip.code LIKE concat(concat('%', #{params), '%') OR
-            ip.description LIKE concat(concat('%', #{params), '%')
+            ip.code LIKE concat(concat('%', #{params}), '%') OR
+            ip.description LIKE concat(concat('%', #{params}), '%')
             )
         </if>
         order by ip.code asc
@@ -77,10 +77,19 @@
     <select id="selectErrorLevelPermissionByRole" resultMap="PermissionDTO">
         SELECT ip.*
         FROM iam_role ir
-        INNER JOIN iam_role_permission irp ON ir.code = irp.role_code
-        INNER JOIN iam_permission ip ON irp.permission_code = ip.code
+                 INNER JOIN iam_role_permission irp ON ir.code = irp.role_code
+                 INNER JOIN iam_permission ip ON irp.permission_code = ip.code
         WHERE ir.id = #{role.id}
-        AND ir.resource_level != ip.resource_level
+          AND ir.resource_level != ip.resource_level
     </select>
-
+    <select id="queryByLevelAndCode" resultType="io.choerodon.base.infra.dto.PermissionDTO">
+        SELECT *
+        FROM iam_permission
+        WHERE PERMISSION_TYPE = 'api'
+        AND RESOURCE_LEVEL = #{level}
+        AND IS_WITHIN = 0
+        <if test="params != null">
+            AND code LIKE concat(concat('%', #{params}), '%')
+        </if>
+    </select>
 </mapper>

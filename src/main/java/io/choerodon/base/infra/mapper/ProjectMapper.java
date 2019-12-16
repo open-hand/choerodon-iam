@@ -1,13 +1,12 @@
 package io.choerodon.base.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -107,10 +106,12 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
 
     List<ProjectDTO> selectProjectsByOptions(@Param("organizationId") Long organizationId,
                                              @Param("projectDTO") ProjectDTO projectDTO,
+                                             @Param("orderBy") String orderBy,
                                              @Param("params") String params);
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
                                             @Param("projectDTO") ProjectDTO projectDTO);
 
 
+    List<Long> getProListByName(@Param("name") String name);
 }

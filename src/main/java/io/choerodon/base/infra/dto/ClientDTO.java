@@ -65,6 +65,11 @@ public class ClientDTO extends BaseDTO {
     @ApiModelProperty(value = "自动授权域/非必填")
     private String autoApprove;
 
+    @ApiModelProperty(value = "集群id")
+    private Long sourceId;
+
+    @ApiModelProperty(value = "client类型")
+    private String sourceType;
     @Transient
     private List<RoleDTO> roles;
 
@@ -182,5 +187,21 @@ public class ClientDTO extends BaseDTO {
 
     public void setParam(String param) {
         this.param = param;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 }

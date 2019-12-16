@@ -26,4 +26,6 @@ public interface ProjectService {
     List<Long> listUserIds(Long projectId);
 
     List<ProjectDTO> queryByIds(Set<Long> ids);
+
+    List<Long> getProListByName(String name);
 }

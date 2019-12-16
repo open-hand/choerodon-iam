@@ -1,7 +1,5 @@
 package io.choerodon.base.app.service.impl;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import org.springframework.data.domain.Pageable;
@@ -9,15 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.base.app.service.LookupService;
-import io.choerodon.base.infra.asserts.AssertHelper;
-import io.choerodon.base.infra.dto.LookupDTO;
-import io.choerodon.base.infra.dto.LookupValueDTO;
-import io.choerodon.base.infra.mapper.LookupMapper;
-import io.choerodon.base.infra.mapper.LookupValueMapper;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.exception.ext.UpdateException;
+import java.util.*;
+
+import io.choerodon.base.app.service.*;
+import io.choerodon.base.infra.asserts.*;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.core.exception.*;
+import io.choerodon.core.exception.ext.*;
 
 /**
  * @author superlee
@@ -61,9 +58,9 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public PageInfo<LookupDTO> pagingQuery(Pageable pageable, LookupDTO lookupDTO, String param) {
+    public PageInfo<LookupDTO> pagingQuery(Pageable pageable, String code, String description, String param) {
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                .doSelectPageInfo(() -> lookupMapper.fulltextSearch(lookupDTO, param));
+                .doSelectPageInfo(() -> lookupMapper.fulltextSearch(code, description, param));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -79,7 +76,12 @@ public class LookupServiceImpl implements LookupService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public LookupDTO update(LookupDTO lookupDTO) {
-        assertHelper.objectVersionNumberNotNull(lookupDTO.getObjectVersionNumber());
+
+        LookupDTO dbLookupDTO = lookupMapper.selectByPrimaryKey(lookupDTO);
+        if (ObjectUtils.isEmpty(dbLookupDTO)) {
+            throw new CommonException("error.lookup.not.exist");
+        }
+        lookupDTO.setObjectVersionNumber(dbLookupDTO.getObjectVersionNumber());
         List<LookupValueDTO> values = lookupDTO.getLookupValues();
         if (lookupMapper.updateByPrimaryKeySelective(lookupDTO) != 1) {
             throw new UpdateException("error.repo.lookup.update");
@@ -91,13 +93,23 @@ public class LookupServiceImpl implements LookupService {
 
         if (!ObjectUtils.isEmpty(values)) {
             values.forEach(v -> {
-                if (v.getId() == null) {
-                    throw new EmptyParamException("error.lookupValue.id.null");
+//                有 id 且 status 为 add 则添加
+                if (v.getId() == null && "add".equals(v.get__status())) {
+                    v.setLookupId(lookupDTO.getId());
+                    if (lookupValueMapper.insertSelective(v) != 1) {
+                        throw new CommonException("error.lookupValue.insert");
+                    }
                 }
                 list.forEach(d -> {
-                    if (d.getId().equals(v.getId())) {
+                    if (d.getId().equals(v.getId()) && "delete".equals(v.get__status())) {
+                        LookupValueDTO lookupValue = new LookupValueDTO();
+                        lookupValue.setId(d.getId());
+                        lookupValueMapper.delete(lookupValue);
+                    }
+                    if (d.getId().equals(v.getId()) && "update".equals(v.get__status())) {
                         d.setCode(v.getCode());
                         d.setDescription(v.getDescription());
+                        d.setDisplayOrder(v.getDisplayOrder());
                         lookupValueMapper.updateByPrimaryKeySelective(d);
                     }
                 });
@@ -109,18 +121,19 @@ public class LookupServiceImpl implements LookupService {
 
     @Override
     public LookupDTO queryById(Long id) {
-        LookupDTO lookup = lookupMapper.selectByPrimaryKey(id);
-        if (lookup == null) {
-            return null;
-        }
-        LookupValueDTO lookupValue = new LookupValueDTO();
-        lookupValue.setLookupId(id);
-        lookup.setLookupValues(lookupValueMapper.select(lookupValue));
-        return lookup;
+        return lookupMapper.queryById(id);
     }
 
     @Override
-    public LookupDTO listByCodeWithLookupValues(String code) {
-        return lookupMapper.selectByCodeWithLookupValues(code);
+    public LookupDTO queryByCode(String code) {
+        return lookupMapper.queryByCode(code);
+    }
+
+    @Override
+    public void check(Long lookupId, String code) {
+        Long count = lookupMapper.check(lookupId, code);
+        if (count >= 1) {
+            throw new CommonException("error.lookup.code.duplication");
+        }
     }
 }

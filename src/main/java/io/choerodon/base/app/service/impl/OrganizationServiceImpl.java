@@ -1,7 +1,10 @@
 package io.choerodon.base.app.service.impl;
 
 import static io.choerodon.base.infra.utils.SagaTopic.Organization.*;
+import static io.choerodon.base.infra.utils.SagaTopic.Organization.CREATE_LDAP_AUTO;
+import static io.choerodon.base.infra.utils.SagaTopic.Organization.TASK_CREATE_LDAP_AUTO;
 
+import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,13 +22,16 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.api.dto.OrgSharesDTO;
 import io.choerodon.base.api.dto.OrganizationSimplifyDTO;
+import io.choerodon.base.api.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.base.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.base.api.dto.payload.OrganizationPayload;
 import io.choerodon.base.api.vo.RemoteTokenManagementResultVO;
+import io.choerodon.base.app.service.LdapService;
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.core.enums.ResourceType;
@@ -77,6 +83,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private RemoteTokenMapper remoteTokenMapper;
 
+    private LdapService ldapService;
+
     public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
                                    UserService userService,
@@ -87,10 +95,12 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    OrganizationMapper organizationMapper,
                                    RoleMapper roleMapper,
                                    MemberRoleMapper memberRoleMapper,
+                                   LdapService ldapService,
                                    RemoteTokenMapper remoteTokenMapper) {
         this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
         this.userService = userService;
+        this.ldapService = ldapService;
         this.asgardFeignClient = asgardFeignClient;
         this.organizationAssertHelper = organizationAssertHelper;
         this.projectMapper = projectMapper;
@@ -369,4 +379,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         return resultVO;
     }
+
+    @SagaTask(code = TASK_CREATE_LDAP_AUTO, sagaCode = CREATE_LDAP_AUTO, seq = 10, description = "ldap自动同步创建/删除quartzTask")
+    public void producerQuartzTask(String message) throws IOException {
+        LdapAutoTaskEventPayload autoTaskEventPayload =
+                mapper.readValue(message, LdapAutoTaskEventPayload.class);
+        ldapService.handleLdapAutoTask(autoTaskEventPayload);
+    }
+
 }

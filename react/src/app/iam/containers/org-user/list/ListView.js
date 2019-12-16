@@ -1,19 +1,25 @@
-import React, { useContext, useState } from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import React, { useContext, useState, useEffect } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { withRouter } from 'react-router-dom';
 import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
-import { Button, Modal as OldModal } from 'choerodon-ui';
-import { Select, SelectBox, Table, TextField, Modal, message } from 'choerodon-ui/pro';
+import { Modal as OldModal, Tooltip } from 'choerodon-ui';
+import { Select, SelectBox, Table, TextField, Modal, message, Icon, Button } from 'choerodon-ui/pro';
 import expandMoreColumn from '../../../components/expandMoreColumn';
 import StatusTag from '../../../components/statusTag';
 import Store from './stores';
 import Sider from './sider';
-import { strLength } from '../../../common/util';
+import LdapModal from './ldapModal';
+
 import './index.less';
 
 const modalKey = Modal.key();
+const syncModalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const { Column } = Table;
-export default function ListView(props) {
+export default withRouter((props) => {
   const { intlPrefix,
     permissions, 
     intl, 
@@ -117,7 +123,7 @@ export default function ListView(props) {
   function openModal(type) {
     Modal.open({
       ...modalProps[type],
-      children: <Sider 
+      children: <Sider
         type={type}
         orgRoleDataSet={orgRoleDataSet}
         orgAllRoleDataSet={orgAllRoleDataSet}
@@ -130,6 +136,7 @@ export default function ListView(props) {
       drawer: true,
       style: { width: 380 },
       fullScreen: true,
+      cancelText: '取消',
       destroyOnClose: true,
       className: 'base-org-user-sider',
     });
@@ -179,6 +186,49 @@ export default function ListView(props) {
       },
     });
   }
+
+  function linkToLDAP() {
+    const {
+      history,
+      location: {
+        search,
+      },
+    } = props;
+    history.push(`/base/organization-setting/ldap${search}`);
+  }
+
+  function handleSyncSetting() {
+    Modal.open({
+      key: syncModalKey,
+      style: modalStyle,
+      drawer: true,
+      title: (
+        <div className="org-user-sync-title">
+          <span>LDAP同步设置</span>
+          <Tooltip title="若同步过程中因为配置的问题无法执行，请点击“转至LDAP设置”按钮在详情界面进行配置">
+            <Icon type="help" className="org-user-sync-title-icon" />
+          </Tooltip>
+        </div>
+      ),
+      children: <LdapModal />,
+      okText: '手动同步',
+      cancelText: '关闭',
+      footer: (okBtn, cancelBtn) => (
+        <div>
+          {okBtn}
+          <Button
+            color="primary"
+            funcType="raised"
+            onClick={linkToLDAP}
+          >
+            转至LDAP设置
+          </Button>
+          {cancelBtn}
+        </div>
+      ),
+    });
+  }
+
   function renderLocked({ value }) {
     return value ? '锁定' : '';
   }
@@ -263,6 +313,7 @@ export default function ListView(props) {
         <Button icon="archive" onClick={handleImportUser}><FormattedMessage id={`${intlPrefix}.button.import-user`} /></Button>
         <Button icon="person_add" onClick={handleRoleAssignment}>添加组织用户</Button>
         <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
+        <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
       </Header>
       <Breadcrumb />
       <Content
@@ -279,4 +330,4 @@ export default function ListView(props) {
       </Content>
     </TabPage>
   );
-}
+});

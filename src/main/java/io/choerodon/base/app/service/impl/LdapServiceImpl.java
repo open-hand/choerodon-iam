@@ -1,10 +1,12 @@
 package io.choerodon.base.app.service.impl;
 
 import static io.choerodon.base.infra.asserts.LdapAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.Organization.CREATE_LDAP_AUTO;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.naming.NamingEnumeration;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ldap.AuthenticationException;
 import org.springframework.ldap.CommunicationException;
 import org.springframework.ldap.InvalidNameException;
@@ -31,28 +34,38 @@ import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.query.SearchScope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.base.api.dto.LdapAccountDTO;
 import io.choerodon.base.api.dto.LdapConnectionDTO;
+import io.choerodon.base.api.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.base.api.validator.LdapValidator;
 import io.choerodon.base.app.service.LdapService;
 import io.choerodon.base.infra.asserts.LdapAssertHelper;
 import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.base.infra.dto.LdapDTO;
-import io.choerodon.base.infra.dto.LdapErrorUserDTO;
-import io.choerodon.base.infra.dto.LdapHistoryDTO;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.dto.asgard.QuartzTask;
+import io.choerodon.base.infra.dto.asgard.ScheduleMethodDTO;
+import io.choerodon.base.infra.dto.asgard.ScheduleTaskDTO;
+import io.choerodon.base.infra.dto.asgard.ScheduleTaskDetail;
+import io.choerodon.base.infra.enums.LdapAutoFrequencyType;
 import io.choerodon.base.infra.enums.LdapSyncType;
 import io.choerodon.base.infra.factory.MessageSourceFactory;
-import io.choerodon.base.infra.mapper.LdapErrorUserMapper;
-import io.choerodon.base.infra.mapper.LdapHistoryMapper;
-import io.choerodon.base.infra.mapper.LdapMapper;
+import io.choerodon.base.infra.feign.AsgardFeignClient;
+import io.choerodon.base.infra.mapper.*;
 import io.choerodon.base.infra.utils.LocaleUtils;
 import io.choerodon.base.infra.utils.ldap.LdapSyncUserTask;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.ldap.DirectoryType;
 
 /**
@@ -62,6 +75,13 @@ import io.choerodon.core.ldap.DirectoryType;
 public class LdapServiceImpl implements LdapService {
     private static final String LDAP_ERROR_USER_MESSAGE_DIR = "classpath:messages/messages";
     private static final String REGEX = "\\(.*\\)";
+    private static final String CRON_FORMAT = "%s %s %s %s %s %s";
+    private static final String TASK_FORMAT = "%s组织LDAP自动同步用户任务";
+    private static final String TASK_DESCRIPTION = "组织下自动同步LDAP用户任务";
+    private static final String CRON_TRIGGER = "cron-trigger";
+    private static final String STOP = "STOP";
+    private static final String ORGANIZATION_CODE = "organizationCode";
+    private static final String EXECUTE_METHOD = "syncLdapUserOrganization";
 
     public static final String LDAP_CONNECTION_DTO = "ldapConnectionDTO";
 
@@ -84,13 +104,25 @@ public class LdapServiceImpl implements LdapService {
 
     private LdapHistoryMapper ldapHistoryMapper;
 
+    private LdapAutoMapper ldapAutoMapper;
+
+    private TransactionalProducer producer;
+
+    private AsgardFeignClient asgardFeignClient;
+
+    private OrganizationMapper organizationMapper;
+
     public LdapServiceImpl(OrganizationAssertHelper organizationAssertHelper,
                            LdapAssertHelper ldapAssertHelper,
                            LdapMapper ldapMapper,
                            LdapSyncUserTask ldapSyncUserTask,
                            LdapSyncUserTask.FinishFallback finishFallback,
                            LdapErrorUserMapper ldapErrorUserMapper,
-                           LdapHistoryMapper ldapHistoryMapper) {
+                           LdapHistoryMapper ldapHistoryMapper,
+                           TransactionalProducer producer,
+                           AsgardFeignClient asgardFeignClient,
+                           OrganizationMapper organizationMapper,
+                           LdapAutoMapper ldapAutoMapper) {
         this.ldapSyncUserTask = ldapSyncUserTask;
         this.finishFallback = finishFallback;
         this.ldapErrorUserMapper = ldapErrorUserMapper;
@@ -98,6 +130,10 @@ public class LdapServiceImpl implements LdapService {
         this.ldapMapper = ldapMapper;
         this.ldapAssertHelper = ldapAssertHelper;
         this.ldapHistoryMapper = ldapHistoryMapper;
+        this.ldapAutoMapper = ldapAutoMapper;
+        this.producer = producer;
+        this.organizationMapper = organizationMapper;
+        this.asgardFeignClient = asgardFeignClient;
     }
 
     @Override
@@ -125,19 +161,13 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO) {
-        ldapDTO.setId(id);
+    public LdapDTO update(Long organizationId, LdapDTO ldapDTO) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
+        ldapDTO.setId(oldLdapDTO.getId());
         validateLdap(ldapDTO);
         organizationAssertHelper.notExisted(organizationId);
-        ldapAssertHelper.ldapNotExisted(WhichColumn.ID, id);
+        ldapAssertHelper.ldapNotExisted(WhichColumn.ID, oldLdapDTO.getId());
         return doUpdate(ldapDTO);
-    }
-
-    private LdapDTO doUpdate(LdapDTO ldapDTO) {
-        if (ldapMapper.updateByPrimaryKey(ldapDTO) != 1) {
-            throw new UpdateException("error.ldap.update");
-        }
-        return ldapMapper.selectByPrimaryKey(ldapDTO.getId());
     }
 
     @Override
@@ -147,18 +177,20 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public void delete(Long orgId, Long id) {
+    public void delete(Long orgId) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(orgId);
         organizationAssertHelper.notExisted(orgId);
-        ldapAssertHelper.ldapNotExisted(WhichColumn.ID, id);
-        ldapMapper.deleteByPrimaryKey(id);
+        ldapAssertHelper.ldapNotExisted(WhichColumn.ID, oldLdapDTO.getId());
+        ldapMapper.deleteByPrimaryKey(oldLdapDTO.getId());
     }
 
     @Override
-    public LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccount) {
+    public LdapConnectionDTO testConnect(Long organizationId, LdapAccountDTO ldapAccount) {
         organizationAssertHelper.notExisted(organizationId);
-        LdapDTO ldap = ldapAssertHelper.ldapNotExisted(WhichColumn.ID, id);
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
+        LdapDTO ldap = ldapAssertHelper.ldapNotExisted(WhichColumn.ID, oldLdapDTO.getId());
         if (!organizationId.equals(ldap.getOrganizationId())) {
-            throw new CommonException("error.organization.not.has.ldap", organizationId, id);
+            throw new CommonException("error.organization.not.has.ldap", organizationId, oldLdapDTO.getId());
         }
         ldap.setAccount(ldapAccount.getAccount());
         ldap.setPassword(ldapAccount.getPassword());
@@ -185,8 +217,9 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public void syncLdapUser(Long organizationId, Long id) {
-        LdapDTO ldap = validateLdap(organizationId, id);
+    public void syncLdapUser(Long organizationId) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
+        LdapDTO ldap = validateLdap(organizationId, oldLdapDTO.getId());
         Map<String, Object> map = testConnect(ldap);
         LdapConnectionDTO ldapConnectionDTO =
                 (LdapConnectionDTO) map.get(LDAP_CONNECTION_DTO);
@@ -212,9 +245,10 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapHistoryDTO queryLatestHistory(Long ldapId) {
+    public LdapHistoryDTO queryLatestHistory(Long organizationId) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
         LdapHistoryDTO example = new LdapHistoryDTO();
-        example.setLdapId(ldapId);
+        example.setLdapId(oldLdapDTO.getId());
         List<LdapHistoryDTO> ldapHistoryList = ldapHistoryMapper.select(example);
         if (ldapHistoryList.isEmpty()) {
             return null;
@@ -225,8 +259,9 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO enableLdap(Long organizationId, Long id) {
-        return updateEnabled(organizationId, id, true);
+    public LdapDTO enableLdap(Long organizationId) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
+        return updateEnabled(organizationId, oldLdapDTO.getId(), true);
     }
 
     private LdapDTO updateEnabled(Long organizationId, Long id, Boolean enabled) {
@@ -239,13 +274,14 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO disableLdap(Long organizationId, Long id) {
-        return updateEnabled(organizationId, id, false);
+    public LdapDTO disableLdap(Long organizationId) {
+        LdapDTO oldLdapDTO = queryByOrganizationId(organizationId);
+        return updateEnabled(organizationId, oldLdapDTO.getId(), false);
     }
 
     @Override
-    public LdapHistoryDTO stop(Long id) {
-        LdapHistoryDTO ldapHistoryDTO = queryLatestHistory(id);
+    public LdapHistoryDTO stop(Long organizationId) {
+        LdapHistoryDTO ldapHistoryDTO = queryLatestHistory(organizationId);
         if (ldapHistoryDTO == null) {
             throw new NotExistedException("error.ldapHistory.not.exist");
         }
@@ -257,9 +293,10 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public PageInfo<LdapHistoryDTO> pagingQueryHistories(Pageable pageable, Long ldapId) {
+    public PageInfo<LdapHistoryDTO> pagingQueryHistories(Pageable pageable, Long organizationId) {
+        LdapHistoryDTO ldapHistoryDTO = queryLatestHistory(organizationId);
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                .doSelectPageInfo(() -> ldapHistoryMapper.selectAllEnd(ldapId));
+                .doSelectPageInfo(() -> ldapHistoryMapper.selectAllEnd(ldapHistoryDTO.getLdapId()));
     }
 
     @Override
@@ -278,6 +315,195 @@ public class LdapServiceImpl implements LdapService {
             errorUser.setCause(messageSource.getMessage(cause, null, locale));
         });
         return result;
+    }
+
+    @Override
+    @Saga(code = CREATE_LDAP_AUTO,
+            description = "base创建ldap自动同步任务", inputSchema = "{}")
+    @Transactional
+    public LdapAutoDTO createLdapAuto(Long organizationId, LdapAutoDTO ldapAutoDTO) {
+        if (queryLdapAutoByOrgId(organizationId) != null) {
+            throw new CommonException("organization.already.exist.ldap.auto");
+        }
+        ldapAutoDTO.setOrganizationId(organizationId);
+        if (ldapAutoMapper.insertSelective(ldapAutoDTO) != 1) {
+            throw new CommonException("error.insert.ldap.auto");
+        }
+        LdapAutoTaskEventPayload taskEventPayload = new LdapAutoTaskEventPayload();
+        taskEventPayload.setLdapAutoId(ldapAutoDTO.getId());
+        taskEventPayload.setOrganizationId(organizationId);
+        sendProducerQuartzTaskEvent(taskEventPayload, organizationId, ResourceLevel.ORGANIZATION, CREATE_LDAP_AUTO);
+        return ldapAutoDTO;
+    }
+
+    @Override
+    public void handleLdapAutoTask(LdapAutoTaskEventPayload ldapAutoTaskEventPayload) {
+        if (ldapAutoTaskEventPayload.getDeleteQuartzTaskId() != null) {
+            asgardFeignClient.deleteOrgTask(ldapAutoTaskEventPayload.getOrganizationId(), ldapAutoTaskEventPayload.getDeleteQuartzTaskId());
+        }
+        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(ldapAutoTaskEventPayload.getOrganizationId());
+        LdapAutoDTO ldapAutoDTO = ldapAutoMapper.selectByPrimaryKey(ldapAutoTaskEventPayload.getLdapAutoId());
+        ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
+        scheduleTaskDTO.setName(String.format(TASK_FORMAT, organizationDTO.getName()));
+        scheduleTaskDTO.setDescription(TASK_DESCRIPTION);
+        scheduleTaskDTO.setStartTime(ldapAutoDTO.getStartTime());
+        scheduleTaskDTO.setCronExpression(getAutoLdapCron(ldapAutoDTO));
+        scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
+        scheduleTaskDTO.setExecuteStrategy(STOP);
+        if (ldapAutoTaskEventPayload.getActive() != null && !ldapAutoTaskEventPayload.getActive()) {
+            scheduleTaskDTO.setStatus(QuartzDefinition.TaskStatus.DISABLE.name());
+        }
+        ScheduleTaskDTO.NotifyUser notifyUser = new ScheduleTaskDTO.NotifyUser();
+        notifyUser.setAdministrator(true);
+        notifyUser.setAssigner(false);
+        notifyUser.setCreator(false);
+        scheduleTaskDTO.setNotifyUser(notifyUser);
+
+        Map<String, Object> mapParams = new HashMap<>();
+        mapParams.put(ORGANIZATION_CODE, organizationDTO.getCode());
+        scheduleTaskDTO.setParams(mapParams);
+
+        scheduleTaskDTO.setMethodId(getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId()).getId());
+
+        ldapAutoDTO.setQuartzTaskId(createQuartzTask(ldapAutoTaskEventPayload.getOrganizationId(), scheduleTaskDTO).getId());
+        if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {
+            throw new CommonException("error.update.ldap.auto");
+        }
+    }
+
+    @Override
+    @Transactional
+    public LdapAutoDTO updateLdapAuto(Long organizationId, LdapAutoDTO ldapAutoDTO) {
+        LdapAutoDTO oldLdapAutoDTO = ldapAutoMapper.selectByPrimaryKey(ldapAutoDTO.getId());
+        Boolean isNotChange = false;
+        if (ldapAutoDTO.getFrequency().equals(oldLdapAutoDTO.getFrequency()) && ldapAutoDTO.getStartTime().compareTo(oldLdapAutoDTO.getStartTime()) == 0) {
+            isNotChange = true;
+        }
+        if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {
+            throw new CommonException("error.update.ldap.auto");
+        }
+        if (!isNotChange) {
+            LdapAutoTaskEventPayload taskEventPayload = new LdapAutoTaskEventPayload();
+            taskEventPayload.setLdapAutoId(ldapAutoDTO.getId());
+            taskEventPayload.setDeleteQuartzTaskId(oldLdapAutoDTO.getQuartzTaskId());
+            taskEventPayload.setOrganizationId(organizationId);
+            taskEventPayload.setActive(ldapAutoDTO.getActive());
+            sendProducerQuartzTaskEvent(taskEventPayload, organizationId, ResourceLevel.ORGANIZATION, CREATE_LDAP_AUTO);
+        } else if (ldapAutoDTO.getActive().compareTo(oldLdapAutoDTO.getActive()) != 0) {
+            ScheduleTaskDetail taskDetailDTO = getQuartzTaskDetail(organizationId, ldapAutoDTO.getQuartzTaskId());
+            if (ldapAutoDTO.getActive()) {
+                asgardFeignClient.enableOrgTask(organizationId, ldapAutoDTO.getQuartzTaskId(), taskDetailDTO.getObjectVersionNumber());
+            } else {
+                asgardFeignClient.disableOrgTask(organizationId, ldapAutoDTO.getQuartzTaskId(), taskDetailDTO.getObjectVersionNumber());
+            }
+        }
+        return ldapAutoDTO;
+    }
+
+    @Override
+    public LdapAutoDTO queryLdapAutoDTO(Long organizationId) {
+        LdapAutoDTO queryLdapAutoDTO = new LdapAutoDTO();
+        queryLdapAutoDTO.setOrganizationId(organizationId);
+        return ldapAutoMapper.selectOne(queryLdapAutoDTO);
+    }
+
+    private ScheduleMethodDTO getMethodDTO(Long organizationId) {
+        ResponseEntity<List<ScheduleMethodDTO>> methodsResponseEntity = null;
+        try {
+            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, "base-service");
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        List<ScheduleMethodDTO> methodDTOList = methodsResponseEntity.getBody();
+        if (methodDTOList == null || methodDTOList.size() == 0) {
+            throw new CommonException("error.list.methods");
+        }
+        Optional<ScheduleMethodDTO> methodDTO = methodDTOList.stream().filter(t -> t.getCode().equals(EXECUTE_METHOD)).findFirst();
+        if (!methodDTO.isPresent()) {
+            throw new CommonException("error.ldap.sync.method.get");
+        }
+
+        return methodDTO.get();
+    }
+
+    private ScheduleTaskDetail getQuartzTaskDetail(Long organizationId, Long quartzTaskId) {
+        ResponseEntity<ScheduleTaskDetail> quartzTaskResponseEntity = null;
+        try {
+            quartzTaskResponseEntity = asgardFeignClient.getTaskDetail(organizationId, quartzTaskId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        ScheduleTaskDetail result = quartzTaskResponseEntity.getBody();
+        if (result == null || result.getId() == null) {
+            throw new CommonException("error.query.quartz.task");
+        }
+        return result;
+    }
+
+    private QuartzTask createQuartzTask(Long organizationId, ScheduleTaskDTO scheduleTaskDTO) {
+        ResponseEntity<QuartzTask> quartzTaskResponseEntity = null;
+        try {
+            quartzTaskResponseEntity = asgardFeignClient.createOrgTask(organizationId, scheduleTaskDTO);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        QuartzTask result = quartzTaskResponseEntity.getBody();
+        if (result == null || result.getId() == null) {
+            throw new CommonException("error.create.quartz.task");
+        }
+        return result;
+    }
+
+    private String getAutoLdapCron(LdapAutoDTO ldapAutoDTO) {
+        String[] currTime = new SimpleDateFormat("HH:mm:ss").format(ldapAutoDTO.getStartTime()).split(":");
+        String cron;
+        switch (LdapAutoFrequencyType.valueOf(ldapAutoDTO.getFrequency())) {
+            case DAY:
+                cron = String.format(CRON_FORMAT, currTime[2], currTime[1], currTime[0], "*", "*", "?");
+                break;
+            case WEEK:
+                SimpleDateFormat dateFm = new SimpleDateFormat("E", Locale.ENGLISH);
+                String currWeek = dateFm.format(ldapAutoDTO.getStartTime());
+                cron = String.format(CRON_FORMAT, currTime[2], currTime[1], currTime[0], "?", "*", currWeek);
+                break;
+            case MONTH:
+                String[] currDay = new SimpleDateFormat("yyyy-MM-dd").format(ldapAutoDTO.getStartTime()).split("-");
+                String date = Integer.parseInt(currDay[2]) > 28 ? "L" : currDay[2];
+                cron = String.format(CRON_FORMAT, currTime[2], currTime[1], currTime[0], date, "*", "?");
+                break;
+            default:
+                throw new CommonException("error.frequency.type");
+        }
+        return cron;
+    }
+
+    private void sendProducerQuartzTaskEvent(LdapAutoTaskEventPayload payload, Long sourceId, ResourceLevel resourceLevel, String sagaCode) {
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(resourceLevel)
+                        .withRefType("ldapAutoTaskEvent")
+                        .withSagaCode(sagaCode),
+                builder -> {
+                    builder
+                            .withPayloadAndSerialize(payload)
+                            .withRefId(payload.getLdapAutoId().toString())
+                            .withSourceId(sourceId);
+                    return payload;
+                });
+    }
+
+    private LdapAutoDTO queryLdapAutoByOrgId(Long orgId) {
+        LdapAutoDTO ldapAutoDTO = new LdapAutoDTO();
+        ldapAutoDTO.setOrganizationId(orgId);
+        return ldapAutoMapper.selectOne(ldapAutoDTO);
+    }
+
+    private LdapDTO doUpdate(LdapDTO ldapDTO) {
+        if (ldapMapper.updateByPrimaryKey(ldapDTO) != 1) {
+            throw new UpdateException("error.ldap.update");
+        }
+        return ldapMapper.selectByPrimaryKey(ldapDTO.getId());
     }
 
     private LdapTemplate fetchUserDn2Authenticate(LdapDTO ldapDTO, LdapConnectionDTO ldapConnectionDTO) {

@@ -481,7 +481,11 @@
                 )
             </if>
         </if>
-        order by fp.id desc
+        order by
+        <if test="orderBy != null and orderBy != ''">
+            ${orderBy},
+        </if>
+        fp.id desc
     </select>
 
     <select id="selectProjectsByUserId" resultMap="projectDTO">
@@ -503,5 +507,14 @@
                 </if>
             </if>
         </where>
+    </select>
+
+    <select id="getProListByName" resultType="java.lang.Long">
+        select fp.id
+        from fd_project fp
+        WHERE 1=1
+        <if test="name != null">
+            AND fp.name LIKE concat(concat('%',#{name}),'%')
+        </if>
     </select>
 </mapper>

@@ -1,10 +1,11 @@
-import React, { useContext, Fragment, useEffect, useState } from 'react';
-import { Form, Output, Modal, TextField, Password, Progress, Button, message } from 'choerodon-ui/pro';
+import React, { useContext, useState } from 'react';
+import { Progress, message } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 import { useInterval } from '../../../../../components/costomHooks';
 import Store from './stores';
 
+import './index.less';
 
 // 计算时间差
 function handleLoadTime(startTime, endTime) {
@@ -51,13 +52,15 @@ export function extractFieldValueFromDataSet(dataSet, fieldName) {
 }
 
 const LdapLoadClient = observer(() => {
-  const { orgId, ldapId, ldapLoadClientDataSet, modal } = useContext(Store);
-  const [isShowCancelBtn, changeBtnStatus] = useState(false);
+  const { orgId, ldapLoadClientDataSet, modal } = useContext(Store);
   const [delay, setDelay] = useState(false);
   const newUserCount = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('newUserCount');
   const syncBeginTime = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('syncBeginTime');
   const syncEndTime = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('syncEndTime');
+  const updateUserCount = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('updateUserCount');
+  const errorUserCount = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('errorUserCount');
   const id = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('id');
+  const [isStop, changeIsStop] = useState(false);
 
   let intervalId;
 
@@ -66,12 +69,16 @@ const LdapLoadClient = observer(() => {
       await ldapLoadClientDataSet.query();
       if (ldapLoadClientDataSet.current.get('syncEndTime')) {
         setDelay(false);
+        changeIsStop(false);
+        modal.update({ okProps: { color: 'primary', loading: false }, okText: '同步' });
       } else {
         setDelay(3000);
         if (new Date() - new Date(ldapLoadClientDataSet.current.get('syncBeginTime')) > 3600000) {
-          changeBtnStatus(true);
+          changeIsStop(true);
+          modal.update({ okProps: { color: 'red' }, okText: '终止同步' });
         } else {
-          changeBtnStatus(false);
+          changeIsStop(false);
+          modal.update({ okProps: { color: 'primary', loading: true }, okText: '同步中' });
         }
       }
     } catch (e) {
@@ -79,55 +86,56 @@ const LdapLoadClient = observer(() => {
     }
   }
 
-  // 取消加载
-  function cancelLoadClient() {
-    clearInterval(intervalId);
-    axios.put(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/stop`);
-  }
   modal.handleOk(async () => {
-    const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/sync_users`);
-    if (!result.failed) {
-      pollHistory();
-      setDelay(3000);
+    if (!isStop) {
+      const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/sync_users`);
+      if (!result.failed) {
+        pollHistory();
+        setDelay(3000);
+      } else {
+        message.error(result.message);
+      }
+      return false;
     } else {
-      message.error(result.message);
+      clearInterval(intervalId);
+      axios.put(`/base/v1/organizations/${orgId}/ldaps/stop`);
+      return false;
     }
-    return false;
   });
+
   function renderLastSync() {
     return (
-      <div style={{ fontSize: '.16rem', display: syncEndTime ? 'block' : 'none' }} className="c7n-organization-loader-header">
-        <p>上次同步时间<strong>{syncBeginTime}</strong></p>
-        <p>(耗时<strong>{handleLoadTime(syncBeginTime, syncEndTime)}</strong>，同步<strong>{newUserCount || 0}</strong>个用户)</p>
+      <div className="base-org-ldap-record" style={{ display: syncEndTime ? 'block' : 'none' }}>
+        <div className="base-org-ldap-record-text">
+          上次同步完成时间
+          <span className="base-org-ldap-record-time">{syncEndTime}</span>
+          &nbsp; (耗时{handleLoadTime(syncBeginTime, syncEndTime)})
+        </div>
+        <div>
+          共同步
+          <span className="base-org-ldap-record-number-success">{newUserCount + updateUserCount || 0}</span>
+          个用户成功，
+          <span className="base-org-ldap-record-number-failed">{errorUserCount || 0}</span>
+          个用户失败
+        </div>
       </div>
     );
   }
   function renderEmpty() {
     return (
-      <p><strong>暂无同步记录</strong></p>
+      <span className="base-org-ldap-record">暂无同步记录</span>
     );
   }
+
   useInterval(pollHistory, delay);
+
   return (
     <div>
       {id ? renderLastSync() : renderEmpty()}
-      <div className="c7n-organization-loader" style={{ display: !syncEndTime && id ? 'block' : 'none' }}>
-        <div style={{ textAlign: 'center' }}>
-          <Progress type="loading" size="large" />
-          <span>正在同步中</span>
-        </div>
-
-        <p>(本次同步将会耗时较长，您可以先返回进行其他操作)</p>
-        <Button
-          color="red"
-          funcType="raised"
-          style={{
-            margin: '0 auto', display: isShowCancelBtn ? 'block' : 'none',
-          }}
-          onClick={cancelLoadClient}
-        >
-          取消同步
-        </Button>
+      <div className="base-org-ldap-sync" style={{ display: !syncEndTime && id ? 'block' : 'none' }}>
+        <Progress type="loading" size="large" />
+        <div className="base-org-ldap-sync-loading">正在导入中</div>
+        <div>(本次导入耗时较长，您可先返回进行其他操作)</div>
       </div>
     </div>
   );

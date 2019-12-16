@@ -372,4 +372,29 @@ public class UserController extends BaseController {
     public ResponseEntity<OrganizationProjectDTO> queryOrganizationProjectByUserId(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userService.queryOrganizationProjectByUserId(id), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/enable_user/route_rule_unused")
+    @ApiOperation(value = "查询可用于路由配置的用户信息")
+    @Permission(type = ResourceType.SITE)
+    public ResponseEntity<List<UserDTO>> listEnableUsersByRouteRuleCode(@RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userService.listEnableUsersByRouteRuleCode(userName), HttpStatus.OK);
+    }
+
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
+    @ApiOperation("获取用户下的指定项目(没有项目权限或者项目不存在返回空)")
+    @GetMapping("/{id}/projects/{project_id}")
+    public ResponseEntity<ProjectDTO> queryProjectById(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userService.queryProjectById(id, projectId));
+    }
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
+    public ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userService.checkIsProjectOwner(id, projectId));
+    }
+
 }

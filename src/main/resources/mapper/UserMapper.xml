@@ -1201,5 +1201,38 @@
         and imr.source_type = 'organization' and imr.member_type = 'user'
         and imr.source_id = #{organizationId} and imr.member_id = #{userId}
     </select>
+    <!--用户在项目下拥有多个角色，存在多条记录，所以使用DISTINCT-->
+    <select id="selectProjectByUidAndProjectId" resultType="io.choerodon.base.infra.dto.ProjectDTO">
+        SELECT DISTINCT
+            fp.*
+        FROM
+            iam_member_role imr
+        INNER JOIN
+            fd_project fp ON imr.source_id = fp.id
+        WHERE
+            imr.member_type = 'user'
+        AND
+            imr.member_id = #{id}
+        AND
+            imr.source_type = 'project'
+        AND
+            imr.source_id = #{projectId}
+    </select>
+    <select id="selectRolesByUidAndProjectId" resultType="io.choerodon.base.infra.dto.RoleDTO">
+        SELECT
+            ir.*
+        FROM
+            iam_member_role imr
+        INNER JOIN
+            iam_role ir ON imr.role_id = ir.id
+        WHERE
+            imr.member_type = 'user'
+        AND
+            imr.member_id = #{id}
+        AND
+            imr.source_type = 'project'
+        AND
+            imr.source_id = #{projectId}
+    </select>
 
 </mapper>

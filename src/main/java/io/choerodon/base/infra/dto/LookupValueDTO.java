@@ -1,15 +1,14 @@
 package io.choerodon.base.infra.dto;
 
-import io.choerodon.mybatis.annotation.MultiLanguage;
-import io.choerodon.mybatis.annotation.MultiLanguageField;
-import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotEmpty;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+
+import io.choerodon.mybatis.annotation.*;
+import io.choerodon.mybatis.entity.*;
+
+import static io.choerodon.base.infra.utils.RegularExpression.*;
 
 /**
  * @author superlee
@@ -24,7 +23,8 @@ public class LookupValueDTO extends BaseDTO {
     private Long id;
 
     @ApiModelProperty(value = "快码值code")
-    @NotEmpty(message = "error.code.empty")
+    @NotEmpty(message = "error.lookup.code.empty")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION,message = "error.lookup.code.format.incorrect")
     private String code;
 
     @ApiModelProperty(value = "所属快码id", hidden = true)
@@ -32,7 +32,11 @@ public class LookupValueDTO extends BaseDTO {
 
     @MultiLanguageField
     @ApiModelProperty(value = "快码值描述")
+    @NotEmpty(message = "error.lookup.description.empty")
     private String description;
+
+    @ApiModelProperty(value = "排列顺序")
+    private Integer displayOrder;
 
     public Long getId() {
         return id;
@@ -64,5 +68,13 @@ public class LookupValueDTO extends BaseDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.base.infra.mapper.RouteRuleMapper">
+
+    <select id="listRouteRules" resultType="io.choerodon.base.api.vo.RouteRuleVO">
+        select frr.`ID` AS `ID`, frr.`CODE` AS `CODE`, frr.`DESCRIPTION` AS `DESCRIPTION`, frr.`CREATION_DATE` AS `CREATION_DATE`,
+                (SELECT count(id) FROM FD_ROUTE_MEMBER_RULE frmr WHERE frmr.`ROUTE_RULE_CODE` = frr.`CODE`) AS `USER_NUMBER`, frr.`OBJECT_VERSION_NUMBER` AS `OBJECT_VERSION_NUMBER`
+        from fd_route_rule frr
+        <where>
+            <if test="code != null">
+                AND `code` LIKE concat(concat('%', #{code}), '%')
+            </if>
+        </where>
+    </select>
+</mapper>

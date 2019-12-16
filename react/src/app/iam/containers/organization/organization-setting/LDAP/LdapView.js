@@ -83,7 +83,7 @@ const LdapView = observer(() => {
   }
   async function handleDisableLdap() {
     try {
-      await axios.put(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/disable`);
+      await axios.put(`/base/v1/organizations/${orgId}/ldaps/disable`);
       await ldapDataSet.query();
     } catch (e) {
       Choerodon.prompt(e);
@@ -103,7 +103,7 @@ const LdapView = observer(() => {
   }
   async function handleEnableLdap() {
     try {
-      const result = await axios.put(`/base/v1/organizations/${orgId}/ldaps/${ldapId}/enable`);
+      const result = await axios.put(`/base/v1/organizations/${orgId}/ldaps/enable`);
       if (result.failed) {
         throw result.message;
       }

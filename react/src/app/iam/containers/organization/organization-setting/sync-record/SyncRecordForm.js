@@ -20,11 +20,13 @@ const SyncRecordForm = observer(() => {
   function renderNewsNum({ record }) {
     let num = record.get('updateUserCount');
     let num2 = record.get('errorUserCount');
-    if (num == null || num2 == null) {
+    let num3 = record.get('newUserCount');
+    if (num == null || num2 == null || num3 == null) {
       num = 0;
       num2 = 0;
+      num3 = 0;
     }
-    return <span>{`${num}/${num + num2}`}</span>;
+    return <span>{`${num + num3}/${num + num2 + num3}`}</span>;
   }
   function renderErrorUserCount({ record }) {
     let num = record.get('errorUserCount');

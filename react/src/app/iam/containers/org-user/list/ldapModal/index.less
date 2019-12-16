@@ -1,0 +1,78 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.base-org-user-ldap {
+
+  &-manual {
+
+    &-record {
+      color: rgba(0, 0, 0, 0.65);
+      line-height: .18rem;
+
+      &-text {
+        margin-bottom: .1rem;
+      }
+
+      &-time {
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      &-number {
+
+        &-success {
+          font-size: .18rem;
+          font-weight: 500;
+          color: #00bfa5;
+        }
+
+        &-failed {
+          font-size: .18rem;
+          font-weight: 500;
+          color: #f44336;
+        }
+      }
+    }
+
+    &-sync {
+      padding: .2rem 0;
+      font-size: .14rem;
+      text-align: center;
+      margin: .24rem .02rem .02rem;
+      color: rgba(0, 0, 0, 0.65);
+
+      &-loading {
+        font-size: .2rem;
+        line-height: .28rem;
+        margin: .2rem 0 .07rem;
+        color: rgba(0, 0, 0, 1);
+      }
+    }
+  }
+
+  &-auto {
+
+    &-content {
+      width: 5.12rem;
+      padding-top: .14rem;
+
+      &-radio {
+        width: .8rem;
+        display: inline-block;
+      }
+    }
+  }
+
+  &-record {
+
+    &-content {
+      margin-top: -0.16rem;
+
+      .@{c7n-pro-prefix}-table-filter-select {
+        border-top: none !important;
+      }
+    }
+
+    .text-gray {
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
+}

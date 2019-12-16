@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ClientVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +74,12 @@ public class ClientController extends BaseController {
     public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
         return new ResponseEntity<>(clientService.query(organizationId, clientId), HttpStatus.OK);
     }
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "通过source_id查询客户端")
+    @GetMapping(value = "/source/{source_id}")
+    public ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId) {
+        return new ResponseEntity<>(clientService.queryClientBySourceId(organizationId, sourceId), HttpStatus.OK);
+    }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "通过名称查询客户端")
@@ -111,6 +118,13 @@ public class ClientController extends BaseController {
                                                  @PathVariable("client_id") Long clientId,
                                                  @RequestBody List<Long> roleIds) {
         return ResponseEntity.ok(clientService.assignRoles(organizationId, clientId, roleIds));
+    }
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据类型创建客户端")
+    @PostMapping("/wih_type")
+    public ResponseEntity<ClientDTO> createClientWithType(@PathVariable("organization_id") Long organizationId,
+                                                          @RequestBody @Valid ClientVO clientVO) {
+        return new ResponseEntity<>(clientService.createClientWithType(organizationId, clientVO), HttpStatus.OK);
     }
 
 }

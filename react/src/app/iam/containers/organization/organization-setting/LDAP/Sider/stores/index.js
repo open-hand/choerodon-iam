@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
@@ -8,8 +8,8 @@ const Store = createContext();
 export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
-  const { children, AppState: { currentMenuType: { id: orgId } }, ldapId } = props;
-  const ldapLoadClientDataSet = new DataSet(LdapLoadClientDataSet({ orgId, ldapId }));
+  const { children, AppState: { currentMenuType: { id: orgId } } } = props;
+  const ldapLoadClientDataSet = useMemo(() => new DataSet(LdapLoadClientDataSet({ orgId })), [orgId]);
   const value = {
     ...props,
     orgId,

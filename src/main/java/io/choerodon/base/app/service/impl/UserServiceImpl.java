@@ -1093,4 +1093,13 @@ public class UserServiceImpl implements UserService {
         List<RoleDTO> roleDTOList =  userMapper.selectRolesByUidAndProjectId(id, projectId);
         return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
     }
+    @Override
+    public List<UserDTO> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable) {
+        return userMapper.listProjectUsersByProjectIdAndRoleLable(projectId,roleLable);
+    }
+
+    @Override
+    public List<UserDTO> listUsersByName(Long projectId, String param) {
+        return userMapper.listUsersByName(projectId, param);
+    }
 }

@@ -273,4 +273,20 @@ public interface UserMapper extends Mapper<UserDTO> {
      */
     List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId")Long projectId);
 
+    /**
+     * 查询项目下指定角色的用户列表
+     * @param projectId
+     * @param roleLable
+     * @return
+     */
+    List<UserDTO> listProjectUsersByProjectIdAndRoleLable(@Param("projectId") Long projectId, @Param("roleLable") String roleLable);
+
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     * @param projectId
+     * @param param
+     * @return
+     */
+    List<UserDTO> listUsersByName(@Param("projectId") Long projectId, @Param("param") String param);
 }

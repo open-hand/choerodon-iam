@@ -252,4 +252,20 @@ public interface UserService {
      * @return true 是
      */
     Boolean checkIsProjectOwner(Long id, Long projectId);
+
+    /**
+     * 查询项目下指定角色的用户列表
+     * @param projectId
+     * @param roleLable
+     * @return
+     */
+    List<UserDTO> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable);
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     * @param projectId
+     * @param param
+     * @return
+     */
+    List<UserDTO> listUsersByName(Long projectId, String param);
 }

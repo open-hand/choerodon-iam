@@ -12,6 +12,7 @@ export default observer(() => {
   async function handleOk() {
     try {
       if (await orgUserCreateDataSet.submit()) {
+        orgUserCreateDataSet.reset();
         orgUserListDataSet.query();
       } else {
         return false;

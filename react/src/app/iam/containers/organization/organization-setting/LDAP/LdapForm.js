@@ -41,7 +41,7 @@ const InfoForm = observer(({ dataSet, modal, orgId }) => {
   async function handleSave() {
     try {
       if (!dataSet.current.dirty) {
-        if (await dataSet.current.validate(true)) {
+        if (await dataSet.current.validate()) {
           openTestModal();
           return true;
         }

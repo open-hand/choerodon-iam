@@ -9,9 +9,7 @@ export default ({ orgId, ldapId }) => ({
       method: 'get',
     },
   },
-  queryFields: [
-    { name: 'syncBeginTime', type: 'string', label: '同步时间' },
-  ],
+  queryFields: [],
   fields: [
     { name: 'syncBeginTime', type: 'string', label: '同步时间' },
     { name: 'errorUserCount', type: 'number', label: '失败人数' },

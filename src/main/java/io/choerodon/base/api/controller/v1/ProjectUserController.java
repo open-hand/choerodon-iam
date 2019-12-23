@@ -1,6 +1,7 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,8 @@ import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.core.base.BaseController;
 import org.springframework.data.web.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
+import java.util.List;
 
 
 @RestController
@@ -44,5 +47,22 @@ public class ProjectUserController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, Pageable, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下指定角色的用户列表")
+    @GetMapping(value = "/{project_id}/users/{role_lable}")
+    public ResponseEntity<List<UserDTO>> listProjectUsersByProjectIdAndRoleLable(@PathVariable("project_id") Long projectId,
+                                                                                 @PathVariable("role_lable") String roleLable) {
+        return ResponseEntity.ok(userService.listProjectUsersByProjectIdAndRoleLable(projectId, roleLable));
+    }
 
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下的用户列表(根据登录名或真实名称搜索)")
+    @GetMapping(value = "/{project_id}/users/search_by_name")
+    public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
+                                                         @RequestParam(required = false) String param) {
+        return ResponseEntity.ok(userService.listUsersByName(projectId, param));
+    }
 }

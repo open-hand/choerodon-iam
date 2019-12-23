@@ -28,14 +28,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author zhipeng.zuo
@@ -421,8 +414,11 @@ public class ParsePermissionServiceImpl implements UploadHistoryService.ParsePer
             RolePermissionDTO dto = new RolePermissionDTO();
             dto.setRoleCode(role.getCode());
             dto.setPermissionCode(permission.getCode());
-            if (rolePermissionMapper.insert(dto) != 1) {
-                throw new CommonException("error.rolePermission.insert");
+            RolePermissionDTO rolePermissionDTO = rolePermissionMapper.selectOne(dto);
+            if (Objects.isNull(rolePermissionDTO)){
+                if (rolePermissionMapper.insert(dto) != 1) {
+                    throw new CommonException("error.rolePermission.insert");
+                }
             }
         }
         //roles不为空，关联自定义角色

@@ -75,7 +75,7 @@
       static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
   choerodon:
     gateway:
-      url: http://api.staging.saas.hand-china.com
+      url: http://api.example.choerodon.com
     organization:
       link:
         complete: http://localhost:8080/#/organization/register-organization
@@ -175,12 +175,12 @@
 
 ## 安装和启动步骤
 
-- 运行 `eureka-server`，[代码库地址](https://code.choerodon.com.cn/choerodon-framework/eureka-server.git)。
+- 运行 `eureka-server`，[代码库地址](https://github.com/choerodon/eureka-server.git)。
 
 - 拉取当前项目到本地
 
   ```sh
-  git clone https://code.choerodon.com.cn/choerodon-framework/base-service.git
+  git clone https://github.com/choerodon/base-service.git
   ```
 
 - 创建数据库，本地创建 `base_service` 数据库和默认用户，示例如下：
@@ -209,6 +209,7 @@
 ## 更新日志
 
 - [更新日志](./CHANGELOG.zh-CN.md)
+
 
 
 ## 如何参与

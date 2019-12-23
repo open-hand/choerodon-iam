@@ -380,11 +380,4 @@ public class OrganizationServiceImpl implements OrganizationService {
         return resultVO;
     }
 
-    @SagaTask(code = TASK_CREATE_LDAP_AUTO, sagaCode = CREATE_LDAP_AUTO, seq = 10, description = "ldap自动同步创建/删除quartzTask")
-    public void producerQuartzTask(String message) throws IOException {
-        LdapAutoTaskEventPayload autoTaskEventPayload =
-                mapper.readValue(message, LdapAutoTaskEventPayload.class);
-        ldapService.handleLdapAutoTask(autoTaskEventPayload);
-    }
-
 }

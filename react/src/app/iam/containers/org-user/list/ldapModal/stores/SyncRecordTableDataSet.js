@@ -7,9 +7,7 @@ export default ({ orgId }) => ({
       method: 'get',
     },
   },
-  queryFields: [
-    { name: 'syncBeginTime', type: 'string', label: '同步时间' },
-  ],
+  queryFields: [],
   fields: [
     { name: 'syncBeginTime', type: 'string', label: '同步时间' },
     { name: 'errorUserCount', type: 'Number', label: '失败人数' },

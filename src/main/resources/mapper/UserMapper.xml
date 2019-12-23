@@ -1234,5 +1234,30 @@
         AND
             imr.source_id = #{projectId}
     </select>
+    <select id="listProjectUsersByProjectIdAndRoleLable" resultType="io.choerodon.base.infra.dto.UserDTO">
+        SELECT iu.*
+        FROM iam_member_role imr
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN iam_role_label irl ON irl.role_id = ir.id
+        INNER JOIN iam_label il ON il.id = irl.label_id
+        WHERE imr.member_type = 'user' AND imr.source_id = #{projectId}
+        AND imr.source_type = 'project' AND il.name = #{roleLable}
+    </select>
 
+    <!--DISTINCT使用原因 (一个用户对应多个角色标签)-->
+    <select id="listUsersByName" resultType="io.choerodon.base.infra.dto.UserDTO">
+        SELECT DISTINCT iu.*
+        FROM iam_member_role imr
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN iam_role_label irl ON irl.role_id = ir.id
+        INNER JOIN iam_label il ON il.id = irl.label_id
+        WHERE imr.member_type = 'user' AND imr.source_id = #{projectId}
+        AND imr.source_type = 'project'
+        AND (il.name = 'project.owner' OR il.name = 'project.gitlab.owner' OR il.name = 'project.gitlab.developer')
+        <if test="param != null">
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%', #{param}),'%'))
+        </if>
+    </select>
 </mapper>

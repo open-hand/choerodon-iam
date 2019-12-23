@@ -17,7 +17,7 @@ export default observer((props) => {
   }
   async function handleOk() {
     try {
-      roleAssignDataSet.validate(true);
+      await roleAssignDataSet.validate();
       if (await roleAssignDataSet.submit()) {
         await roleAssignDataSet.reset();
         await onOk();

@@ -289,8 +289,11 @@ public class ExcelImportUserTask {
 
     private UserDTO getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
         UserDTO user = new UserDTO();
-        user.setLoginName(loginName);
-
+        if (loginName.matches(UserDTO.EMAIL_REG)) {
+            user.setEmail(loginName);
+        } else {
+            user.setLoginName(loginName);
+        }
         UserDTO userDTO = userMapper.selectOne(user);
         if (userDTO == null) {
             emr.setCause("登录名不存在");

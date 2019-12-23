@@ -336,6 +336,7 @@ public class LdapServiceImpl implements LdapService {
         LdapAutoTaskEventPayload taskEventPayload = new LdapAutoTaskEventPayload();
         taskEventPayload.setLdapAutoId(ldapAutoDTO.getId());
         taskEventPayload.setOrganizationId(organizationId);
+        taskEventPayload.setActive(ldapAutoDTO.getActive());
         sendProducerQuartzTaskEvent(taskEventPayload, organizationId, ResourceLevel.ORGANIZATION, CREATE_LDAP_AUTO);
         return ldapAutoDTO;
     }

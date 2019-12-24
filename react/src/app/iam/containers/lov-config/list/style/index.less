@@ -1,0 +1,17 @@
+@import '~choerodon-ui/lib/style/themes/default';
+@import "~choerodon-ui-font/style/theme";
+@register-lov: ~"c7n-lov";
+@import 'sider';
+
+.@{register-lov} {
+  .link:hover {
+    color: @primary-color;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  padding-top: 0;
+  .text-gray {
+    color: rgba(0, 0, 0, 0.65);
+  }
+}

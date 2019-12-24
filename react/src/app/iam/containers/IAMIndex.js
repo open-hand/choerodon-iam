@@ -40,6 +40,15 @@ const sagaInstance = asyncRouter(() => import('./saga/saga-instance'));
 const AppRelease = asyncRouter(() => import('./market/MarketRelease'));
 const AppMarket = asyncRouter(() => import('./market/AppMarket'));
 
+// lookup配置
+const lookupConfig = asyncRouter(() => import('./lookup-config'));
+
+// lov配置
+const lovConfig = asyncRouter(() => import('./lov-config'));
+
+// 多语言配置
+const langConfig = asyncRouter(() => import('./lang-config'));
+
 @inject('AppState')
 class IAMIndex extends React.Component {
   render() {
@@ -73,6 +82,9 @@ class IAMIndex extends React.Component {
             <Route path={`${match.url}/market-publish`} component={AppRelease} />
             <Route path={`${match.url}/app-market`} component={AppMarket} />
             <Route path={`${match.url}/application-management`} component={applicationManagement} />
+            <Route path={`${match.url}/lookup-config`} component={lookupConfig} />
+            <Route path={`${match.url}/lang-config`} component={langConfig} />
+            <Route path={`${match.url}/lov-config`} component={lovConfig} />
             <Route path="*" component={nomatch} />
           </Switch>
           <ModalContainer />

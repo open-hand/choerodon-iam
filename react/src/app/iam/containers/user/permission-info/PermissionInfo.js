@@ -46,11 +46,11 @@ function PermissionInfo(props) {
     // console.log(MenuStore);
     switch (level) {
       case 'site':
-        return `?orgId=${AppState.currentMenuType.orgId}`;
+        return `?organizationId=${AppState.currentMenuType.orgId}`;
       case 'organization':
-        return `?type=${level}&orgId=${id}&id=${id}&name=${encodeURIComponent(name)}`;
+        return `?type=${level}&organizationId=${id}&id=${id}&name=${encodeURIComponent(name)}`;
       case 'project':
-        return `?type=${level}&orgId=${organizationId}&id=${id}&name=${encodeURIComponent(projName)}&organizationId=${organizationId}`;
+        return `?type=${level}&organizationId=${organizationId}&id=${id}&name=${encodeURIComponent(projName)}`;
       default:
         return { pathname: '/', query: {} };
     }

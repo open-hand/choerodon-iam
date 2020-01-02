@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +30,6 @@ import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.base.infra.dto.ProjectRelationshipDTO;
 import io.choerodon.base.infra.enums.ProjectCategory;
-import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectRelationshipMapper;
 import io.choerodon.core.exception.CommonException;

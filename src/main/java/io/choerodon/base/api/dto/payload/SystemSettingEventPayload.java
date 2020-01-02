@@ -14,10 +14,6 @@ import io.choerodon.base.api.vo.SysSettingVO;
  *
  * @author zmf
  */
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class SystemSettingEventPayload implements Serializable {
     private String favicon;
 
@@ -30,4 +26,52 @@ public class SystemSettingEventPayload implements Serializable {
     private String defaultPassword;
 
     private String defaultLanguage;
+
+    public String getFavicon() {
+        return favicon;
+    }
+
+    public void setFavicon(String favicon) {
+        this.favicon = favicon;
+    }
+
+    public String getSystemLogo() {
+        return systemLogo;
+    }
+
+    public void setSystemLogo(String systemLogo) {
+        this.systemLogo = systemLogo;
+    }
+
+    public String getSystemTitle() {
+        return systemTitle;
+    }
+
+    public void setSystemTitle(String systemTitle) {
+        this.systemTitle = systemTitle;
+    }
+
+    public String getSystemName() {
+        return systemName;
+    }
+
+    public void setSystemName(String systemName) {
+        this.systemName = systemName;
+    }
+
+    public String getDefaultPassword() {
+        return defaultPassword;
+    }
+
+    public void setDefaultPassword(String defaultPassword) {
+        this.defaultPassword = defaultPassword;
+    }
+
+    public String getDefaultLanguage() {
+        return defaultLanguage;
+    }
+
+    public void setDefaultLanguage(String defaultLanguage) {
+        this.defaultLanguage = defaultLanguage;
+    }
 }

@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 
 import io.choerodon.base.api.dto.OrgSharesDTO;
 import io.choerodon.base.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.base.api.vo.RemoteTokenManagementResultVO;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.UserDTO;
 
@@ -25,7 +24,7 @@ public interface OrganizationService {
 
     OrganizationDTO queryOrganizationWithRoleById(Long organizationId);
 
-    PageInfo<OrganizationDTO> pagingQuery(Pageable Pageable, String name, String code, String ownerRealName, Boolean enabled, String params);
+    PageInfo<OrganizationDTO> pagingQuery(Pageable pageable, String name, String code, String ownerRealName, Boolean enabled, String params);
 
     OrganizationDTO enableOrganization(Long organizationId, Long userId);
 
@@ -34,7 +33,7 @@ public interface OrganizationService {
     void check(OrganizationDTO organization);
 
     PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId,
-                                                     Long userId, String email, Pageable Pageable, String param);
+                                                     Long userId, String email, Pageable pageable, String param);
 
     List<OrganizationDTO> queryByIds(Set<Long> ids);
 
@@ -43,7 +42,7 @@ public interface OrganizationService {
      *
      * @return list
      */
-    PageInfo<OrganizationSimplifyDTO> getAllOrgs(Pageable Pageable);
+    PageInfo<OrganizationSimplifyDTO> getAllOrgs(Pageable pageable);
 
 
     /**
@@ -57,32 +56,6 @@ public interface OrganizationService {
      * @param Pageable 分页参数
      * @return 分页结果
      */
-    PageInfo<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, Pageable Pageable);
-
-    /**
-     * 启用远程令牌功能
-     *
-     * @param organizationId      组织ID
-     * @param objectVersionNumber 乐观锁编号
-     * @return RemoteTokenManagementResultVO 远程令牌管理结果VO
-     */
-    RemoteTokenManagementResultVO remoteTokenFunctionEnable(Long organizationId, Long objectVersionNumber);
-
-    /**
-     * 停用远程令牌功能
-     *
-     * @param organizationId      组织ID
-     * @param objectVersionNumber 乐观锁编号
-     * @return RemoteTokenManagementResultVO 远程令牌管理结果VO
-     */
-    RemoteTokenManagementResultVO remoteTokenFunctionDisable(Long organizationId, Long objectVersionNumber);
-
-    /**
-     * 检查组织是否具有远程连接功能
-     *
-     * @param organizationId 组织编号
-     * @return @return RemoteTokenManagementResultVO 远程令牌管理结果VO
-     */
-    RemoteTokenManagementResultVO remoteTokenFunctionCheck(Long organizationId);
+    PageInfo<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, Pageable pageable);
 
 }

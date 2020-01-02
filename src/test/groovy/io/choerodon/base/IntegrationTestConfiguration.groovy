@@ -2,13 +2,7 @@ package io.choerodon.base
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.appinfo.InstanceInfo
-import io.choerodon.base.api.controller.v1.RemoteTokenController
-import io.choerodon.base.app.service.RemoteTokenService
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.base.api.dto.LdapConnectionDTO
-import io.choerodon.base.app.service.LdapService
-import io.choerodon.base.app.service.impl.LdapServiceImpl
-import io.choerodon.base.infra.dto.LdapDTO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import org.mockito.Mockito
@@ -27,7 +21,6 @@ import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
-import org.springframework.ldap.core.LdapTemplate
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer

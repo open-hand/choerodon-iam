@@ -1,11 +1,8 @@
 package io.choerodon.base.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import io.choerodon.base.api.dto.RelationshipCheckDTO;
 import io.choerodon.base.infra.dto.ProjectRelationshipDTO;
+
+import java.util.List;
 
 /**
  * @author Eugen

@@ -74,6 +74,7 @@ public class UserController extends BaseController {
 
 
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "获取组织注册信息")
     @GetMapping(value = "/registrant")
     public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
             @RequestParam(value = "org_code") String orgCode) {

@@ -12,8 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import io.choerodon.base.infra.enums.RoleEnum;
-import io.choerodon.base.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -30,28 +28,33 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.UserInfoDTO;
 import io.choerodon.base.api.dto.*;
 import io.choerodon.base.api.dto.payload.UserEventPayload;
 import io.choerodon.base.api.validator.ResourceLevelValidator;
 import io.choerodon.base.api.validator.RoleValidator;
 import io.choerodon.base.api.validator.UserPasswordValidator;
 import io.choerodon.base.api.validator.UserValidator;
+import io.choerodon.base.api.vo.AssignAdminVO;
+import io.choerodon.base.api.vo.DeleteAdminVO;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.asserts.*;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.enums.RoleEnum;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
+import io.choerodon.base.infra.mapper.*;
 import io.choerodon.base.infra.utils.ImageUtils;
 import io.choerodon.base.infra.utils.PageUtils;
 import io.choerodon.base.infra.utils.ParamUtils;
+import io.choerodon.base.infra.utils.SagaTopic;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -459,18 +462,34 @@ public class UserServiceImpl implements UserService {
                 .doSelectPageInfo(() -> userMapper.selectAdminUserPage(loginName, realName, params));
     }
 
+    @Saga(code = SagaTopic.User.ASSIGN_ADMIN, description = "分配Root权限同步事件", inputSchemaClass = AssignAdminVO.class)
     @Override
     @Transactional
     public void addAdminUsers(long[] ids) {
+        List<Long> adminUserIds = new ArrayList<>();
         for (long id : ids) {
             UserDTO dto = userMapper.selectByPrimaryKey(id);
             if (dto != null && !dto.getAdmin()) {
                 dto.setAdmin(true);
+                adminUserIds.add(id);
                 updateSelective(dto);
             }
         }
+
+        if (!adminUserIds.isEmpty()) {
+            AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
+            producer.apply(StartSagaBuilder.newBuilder()
+                    .withRefId(adminUserIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
+                    .withRefType("user")
+                    .withSourceId(0L)
+                    .withLevel(ResourceLevel.SITE)
+                    .withSagaCode(SagaTopic.User.ASSIGN_ADMIN)
+                    .withPayloadAndSerialize(assignAdminVO), builder -> {
+            });
+        }
     }
 
+    @Saga(code = SagaTopic.User.DELETE_ADMIN, description = "用户Root权限被删除事件同步", inputSchemaClass = DeleteAdminVO.class)
     @Override
     public void deleteAdminUser(long id) {
         UserDTO dto = userAssertHelper.userNotExisted(id);
@@ -479,7 +498,14 @@ public class UserServiceImpl implements UserService {
         if (userMapper.selectCount(userDTO) > 1) {
             if (dto.getAdmin()) {
                 dto.setAdmin(false);
-                updateSelective(dto);
+                producer.apply(StartSagaBuilder.newBuilder()
+                                .withRefId(String.valueOf(id))
+                                .withRefType("user")
+                                .withSourceId(0L)
+                                .withLevel(ResourceLevel.SITE)
+                                .withSagaCode(SagaTopic.User.DELETE_ADMIN)
+                                .withPayloadAndSerialize(new DeleteAdminVO(id)),
+                        builder -> updateSelective(dto));
             }
         } else {
             throw new CommonException("error.user.admin.size");
@@ -1083,23 +1109,33 @@ public class UserServiceImpl implements UserService {
 
         return userDTOS.stream().filter(v -> !userIds.contains(v.getId())).collect(Collectors.toList());
     }
+
     @Override
     public ProjectDTO queryProjectById(Long id, Long projectId) {
-        return  userMapper.selectProjectByUidAndProjectId(id, projectId);
+        return userMapper.selectProjectByUidAndProjectId(id, projectId);
     }
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
-        List<RoleDTO> roleDTOList =  userMapper.selectRolesByUidAndProjectId(id, projectId);
+        List<RoleDTO> roleDTOList = userMapper.selectRolesByUidAndProjectId(id, projectId);
         return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
     }
+
     @Override
     public List<UserDTO> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable) {
-        return userMapper.listProjectUsersByProjectIdAndRoleLable(projectId,roleLable);
+        return userMapper.listProjectUsersByProjectIdAndRoleLable(projectId, roleLable);
     }
 
     @Override
     public List<UserDTO> listUsersByName(Long projectId, String param) {
         return userMapper.listUsersByName(projectId, param);
+    }
+
+
+    @Override
+    public List<UserDTO> queryAllAdminUsers() {
+        UserDTO searchCondition = new UserDTO();
+        searchCondition.setAdmin(Boolean.TRUE);
+        return userMapper.select(searchCondition);
     }
 }

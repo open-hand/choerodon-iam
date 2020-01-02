@@ -19,7 +19,7 @@ import java.util.List;
  * @author dongfan117@gmail.com
  */
 @RestController
-@RequestMapping(value = "/v1/home/")
+@RequestMapping(value = "/v1/home")
 public class UserDashboardController {
 
     private UserDashboardService userDashboardService;

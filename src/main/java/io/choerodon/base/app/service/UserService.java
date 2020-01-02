@@ -268,4 +268,11 @@ public interface UserService {
      * @return
      */
     List<UserDTO> listUsersByName(Long projectId, String param);
+
+
+    /**
+     * 查询所有的Root用户
+     * @return 所有的root用户
+     */
+    List<UserDTO> queryAllAdminUsers();
 }

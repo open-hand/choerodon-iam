@@ -21,8 +21,10 @@ import io.choerodon.base.api.dto.*;
 import io.choerodon.base.api.validator.UserValidator;
 import io.choerodon.base.app.service.PasswordPolicyService;
 import io.choerodon.base.app.service.UserService;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.PasswordPolicyDTO;
@@ -33,7 +35,9 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.InitRoleCode;
+
 import org.springframework.data.web.SortDefault;
+
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -135,7 +139,7 @@ public class UserController extends BaseController {
     @GetMapping(value = "/{id}/organizations")
     public ResponseEntity<Set<OrganizationDTO>> queryOrganizations(@PathVariable Long id,
                                                                    @RequestParam(required = false, name = "included_disabled")
-                                                                            boolean includedDisabled) {
+                                                                           boolean includedDisabled) {
         return new ResponseEntity<>(userService.queryOrganizations(id, includedDisabled), HttpStatus.OK);
     }
 
@@ -204,6 +208,13 @@ public class UserController extends BaseController {
     public ResponseEntity deleteDefaultUser(@PathVariable long id) {
         userService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
+    @GetMapping("/admin_all")
+    public ResponseEntity<List<UserDTO>> queryAllAdminUsers() {
+        return new ResponseEntity<>(userService.queryAllAdminUsers(), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)
@@ -388,6 +399,7 @@ public class UserController extends BaseController {
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userService.queryProjectById(id, projectId));
     }
+
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("校验用户是否是项目的所有者")
     @GetMapping("/{id}/projects/{project_id}/check_is_owner")

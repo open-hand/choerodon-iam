@@ -10,6 +10,16 @@ public final class SagaTopic {
         }
 
         /**
+         * 批量为用户分配ADMIN权限
+         */
+        public static final String ASSIGN_ADMIN = "base-assign-admin";
+
+        /**
+         * 删除单个用户ADMIN权限
+         */
+        public static final String DELETE_ADMIN = "base-delete-admin";
+
+        /**
          * 创建用户
          */
         public static final String USER_CREATE = "iam-create-user";

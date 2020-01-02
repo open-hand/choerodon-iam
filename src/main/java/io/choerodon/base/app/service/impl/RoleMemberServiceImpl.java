@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -306,8 +307,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
+
     @Override
     public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
+        CustomUserDetails userDetails= DetailsHelper.getUserDetails();
         validateSourceId(sourceId, sourceType);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
@@ -319,13 +322,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             UploadHistoryDTO uploadHistory = initUploadHistory(sourceId, sourceType);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
-            excelImportUserTask.importMemberRole(memberRoles, uploadHistory, finishFallback);
+            excelImportUserTask.importMemberRole(userDetails.getUserId(),memberRoles, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new CommonException("error.excel.read", e);
         } catch (IllegalArgumentException e) {
             throw new CommonException("error.excel.illegal.column", e);
         }
     }
+
 
     @Override
     public MemberRoleDTO insertSelective(MemberRoleDTO memberRoleDTO) {

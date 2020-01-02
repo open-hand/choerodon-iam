@@ -57,9 +57,8 @@ public interface OrganizationUserService {
      */
     List<LdapErrorUserDTO> batchCreateUsers(List<UserDTO> insertUsers);
 
-    List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers);
-
     List<Long> listUserIds(Long organizationId);
 
     UserDTO createUserWithRoles(UserDTO userDTO);
+    List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId);
 }

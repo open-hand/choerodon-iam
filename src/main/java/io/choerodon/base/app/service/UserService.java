@@ -119,6 +119,8 @@ public interface UserService {
 
     Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll);
 
+    Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
+
     UserDTO updateUserDisabled(Long userId);
 
 

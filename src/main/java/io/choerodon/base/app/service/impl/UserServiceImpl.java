@@ -115,6 +115,8 @@ public class UserServiceImpl implements UserService {
 
     private TransactionalProducer producer;
 
+    private RoleMapper roleMapper;
+
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
@@ -132,7 +134,8 @@ public class UserServiceImpl implements UserService {
                            RoleAssertHelper roleAssertHelper,
                            RoleMemberService roleMemberService,
                            TransactionalProducer producer,
-                           RouteMemberRuleMapper routeMemberRuleMapper) {
+                           RouteMemberRuleMapper routeMemberRuleMapper,
+                           RoleMapper roleMapper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.sagaClient = sagaClient;
@@ -151,6 +154,7 @@ public class UserServiceImpl implements UserService {
         this.roleMemberService = roleMemberService;
         this.producer = producer;
         this.routeMemberRuleMapper = routeMemberRuleMapper;
+        this.roleMapper = roleMapper;
     }
 
     @Override
@@ -1079,6 +1083,21 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("start : send Notice to {} users", userIds.size());
         notifyFeignClient.postNotice(noticeSendDTO);
         LOGGER.info("end : send Notice to {} users", userIds.size());
+        return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId) {
+        long beginTime = System.currentTimeMillis();
+        for (Map.Entry<Long, Set<Long>> longSetEntry : longSetMap.entrySet()) {
+            if (!CollectionUtils.isEmpty(longSetEntry.getValue())) {
+                //封装消息内容参数
+                String roleName = longSetEntry.getValue().stream().map(e -> roleMapper.selectByPrimaryKey(e).getName()).collect(Collectors.joining(","));
+                params.put("roleName", roleName);
+                sendNotice(fromUserId, Arrays.asList(longSetEntry.getKey()), code, params, sourceId);
+            }
+        }
         return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 

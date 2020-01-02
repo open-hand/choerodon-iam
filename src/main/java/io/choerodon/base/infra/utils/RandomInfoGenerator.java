@@ -5,11 +5,9 @@ import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.ApplicationDTO;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.dto.UserDTO;
-import io.choerodon.base.infra.mapper.ApplicationMapper;
 import io.choerodon.base.infra.mapper.OrganizationMapper;
 import io.choerodon.base.infra.mapper.ProjectMapper;
 import io.choerodon.base.infra.mapper.UserMapper;

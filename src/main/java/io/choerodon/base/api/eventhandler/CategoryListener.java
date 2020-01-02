@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.base.infra.dto.ProjectMapCategoryDTO;
-import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.base.infra.mapper.ProjectMapper;
 import io.choerodon.core.iam.ResourceLevel;

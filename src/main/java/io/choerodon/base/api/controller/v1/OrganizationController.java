@@ -17,7 +17,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.base.api.dto.OrgSharesDTO;
 import io.choerodon.base.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.base.api.vo.RemoteTokenManagementResultVO;
 import io.choerodon.base.api.vo.ResendEmailMsgDTO;
 import io.choerodon.base.app.service.CaptchaService;
 import io.choerodon.base.app.service.DemoRegisterService;
@@ -144,13 +143,13 @@ public class OrganizationController extends BaseController {
     @GetMapping
     @CustomPageRequest
     public ResponseEntity<PageInfo<OrganizationDTO>> pagingQuery(@ApiIgnore
-                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
+                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
                                                                  @RequestParam(required = false) String name,
                                                                  @RequestParam(required = false) String code,
                                                                  @RequestParam(required = false) String ownerRealName,
                                                                  @RequestParam(required = false) Boolean enabled,
                                                                  @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(organizationService.pagingQuery(Pageable, name, code, ownerRealName, enabled, params), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingQuery(pageable, name, code, ownerRealName, enabled, params), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
@@ -158,8 +157,8 @@ public class OrganizationController extends BaseController {
     @GetMapping(value = "/all")
     @CustomPageRequest
     public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@ApiIgnore
-                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable) {
-        return new ResponseEntity<>(organizationService.getAllOrgs(Pageable), HttpStatus.OK);
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(organizationService.getAllOrgs(pageable), HttpStatus.OK);
     }
 
     /**
@@ -209,46 +208,24 @@ public class OrganizationController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
                                                                             @ApiIgnore
-                                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
+                                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
                                                                             @RequestParam(required = false, name = "id") Long userId,
                                                                             @RequestParam(required = false) String email,
                                                                             @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, Pageable, param), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, pageable, param), HttpStatus.OK);
     }
 
     @CustomPageRequest
     @PostMapping("/specified")
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据组织Id列表分页查询组织简要信息")
-    public ResponseEntity<PageInfo<OrgSharesDTO>> pagingSpecified(@SortDefault(value = "id", direction = Sort.Direction.ASC) Pageable Pageable,
+    public ResponseEntity<PageInfo<OrgSharesDTO>> pagingSpecified(@SortDefault(value = "id", direction = Sort.Direction.ASC) Pageable pageable,
                                                                   @RequestParam(required = false) String name,
                                                                   @RequestParam(required = false) String code,
                                                                   @RequestParam(required = false) Boolean enabled,
                                                                   @RequestParam(required = false) String params,
                                                                   @RequestBody Set<Long> orgIds) {
-        return new ResponseEntity<>(organizationService.pagingSpecified(orgIds, name, code, enabled, params, Pageable), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingSpecified(orgIds, name, code, enabled, params, pageable), HttpStatus.OK);
     }
 
-    @GetMapping("/{organization_id}/remote_token/enable")
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "启用组织远程令牌连接功能")
-    public ResponseEntity<RemoteTokenManagementResultVO> remoteTokenFunctionEnable(@PathVariable("organization_id") Long organizationId,
-                                                                                   @RequestParam("object_version_number") Long objectVersionNumber) {
-        return new ResponseEntity<>(organizationService.remoteTokenFunctionEnable(organizationId, objectVersionNumber), HttpStatus.OK);
-    }
-
-    @GetMapping("/{organization_id}/remote_token/disable")
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "停用组织远程令牌连接功能")
-    public ResponseEntity<RemoteTokenManagementResultVO> remoteTokenFunctionDisable(@PathVariable("organization_id") Long organizationId,
-                                                                                    @RequestParam("object_version_number") Long objectVersionNumber) {
-        return new ResponseEntity<>(organizationService.remoteTokenFunctionDisable(organizationId, objectVersionNumber), HttpStatus.OK);
-    }
-
-    @GetMapping("/{organization_id}/remote_token/check")
-    @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "检查组织是否具有远程令牌连接功能")
-    public ResponseEntity<RemoteTokenManagementResultVO> remoteTokenFunctionCheck(@PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(organizationService.remoteTokenFunctionCheck(organizationId), HttpStatus.OK);
-    }
 }

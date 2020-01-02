@@ -1,10 +1,10 @@
 package io.choerodon.base.api.validator;
 
+import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.base.infra.dto.ProjectCategoryDTO;
-import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.core.exception.CommonException;
 
 @Component

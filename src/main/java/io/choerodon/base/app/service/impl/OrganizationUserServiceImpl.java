@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.infra.dto.*;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,10 +35,6 @@ import io.choerodon.base.app.service.SystemSettingService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.base.infra.asserts.UserAssertHelper;
-import io.choerodon.base.infra.dto.LdapErrorUserDTO;
-import io.choerodon.base.infra.dto.MemberRoleDTO;
-import io.choerodon.base.infra.dto.RoleDTO;
-import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.base.infra.enums.LdapErrorUserCause;
 import io.choerodon.base.infra.feign.OauthTokenFeignClient;
 import io.choerodon.base.infra.mapper.OrganizationMapper;
@@ -61,6 +58,7 @@ import io.choerodon.oauth.core.password.record.PasswordRecord;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
+    private static final String BUSINESS_TYPE_CODE = "addMember";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
@@ -257,30 +255,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 errorUser.setRealName(user.getRealName());
                 errorUser.setPhone(user.getPhone());
                 errorUser.setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
-                errorUsers.add(errorUser);
-            }
-            boolean userEnabled = userDTO != null && userDTO.getEnabled();
-            if (devopsMessage && userEnabled) {
-                generateUserEventPayload(payloads, userDTO);
-            }
-        });
-        sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
-        return errorUsers;
-    }
-
-
-    @Override
-    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers) {
-        List<ErrorUserDTO> errorUsers = new ArrayList<>();
-        List<UserEventPayload> payloads = new ArrayList<>();
-        insertUsers.forEach(user -> {
-            UserDTO userDTO = null;
-            try {
-                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user);
-            } catch (Exception e) {
-                ErrorUserDTO errorUser = new ErrorUserDTO();
-                BeanUtils.copyProperties(user, errorUser);
-                errorUser.setCause("用户或角色插入异常");
                 errorUsers.add(errorUser);
             }
             boolean userEnabled = userDTO != null && userDTO.getEnabled();
@@ -551,5 +525,43 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public List<Long> listUserIds(Long organizationId) {
         return organizationMapper.listMemberIds(organizationId, "organization");
+    }
+    @Override
+    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId) {
+        List<ErrorUserDTO> errorUsers = new ArrayList<>();
+        List<UserEventPayload> payloads = new ArrayList<>();
+        boolean errorUserFlag = true;
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (UserDTO user : insertUsers) {
+            UserDTO userDTO = null;
+            try {
+                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user);
+            } catch (Exception e) {
+                ErrorUserDTO errorUser = new ErrorUserDTO();
+                BeanUtils.copyProperties(user, errorUser);
+                errorUser.setCause("用户或角色插入异常");
+                errorUsers.add(errorUser);
+                errorUserFlag = false;
+            }
+            boolean userEnabled = userDTO != null && userDTO.getEnabled();
+            if (devopsMessage && userEnabled) {
+                generateUserEventPayload(payloads, userDTO);
+            }
+            if (errorUserFlag) {
+                userDTOS.add(user);
+            }
+            errorUserFlag = true;
+        }
+        //导入成功过后，通知成员
+        userDTOS.stream().forEach(e -> {
+            Map<String, Object> params = new HashMap<>();
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(e.getOrganizationId());
+            params.put("organizationName", organizationDTO.getName());
+            params.put("roleName", e.getRoles().stream().map(v -> v.getName()).collect(Collectors.joining(",")));
+            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId());
+        });
+
+        sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
+        return errorUsers;
     }
 }

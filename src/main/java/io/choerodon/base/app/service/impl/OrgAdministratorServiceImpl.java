@@ -1,10 +1,14 @@
 package io.choerodon.base.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.app.service.UserService;
+import io.choerodon.base.infra.dto.OrganizationDTO;
+import io.choerodon.base.infra.mapper.OrganizationMapper;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -32,19 +36,29 @@ import io.choerodon.web.util.PageableHelper;
 @Component
 public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
+    private static final String BUSINESS_TYPE_CODE = "addMember";
+
     private UserMapper userMapper;
 
     private MemberRoleMapper memberRoleMapper;
 
     private RoleAssertHelper roleAssertHelper;
 
+    private UserService userService;
+
+    private OrganizationMapper organizationMapper;
+
 
     public OrgAdministratorServiceImpl(UserMapper userMapper,
                                        MemberRoleMapper memberRoleMapper,
-                                       RoleAssertHelper roleAssertHelper) {
+                                       RoleAssertHelper roleAssertHelper,
+                                       UserService userService,
+                                       OrganizationMapper organizationMapper) {
         this.userMapper = userMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
+        this.userService = userService;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -98,6 +112,9 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
     public Boolean createOrgAdministrator(List<Long> userIds, Long organizationId) {
         RoleDTO roleDTO = roleAssertHelper.roleNotExisted(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         Long roleId = roleDTO.getId();
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+        Set<Long> notifyUserIds=new HashSet<>();
         userIds.forEach(id -> {
             MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
             memberRoleDTO.setRoleId(roleId);
@@ -112,7 +129,14 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
             if (memberRoleMapper.insert(memberRoleDTO) != 1) {
                 throw new CommonException("error.memberRole.create");
             }
+            notifyUserIds.add(id);
+
         });
+        //添加组织管理员发送消息通知被添加者,异步发送消息
+        Map<String, Object> params = new HashMap<>();
+        params.put("organizationName", organizationDTO.getName());
+        params.put("roleName", roleDTO.getName());
+        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId);
         return true;
     }
 }

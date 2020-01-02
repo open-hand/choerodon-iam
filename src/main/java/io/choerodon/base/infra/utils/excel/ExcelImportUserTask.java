@@ -1,5 +1,26 @@
 package io.choerodon.base.infra.utils.excel;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.base.api.dto.ErrorUserDTO;
 import io.choerodon.base.api.dto.ExcelMemberRoleDTO;
 import io.choerodon.base.api.validator.RoleValidator;
@@ -13,41 +34,12 @@ import io.choerodon.base.infra.dto.RoleDTO;
 import io.choerodon.base.infra.dto.UploadHistoryDTO;
 import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.base.infra.feign.FileFeignClient;
-import io.choerodon.base.infra.mapper.MemberRoleMapper;
-import io.choerodon.base.infra.mapper.RoleMapper;
-import io.choerodon.base.infra.mapper.UploadHistoryMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
 import io.choerodon.base.infra.utils.CollectionUtils;
 import io.choerodon.base.infra.utils.MockMultipartFile;
 import io.choerodon.base.infra.utils.RandomInfoGenerator;
 import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 /**
@@ -59,6 +51,7 @@ public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
     private static final String ADD_USER = "addUser";
     private static final String USER_DEFAULT_PWD = "abcd1234";
+    private static final String BUSINESS_TYPE_CODE = "addMember";
 
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
@@ -76,6 +69,7 @@ public class ExcelImportUserTask {
     private RoleAssertHelper roleAssertHelper;
 
     private RandomInfoGenerator randomInfoGenerator;
+    private OrganizationMapper organizationMapper;
 
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
@@ -86,7 +80,8 @@ public class ExcelImportUserTask {
                                RoleMapper roleMapper,
                                MemberRoleMapper memberRoleMapper,
                                RoleAssertHelper roleAssertHelper,
-                               RandomInfoGenerator randomInfoGenerator) {
+                               RandomInfoGenerator randomInfoGenerator,
+                               OrganizationMapper organizationMapper) {
         this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
@@ -97,6 +92,7 @@ public class ExcelImportUserTask {
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
+        this.organizationMapper = organizationMapper;
     }
 
     @Async("excel-executor")
@@ -104,6 +100,7 @@ public class ExcelImportUserTask {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         List<UserDTO> validateUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         long begin = System.currentTimeMillis();
         users.forEach(u -> {
                     u.setOrganizationId(organizationId);
@@ -121,10 +118,11 @@ public class ExcelImportUserTask {
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
         List<List<UserDTO>> list = CollectionUtils.subList(insertUsers, 999);
+        List<UserDTO> userDTOS = new ArrayList<>();
         int validateErrorUsers = errorUsers.size();
         list.forEach(l -> {
             if (!l.isEmpty()) {
-                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l));
+                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l,userId));
             }
         });
         int insertErrorUsers = errorUsers.size() - validateErrorUsers;
@@ -173,8 +171,7 @@ public class ExcelImportUserTask {
     }
 
     @Async("excel-executor")
-    public void importMemberRole(List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory,
-                                 FinishFallback finishFallback) {
+    public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
         List<ExcelMemberRoleDTO> errorMemberRoles = new CopyOnWriteArrayList<>();
@@ -192,6 +189,7 @@ public class ExcelImportUserTask {
         });
         //去重
         List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
+        Map<MemberRoleDTO, String> excelMemberRoleDTOS = new HashMap<>();
         //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
@@ -201,15 +199,15 @@ public class ExcelImportUserTask {
             if (userDTO == null) {
                 return;
             }
-            if (!userDTO.getEnabled()) {
-                emr.setCause("用户已停用");
-                errorMemberRoles.add(emr);
-                return;
-            }
             Long userId = userDTO.getId();
             //检查role code是否存在
             RoleDTO role = getRole(errorMemberRoles, emr, code);
             if (role == null) {
+                return;
+            }
+            if (!userDTO.getEnabled()) {
+                emr.setCause("用户已停用");
+                errorMemberRoles.add(emr);
                 return;
             }
             if (!uploadHistory.getSourceType().equals(role.getResourceLevel())) {
@@ -236,7 +234,9 @@ public class ExcelImportUserTask {
                 return;
             }
             roleMemberService.insertAndSendEvent(memberRole, loginName);
+            excelMemberRoleDTOS.put(memberRole, loginName);
         });
+
         Integer failedCount = errorMemberRoles.size();
         Integer successfulCount = total - failedCount;
         uploadHistory.setFailedCount(failedCount);
@@ -257,6 +257,14 @@ public class ExcelImportUserTask {
             uploadHistory.setUrl(url);
             uploadHistory.setFinished(true);
             finishFallback.callback(uploadHistory);
+        }
+        //组织层批量导入用户及角色时发送消息通知成员
+        for (Map.Entry<MemberRoleDTO, String> memberRoleDTOStringEntry : excelMemberRoleDTOS.entrySet()) {
+            UserDTO userDTO = userService.queryByLoginName(memberRoleDTOStringEntry.getValue());
+            Map<String, Object> params = new HashMap<>();
+            params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
+            params.put("roleName", roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId()).getName());
+            userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
         }
     }
 

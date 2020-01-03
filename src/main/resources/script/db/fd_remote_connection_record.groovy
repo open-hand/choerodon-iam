@@ -30,4 +30,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_remote_connection_record.groovy
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-01-03-fd-remote-connection-record-drop') {
+        dropTable(tableName: "FD_REMOTE_CONNECTION_RECORD")
+    }
 }

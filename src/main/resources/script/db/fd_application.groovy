@@ -51,5 +51,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_application.groovy') {
         }
         addUniqueConstraint(tableName: 'FD_APPLICATION', columnNames: 'CODE,PROJECT_ID', constraintName: 'UK_FD_APPLICATION_U2')
         addUniqueConstraint(tableName: 'FD_APPLICATION', columnNames: 'NAME,PROJECT_ID', constraintName: 'UK_FD_APPLICATION_U3')
+
+    }
+    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-drop') {
+        dropTable(tableName: "FD_APPLICATION")
     }
 }

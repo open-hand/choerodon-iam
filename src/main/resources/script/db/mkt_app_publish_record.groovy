@@ -48,4 +48,7 @@ databaseChangeLog(logicalFilePath: 'script/db/mkt_app_publish_record.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-01-03-mkt-app-publish-record-drop') {
+        dropTable(tableName: "mkt_app_publish_record")
+    }
 }

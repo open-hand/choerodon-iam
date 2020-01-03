@@ -48,4 +48,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_application_exploration.groovy
     changeSet(author: 'superlee', id: '2019-07-18-iam-application-exploration-add-remark') {
         setTableRemarks(tableName:"IAM_APPLICATION_EXPLORATION",remarks: "应用探测表，用于记录应用的路径信息，父子关系等")
     }
+    /*     // 0.19后没有使用可删除
+changeSet(author: 'wanghao', id: '2020-01-03-iam-application-exploration-drop') {
+    dropTable(tableName: "IAM_APPLICATION_EXPLORATION")
+}*/
 }

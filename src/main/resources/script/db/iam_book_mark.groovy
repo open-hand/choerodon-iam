@@ -42,4 +42,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_book_mark.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-iam-book-mark-add-remark') {
         setTableRemarks(tableName:"IAM_BOOK_MARK",remarks: "书签表")
     }
+/*     // 0.19版本弃用，可删除
+    changeSet(author: 'wanghao', id: '2020-01-03-iam-book-mark-drop') {
+        dropTable(tableName: "IAM_BOOK_MARK")
+    }*/
 }

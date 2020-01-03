@@ -29,7 +29,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_application_version.groovy') {
         }
         addUniqueConstraint(tableName: 'FD_APPLICATION_VERSION', columnNames: 'APPLICATION_ID, VERSION', constraintName: 'UK_FD_APPLICATION_VERSION_U1')
     }
-    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-version-drop') {
+/*    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-version-drop') {
         dropTable(tableName: "FD_APPLICATION_VERSION")
-    }
+    }*/
 }

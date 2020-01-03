@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_application_service_ref.groovy'
         }
         addUniqueConstraint(tableName: 'FD_APPLICATION_SERVICE_REF', columnNames: 'APPLICATION_ID,SERVICE_ID', constraintName: 'UK_FD_APPLICATION_SERVICE_REF_U1')
     }
-    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-service-ref-drop') {
+/*    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-service-ref-drop') {
         dropTable(tableName: "FD_APPLICATION_SERVICE_REF")
-    }
+    }*/
 }

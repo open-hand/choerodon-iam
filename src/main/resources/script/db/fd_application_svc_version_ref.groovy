@@ -36,7 +36,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_application_svc_version_ref.gro
 
         addUniqueConstraint(tableName: 'FD_APPLICATION_SVC_VERSION_REF', columnNames: 'APPLICATION_VERSION_ID, SERVICE_VERSION_ID', constraintName: 'UK_FD_APPLICATION_SVC_VERSION_REF_U1')
     }
-    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-svc-version-ref-drop') {
+/*    changeSet(author: 'wanghao', id: '2020-01-03-fd-application-svc-version-ref-drop') {
         dropTable(tableName: "FD_APPLICATION_SVC_VERSION_REF")
-    }
+    }*/
 }

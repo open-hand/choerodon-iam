@@ -64,4 +64,7 @@ databaseChangeLog(logicalFilePath: 'script/db/mkt_publish_application.groovy') {
         addUniqueConstraint(tableName: 'MKT_PUBLISH_APPLICATION', columnNames: 'REF_APP_ID,IS_RELEASED', constraintName: 'UK_MKT_PUBLISH_APPLICATION_U1')
 
     }
+    changeSet(author: 'wanghao', id: '2020-01-03-mkt-publish-application-drop') {
+        dropTable(tableName: "MKT_PUBLISH_APPLICATION")
+    }
 }

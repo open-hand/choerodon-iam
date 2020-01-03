@@ -87,4 +87,8 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-iam-application-add-remark') {
         setTableRemarks(tableName:"IAM_APPLICATION",remarks: "应用表")
     }
+    /*     // 0.19后没有使用可删除
+    changeSet(author: 'wanghao', id: '2020-01-03-iam-application-drop') {
+        dropTable(tableName: "IAM_APPLICATION")
+    }*/
 }

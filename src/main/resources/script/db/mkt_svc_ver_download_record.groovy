@@ -36,4 +36,7 @@ databaseChangeLog(logicalFilePath: 'script/db/mkt_svc_ver_download_record.groovy
             column(name: "MKT_VERSION_ID")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-01-03-mkt-svc-ver-download-record-drop') {
+        dropTable(tableName: "MKT_SVC_VER_DOWNLOAD_RECORD")
+    }
 }

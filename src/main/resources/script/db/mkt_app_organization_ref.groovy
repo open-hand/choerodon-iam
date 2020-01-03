@@ -20,4 +20,7 @@ databaseChangeLog(logicalFilePath: 'script/db/mkt_app_organization_ref.groovy') 
             }
         }
     }
+    changeSet(author: 'wanghao', id: '2020-01-03-mkt-app-organization-ref-drop') {
+        dropTable(tableName: "MKT_APP_ORGANIZATION_REF")
+    }
 }

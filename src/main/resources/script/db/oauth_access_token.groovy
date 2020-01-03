@@ -36,7 +36,7 @@ databaseChangeLog(logicalFilePath: 'oauth_access_token.groovy') {
     }
 
 
-    changeSet(author: 'wkj', id: '2019-11-05-oauth-access-token-add-index') {
+    changeSet(author: 'wkj', id: '2019-11-05-oauth-access-token-add-constraint') {
         createIndex(tableName: 'OAUTH_ACCESS_TOKEN', indexName: 'idx_authentication_id') {
             column(name: 'AUTHENTICATION_ID')
         }

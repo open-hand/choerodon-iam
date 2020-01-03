@@ -40,9 +40,6 @@ choerodon:
       thread-num: 1 # 任务调度消费线程数
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
   cleanPermission: false
-  market:
-    saas:
-      platform: false
 eureka:
   instance:
     preferIpAddress: true

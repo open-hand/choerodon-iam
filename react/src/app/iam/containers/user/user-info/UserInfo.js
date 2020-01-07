@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Form, Icon, Input, Select, Modal as OldModal } from 'choerodon-ui';
-import { Modal } from 'choerodon-ui/pro';
+import { Modal, Tooltip } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { Content, Header, Page, Permission, axios, Breadcrumb, Choerodon } from '@choerodon/boot';
 import './Userinfo.less';
@@ -213,23 +213,24 @@ function UserInfo(props) {
           <Button className={`${prefixCls}-header-btn`} onClick={handleUpdateInfo.bind(this)} icon="mode_edit">
             修改信息
           </Button>
-          {
-            AppState.getUserInfo.ldap ? null : (
-              <Button 
-                className="user-info-header-btn"
-                onClick={handleUpdatePassword.bind(this)}
-                icon="mode_edit"
-              >
-                修改登录密码
-              </Button>
-            )
-          }
-          {enablePwd.enable_reset
-            ? (
-              <Button className="user-info-header-btn" onClick={handleUpdateStore.bind(this)} icon="mode_edit">
-                修改仓库密码
-              </Button>
-            ) : null}
+          <Tooltip title={AppState.getUserInfo.ldap ? 'LDAP用户无法修改登录密码' : ''}>
+            <Button
+              className="user-info-header-btn"
+              onClick={handleUpdatePassword.bind(this)}
+              icon="mode_edit"
+              disabled={AppState.getUserInfo.ldap}
+            >
+              修改登录密码
+            </Button>
+          </Tooltip>
+          <Button
+            className="user-info-header-btn"
+            onClick={handleUpdateStore.bind(this)}
+            icon="mode_edit"
+            disabled={!enablePwd.enable_reset}
+          >
+            修改仓库密码
+          </Button>
         </Header>
         <Breadcrumb />
         <Content className={`${prefixCls}-container`}>

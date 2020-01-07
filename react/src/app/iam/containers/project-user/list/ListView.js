@@ -11,6 +11,14 @@ import './index.less';
 
 const modalKey = Modal.key();
 
+let InviteModal = false;
+try {
+  const { default: requireData } = require('@choerodon/base-bus/lib/routes/invite-user');
+  InviteModal = requireData;
+} catch (error) {
+  InviteModal = false;
+}
+
 const { Column } = Table;
 export default function ListView(props) {
   const { intlPrefix,
@@ -128,6 +136,22 @@ export default function ListView(props) {
     }];
     return <Action data={actionDatas} />;
   }
+
+  function getInitialButton() {
+    if (InviteModal) {
+      return (
+        <InviteModal
+          allRoleDataSet={allRoleDataSet}
+          orgRoleDataSet={orgRoleDataSet}
+          orgUserRoleDataSet={orgUserRoleDataSet}
+          orgUserCreateDataSet={orgUserCreateDataSet}
+          orgUserListDataSet={dataSet}
+          onOk={handleSave}
+        />
+      );
+    }
+  }
+
   return (
     <TabPage>
       <Header
@@ -135,6 +159,7 @@ export default function ListView(props) {
       >
         <Button icon="person_add" onClick={handleCreate}>添加团队成员</Button>
         <Button icon="archive" onClick={handleImportRole}>导入团队成员</Button>
+        {getInitialButton()}
       </Header>
       <Breadcrumb />
       <Content

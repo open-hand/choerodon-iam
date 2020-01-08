@@ -1201,22 +1201,16 @@
         and imr.source_type = 'organization' and imr.member_type = 'user'
         and imr.source_id = #{organizationId} and imr.member_id = #{userId}
     </select>
-    <!--用户在项目下拥有多个角色，存在多条记录，所以使用DISTINCT-->
+    <!--用户在项目下拥有多个角色，存在多条记录，所以使用GROUP BY去重-->
     <select id="selectProjectByUidAndProjectId" resultType="io.choerodon.base.infra.dto.ProjectDTO">
-        SELECT DISTINCT
-            fp.*
-        FROM
-            iam_member_role imr
-        INNER JOIN
-            fd_project fp ON imr.source_id = fp.id
-        WHERE
-            imr.member_type = 'user'
-        AND
-            imr.member_id = #{id}
-        AND
-            imr.source_type = 'project'
-        AND
-            imr.source_id = #{projectId}
+        SELECT fp.*
+        FROM iam_member_role imr
+        INNER JOIN fd_project fp ON imr.source_id = fp.id
+        WHERE imr.member_type = 'user'
+        AND imr.member_id = #{id}
+        AND imr.source_type = 'project'
+        AND imr.source_id = #{projectId}
+        GROUP BY fp.id
     </select>
     <select id="selectRolesByUidAndProjectId" resultType="io.choerodon.base.infra.dto.RoleDTO">
         SELECT
@@ -1244,10 +1238,9 @@
         WHERE imr.member_type = 'user' AND imr.source_id = #{projectId}
         AND imr.source_type = 'project' AND il.name = #{roleLable}
     </select>
-
-    <!--DISTINCT使用原因 (一个用户对应多个角色标签)-->
+    <!--一个用户对应多个角色标签，使用GROUP BY去重-->
     <select id="listUsersByName" resultType="io.choerodon.base.infra.dto.UserDTO">
-        SELECT DISTINCT iu.*
+        SELECT iu.*
         FROM iam_member_role imr
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         INNER JOIN iam_role ir ON imr.role_id = ir.id
@@ -1259,5 +1252,6 @@
         <if test="param != null">
             AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%', #{param}),'%'))
         </if>
+        GROUP BY iu.id
     </select>
 </mapper>

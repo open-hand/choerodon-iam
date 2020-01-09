@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { Action, axios } from '@choerodon/boot';
 import { Tabs, Icon, message, Checkbox, Popover } from 'choerodon-ui';
 import { Table, Form, TextField, DataSet, Modal, Button, Select, Tooltip } from 'choerodon-ui/pro';
-import { pick } from 'lodash';
 import FormSelectEditor from '../../components/formSelectEditor';
 import FormListDataSet from './stores/FormListDataSet';
 import LabelDataSet from './stores/LabelDataSet';

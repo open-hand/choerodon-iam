@@ -2,6 +2,7 @@ package io.choerodon.base.infra.dto;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 
@@ -28,6 +29,10 @@ public class LabelDTO extends BaseDTO {
 
     @ApiModelProperty(value = "描述")
     private String description;
+
+    @ApiModelProperty(value = "是否获取gitlab相关标签")
+    @Transient
+    private Boolean gitlabLabel;
 
     public Long getId() {
         return id;
@@ -67,5 +72,13 @@ public class LabelDTO extends BaseDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getGitlabLabel() {
+        return gitlabLabel;
+    }
+
+    public void setGitlabLabel(Boolean gitlabLabel) {
+        this.gitlabLabel = gitlabLabel;
     }
 }

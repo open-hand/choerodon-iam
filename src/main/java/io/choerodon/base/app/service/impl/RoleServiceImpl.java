@@ -45,6 +45,7 @@ import io.choerodon.web.util.PageableHelper;
 @Component
 public class RoleServiceImpl implements RoleService {
     private static final String ERROR_ROLE_CODE_EMPTY = "error.role.code.empty";
+    private static final String GITLAB_ROLE = "gitlab";
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -161,10 +162,27 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private void insertCheck(RoleDTO roleDTO) {
+        validateGitlabLabel(roleDTO);
         validateRoleLabels(roleDTO);
         validateResourceLevel(roleDTO);
         validateCode(roleDTO.getCode());
         validatePermissions(roleDTO.getPermissions());
+    }
+
+    /**
+     * 校验gitlab角色标签
+     * @param roleDTO
+     */
+    private void validateGitlabLabel(RoleDTO roleDTO) {
+        if (roleDTO.getResourceLevel().equals(ResourceType.PROJECT.value())) {
+            if (roleDTO.getGitlabLabel() == null) {
+                throw new CommonException("error.project.role.gitlab.label");
+            } else {
+                List<LabelDTO> labels = roleDTO.getLabels();
+                labels.add(roleDTO.getGitlabLabel());
+                roleDTO.setLabels(labels);
+            }
+        }
     }
 
     private void validateRoleLabels(RoleDTO roleDTO) {
@@ -469,7 +487,19 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO queryWithPermissionsAndLabels(Long id) {
-        return roleMapper.selectRoleWithPermissionsAndLabels(id);
+        RoleDTO roleDTO = roleMapper.selectRoleWithPermissionsAndLabels(id);
+        if (roleDTO.getResourceLevel().equals(ResourceType.PROJECT.value())) {
+            List<LabelDTO> labelDTOS = new ArrayList<>(roleDTO.getLabels());
+            for (LabelDTO labelDTO : roleDTO.getLabels()) {
+                if (labelDTO.getName().contains(GITLAB_ROLE)) {
+                    labelDTOS.remove(labelDTO);
+                    roleDTO.setGitlabLabel(labelDTO);
+                    break;
+                }
+            }
+            roleDTO.setLabels(labelDTOS);
+        }
+        return roleDTO;
     }
 
     @Override

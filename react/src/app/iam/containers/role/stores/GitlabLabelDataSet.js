@@ -1,9 +1,10 @@
-export default ({ level }) => ({
-  autoQuery: true,
+export default () => ({
+  autoQuery: false,
   selection: 'single',
+  paging: false,
   transport: {
     read: {
-      url: `/base/v1/labels?type=role&level=${level}${level === 'project' ? '&gitlabLabel=false' : ''}`,
+      url: '/base/v1/labels?type=role&level=project&gitlabLabel=true',
       method: 'get',
     },
   },

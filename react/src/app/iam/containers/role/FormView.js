@@ -137,6 +137,7 @@ const ListView = ({ context, level, modal, base }) => {
         level,
         permissions: getPermissionsArrTotal().map((p) => ({ code: p })),
         labels: noEmptyLabels ? noEmptyLabels.map((id) => ({ id: typeof id === 'object' ? id.id : id })) : undefined,
+        gitlabLabel: level === 'project' ? { id: roleObj.gitlabLabel } : null,
         objectVersionNumber: roleObj.objectVersionNumber,
       };
       let res;
@@ -178,10 +179,10 @@ const ListView = ({ context, level, modal, base }) => {
     return `${prefix}${value}`;
   }
 
-  function renderLabelOption({ record, text, value }) {
-    const title = labelTipDataSet && labelTipDataSet.find(r => r.get('id') === value);
+  function renderLabelOption({ record, text }) {
+    const title = record.get('description');
     return (
-      <Tooltip placement="left" title={(title && title.get('description')) || '无描述'}>
+      <Tooltip placement="left" title={title || '无描述'}>
         {text}
       </Tooltip>
     );
@@ -216,8 +217,11 @@ const ListView = ({ context, level, modal, base }) => {
   function renderForm() {
     return (
       <Form style={{ width: '5.12rem' }} record={dataSet.current} columns={2} className="c7n-role-msg-form">
-        <TextField name="code" style={{ width: '2.48rem', marginRight: '.16rem' }} disabled={status !== 'add'} renderer={renderCode} />
-        <TextField name="name" style={{ width: '2.48rem' }} disabled={!edit.current} />
+        <TextField name="code" colSpan={1} disabled={status !== 'add'} renderer={renderCode} />
+        <TextField name="name" colSpan={1} disabled={!edit.current} />
+        {level === 'project' && (
+          <Select name="gitlabLabel" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
+        )}
       </Form>
     );
   }

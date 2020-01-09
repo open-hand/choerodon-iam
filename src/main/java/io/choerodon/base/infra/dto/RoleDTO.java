@@ -65,6 +65,10 @@ public class RoleDTO extends BaseDTO {
     @Transient
     private List<LabelDTO> labels;
 
+    @ApiModelProperty(value = "gitlab标签")
+    @Transient
+    private LabelDTO gitlabLabel;
+
     @Transient
     private String organizationName;
 
@@ -216,5 +220,13 @@ public class RoleDTO extends BaseDTO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public LabelDTO getGitlabLabel() {
+        return gitlabLabel;
+    }
+
+    public void setGitlabLabel(LabelDTO gitlabLabel) {
+        this.gitlabLabel = gitlabLabel;
     }
 }

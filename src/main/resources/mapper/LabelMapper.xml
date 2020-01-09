@@ -31,6 +31,16 @@
         <if test="label.description != null">
             AND l.description LIKE concat(concat('%',#{label.description}), '%')
         </if>
+        <if test="label.gitlabLabel!=null">
+            <choose>
+                <when test="label.gitlabLabel!=null and label.gitlabLabel">
+                    AND l.name LIKE concat(concat('%','gitlab'), '%')
+                </when>
+                <otherwise>
+                    AND l.name not LIKE concat(concat('%','gitlab'), '%')
+                </otherwise>
+            </choose>
+        </if>
     </select>
 
     <select id="selectByUserId" resultMap="labelDTO">

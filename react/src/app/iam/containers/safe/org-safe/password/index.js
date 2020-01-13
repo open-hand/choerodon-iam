@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Table, Icon, Button, Tabs, Row, Col } from 'choerodon-ui/pro';
+import { Icon, Button, Row, Col } from 'choerodon-ui/pro';
 import { Form, Output } from 'choerodon-ui/pro';
-import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
+import { Content, Header, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
 import { useContext } from 'react';
 import Store from '../store';
 import EditPassword from './editPassword';
 
 
 export default observer(() => {
-  const { passwordPolicyDataSet, clientDataSet, optionsDataSet, orgId, id } = useContext(Store);
+  const { passwordPolicyDataSet } = useContext(Store);
   const [visible, setVisible] = useState(false);
   function openPasswordModal() {
     setVisible(true);
   }
-  function renderBoolean({ value, text, name, record, dataSet }) {
+  function renderBoolean({ value }) {
     return value ? '是' : '否';
   }
 
@@ -24,12 +24,12 @@ export default observer(() => {
   function handleSave() {
     setVisible(false);
   }
-  
+
   return (
     <TabPage>
       <Header>
         <Permission service={['base-service.password-policy.update']}>
-          <Button color="blue" onClick={openPasswordModal}><Icon type="mode_edit" /> 修改安全策略</Button>          
+          <Button color="blue" onClick={openPasswordModal}><Icon type="mode_edit" /> 修改安全策略</Button>
         </Permission>
       </Header>
       <Breadcrumb />
@@ -66,11 +66,11 @@ export default observer(() => {
                 <Row><label>输错次数</label><Output name="maxErrorTime" /></Row>,
                 <Row><label>锁定时长</label><Output name="lockedExpireTime" /></Row>,
               ] : null}
-                  
+
             </Col>
           </Row>
-        </Form>  
-        {visible && <EditPassword onCancel={handleCancel} onOk={handleSave} dataSet={passwordPolicyDataSet} />}        
+        </Form>
+        {visible && <EditPassword onCancel={handleCancel} onOk={handleSave} dataSet={passwordPolicyDataSet} />}
       </Content>
     </TabPage>
   );

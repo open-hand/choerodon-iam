@@ -1,13 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { querystring } from 'query-string';
-import { DataSet, Select, Form, message } from 'choerodon-ui/pro';
+import { DataSet, Select, message } from 'choerodon-ui/pro';
 import { Modal } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
-import FormSelectEditor from '../../../../components/formSelectEditor';
+import FormSelectEditor from '../../components/formSelectEditor';
 
 const { Sidebar } = Modal;
-export default observer(({ dataSet, onCancel, onOk, ds, record, organizationId, optionsDataSet }) => {
+export default observer(({ onCancel, onOk, ds, record, organizationId, optionsDataSet }) => {
   const isFirstRender = useRef(true);
   function handleCancel() {
     onCancel();
@@ -54,7 +53,7 @@ export default observer(({ dataSet, onCancel, onOk, ds, record, organizationId, 
         maxDisable
       >
         {((itemProps) => (
-          <Select 
+          <Select
             {...itemProps}
             labelLayout="float"
               // renderer={renderOption}

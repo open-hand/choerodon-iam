@@ -21,6 +21,8 @@ const siteSafe = asyncRouter(() => import('./safe/site-safe'));
 
 const orgAdmin = asyncRouter(() => import('./org-admin'));
 
+const orgClient = asyncRouter(() => import('./client'));
+
 // project
 const generalSetting = asyncRouter(() => import('./general-setting'));
 const projectUser = asyncRouter(() => import('./project-user'));
@@ -78,6 +80,7 @@ class IAMIndex extends React.Component {
             <Route path={`${match.url}/saga-instance`} component={sagaInstance} />
             <Route path={`${match.url}/org-safe`} component={orgSafe} />
             <Route path={`${match.url}/safe`} component={siteSafe} />
+            <Route path={`${match.url}/client`} component={orgClient} />
             <Route path={`${match.url}/org-admin`} component={orgAdmin} />
             <Route path={`${match.url}/market-publish`} component={AppRelease} />
             <Route path={`${match.url}/app-market`} component={AppMarket} />

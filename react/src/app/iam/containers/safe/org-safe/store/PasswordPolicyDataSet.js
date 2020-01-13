@@ -1,4 +1,4 @@
-export default function passwordPoliciesDataSet(organizationId, id, intl, intlPrefix) { 
+export default function passwordPoliciesDataSet(organizationId, id, intl, intlPrefix) {
   function getAllCount(record) {
     const digitsCount = record.get('digitsCount');
     const specialCharCount = record.get('specialCharCount');
@@ -34,9 +34,9 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
     { name: 'enableSecurity', type: 'boolean', label: '是否启用' },
     { name: 'enableCaptcha', type: 'boolean', label: '是否开启验证码' },
     { name: 'maxCheckCaptcha', type: 'number', step: 1, min: 0, max: 65535, label: '输错次数', defaultValue: 0 },
-    { name: 'enableLock', type: 'boolean', label: '是否开启锁定' },  
-    { name: 'maxErrorTime', type: 'number', step: 1, min: 0, max: 65535, label: '输错次数', defaultValue: 0 },  
-    { name: 'lockedExpireTime', type: 'number', min: 0, label: '锁定时长', defaultValue: 0 },  
+    { name: 'enableLock', type: 'boolean', label: '是否开启锁定' },
+    { name: 'maxErrorTime', type: 'number', step: 1, min: 0, max: 65535, label: '输错次数', defaultValue: 0 },
+    { name: 'lockedExpireTime', type: 'number', min: 0, label: '锁定时长', defaultValue: 0 },
   ];
 
   return {
@@ -47,27 +47,31 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
         url: `/base/v1/organizations/${organizationId}/password_policies`,
         method: 'get',
       },
-      update: (record) => ({
-        url: `/base/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
-        method: 'post',
-        transformRequest: (([data]) => {
-          Object.keys(data).forEach((key) => {
-            const field = fields.find((v) => v.name === key);
-            if ((data[key] === null || data[key] === undefined) && field.type === 'number') {
-              data[key] = 0;
-            }
-          });
-          fields.forEach((v) => {
-            if (v.type === 'number' && data[v.name] === undefined) {
-              data[v.name] = 0;
-            } else if (data[v.name] === undefined || data[v.name] === null) {
-              data[v.name] = '';
-            }
-          });
-          return JSON.stringify(data);
-        }),
-      }),
+      submit: (record) => {
+        if (record.data[0].id) {
+          return {
+            url: `/base/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
+            method: 'post',
+            transformRequest: (([data]) => {
+              Object.keys(data).forEach((key) => {
+                const field = fields.find((v) => v.name === key);
+                if ((data[key] === null || data[key] === undefined) && field.type === 'number') {
+                  data[key] = 0;
+                }
+              });
+              fields.forEach((v) => {
+                if (v.type === 'number' && data[v.name] === undefined) {
+                  data[v.name] = 0;
+                } else if (data[v.name] === undefined || data[v.name] === null) {
+                  data[v.name] = '';
+                }
+              });
+              return JSON.stringify(data);
+            }),
+          };
+        }
+      },
+      fields,
     },
-    fields,
   };
 }

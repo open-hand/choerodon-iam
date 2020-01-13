@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { DataSet, Form, Output, Select, SelectBox, NumberField, TextField } from 'choerodon-ui/pro';
+import { Form, Select, SelectBox, NumberField, TextField } from 'choerodon-ui/pro';
 import { Divider, Modal } from 'choerodon-ui';
 import '../index.less';
 
@@ -9,10 +9,12 @@ const { Sidebar } = Modal;
 
 export default observer(({ dataSet, onCancel, onOk }) => {
   const { current } = dataSet;
+
   async function handleOk() {
     if (!current.dirty) {
       onOk();
     }
+
     if (await dataSet.submit()) {
       await dataSet.query();
       await onOk();
@@ -76,10 +78,10 @@ export default observer(({ dataSet, onCancel, onOk }) => {
           <Option value key="yes">是</Option>
           <Option value={false} key="no">否</Option>
         </SelectBox>
-        
+
         { dataSet.current && dataSet.current.get('enablePassword')
           ? (
-                            
+
             [
               <SelectBox name="notUsername" label="是否允许密码与登录名相同" colSpan={6}>
                 <Option value key="yes">是</Option>
@@ -95,7 +97,7 @@ export default observer(({ dataSet, onCancel, onOk }) => {
               <NumberField name="notRecentCount" colSpan={3} />,
               <TextField name="regularExpression" label="密码正则" colSpan={6} />]
           ) : null}
-      </Form> 
+      </Form>
       <Divider className="divider" colSpan={6} />
       <Form style={{ margin: '0 0.15rem' }} className="safe-modal-form" dataSet={dataSet} columns={6}>
         <div className="form-title" colSpan={6}>登录安全策略</div>
@@ -103,8 +105,8 @@ export default observer(({ dataSet, onCancel, onOk }) => {
           <Option value key="yes">是</Option>
           <Option value={false} key="no">否</Option>
         </SelectBox>
-        {getSecurity()}    
-      </Form> 
+        {getSecurity()}
+      </Form>
     </Sidebar>
   );
 });

@@ -5,16 +5,16 @@ import { Modal as OldModal } from 'choerodon-ui';
 import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
 import { useContext } from 'react';
 import { FormattedMessage } from 'react-intl';
-import Store from '../store';
+import Store from './store';
+import { StoreProvider } from './store';
 import EditRecord from './editRecord';
 import CreateRecord from './createRecord';
 import EditRole from './editRole';
 
 const { Column } = Table;
-const roleManageModal = Modal.key();
 
-export default observer(() => {
-  const { passwordPolicyDataSet, clientDataSet, optionsDataSet, orgId } = useContext(Store);
+const Client = observer(() => {
+  const { clientDataSet, optionsDataSet, orgId } = useContext(Store);
   const [editModal, setEditModal] = useState(false);
   const [createModal, setCreateModal] = useState(false);
   const [editRoleModal, setEditRoleModal] = useState(false);
@@ -61,7 +61,7 @@ export default observer(() => {
   function handleRoleClick(record) {
     openRoleManageModal(record);
   }
-  
+
   function renderAction({ record }) {
     const actionDatas = [{
       service: ['base-service.client.delete'],
@@ -107,3 +107,9 @@ export default observer(() => {
     </TabPage>
   );
 });
+
+export default (props) => (
+  <StoreProvider {...props}>
+    <Client />
+  </StoreProvider>
+);

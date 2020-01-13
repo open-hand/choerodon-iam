@@ -59,6 +59,12 @@ public interface UserMapper extends Mapper<UserDTO> {
                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                      @Param("param") String param);
 
+    List<UserDTO> listUsersWithGitlabLabel(@Param("projectId") Long sourceId,
+                                           @Param("labelName") String labelName,
+                                           @Param("roleAssignmentSearchDTO")
+                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                           @Param("param") String param);
+
 
     List<UserDTO> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
@@ -272,6 +278,14 @@ public interface UserMapper extends Mapper<UserDTO> {
      * @return
      */
     List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId")Long projectId);
+
+    /**
+     * 校验用户是否是gitlab项目所有者
+     * @param id
+     * @param projectId
+     * @return
+     */
+    Integer checkIsGitlabProjectOwner(@Param("id") Long id, @Param("projectId")Long projectId);
 
     /**
      * 查询项目下指定角色的用户列表

@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.base.api.dto.UserInfoDTO;
 import io.choerodon.base.api.dto.*;
 import org.springframework.data.domain.Pageable;
+
+import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.dto.*;
 
@@ -52,6 +54,8 @@ public interface UserService {
     PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable Pageable,
                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                              Long roleId, Long sourceId, boolean doPage);
+
+    List<UserVO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     String uploadPhoto(Long id, MultipartFile file);
 
@@ -254,6 +258,14 @@ public interface UserService {
      * @return true 是
      */
     Boolean checkIsProjectOwner(Long id, Long projectId);
+
+    /**
+     * 校验用户是否是gitlab项目所有者
+     * @param id
+     * @param projectId
+     * @return
+     */
+    Boolean checkIsGitlabProjectOwner(Long id, Long projectId);
 
     /**
      * 查询项目下指定角色的用户列表

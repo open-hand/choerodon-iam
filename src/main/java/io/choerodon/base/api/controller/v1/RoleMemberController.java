@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.base.api.dto.RoleAssignmentSearchDTO;
@@ -240,6 +241,23 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnProjectLevel(
                 Pageable, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
+
+
+    /**
+     * @param projectId
+     * @param roleAssignmentSearchDTO
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "项目层查询所有包含gitlab角色标签的用户")
+    @PostMapping(value = "/projects/{project_id}/gitlab_role/users")
+    public ResponseEntity<List<UserVO>> listUsersWithGitlabLabel(
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestParam(name = "label_name") String labelName,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.listUsersWithGitlabLabel(projectId, labelName,roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的客户端")

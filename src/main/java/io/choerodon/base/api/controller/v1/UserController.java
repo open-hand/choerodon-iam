@@ -410,4 +410,12 @@ public class UserController extends BaseController {
         return ResponseEntity.ok(userService.checkIsProjectOwner(id, projectId));
     }
 
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
+    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userService.checkIsGitlabProjectOwner(id, projectId));
+    }
 }

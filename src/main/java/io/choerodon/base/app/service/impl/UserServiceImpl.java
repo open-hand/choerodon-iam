@@ -41,6 +41,7 @@ import io.choerodon.base.api.validator.UserPasswordValidator;
 import io.choerodon.base.api.validator.UserValidator;
 import io.choerodon.base.api.vo.AssignAdminVO;
 import io.choerodon.base.api.vo.DeleteAdminVO;
+import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.asserts.*;
@@ -249,6 +250,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable pageable, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
         return pagingQueryUsersByRoleIdAndLevel(pageable, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value(), doPage);
+    }
+
+    @Override
+    public List<UserVO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return userMapper.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO, param)
+                .stream().map(t -> {
+                    UserVO userVO = new UserVO();
+                    BeanUtils.copyProperties(t, userVO);
+                    return userVO;
+                }).collect(Collectors.toList());
     }
 
     @Override
@@ -1138,6 +1150,11 @@ public class UserServiceImpl implements UserService {
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
         List<RoleDTO> roleDTOList = userMapper.selectRolesByUidAndProjectId(id, projectId);
         return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
+    }
+
+    @Override
+    public Boolean checkIsGitlabProjectOwner(Long id, Long projectId) {
+        return userMapper.checkIsGitlabProjectOwner(id, projectId) != 0;
     }
 
     @Override

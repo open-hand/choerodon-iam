@@ -1,4 +1,4 @@
-export default ({ id = 0 }) => {
+export default ({ id = 0, hasRegister }) => {
   function checkMinLength(value, name, record) {
     if (value > record.get('maxPasswordLength')) {
       return '最小密码长度必须小于最大密码长度';
@@ -9,6 +9,13 @@ export default ({ id = 0 }) => {
       return '最大密码长度必须大于最小密码长度';
     }
   }
+  const fields = hasRegister ? [
+    { name: 'registerEnabled', type: 'boolean', label: '是否启用注册' },
+    { name: 'registerUrl',
+      type: 'url',
+      label: '注册页面链接',
+      dynamicProps: ({ record }) => ({ required: record.get('registerEnabled') }) },
+  ] : [];
   return {
     // autoCreate: true,
     autoQuery: true,
@@ -56,6 +63,7 @@ export default ({ id = 0 }) => {
       { name: 'systemLogo', type: 'string', label: '平台导航栏图形标' },
       { name: 'defaultPassword', type: 'string', label: '平台默认密码' },
       { name: 'themeColor', type: 'string', label: '系统主题色' },
+      ...fields,
     ],
   };
 };

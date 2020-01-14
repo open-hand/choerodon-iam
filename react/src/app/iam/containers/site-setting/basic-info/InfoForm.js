@@ -6,7 +6,7 @@ import './index.less';
 import AvatarUploader from '../../../components/avatarUploader';
 
 const { Option } = Select;
-const InfoForm = observer(({ dataSet, AppState, intl }) => {
+const InfoForm = observer(({ dataSet, AppState, intl, hasRegister }) => {
   const favicon = dataSet.current && dataSet.current.get('favicon');
   const systemLogo = dataSet.current && dataSet.current.get('systemLogo');
   const [isShowAvatar, changeAvatarStatus] = useState(false);
@@ -70,6 +70,15 @@ const InfoForm = observer(({ dataSet, AppState, intl }) => {
           <Option value="zh_CN">简体中文</Option>
         </Select>
         <TextArea resize="vertical" name="resetGitlabPasswordUrl" required />
+        {hasRegister && (
+          <SelectBox name="registerEnabled">
+            <SelectBox.Option value>是</SelectBox.Option>
+            <SelectBox.Option value={false}>否</SelectBox.Option>
+          </SelectBox>
+        )}
+        {hasRegister && dataSet.current && dataSet.current.get('registerEnabled') && (
+          <TextArea resize="vertical" name="registerUrl" />
+        )}
       </Form>
 
       <AvatarUploader

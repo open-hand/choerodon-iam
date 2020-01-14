@@ -4,12 +4,20 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import SystemSettingDataSet from './SystemSettingDataSet';
 
+let hasRegister = false;
+try {
+  require('@choerodon/base-bus');
+  hasRegister = true;
+} catch (error) {
+  hasRegister = false;
+}
+
 const Store = createContext();
 export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const { children, AppState: { currentMenuType: { id: orgId } } } = props;
-  const systemSettingDataSet = new DataSet(SystemSettingDataSet({ id: orgId }));
+  const systemSettingDataSet = new DataSet(SystemSettingDataSet({ id: orgId, hasRegister }));
   const intlPrefix = 'global.system-setting';
   // map first color to second color
   const colorMap = {
@@ -30,6 +38,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     intlPrefix,
     presetColors,
     colorMap,
+    hasRegister,
   };
   return (
     <Store.Provider value={value}>

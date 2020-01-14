@@ -12,6 +12,7 @@ public class ProjectEventPayload {
     private String projectCode;
     private String projectName;
     private String projectCategory;
+    private Long organizationId;
     private String organizationCode;
     private String organizationName;
     private String userName;
@@ -116,5 +117,13 @@ public class ProjectEventPayload {
 
     public void setApplicationId(Long applicationId) {
         this.applicationId = applicationId;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

@@ -178,7 +178,7 @@ public class RoleServiceImpl implements RoleService {
             if (roleDTO.getGitlabLabel() == null) {
                 throw new CommonException("error.project.role.gitlab.label");
             } else {
-                List<LabelDTO> labels = roleDTO.getLabels();
+                List<LabelDTO> labels = roleDTO.getLabels() == null ? new ArrayList<>() : roleDTO.getLabels();
                 labels.add(roleDTO.getGitlabLabel());
                 roleDTO.setLabels(labels);
             }

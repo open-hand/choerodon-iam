@@ -8,7 +8,7 @@
     "lib"
   ],
   "peerDependencies": {
-    "@choerodon/boot": "0.19.x",
+    "@choerodon/boot": "0.20.0",
     "@choerodon/master": "0.21.0"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "rxjs-compat": "^6.5.3"
   },
   "devDependencies": {
-    "@choerodon/boot": "^0.20.0",
+    "@choerodon/boot": "0.20.0",
     "@choerodon/master": "0.21.0",
     "babel-preset-env": "^1.7.0",
     "gulp": "^3.9.1",

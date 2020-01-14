@@ -108,7 +108,7 @@ export default ({ level, gitlabLabelDs }) => {
       { name: 'builtIn', type: 'boolean', label: '来源' },
       { name: 'enabled', type: 'boolean', label: '状态' },
       { name: 'labels', type: 'auto', textField: 'name', valueField: 'id' },
-      { name: 'gitlabLabel', type: 'number', textField: 'name', valueField: 'id', required: level === 'project', options: gitlabLabelDs, label: 'Gitlab角色标签' },
+      { name: 'gitlabLabelId', type: 'number', textField: 'name', valueField: 'id', required: level === 'project', options: gitlabLabelDs, label: 'Gitlab角色标签' },
     ],
     queryFields: [
       { name: 'name', type: 'string', label: '名称' },

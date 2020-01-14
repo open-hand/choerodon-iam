@@ -99,6 +99,9 @@ const ListView = ({ context, level, modal, base }) => {
       edit.current = !res.builtIn;
       setPermissionsArr(res.permissions.map((p) => p.code));
       record.set('labels', res.labels);
+      if (level === 'project') {
+        record.set('gitlabLabelId', res.gitlabLabel ? res.gitlabLabel.id : null);
+      }
       if (res.builtIn) {
         ds.forEach((r) => {
           r.selectable = false;
@@ -137,7 +140,7 @@ const ListView = ({ context, level, modal, base }) => {
         level,
         permissions: getPermissionsArrTotal().map((p) => ({ code: p })),
         labels: noEmptyLabels ? noEmptyLabels.map((id) => ({ id: typeof id === 'object' ? id.id : id })) : undefined,
-        gitlabLabel: level === 'project' ? { id: roleObj.gitlabLabel } : null,
+        gitlabLabel: level === 'project' ? { id: roleObj.gitlabLabelId } : null,
         objectVersionNumber: roleObj.objectVersionNumber,
       };
       let res;
@@ -220,7 +223,7 @@ const ListView = ({ context, level, modal, base }) => {
         <TextField name="code" colSpan={1} disabled={status !== 'add'} renderer={renderCode} />
         <TextField name="name" colSpan={1} disabled={!edit.current} />
         {level === 'project' && (
-          <Select name="gitlabLabel" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
+          <Select name="gitlabLabelId" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
         )}
       </Form>
     );

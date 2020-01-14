@@ -14,7 +14,7 @@ import Store from '../stores';
 const modalKey = Modal.key();
 
 const InfoView = observer(() => {
-  const { systemSettingDataSet: dataSet, AppState, intl, intlPrefix, presetColors, colorMap } = useContext(Store);
+  const { systemSettingDataSet: dataSet, AppState, intl, intlPrefix, presetColors, colorMap, hasRegister } = useContext(Store);
   const favicon = dataSet.current && dataSet.current.getPristineValue('favicon');
   const systemLogo = dataSet.current && dataSet.current.getPristineValue('systemLogo');
   const themeColor = dataSet.current && dataSet.current.getPristineValue('themeColor');
@@ -44,7 +44,7 @@ const InfoView = observer(() => {
       title: '修改信息',
       style: { width: 380 },
       children: (
-        <InfoForm intl={intl} dataSet={dataSet} AppState={AppState} />
+        <InfoForm intl={intl} dataSet={dataSet} AppState={AppState} hasRegister={hasRegister} />
       ),
       fullScreen: true,
       onOk: handleSave,
@@ -131,6 +131,12 @@ const InfoView = observer(() => {
               {systemLogo ? <img src={systemLogo} alt="图片" /> 
                 : <div className="c7n-system-setting-formImg-wrapper default-logo" />}
             </div>
+            {hasRegister && (
+              <Output renderer={({ value }) => (value === true ? '是' : '否')} name="registerEnabled" newLine />
+            )}
+            {hasRegister && dataSet.current && dataSet.current.getPristineValue('registerEnabled') && (
+              <Output renderer={() => (dataSet.current && dataSet.current.getPristineValue('registerUrl')) || '无'} name="registerUrl" />
+            )}
           </Form>
         </div>
 

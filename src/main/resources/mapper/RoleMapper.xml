@@ -68,7 +68,10 @@
                 )
             </if>
         </where>
-        order by r.id desc
+        order by
+        r.is_modified ASC,
+        r.is_enabled DESC,
+        r.id DESC
     </select>
 
     <select id="pagingQueryOrgRoles" resultMap="RoleDTO">

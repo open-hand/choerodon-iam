@@ -220,6 +220,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setImageUrl(projectDTO.getImageUrl());
         projectEventMsg.setOrganizationCode(organizationDTO.getCode());
         projectEventMsg.setOrganizationName(organizationDTO.getName());
+        projectEventMsg.setOrganizationId(organizationDTO.getId());
         return projectEventMsg;
     }
 

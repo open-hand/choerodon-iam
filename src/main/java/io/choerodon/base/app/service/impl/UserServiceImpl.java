@@ -702,11 +702,11 @@ public class UserServiceImpl implements UserService {
             }
         }
         projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
-        setProjectsInto(projects, isAdmin);
+        setProjectsInto(projects, isAdmin,isOrgAdmin);
         return projects;
     }
 
-    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin) {
+    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin,boolean isOrgAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
                 p.setCategory(p.getCategories().get(0).getCode());
@@ -715,8 +715,8 @@ public class UserServiceImpl implements UserService {
                     p.setInto(false);
                     return;
                 }
-                // 如果不是admin用户且未分配项目角色 不可进入
-                if (!isAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
                     p.setInto(false);
                 }
 

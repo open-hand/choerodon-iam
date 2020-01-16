@@ -69,12 +69,18 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
         String parentCategory = null;
-        Long organizationId = sourceId;
+        Long organizationId = null;
         if (ResourceType.isProject(level)) {
             OrganizationDTO organization = getOrganizationCategoryByProjectId(sourceId);
             if(!ObjectUtils.isEmpty(organization)){
                 organizationId = organization.getId();
                 parentCategory = organization.getCategory();
+            }
+        }
+        if (ResourceType.isOrganization(level)){
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
+            if (organizationDTO != null) {
+                organizationId = organizationDTO.getId();
             }
         }
         if(!isAdmin){

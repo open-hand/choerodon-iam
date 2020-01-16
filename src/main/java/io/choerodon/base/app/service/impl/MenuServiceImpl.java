@@ -69,18 +69,22 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
         String parentCategory = null;
-        Long organizationId = sourceId;
+        Long organizationId = null;
         if (ResourceType.isProject(level)) {
             OrganizationDTO organization = getOrganizationCategoryByProjectId(sourceId);
             if(!ObjectUtils.isEmpty(organization)){
                 organizationId = organization.getId();
                 parentCategory = organization.getCategory();
             }
-
         }
-
+        if (ResourceType.isOrganization(level)){
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
+            if (organizationDTO != null) {
+                organizationId = organizationDTO.getId();
+            }
+        }
         if(!isAdmin){
-            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId, userDetails.getUserId());
+            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId,userId);
             isAdmin = isOrgAdmin;
         }
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusByPermissionAndCategory(isAdmin, userId, sourceId, level, getCategories(level, sourceId), parentCategory));
@@ -108,9 +112,6 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private OrganizationDTO getOrganizationCategoryByProjectId(Long projectId) {
-        if (!enableOrganizationCategory){
-            return null;
-        }
         ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
         if (project == null) {
             throw new CommonException("error.project.not.exist", projectId);
@@ -118,6 +119,9 @@ public class MenuServiceImpl implements MenuService {
         OrganizationDTO organization = organizationMapper.selectByPrimaryKey(project.getOrganizationId());
         if (organization == null) {
             throw new CommonException("error.organization.not.exist");
+        }
+        if (!enableOrganizationCategory){
+            organization.setCategory(null);
         }
         return organization;
     }

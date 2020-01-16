@@ -79,8 +79,8 @@ public class MenuServiceImpl implements MenuService {
 
         }
 
-        boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId, userDetails.getUserId());
-        if(isOrgAdmin){
+        if(!isAdmin){
+            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId, userDetails.getUserId());
             isAdmin = isOrgAdmin;
         }
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusByPermissionAndCategory(isAdmin, userId, sourceId, level, getCategories(level, sourceId), parentCategory));

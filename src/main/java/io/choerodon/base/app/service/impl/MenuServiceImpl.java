@@ -71,16 +71,12 @@ public class MenuServiceImpl implements MenuService {
         String parentCategory = null;
         Long organizationId = sourceId;
         if (ResourceType.isProject(level)) {
-            OrganizationDTO organization = getOrganizationCategoryByProjectId(sourceId);
-            if(!ObjectUtils.isEmpty(organization)){
-                organizationId = organization.getId();
-                parentCategory = organization.getCategory();
-            }
-
+            ProjectDTO project = projectMapper.selectByPrimaryKey(sourceId);
+            organizationId = project.getOrganizationId();
+            parentCategory = getOrganizationCategoryByProjectId(sourceId);
         }
-
         if(!isAdmin){
-            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId, userDetails.getUserId());
+            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId, userId);
             isAdmin = isOrgAdmin;
         }
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusByPermissionAndCategory(isAdmin, userId, sourceId, level, getCategories(level, sourceId), parentCategory));
@@ -107,7 +103,7 @@ public class MenuServiceImpl implements MenuService {
         return categories;
     }
 
-    private OrganizationDTO getOrganizationCategoryByProjectId(Long projectId) {
+    private String getOrganizationCategoryByProjectId(Long projectId) {
         if (!enableOrganizationCategory){
             return null;
         }
@@ -119,7 +115,7 @@ public class MenuServiceImpl implements MenuService {
         if (organization == null) {
             throw new CommonException("error.organization.not.exist");
         }
-        return organization;
+        return organization.getCategory();
     }
 
     @Override

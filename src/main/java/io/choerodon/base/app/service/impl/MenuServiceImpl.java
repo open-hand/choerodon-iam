@@ -77,7 +77,7 @@ public class MenuServiceImpl implements MenuService {
                 parentCategory = organization.getCategory();
             }
         }
-        if (ResourceType.isOrganization(level)){
+        if (ResourceType.isOrganization(level)) {
             OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
             if (organizationDTO != null) {
                 organizationId = organizationDTO.getId();

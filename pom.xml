@@ -9,7 +9,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>base-service</artifactId>
+    <artifactId>choerodon-service-base</artifactId>
     <version>0.19.0.RELEASE</version>
 
     <properties>
@@ -263,6 +263,15 @@
     </dependencies>
     <build>
         <finalName>app</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

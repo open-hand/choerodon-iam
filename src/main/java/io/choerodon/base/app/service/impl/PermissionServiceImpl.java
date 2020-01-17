@@ -98,7 +98,7 @@ public class PermissionServiceImpl implements PermissionService {
             return checkPermissionDTOList;
         }
         boolean isOrgAdmin = false;
-        if(CollectionUtils.isEmpty(checkPermissionDTOList)){
+        if(!CollectionUtils.isEmpty(checkPermissionDTOList)){
             Long organizationId = checkPermissionDTOList.get(0).getOrganizationId();
             isOrgAdmin = userMapper.isOrgAdministrator(organizationId,details.getUserId());
         }

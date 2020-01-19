@@ -1,5 +1,7 @@
 package io.choerodon.base.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -65,8 +67,12 @@ public class SyncDateServiceImpl implements SyncDateService {
     }
 
     private void syncRole() {
+        List<String> labels = new ArrayList<>();
+        labels.add("project.deploy.admin");
+        labels.add("project.deploy.admin");
         LabelDTO labelDTO = new LabelDTO();
         labelDTO.setName("project.deploy.admin");
         labelMapper.delete(labelDTO);
+
     }
 }

@@ -29,11 +29,11 @@ export default observer(({ dataSet, onOk, onCancel }) => {
       onOk={handleOk}
       onCancel={handleCancel}
       visible
-      className="safe-modal"
+      width={390}
     >
-      <Form className="safe-modal-form hidden-password" dataSet={dataSet}>
+      <Form className="hidden-password" dataSet={dataSet}>
         <input type="password" style={{ position: 'absolute', top: '-999px' }} />
-        <TextField name="name" />
+        <TextField name="name" style={{ marginTop: 15 }} />
         <Password name="secret" />
         <SelectBox name="authorizedGrantTypes">
           <Option value="password">password</Option>

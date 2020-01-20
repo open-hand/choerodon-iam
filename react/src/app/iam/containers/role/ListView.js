@@ -38,18 +38,20 @@ const ListView = () => {
   }
 
   function openModal(base) {
-    if (dataSet.current.status === 'add') {
+    const isCreate = dataSet.current.status === 'add';
+    if (isCreate) {
       dataSet.current.set('labels', ['']);
     }
     Modal.open({
       key: modalKey,
       drawer: true,
-      title: dataSet.current.status === 'add' ? '创建角色' : '修改角色',
+      title: isCreate ? '创建角色' : '修改角色',
       children: (
         <FormView context={context} level={level} base={base} />
       ),
       style: modalStyle,
       onCancel: handleCancel,
+      okText: isCreate ? '创建' : '修改',
     });
   }
 

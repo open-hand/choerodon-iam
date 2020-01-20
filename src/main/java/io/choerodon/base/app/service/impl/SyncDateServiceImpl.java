@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.base.app.service.SyncDateService;
 import io.choerodon.base.infra.dto.LabelDTO;
+import io.choerodon.base.infra.dto.RoleLabelDTO;
 import io.choerodon.base.infra.mapper.LabelMapper;
+import io.choerodon.base.infra.mapper.RoleLabelMapper;
 
 @Service
 public class SyncDateServiceImpl implements SyncDateService {
@@ -27,6 +29,8 @@ public class SyncDateServiceImpl implements SyncDateService {
 
     @Autowired
     private LabelMapper labelMapper;
+    @Autowired
+    private RoleLabelMapper roleLabelMapper;
 
     @Override
     public void syncDate(String version) {
@@ -69,10 +73,19 @@ public class SyncDateServiceImpl implements SyncDateService {
     private void syncRole() {
         List<String> labels = new ArrayList<>();
         labels.add("project.deploy.admin");
-        labels.add("project.deploy.admin");
-        LabelDTO labelDTO = new LabelDTO();
-        labelDTO.setName("project.deploy.admin");
-        labelMapper.delete(labelDTO);
+        labels.add("organization.gitlab.owner");
 
+        labels.forEach(label -> {
+            LabelDTO queryDTO = new LabelDTO();
+            queryDTO.setName(label);
+            LabelDTO labelDTO = labelMapper.selectOne(queryDTO);
+            if (labelDTO != null && labelDTO.getId() != null) {
+                RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+                roleLabelDTO.setLabelId(labelDTO.getId());
+                roleLabelMapper.delete(roleLabelDTO);
+
+                labelMapper.deleteByPrimaryKey(labelDTO.getId());
+            }
+        });
     }
 }

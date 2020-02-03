@@ -44,6 +44,7 @@ export default observer(({ onCancel, onOk, ds, record, organizationId, optionsDa
       onCancel={handleCancel}
       visible
       className="safe-modal"
+      width={390}
     >
       <FormSelectEditor
         record={ds.current}

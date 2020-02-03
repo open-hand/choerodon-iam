@@ -10,6 +10,7 @@
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
             <result column="permission_description" property="description" jdbcType="VARCHAR"/>
             <result column="permission_type" property="permissionType" jdbcType="VARCHAR"/>
+            <result column="required" property="required" jdbcType="TINYINT"/>
         </collection>
     </resultMap>
 
@@ -33,6 +34,7 @@
         imb.category,
         imb.page_permission_code,
         imb.object_version_number,
+        imp.required,
         ip2.path as route,
         ip.id permission_id,
         ip.code permission_code,

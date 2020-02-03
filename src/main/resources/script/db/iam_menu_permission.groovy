@@ -47,4 +47,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_permission.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-iam-menu-permission-add-remark') {
         setTableRemarks(tableName:"IAM_MENU_PERMISSION",remarks: "菜单权限关系表")
     }
+
+    changeSet(author: 'scp', id: '2020-02-03-add-column-required') {
+        addColumn(tableName: 'IAM_MENU_PERMISSION') {
+            column(name: 'REQUIRED', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否必选接口。1表示是，0表示不是')
+        }
+    }
 }

@@ -31,6 +31,9 @@ public class PermissionDTO extends BaseDTO {
     private Boolean loginAccess;
     private String permissionType;
 
+    @Transient
+    private Boolean required;
+
     public Long getId() {
         return id;
     }
@@ -135,6 +138,14 @@ public class PermissionDTO extends BaseDTO {
         this.permissionType = permissionType;
     }
 
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
+    }
+
     @Override
     public String toString() {
         return "PermissionDTO{" +
@@ -149,6 +160,7 @@ public class PermissionDTO extends BaseDTO {
                 ", controller='" + controller + '\'' +
                 ", within=" + within +
                 ", publicAccess=" + publicAccess +
+                ", required" + required +
                 ", loginAccess=" + loginAccess +
                 ", permissionType=" + permissionType +
                 '}';
@@ -170,6 +182,7 @@ public class PermissionDTO extends BaseDTO {
                 Objects.equals(within, that.within) &&
                 Objects.equals(publicAccess, that.publicAccess) &&
                 Objects.equals(loginAccess, that.loginAccess) &&
+                Objects.equals(required, that.required) &&
                 Objects.equals(permissionType, that.permissionType);
     }
 

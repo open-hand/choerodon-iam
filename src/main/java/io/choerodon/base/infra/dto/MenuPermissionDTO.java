@@ -23,6 +23,8 @@ public class MenuPermissionDTO extends BaseDTO {
     private String menuCode;
     @ApiModelProperty(value = "权限编码")
     private String permissionCode;
+    @ApiModelProperty(value = "是否必选接口")
+    private Boolean required;
 
     public Long getId() {
         return id;
@@ -46,5 +48,13 @@ public class MenuPermissionDTO extends BaseDTO {
 
     public void setPermissionCode(String permissionCode) {
         this.permissionCode = permissionCode;
+    }
+
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
     }
 }

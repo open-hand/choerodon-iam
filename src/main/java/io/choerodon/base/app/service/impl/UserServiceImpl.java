@@ -1174,4 +1174,10 @@ public class UserServiceImpl implements UserService {
         searchCondition.setAdmin(Boolean.TRUE);
         return userMapper.select(searchCondition);
     }
+
+    @Override
+    public List<UserDTO> queryAllOrgAdmin() {
+        return userMapper.queryAllOrgAdmin();
+    }
+
 }

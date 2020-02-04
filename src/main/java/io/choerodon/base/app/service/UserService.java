@@ -289,4 +289,10 @@ public interface UserService {
      * @return 所有的root用户
      */
     List<UserDTO> queryAllAdminUsers();
+
+    /**
+     * 查询所有的组织管理员
+     * @return
+     */
+    List<UserDTO> queryAllOrgAdmin();
 }

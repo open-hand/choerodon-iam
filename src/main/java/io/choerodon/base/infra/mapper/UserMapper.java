@@ -303,4 +303,10 @@ public interface UserMapper extends Mapper<UserDTO> {
      * @return
      */
     List<UserDTO> listUsersByName(@Param("projectId") Long projectId, @Param("param") String param);
+
+    /**
+     * 查询所有的组织管理员
+     * @return
+     */
+    List<UserDTO> queryAllOrgAdmin();
 }

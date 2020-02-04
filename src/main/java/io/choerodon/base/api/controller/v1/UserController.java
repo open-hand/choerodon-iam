@@ -219,6 +219,13 @@ public class UserController extends BaseController {
     }
 
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
+    @GetMapping("/admin_org_all")
+    public ResponseEntity<List<UserDTO>> queryAllOrgAdmin() {
+        return new ResponseEntity<>(userService.queryAllOrgAdmin(), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids,

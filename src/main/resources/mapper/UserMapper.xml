@@ -1324,4 +1324,11 @@
         </if>
         GROUP BY iu.id
     </select>
+
+    <select id="queryAllOrgAdmin" resultType="io.choerodon.base.infra.dto.UserDTO">
+        SELECT
+        *
+        FROM  iam_user iu ,iam_member_role imr
+        WHERE iu.id=imr.member_id AND imr.role_id=2
+    </select>
 </mapper>

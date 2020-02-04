@@ -9,18 +9,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.base.api.validator.MenuValidator;
 import io.choerodon.base.app.service.MenuService;
-import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.asserts.DetailsHelperAssert;
 import io.choerodon.base.infra.dto.MenuDTO;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.enums.MenuType;
+import io.choerodon.base.infra.mapper.MenuMapper;
+import io.choerodon.base.infra.mapper.OrganizationMapper;
+import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.base.infra.mapper.ProjectMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 
@@ -37,7 +39,6 @@ public class MenuServiceImpl implements MenuService {
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private ProjectMapper projectMapper;
-    private UserMapper userMapper;
 
 
     private Boolean enableOrganizationCategory;
@@ -45,12 +46,10 @@ public class MenuServiceImpl implements MenuService {
     public MenuServiceImpl(OrganizationMapper organizationMapper,
                            MenuMapper menuMapper,
                            ProjectMapCategoryMapper projectMapCategoryMapper,
-                           UserMapper userMapper,
                            ProjectMapper projectMapper,
                            @Value("${choerodon.category.organization.enabled:false}") Boolean enableOrganizationCategory) {
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
-        this.userMapper = userMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
         this.enableOrganizationCategory = enableOrganizationCategory;
@@ -69,23 +68,8 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
         String parentCategory = null;
-        Long organizationId = null;
         if (ResourceType.isProject(level)) {
-            OrganizationDTO organization = getOrganizationCategoryByProjectId(sourceId);
-            if(!ObjectUtils.isEmpty(organization)){
-                organizationId = organization.getId();
-                parentCategory = organization.getCategory();
-            }
-        }
-        if (ResourceType.isOrganization(level)) {
-            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
-            if (organizationDTO != null) {
-                organizationId = organizationDTO.getId();
-            }
-        }
-        if(!isAdmin){
-            boolean isOrgAdmin = userMapper.isOrgAdministrator(organizationId,userId);
-            isAdmin = isOrgAdmin;
+            parentCategory = getOrganizationCategoryByProjectId(sourceId);
         }
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusByPermissionAndCategory(isAdmin, userId, sourceId, level, getCategories(level, sourceId), parentCategory));
         toTreeMenu(topMenu, menus, true);
@@ -111,7 +95,10 @@ public class MenuServiceImpl implements MenuService {
         return categories;
     }
 
-    private OrganizationDTO getOrganizationCategoryByProjectId(Long projectId) {
+    private String getOrganizationCategoryByProjectId(Long projectId) {
+        if (!enableOrganizationCategory){
+            return null;
+        }
         ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
         if (project == null) {
             throw new CommonException("error.project.not.exist", projectId);
@@ -120,10 +107,7 @@ public class MenuServiceImpl implements MenuService {
         if (organization == null) {
             throw new CommonException("error.organization.not.exist");
         }
-        if (!enableOrganizationCategory){
-            organization.setCategory(null);
-        }
-        return organization;
+        return organization.getCategory();
     }
 
     @Override

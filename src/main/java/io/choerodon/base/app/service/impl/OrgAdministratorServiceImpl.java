@@ -4,6 +4,9 @@ import java.util.*;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
+import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.OrganizationDTO;
@@ -51,19 +54,23 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
     private RoleMemberService roleMemberService;
 
+    private TransactionalProducer producer;
+
 
     public OrgAdministratorServiceImpl(UserMapper userMapper,
                                        MemberRoleMapper memberRoleMapper,
                                        RoleAssertHelper roleAssertHelper,
                                        UserService userService,
                                        OrganizationMapper organizationMapper,
-                                       RoleMemberService roleMemberService) {
+                                       RoleMemberService roleMemberService,
+                                       TransactionalProducer producer) {
         this.userMapper = userMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
         this.userService = userService;
         this.organizationMapper = organizationMapper;
         this.roleMemberService = roleMemberService;
+        this.producer = producer;
     }
 
     @Override
@@ -109,6 +116,8 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         if (memberRoleMapper.delete(memberRoleDTO) != 1) {
             throw new CommonException("error.memberRole.delete");
         }
+        //删除组织管理员成功后也要发saga删除gitlab相应的权限。
+        roleMemberService.deleteOrgAdmin(organizationId, userId, Arrays.asList(memberRoleDTO), ResourceLevel.ORGANIZATION.value());
         return true;
     }
 

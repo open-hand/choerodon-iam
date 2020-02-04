@@ -90,6 +90,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private UploadHistoryMapper uploadHistoryMapper;
 
+
     public RoleMemberServiceImpl(ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  OrganizationMapper organizationMapper,
@@ -310,7 +311,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
-        CustomUserDetails userDetails= DetailsHelper.getUserDetails();
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceId(sourceId, sourceType);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
@@ -322,7 +323,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             UploadHistoryDTO uploadHistory = initUploadHistory(sourceId, sourceType);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
-            excelImportUserTask.importMemberRole(userDetails.getUserId(),memberRoles, uploadHistory, finishFallback);
+            excelImportUserTask.importMemberRole(userDetails.getUserId(), memberRoles, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new CommonException("error.excel.read", e);
         } catch (IllegalArgumentException e) {
@@ -411,7 +412,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
             }
             userMemberEventPayloads.add(userMemberEventMsg);
-            sendEvent(userMemberEventPayloads);
+            sendEvent(userMemberEventPayloads, MEMBER_ROLE_UPDATE);
             return returnList;
         } else {
             insertOrUpdateRolesByMemberIdExecute(isEdit,
@@ -469,13 +470,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 .stream().map(MemberRoleDTO::getRoleId).collect(Collectors.toList());
     }
 
-    private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads) {
+    private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads, String code) {
         try {
             String input = mapper.writeValueAsString(userMemberEventPayloads);
             String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
             String level = userMemberEventPayloads.get(0).getResourceType();
             Long sourceId = userMemberEventPayloads.get(0).getResourceId();
-            sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds, level, sourceId));
+            sagaClient.startSaga(code, new StartInstanceDTO(input, "users", refIds, level, sourceId));
         } catch (Exception e) {
             throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event", e);
         }
@@ -622,9 +623,30 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(roleIds));
             }
             userMemberEventPayloads.add(userMemberEventMsg);
-            sendEvent(userMemberEventPayloads);
+            sendEvent(userMemberEventPayloads, MEMBER_ROLE_UPDATE);
         }
     }
 
-
+    @Override
+    @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value) {
+        UserDTO userDTO = userAssertHelper.userNotExisted(userId);
+        List<MemberRoleDTO> returnList = new ArrayList<>();
+        if (devopsMessage) {
+            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+            UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+            userMemberEventMsg.setResourceId(organizationId);
+            userMemberEventMsg.setUserId(userDTO.getId());
+            userMemberEventMsg.setResourceType(ResourceType.ORGANIZATION.value());
+            userMemberEventMsg.setUsername(userDTO.getLoginName());
+            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
+                    Boolean.FALSE, organizationId, userId, ResourceType.ORGANIZATION.value(), memberRoleDTOS, returnList, MemberType.USER.value());
+            if (!ownRoleIds.isEmpty()) {
+                userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
+            }
+            userMemberEventPayloads.add(userMemberEventMsg);
+            sendEvent(userMemberEventPayloads, MEMBER_ROLE_DELETE);
+        }
+    }
 }

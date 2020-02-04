@@ -259,6 +259,9 @@ public interface UserService {
      */
     Boolean checkIsProjectOwner(Long id, Long projectId);
 
+
+    Boolean checkIsGitlabOrgOwner(Long id, Long projectId);
+
     /**
      * 校验用户是否是gitlab项目所有者
      * @param id
@@ -295,4 +298,5 @@ public interface UserService {
      * @return
      */
     List<UserDTO> queryAllOrgAdmin();
+
 }

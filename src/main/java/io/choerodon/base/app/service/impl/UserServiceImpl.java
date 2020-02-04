@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.app.service.OrganizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1150,6 +1151,14 @@ public class UserServiceImpl implements UserService {
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
         List<RoleDTO> roleDTOList = userMapper.selectRolesByUidAndProjectId(id, projectId);
         return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
+    }
+
+    @Override
+    public Boolean checkIsGitlabOrgOwner(Long id, Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        Long organizationId = projectDTO.getOrganizationId();
+        List<RoleDTO> roleDTOList = userMapper.selectRolesByUidAndProjectIdOnOrg(id, organizationId);
+        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.ORG_ADMINISTRATOR.value().equals(v.getCode()));
     }
 
     @Override

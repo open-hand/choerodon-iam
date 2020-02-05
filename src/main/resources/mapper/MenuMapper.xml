@@ -34,7 +34,6 @@
         imb.category,
         imb.page_permission_code,
         imb.object_version_number,
-        imp.required,
         ip2.path as route,
         ip.id permission_id,
         ip.code permission_code,
@@ -52,6 +51,7 @@
         on imb.page_permission_code = ip2.code
         where imb.type != 'top'
         and imb.resource_level = #{level}
+        and imb.id is not null
     </select>
 
     <select id="selectMenusByPermissionAndCategory" resultType="io.choerodon.base.infra.dto.MenuDTO">

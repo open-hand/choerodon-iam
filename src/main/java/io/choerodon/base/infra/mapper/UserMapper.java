@@ -265,6 +265,7 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 查询用户下指定项目，
+     *
      * @param id
      * @param projectId
      * @return null (项目不存在或者用户没有项目权限)
@@ -273,22 +274,27 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 查询用户在项目下拥有的角色
+     *
      * @param id
      * @param projectId
      * @return
      */
-    List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId")Long projectId);
+    List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
+
+    List<RoleDTO> selectRolesByUidAndProjectIdOnOrg(@Param("id") Long id, @Param("organizationId") Long organizationId);
 
     /**
      * 校验用户是否是gitlab项目所有者
+     *
      * @param id
      * @param projectId
      * @return
      */
-    Integer checkIsGitlabProjectOwner(@Param("id") Long id, @Param("projectId")Long projectId);
+    Integer checkIsGitlabProjectOwner(@Param("id") Long id, @Param("projectId") Long projectId);
 
     /**
      * 查询项目下指定角色的用户列表
+     *
      * @param projectId
      * @param roleLable
      * @return
@@ -298,9 +304,18 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 根据projectId和param模糊查询loginName和realName两列
+     *
      * @param projectId
      * @param param
      * @return
      */
     List<UserDTO> listUsersByName(@Param("projectId") Long projectId, @Param("param") String param);
+
+    /**
+     * 查询所有的组织管理员
+     *
+     * @return
+     */
+    List<UserDTO> queryAllOrgAdmin(@Param("roleId") Long roleId);
+
 }

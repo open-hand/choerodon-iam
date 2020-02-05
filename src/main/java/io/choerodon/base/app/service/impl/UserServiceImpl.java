@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.app.service.OrganizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -702,11 +703,11 @@ public class UserServiceImpl implements UserService {
             }
         }
         projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
-        setProjectsInto(projects, isAdmin,isOrgAdmin);
+        setProjectsInto(projects, isAdmin);
         return projects;
     }
 
-    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin,boolean isOrgAdmin) {
+    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
                 p.setCategory(p.getCategories().get(0).getCode());
@@ -715,8 +716,8 @@ public class UserServiceImpl implements UserService {
                     p.setInto(false);
                     return;
                 }
-                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
-                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                // 如果不是admin用户且未分配项目角色 不可进入
+                if (!isAdmin && CollectionUtils.isEmpty(p.getRoles())) {
                     p.setInto(false);
                 }
 
@@ -1153,6 +1154,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkIsGitlabOrgOwner(Long id, Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        Long organizationId = projectDTO.getOrganizationId();
+        List<RoleDTO> roleDTOList = userMapper.selectRolesByUidAndProjectIdOnOrg(id, organizationId);
+        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.ORG_ADMINISTRATOR.value().equals(v.getCode()));
+    }
+
+    @Override
     public Boolean checkIsGitlabProjectOwner(Long id, Long projectId) {
         return userMapper.checkIsGitlabProjectOwner(id, projectId) != 0;
     }
@@ -1173,5 +1182,13 @@ public class UserServiceImpl implements UserService {
         UserDTO searchCondition = new UserDTO();
         searchCondition.setAdmin(Boolean.TRUE);
         return userMapper.select(searchCondition);
+    }
+
+    @Override
+    public List<UserDTO> queryAllOrgAdmin() {
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setCode(RoleEnum.ORG_ADMINISTRATOR.value());
+        RoleDTO reDto = roleMapper.selectOne(roleDTO);
+        return userMapper.queryAllOrgAdmin(reDto.getId());
     }
 }

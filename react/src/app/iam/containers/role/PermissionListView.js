@@ -30,8 +30,8 @@ const PermissionListView = ({ record, permissionsArr, modal, onOk, edit }) => {
     modal.handleOk(handleOk);
     ds.loadData(record.toData().permissions.filter((p) => p.permissionType !== 'page'));
     ds.forEach((r) => {
-      r.selectable = edit;
-      if (permissionsArr.includes(r.get('code'))) {
+      r.selectable = edit && !r.get('required');
+      if (permissionsArr.includes(r.get('code')) || r.get('required')) {
         r.isSelected = true;
       }
     });

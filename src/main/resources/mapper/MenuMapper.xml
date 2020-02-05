@@ -34,7 +34,7 @@
         imb.category,
         imb.page_permission_code,
         imb.object_version_number,
-        imp.required,
+        (select imp2.required from iam_menu_permission imp2 where imp2.permission_code =  ip. CODE and  imp2.menu_code = imb. CODE) as required,
         ip2.path as route,
         ip.id permission_id,
         ip.code permission_code,

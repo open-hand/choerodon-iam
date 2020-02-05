@@ -60,4 +60,13 @@ public interface RoleMemberService {
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
     void insertAndSendEvent(MemberRoleDTO memberRole, String loginName);
+
+    /**
+     * 删除组织root
+     * @param organizationId
+     * @param userId
+     * @param memberRoleDTOS
+     * @param value
+     */
+    void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value);
 }

@@ -1283,6 +1283,23 @@
             imr.source_id = #{projectId}
     </select>
 
+    <select id="selectRolesByUidAndProjectIdOnOrg" resultType="io.choerodon.base.infra.dto.RoleDTO">
+        SELECT
+            ir.*
+        FROM
+            iam_member_role imr
+        INNER JOIN
+            iam_role ir ON imr.role_id = ir.id
+        WHERE
+            imr.member_type = 'user'
+        AND
+            imr.member_id = #{id}
+        AND
+            imr.source_type = 'organization'
+        AND
+            imr.source_id = #{organizationId}
+    </select>
+
     <select id="checkIsGitlabProjectOwner" resultType="java.lang.Integer">
         SELECT
             COUNT(*)
@@ -1320,8 +1337,17 @@
         AND imr.source_type = 'project'
         AND (il.name = 'project.owner' OR il.name = 'project.gitlab.owner' OR il.name = 'project.gitlab.developer')
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%', #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
+            #{param}),'%'))
         </if>
         GROUP BY iu.id
+    </select>
+
+    <select id="queryAllOrgAdmin" resultType="io.choerodon.base.infra.dto.UserDTO">
+        SELECT
+        DISTINCT iu.id,
+        iu.organization_id
+        FROM  iam_user iu ,iam_member_role imr
+        WHERE iu.id=imr.member_id AND imr.role_id=#{roleId}
     </select>
 </mapper>

@@ -219,6 +219,13 @@ public class UserController extends BaseController {
     }
 
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
+    @GetMapping("/admin_org_all")
+    public ResponseEntity<List<UserDTO>> queryAllOrgAdmin() {
+        return new ResponseEntity<>(userService.queryAllOrgAdmin(), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids,
@@ -417,5 +424,14 @@ public class UserController extends BaseController {
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userService.checkIsGitlabProjectOwner(id, projectId));
+    }
+
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab组织层owner")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
+    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userService.checkIsGitlabOrgOwner(id, projectId));
     }
 }

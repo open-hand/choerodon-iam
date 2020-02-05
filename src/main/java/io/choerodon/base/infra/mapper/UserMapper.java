@@ -316,6 +316,6 @@ public interface UserMapper extends Mapper<UserDTO> {
      *
      * @return
      */
-    List<UserDTO> queryAllOrgAdmin();
+    List<UserDTO> queryAllOrgAdmin(@Param("roleId") Long roleId);
 
 }

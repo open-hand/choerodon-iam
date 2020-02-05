@@ -1345,8 +1345,9 @@
 
     <select id="queryAllOrgAdmin" resultType="io.choerodon.base.infra.dto.UserDTO">
         SELECT
-        *
+        DISTINCT iu.id,
+        iu.organization_id
         FROM  iam_user iu ,iam_member_role imr
-        WHERE iu.id=imr.member_id AND imr.role_id=2
+        WHERE iu.id=imr.member_id AND imr.role_id=#{roleId}
     </select>
 </mapper>

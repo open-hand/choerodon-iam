@@ -1186,7 +1186,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> queryAllOrgAdmin() {
-        return userMapper.queryAllOrgAdmin();
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setCode(RoleEnum.ORG_ADMINISTRATOR.value());
+        RoleDTO reDto = roleMapper.selectOne(roleDTO);
+        return userMapper.queryAllOrgAdmin(reDto.getId());
     }
-
 }

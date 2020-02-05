@@ -129,6 +129,7 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
         Set<Long> notifyUserIds = new HashSet<>();
+        Map<Long, List<MemberRoleDTO>> listMap = new HashMap<>();
         userIds.forEach(id -> {
             MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
             memberRoleDTO.setRoleId(roleId);
@@ -144,8 +145,12 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
                 throw new CommonException("error.memberRole.create");
             }
             notifyUserIds.add(id);
+            listMap.put(id, Arrays.asList(memberRoleDTO));
+        });
+
+        listMap.forEach((userId, memberRoleDTOS) -> {
             //添加组织管理员的角色后,用户需要有gitlab下三个组的owner权限
-            roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, organizationId, id, Arrays.asList(memberRoleDTO), ResourceLevel.ORGANIZATION.value());
+            roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, organizationId, userId, memberRoleDTOS, ResourceLevel.ORGANIZATION.value());
         });
         //添加组织管理员发送消息通知被添加者,异步发送消息
         Map<String, Object> params = new HashMap<>();

@@ -34,6 +34,13 @@ public class LabelDTO extends BaseDTO {
     @Transient
     private Boolean gitlabLabel;
 
+    public LabelDTO() {
+    }
+
+    public LabelDTO(String name) {
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }

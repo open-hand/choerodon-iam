@@ -85,6 +85,13 @@ public class RoleDTO extends BaseDTO {
     @Transient
     private List<Long> roleIds;
 
+    public RoleDTO() {
+    }
+
+    public RoleDTO(@NotEmpty(message = "error.role.code.empty") @Size(min = 1, max = 128) String code) {
+        this.code = code;
+    }
+
     public Long getId() {
         return id;
     }

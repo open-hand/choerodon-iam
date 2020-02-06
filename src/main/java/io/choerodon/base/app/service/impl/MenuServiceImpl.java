@@ -115,6 +115,7 @@ public class MenuServiceImpl implements MenuService {
         MenuDTO menu = getTopMenuByCode(code);
         String level = menu.getResourceLevel();
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
+        menus = menus.stream().filter(t -> t.getId() != null).collect(Collectors.toSet());
         toTreeMenu(menu, menus, true);
         return menu;
     }

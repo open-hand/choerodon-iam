@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -62,22 +63,18 @@ public class PermissionServiceImpl implements PermissionService {
 
     private MenuPermissionMapper menuPermissionMapper;
 
-    public PermissionServiceImpl(DiscoveryClient discoveryClient,
-                                 OrganizationMapper organizationMapper,
-                                 ProjectMapper projectMapper,
-                                 PermissionMapper permissionMapper,
-                                 PermissionAssertHelper permissionAssertHelper,
-                                 RolePermissionMapper rolePermissionMapper,
-                                 MenuPermissionMapper menuPermissionMapper) {
+    private UserMapper userMapper;
+
+    public PermissionServiceImpl(PermissionMapper permissionMapper, DiscoveryClient discoveryClient, OrganizationMapper organizationMapper, ProjectMapper projectMapper, PermissionAssertHelper permissionAssertHelper, RolePermissionMapper rolePermissionMapper, MenuPermissionMapper menuPermissionMapper, UserMapper userMapper) {
+        this.permissionMapper = permissionMapper;
         this.discoveryClient = discoveryClient;
         this.organizationMapper = organizationMapper;
         this.projectMapper = projectMapper;
-        this.permissionMapper = permissionMapper;
         this.permissionAssertHelper = permissionAssertHelper;
         this.rolePermissionMapper = rolePermissionMapper;
         this.menuPermissionMapper = menuPermissionMapper;
+        this.userMapper = userMapper;
     }
-
 
     @Override
     public PageInfo<PermissionDTO> pagingQuery(Pageable pageable, PermissionDTO permissionDTO, String param) {
@@ -93,8 +90,13 @@ public class PermissionServiceImpl implements PermissionService {
             checkPermissionDTOList.forEach(i -> i.setApprove(false));
             return checkPermissionDTOList;
         }
-        //super admin例外处理
-        if (details.getAdmin() != null && details.getAdmin()) {
+        boolean isOrgAdmin = false;
+        if(!CollectionUtils.isEmpty(checkPermissionDTOList)){
+            Long organizationId = checkPermissionDTOList.get(0).getOrganizationId();
+            isOrgAdmin = userMapper.isOrgAdministrator(organizationId,details.getUserId());
+        }
+        //super admin 和orgAdmin例外处理
+        if (details.getAdmin() != null && details.getAdmin() || isOrgAdmin) {
             checkPermissionDTOList.forEach(dto -> dto.setApprove(permissionAssertHelper.codeExisted(dto.getCode().trim())));
             return checkPermissionDTOList;
         }

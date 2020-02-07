@@ -3,6 +3,9 @@ package io.choerodon.base.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.base.app.service.OrganizationService;
+import io.choerodon.base.app.service.ProjectService;
+import io.choerodon.base.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +22,6 @@ import io.choerodon.base.infra.dto.MenuDTO;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.dto.ProjectDTO;
 import io.choerodon.base.infra.enums.MenuType;
-import io.choerodon.base.infra.mapper.MenuMapper;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
-import io.choerodon.base.infra.mapper.ProjectMapCategoryMapper;
-import io.choerodon.base.infra.mapper.ProjectMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 
@@ -39,7 +38,9 @@ public class MenuServiceImpl implements MenuService {
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private ProjectMapper projectMapper;
-
+    private UserMapper userMapper;
+    private ProjectService projectService;
+    private OrganizationService organizationService;
 
     private Boolean enableOrganizationCategory;
 
@@ -47,11 +48,17 @@ public class MenuServiceImpl implements MenuService {
                            MenuMapper menuMapper,
                            ProjectMapCategoryMapper projectMapCategoryMapper,
                            ProjectMapper projectMapper,
+                           UserMapper userMapper,
+                           ProjectService projectService,
+                           OrganizationService organizationService,
                            @Value("${choerodon.category.organization.enabled:false}") Boolean enableOrganizationCategory) {
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
+        this.userMapper = userMapper;
+        this.projectService = projectService;
+        this.organizationService = organizationService;
         this.enableOrganizationCategory = enableOrganizationCategory;
     }
 
@@ -67,10 +74,24 @@ public class MenuServiceImpl implements MenuService {
         CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
+        Long organizationId = null;
         String parentCategory = null;
         if (ResourceType.isProject(level)) {
             parentCategory = getOrganizationCategoryByProjectId(sourceId);
+            organizationId = projectService.getOrganizationByProjectId(sourceId).getId();
         }
+        if (ResourceType.isOrganization(level)) {
+            organizationService.checkNotExistAndGet(sourceId);
+            organizationId = sourceId;
+        }
+        // 组织层和项目层下，为组织管理员添加组织下的root权限
+        if (organizationId != null) {
+            Boolean isOrgAmin = userMapper.isOrgAdministrator(organizationId, userDetails.getUserId());
+            if (Boolean.FALSE.equals(isAdmin) && Boolean.TRUE.equals(isOrgAmin)) {
+                isAdmin = true;
+            }
+        }
+
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusByPermissionAndCategory(isAdmin, userId, sourceId, level, getCategories(level, sourceId), parentCategory));
         toTreeMenu(topMenu, menus, true);
         return topMenu;

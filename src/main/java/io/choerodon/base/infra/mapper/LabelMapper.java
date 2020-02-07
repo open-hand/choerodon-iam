@@ -19,4 +19,6 @@ public interface LabelMapper extends Mapper<LabelDTO> {
     Set<String> selectLabelNamesInRoleIds(List<Long> roleIds);
 
     List<LabelDTO> listByOption(@Param("label") LabelDTO label);
+
+    List<LabelDTO> selectLableNameByUserId(@Param("userId") Long userId);
 }

@@ -630,9 +630,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
     @Transactional(rollbackFor = Exception.class)
-    public void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value) {
+    public void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value, Set<String> lableNames) {
         UserDTO userDTO = userAssertHelper.userNotExisted(userId);
-        List<MemberRoleDTO> returnList = new ArrayList<>();
         if (devopsMessage) {
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
@@ -640,11 +639,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventMsg.setUserId(userDTO.getId());
             userMemberEventMsg.setResourceType(ResourceType.ORGANIZATION.value());
             userMemberEventMsg.setUsername(userDTO.getLoginName());
-            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
-                    Boolean.FALSE, organizationId, userId, ResourceType.ORGANIZATION.value(), memberRoleDTOS, returnList, MemberType.USER.value());
-            if (!ownRoleIds.isEmpty()) {
-                userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
-            }
+            userMemberEventMsg.setRoleLabels(lableNames);
             userMemberEventPayloads.add(userMemberEventMsg);
             sendEvent(userMemberEventPayloads, MEMBER_ROLE_DELETE);
         }

@@ -9,6 +9,7 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.api.dto.payload.ProjectEventPayload;
 import io.choerodon.base.api.vo.AgileProjectInfoVO;
 import io.choerodon.base.app.service.OrganizationProjectService;
+import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.ProjectService;
 import io.choerodon.base.infra.asserts.DetailsHelperAssert;
 import io.choerodon.base.infra.asserts.ProjectAssertHelper;
@@ -51,6 +52,8 @@ import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 public class ProjectServiceImpl implements ProjectService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
+    private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
+
     private OrganizationProjectService organizationProjectService;
 
     @Value("${choerodon.category.enabled:false}")
@@ -75,6 +78,7 @@ public class ProjectServiceImpl implements ProjectService {
     private OrganizationMapper organizationMapper;
     private AgileFeignClient agileFeignClient;
     private TestManagerFeignClient testManagerFeignClient;
+    private OrganizationService organizationService;
 
     public ProjectServiceImpl(OrganizationProjectService organizationProjectService,
                               SagaClient sagaClient,
@@ -85,6 +89,7 @@ public class ProjectServiceImpl implements ProjectService {
                               UserAssertHelper userAssertHelper,
                               OrganizationMapper organizationMapper,
                               TestManagerFeignClient testManagerFeignClient,
+                              OrganizationService organizationService,
                               AgileFeignClient agileFeignClient) {
         this.organizationProjectService = organizationProjectService;
         this.sagaClient = sagaClient;
@@ -94,6 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
+        this.organizationService = organizationService;
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
     }
@@ -201,6 +207,21 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Long> getProListByName(String name) {
         return projectMapper.getProListByName(name);
+    }
+
+    @Override
+    public OrganizationDTO getOrganizationByProjectId(Long projectId) {
+        ProjectDTO projectDTO = checkNotExistAndGet(projectId);
+        return organizationService.checkNotExistAndGet(projectDTO.getOrganizationId());
+    }
+
+    @Override
+    public ProjectDTO checkNotExistAndGet(Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
+            throw new CommonException(ERROR_PROJECT_NOT_EXIST);
+        }
+        return projectDTO;
     }
 
     @Override

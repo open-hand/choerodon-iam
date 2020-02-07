@@ -58,4 +58,10 @@ public interface OrganizationService {
      */
     PageInfo<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, Pageable pageable);
 
+    /**
+     * 检查组织是否存在
+     * @param orgId
+     * @return 存在返回组织信息，不存在抛出not.exist exception
+     */
+    OrganizationDTO checkNotExistAndGet(Long orgId);
 }

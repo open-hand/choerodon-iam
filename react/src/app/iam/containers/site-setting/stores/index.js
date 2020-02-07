@@ -6,7 +6,7 @@ import SystemSettingDataSet from './SystemSettingDataSet';
 
 let hasRegister = false;
 try {
-  require('@choerodon/base-bus');
+  require('@choerodon/base-pro');
   hasRegister = true;
 } catch (error) {
   hasRegister = false;

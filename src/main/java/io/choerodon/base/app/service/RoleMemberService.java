@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.infra.dto.UserDTO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.api.query.ClientRoleQuery;
@@ -60,7 +61,7 @@ public interface RoleMemberService {
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
-    void insertAndSendEvent(MemberRoleDTO memberRole, String loginName);
+    void insertAndSendEvent(UserDTO userDTO,MemberRoleDTO memberRole, String loginName);
 
     /**
      * 删除组织root

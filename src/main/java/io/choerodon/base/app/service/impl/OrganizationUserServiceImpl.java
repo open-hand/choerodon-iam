@@ -181,7 +181,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return userDTO;
     }
 
-    private UserDTO createUserAndUpdateRole(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
+    public UserDTO createUserAndUpdateRole(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
         return producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -370,10 +370,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserDTO createUserWithRoles(UserDTO insertUser) {
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId) {
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
-        createUserRoles(resultUser, roleDTOList);
+//       createUserRoles(resultUser, roleDTOList);
+        createUserAndUpdateRole(insertUser, roleDTOList, ResourceLevel.ORGANIZATION.value(), organizationId);
         return resultUser;
     }
 
@@ -620,7 +622,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId) {
+    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
         List<UserEventPayload> payloads = new ArrayList<>();
         boolean errorUserFlag = true;
@@ -628,7 +630,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         for (UserDTO user : insertUsers) {
             UserDTO userDTO = null;
             try {
-                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user);
+                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId);
             } catch (Exception e) {
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);

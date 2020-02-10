@@ -26,7 +26,7 @@ public interface OrganizationUserService {
      * @return 用户DTO
      */
     UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles);
-
+    UserDTO createUser(UserDTO userDTO);
 
     /**
      * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.

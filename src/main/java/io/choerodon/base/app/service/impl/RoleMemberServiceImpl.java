@@ -425,7 +425,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    private List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
+    public List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleDTO> memberRoleList,
                                                             List<MemberRoleDTO> returnList, String memberType) {

@@ -71,4 +71,10 @@ public interface RoleMemberService {
      * @param value
      */
     void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value, Set<String> lableNames);
+
+    List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
+                                                        Long memberId, String sourceType,
+                                                        List<MemberRoleDTO> memberRoleList,
+                                                        List<MemberRoleDTO> returnList, String memberType);
+
 }

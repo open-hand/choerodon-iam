@@ -12,7 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.app.service.OrganizationService;
+import io.choerodon.base.app.service.OrganizationUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -119,6 +122,9 @@ public class UserServiceImpl implements UserService {
 
     private RoleMapper roleMapper;
 
+    private OrganizationUserService organizationUserService;
+    private LabelMapper labelMapper;
+
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
@@ -137,7 +143,9 @@ public class UserServiceImpl implements UserService {
                            RoleMemberService roleMemberService,
                            TransactionalProducer producer,
                            RouteMemberRuleMapper routeMemberRuleMapper,
-                           RoleMapper roleMapper) {
+                           RoleMapper roleMapper,
+                           OrganizationUserService organizationUserService,
+                           LabelMapper labelMapper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.sagaClient = sagaClient;
@@ -157,6 +165,8 @@ public class UserServiceImpl implements UserService {
         this.producer = producer;
         this.routeMemberRuleMapper = routeMemberRuleMapper;
         this.roleMapper = roleMapper;
+        this.organizationUserService = organizationUserService;
+        this.labelMapper = labelMapper;
     }
 
     @Override
@@ -602,13 +612,11 @@ public class UserServiceImpl implements UserService {
                 memberRoleDTOS.add(memberRoleDTO);
             }
             userDTO.setRoles(resultRoles);
-            memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId,
-                    memberRoleDTOS, sourceType);
+            memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, memberRoleDTOS, sourceType);
         } else {
             // 如果允许用户角色为空 则清空当前用户角色
             if (allowRoleEmpty) {
-                memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId,
-                        new ArrayList<>(), sourceType);
+                memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, new ArrayList<>(), sourceType);
             }
         }
         return memberRoleDTOS;

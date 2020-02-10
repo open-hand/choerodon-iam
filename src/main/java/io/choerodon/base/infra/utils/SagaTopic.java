@@ -23,6 +23,11 @@ public final class SagaTopic {
          * 创建用户
          */
         public static final String USER_CREATE = "iam-create-user";
+
+        /**
+         * 组织层创建用户
+         */
+        public static final String ORG_USER_CREAT = "iam-create-org-user";
         /**
          * iam接收创建组织事件的SagaTaskCode
          */

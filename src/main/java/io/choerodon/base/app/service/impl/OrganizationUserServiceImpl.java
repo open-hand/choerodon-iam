@@ -209,8 +209,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userEventPayload.setId(user.getId().toString());
         userEventPayload.setName(user.getRealName());
         userEventPayload.setUsername(user.getLoginName());
-        System.out.println("DetailsHelper.getUserDetails().getUserId() is " + DetailsHelper.getUserDetails().getUserId());
-        userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
+//        userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
         userEventPayload.setOrganizationId(user.getOrganizationId());
         return userEventPayload;
     }

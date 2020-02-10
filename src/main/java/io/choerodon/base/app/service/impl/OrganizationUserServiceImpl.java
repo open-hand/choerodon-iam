@@ -209,6 +209,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userEventPayload.setId(user.getId().toString());
         userEventPayload.setName(user.getRealName());
         userEventPayload.setUsername(user.getLoginName());
+        System.out.println("DetailsHelper.getUserDetails().getUserId() is " + DetailsHelper.getUserDetails().getUserId());
         userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
         userEventPayload.setOrganizationId(user.getOrganizationId());
         return userEventPayload;
@@ -632,6 +633,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             try {
                 userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId);
             } catch (Exception e) {
+                e.printStackTrace();
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);
                 errorUser.setCause("用户或角色插入异常");

@@ -174,7 +174,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userDTO.setLoginName(randomInfoGenerator.randomLoginName());
         List<RoleDTO> userRoles = userDTO.getRoles();
         if (devopsMessage) {
-            userDTO = createUserAndUpdateRole(userDTO, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
+            userDTO = createUser(userDTO);
+            createUserAndUpdateRole(userDTO, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         } else {
             userDTO = createUser(userDTO);
         }
@@ -189,8 +190,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         .withRefType("user")
                         .withSagaCode(ORG_USER_CREAT),
                 builder -> {
-                    UserDTO user = createUser(userDTO);
-                    UserEventPayload userEventPayload = getUserEventPayload(user);
+                    UserEventPayload userEventPayload = getUserEventPayload(userDTO);
                     CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
                     createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
                     List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(userDTO, userRoles, value, organizationId);
@@ -199,7 +199,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                             .withPayloadAndSerialize(createAndUpdateUserEventPayload)
                             .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
                             .withSourceId(organizationId);
-                    return user;
+                    return userDTO;
                 });
     }
 

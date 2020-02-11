@@ -17,6 +17,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
@@ -69,7 +70,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String ORGANIZATION_MEMBERROLE_TEMPLATES_PATH = "/templates/organizationMemberRoleTemplates";
     private static final String PROJECT_MEMBERROLE_TEMPLATES_PATH = "/templates/projectMemberRoleTemplates";
     private static final String DOT_SEPARATOR = ".";
-
+    private static final String SITE_ROOT = "role/site/default/administrator";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
     private ExcelImportUserTask excelImportUserTask;
     private OrganizationMapper organizationMapper;
     private ProjectMapper projectMapper;
@@ -96,6 +99,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private OrganizationUserService organizationUserService;
 
+    private UserService userService;
+
 
     public RoleMemberServiceImpl(ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
@@ -108,7 +113,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  LabelMapper labelMapper,
                                  ClientMapper clientMapper,
                                  UploadHistoryMapper uploadHistoryMapper,
-                                 OrganizationUserService organizationUserService) {
+                                 OrganizationUserService organizationUserService,
+                                 UserService userService) {
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
         this.organizationMapper = organizationMapper;
@@ -121,6 +127,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.clientMapper = clientMapper;
         this.uploadHistoryMapper = uploadHistoryMapper;
         this.organizationUserService = organizationUserService;
+        this.userService = userService;
     }
 
 
@@ -466,6 +473,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         List<Long> deleteList = existingRoleIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
         returnList.addAll(existingMemberRoleList);
+        List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
         insertList.forEach(roleId -> {
             MemberRoleDTO mr = new MemberRoleDTO();
             mr.setRoleId(roleId);
@@ -473,8 +481,25 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             mr.setMemberType(memberType);
             mr.setSourceType(sourceType);
             mr.setSourceId(sourceId);
-            returnList.add(insertSelective(mr));
+            MemberRoleDTO memberRoleDTO = insertSelective(mr);
+            returnList.add(memberRoleDTO);
+            memberRoleDTOS.add(memberRoleDTO);
         });
+        //插入成功后发送消息通知被添加者，添加平台Root和其他平台用户
+        memberRoleDTOS.stream().forEach(memberRoleDTO -> {
+            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            Long fromUserId = DetailsHelper.getUserDetails().getUserId();
+            if (SITE_ROOT.equals(roleDTO.getCode())) {
+                userService.sendNotice(fromUserId, Arrays.asList(memberRole.getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, sourceId);
+            } else {
+                //添加组织管理员发送消息通知被添加者,异步发送消息
+                Map<String, Object> params = new HashMap<>();
+                params.put("roleName", roleDTO.getName());
+                userService.sendNotice(fromUserId, Arrays.asList(memberRole.getMemberId()), USER_BUSINESS_TYPE_CODE, params, sourceId);
+            }
+        });
+
+
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
             memberRoleMapper.selectDeleteList(memberId, sourceId, memberType, sourceType, deleteList)
                     .forEach(t -> {
@@ -624,7 +649,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
         List<RoleDTO> roles = userDTO.getRoles();
         if (devopsMessage) {
-            organizationUserService.createUserAndUpdateRole(userDTO, Arrays.asList(roleDTO), ResourceLevel.ORGANIZATION.value(), memberRole.getSourceId());
+            organizationUserService.createUserAndUpdateRole(userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
         }
     }
 

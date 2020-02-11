@@ -41,7 +41,7 @@ public interface RoleMemberService {
 
     void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 
-    ResponseEntity<Resource> downloadTemplates(String suffix);
+    ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel);
 
     void import2MemberRole(Long sourceId, String sourceType, MultipartFile file);
 

@@ -65,6 +65,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private final Logger logger = LoggerFactory.getLogger(RoleMemberServiceImpl.class);
     private static final String MEMBER_ROLE_NOT_EXIST_EXCEPTION = "error.memberRole.not.exist";
+    private static final String SITE_MEMBERROLE_TEMPLATES_PATH = "/templates/siteMemberRoleTemplates";
+    private static final String ORGANIZATION_MEMBERROLE_TEMPLATES_PATH = "/templates/organizationMemberRoleTemplates";
+    private static final String PROJECT_MEMBERROLE_TEMPLATES_PATH = "/templates/projectMemberRoleTemplates";
+    private static final String DOT_SEPARATOR = ".";
 
     private ExcelImportUserTask excelImportUserTask;
     private OrganizationMapper organizationMapper;
@@ -277,7 +281,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    public ResponseEntity<Resource> downloadTemplates(String suffix) {
+    public ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");
@@ -293,23 +297,34 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
         InputStream inputStream;
-        if (ExcelSuffix.XLS.value().equals(suffix)) {
-            inputStream = this.getClass().getResourceAsStream("/templates/memberRoleTemplates.xls");
-            return ResponseEntity
-                    .ok()
-                    .headers(headers)
-                    .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-                    .body(new InputStreamResource(inputStream));
-        } else if (ExcelSuffix.XLSX.value().equals(suffix)) {
-            inputStream = this.getClass().getResourceAsStream("/templates/memberRoleTemplates.xlsx");
-            return ResponseEntity
-                    .ok()
-                    .headers(headers)
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .body(new InputStreamResource(inputStream));
+        // 根据层级，设置excel文件路径
+        String excelPath;
+        if (ResourceLevel.SITE.value().equals(resourceLevel)) {
+            excelPath = SITE_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.ORGANIZATION.value().equals(resourceLevel)) {
+            excelPath = ORGANIZATION_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.PROJECT.value().equals(resourceLevel)) {
+            excelPath = PROJECT_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
         } else {
             return null;
         }
+        // 根据excel类型，设置响应头mediaType
+        String mediaTypeValue;
+        if (ExcelSuffix.XLS.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.ms-excel";
+        } else if (ExcelSuffix.XLSX.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        } else {
+            return null;
+        }
+
+        inputStream = this.getClass().getResourceAsStream(excelPath);
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(mediaTypeValue))
+                .body(new InputStreamResource(inputStream));
+
     }
 
 

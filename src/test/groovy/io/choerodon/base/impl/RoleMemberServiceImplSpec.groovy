@@ -253,7 +253,7 @@ class RoleMemberServiceImplSpec extends Specification {
         String suffix = "xls"
 
         when: "调用方法"
-        def entity = roleMemberService.downloadTemplates(suffix)
+        def entity = roleMemberService.downloadTemplatesByResourceLevel(suffix)
 
         then: "结果校验"
         entity != null

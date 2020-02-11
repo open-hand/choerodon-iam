@@ -18,6 +18,7 @@ import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.OrganizationUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -86,6 +87,7 @@ public class UserServiceImpl implements UserService {
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
     @Value("${choerodon.category.enabled:false}")
     private boolean enableCategory;
     @Value("${choerodon.devops.message:false}")
@@ -502,7 +504,11 @@ public class UserServiceImpl implements UserService {
                 updateSelective(dto);
             }
         }
-
+        //添加成功后发送站内信和邮件通知被添加者
+        Long fromUserId = DetailsHelper.getUserDetails().getUserId();
+        if (!adminUserIds.isEmpty()) {
+            ((UserServiceImpl) AopContext.currentProxy()).sendNotice(fromUserId, adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+        }
         if (!adminUserIds.isEmpty()) {
             AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
             producer.apply(StartSagaBuilder.newBuilder()

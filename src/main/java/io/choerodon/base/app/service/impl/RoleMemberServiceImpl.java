@@ -2,6 +2,7 @@ package io.choerodon.base.app.service.impl;
 
 import static io.choerodon.base.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
 import static io.choerodon.base.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.base.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,9 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.infra.dto.*;
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +43,6 @@ import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.asserts.UserAssertHelper;
-import io.choerodon.base.infra.dto.ClientDTO;
-import io.choerodon.base.infra.dto.MemberRoleDTO;
-import io.choerodon.base.infra.dto.UploadHistoryDTO;
-import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.base.infra.enums.ExcelSuffix;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.mapper.*;
@@ -65,6 +65,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private final Logger logger = LoggerFactory.getLogger(RoleMemberServiceImpl.class);
     private static final String MEMBER_ROLE_NOT_EXIST_EXCEPTION = "error.memberRole.not.exist";
+    private static final String SITE_MEMBERROLE_TEMPLATES_PATH = "/templates/siteMemberRoleTemplates";
+    private static final String ORGANIZATION_MEMBERROLE_TEMPLATES_PATH = "/templates/organizationMemberRoleTemplates";
+    private static final String PROJECT_MEMBERROLE_TEMPLATES_PATH = "/templates/projectMemberRoleTemplates";
+    private static final String DOT_SEPARATOR = ".";
 
     private ExcelImportUserTask excelImportUserTask;
     private OrganizationMapper organizationMapper;
@@ -90,6 +94,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private UploadHistoryMapper uploadHistoryMapper;
 
+    private OrganizationUserService organizationUserService;
+
 
     public RoleMemberServiceImpl(ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
@@ -101,7 +107,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  SagaClient sagaClient,
                                  LabelMapper labelMapper,
                                  ClientMapper clientMapper,
-                                 UploadHistoryMapper uploadHistoryMapper) {
+                                 UploadHistoryMapper uploadHistoryMapper,
+                                 OrganizationUserService organizationUserService) {
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
         this.organizationMapper = organizationMapper;
@@ -113,6 +120,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.labelMapper = labelMapper;
         this.clientMapper = clientMapper;
         this.uploadHistoryMapper = uploadHistoryMapper;
+        this.organizationUserService = organizationUserService;
     }
 
 
@@ -273,7 +281,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    public ResponseEntity<Resource> downloadTemplates(String suffix) {
+    public ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");
@@ -289,23 +297,34 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
         InputStream inputStream;
-        if (ExcelSuffix.XLS.value().equals(suffix)) {
-            inputStream = this.getClass().getResourceAsStream("/templates/memberRoleTemplates.xls");
-            return ResponseEntity
-                    .ok()
-                    .headers(headers)
-                    .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-                    .body(new InputStreamResource(inputStream));
-        } else if (ExcelSuffix.XLSX.value().equals(suffix)) {
-            inputStream = this.getClass().getResourceAsStream("/templates/memberRoleTemplates.xlsx");
-            return ResponseEntity
-                    .ok()
-                    .headers(headers)
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .body(new InputStreamResource(inputStream));
+        // 根据层级，设置excel文件路径
+        String excelPath;
+        if (ResourceLevel.SITE.value().equals(resourceLevel)) {
+            excelPath = SITE_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.ORGANIZATION.value().equals(resourceLevel)) {
+            excelPath = ORGANIZATION_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.PROJECT.value().equals(resourceLevel)) {
+            excelPath = PROJECT_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
         } else {
             return null;
         }
+        // 根据excel类型，设置响应头mediaType
+        String mediaTypeValue;
+        if (ExcelSuffix.XLS.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.ms-excel";
+        } else if (ExcelSuffix.XLSX.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        } else {
+            return null;
+        }
+
+        inputStream = this.getClass().getResourceAsStream(excelPath);
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(mediaTypeValue))
+                .body(new InputStreamResource(inputStream));
+
     }
 
 
@@ -425,10 +444,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    private List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
-                                                            Long memberId, String sourceType,
-                                                            List<MemberRoleDTO> memberRoleList,
-                                                            List<MemberRoleDTO> returnList, String memberType) {
+    public List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
+                                                           Long memberId, String sourceType,
+                                                           List<MemberRoleDTO> memberRoleList,
+                                                           List<MemberRoleDTO> returnList, String memberType) {
         MemberRoleDTO memberRole = new MemberRoleDTO();
         memberRole.setMemberId(memberId);
         memberRole.setMemberType(memberType);
@@ -597,42 +616,23 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertAndSendEvent(MemberRoleDTO memberRole, String loginName) {
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    public void insertAndSendEvent(UserDTO userDTO, MemberRoleDTO memberRole, String loginName) {
         if (memberRoleMapper.insertSelective(memberRole) != 1) {
             throw new CommonException("error.member_role.create");
         }
+        RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
+        List<RoleDTO> roles = userDTO.getRoles();
         if (devopsMessage) {
-            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-            Long userId = memberRole.getMemberId();
-            Long sourceId = memberRole.getSourceId();
-            String memberType = memberRole.getMemberType();
-            String sourceType = memberRole.getSourceType();
-            UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
-            userMemberEventMsg.setResourceId(sourceId);
-            userMemberEventMsg.setUserId(userId);
-            userMemberEventMsg.setResourceType(sourceType);
-            userMemberEventMsg.setUsername(loginName);
-            MemberRoleDTO mr = new MemberRoleDTO();
-            mr.setMemberId(userId);
-            mr.setMemberType(memberType);
-            mr.setSourceId(sourceId);
-            mr.setSourceType(sourceType);
-            List<Long> roleIds = memberRoleMapper.select(mr)
-                    .stream().map(MemberRoleDTO::getRoleId).collect(Collectors.toList());
-            if (!roleIds.isEmpty()) {
-                userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(roleIds));
-            }
-            userMemberEventPayloads.add(userMemberEventMsg);
-            sendEvent(userMemberEventPayloads, MEMBER_ROLE_UPDATE);
+            organizationUserService.createUserAndUpdateRole(userDTO, Arrays.asList(roleDTO), ResourceLevel.ORGANIZATION.value(), memberRole.getSourceId());
         }
     }
 
     @Override
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
     @Transactional(rollbackFor = Exception.class)
-    public void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value) {
+    public void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value, Set<String> lableNames) {
         UserDTO userDTO = userAssertHelper.userNotExisted(userId);
-        List<MemberRoleDTO> returnList = new ArrayList<>();
         if (devopsMessage) {
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
@@ -640,11 +640,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventMsg.setUserId(userDTO.getId());
             userMemberEventMsg.setResourceType(ResourceType.ORGANIZATION.value());
             userMemberEventMsg.setUsername(userDTO.getLoginName());
-            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
-                    Boolean.FALSE, organizationId, userId, ResourceType.ORGANIZATION.value(), memberRoleDTOS, returnList, MemberType.USER.value());
-            if (!ownRoleIds.isEmpty()) {
-                userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
-            }
+            userMemberEventMsg.setRoleLabels(lableNames);
             userMemberEventPayloads.add(userMemberEventMsg);
             sendEvent(userMemberEventPayloads, MEMBER_ROLE_DELETE);
         }

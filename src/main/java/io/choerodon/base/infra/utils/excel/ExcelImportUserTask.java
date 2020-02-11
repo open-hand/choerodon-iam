@@ -122,7 +122,7 @@ public class ExcelImportUserTask {
         int validateErrorUsers = errorUsers.size();
         list.forEach(l -> {
             if (!l.isEmpty()) {
-                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l,userId));
+                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l,userId,organizationId));
             }
         });
         int insertErrorUsers = errorUsers.size() - validateErrorUsers;
@@ -233,7 +233,7 @@ public class ExcelImportUserTask {
             if (memberRole == null) {
                 return;
             }
-            roleMemberService.insertAndSendEvent(memberRole, loginName);
+            roleMemberService.insertAndSendEvent(userDTO,memberRole, loginName);
             excelMemberRoleDTOS.put(memberRole, loginName);
         });
 

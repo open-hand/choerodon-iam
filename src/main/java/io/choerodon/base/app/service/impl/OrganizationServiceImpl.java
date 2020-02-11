@@ -98,25 +98,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         this.memberRoleMapper = memberRoleMapper;
     }
 
-    private void initMemberRole(Long id, Long userId) {
-        List<RoleDTO> roles = roleMapper.selectRolesByLabelNameAndType("organization.owner", "role", null);
-        if (roles.isEmpty()) {
-            throw new CommonException("error.roleIds.empty.by.label", "organization.owner");
-        }
-        roles.forEach(r -> {
-            Long roleId = r.getId();
-            MemberRoleDTO dto = new MemberRoleDTO();
-            dto.setRoleId(roleId);
-            dto.setMemberId(userId);
-            dto.setMemberType("user");
-            dto.setSourceId(id);
-            dto.setSourceType(ResourceType.ORGANIZATION.value());
-            if (memberRoleMapper.insertSelective(dto) != 1) {
-                throw new CommonException("error.memberRole.insert.failed");
-            }
-        });
-    }
-
     @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         OrganizationDTO organizationDTO = organizationAssertHelper.notExisted(organizationId);
@@ -315,6 +296,15 @@ public class OrganizationServiceImpl implements OrganizationService {
             return new PageInfo<>();
         }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort())).doSelectPageInfo(() -> organizationMapper.selectSpecified(orgIds, name, code, enabled, params));
+    }
+
+    @Override
+    public OrganizationDTO checkNotExistAndGet(Long orgId) {
+        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(orgId);
+        if (organizationDTO == null) {
+            throw new CommonException("error.organization.not.exist");
+        }
+        return organizationDTO;
     }
 
 }

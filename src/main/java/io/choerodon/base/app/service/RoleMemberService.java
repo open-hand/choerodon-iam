@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.infra.dto.UserDTO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.api.query.ClientRoleQuery;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -39,7 +41,7 @@ public interface RoleMemberService {
 
     void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 
-    ResponseEntity<Resource> downloadTemplates(String suffix);
+    ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel);
 
     void import2MemberRole(Long sourceId, String sourceType, MultipartFile file);
 
@@ -59,14 +61,21 @@ public interface RoleMemberService {
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
-    void insertAndSendEvent(MemberRoleDTO memberRole, String loginName);
+    void insertAndSendEvent(UserDTO userDTO,MemberRoleDTO memberRole, String loginName);
 
     /**
      * 删除组织root
+     *
      * @param organizationId
      * @param userId
      * @param memberRoleDTOS
      * @param value
      */
-    void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value);
+    void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value, Set<String> lableNames);
+
+    List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
+                                                        Long memberId, String sourceType,
+                                                        List<MemberRoleDTO> memberRoleList,
+                                                        List<MemberRoleDTO> returnList, String memberType);
+
 }

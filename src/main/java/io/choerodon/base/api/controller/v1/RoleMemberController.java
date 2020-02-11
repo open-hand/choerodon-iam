@@ -522,7 +522,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层下载excel导入模板")
     @GetMapping(value = "/site/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnSite() {
-        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.SITE.value());
     }
 
     /**
@@ -535,7 +535,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "组织层下载excel导入模板")
     @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
-        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
     }
 
     /**
@@ -548,7 +548,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
-        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
     }
 
     @Permission(type = ResourceType.SITE)

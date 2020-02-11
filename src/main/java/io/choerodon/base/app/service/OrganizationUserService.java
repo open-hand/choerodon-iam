@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.api.dto.ErrorUserDTO;
+import io.choerodon.base.infra.dto.RoleDTO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.base.infra.dto.LdapErrorUserDTO;
 import io.choerodon.base.infra.dto.UserDTO;
@@ -27,6 +28,9 @@ public interface OrganizationUserService {
      */
     UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles);
 
+    UserDTO createUserAndUpdateRole(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId);
+
+    UserDTO createUser(UserDTO userDTO);
 
     /**
      * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
@@ -59,6 +63,7 @@ public interface OrganizationUserService {
 
     List<Long> listUserIds(Long organizationId);
 
-    UserDTO createUserWithRoles(UserDTO userDTO);
-    List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId);
+    UserDTO createUserWithRoles(UserDTO userDTO,Long organizationId);
+
+    List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 }

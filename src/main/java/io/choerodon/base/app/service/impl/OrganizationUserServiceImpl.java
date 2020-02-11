@@ -8,7 +8,13 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
+import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.mapper.LabelMapper;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -92,6 +99,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleMemberService roleMemberService;
 
+    private LabelMapper labelMapper;
+
+    private RoleAssertHelper roleAssertHelper;
+
     public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
@@ -106,7 +117,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        UserService userService,
                                        TransactionalProducer producer,
                                        RandomInfoGenerator randomInfoGenerator,
-                                       RoleMemberService roleMemberService) {
+                                       RoleMemberService roleMemberService,
+                                       LabelMapper labelMapper,
+                                       RoleAssertHelper roleAssertHelper) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
@@ -122,6 +135,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.producer = producer;
         this.randomInfoGenerator = randomInfoGenerator;
         this.roleMemberService = roleMemberService;
+        this.labelMapper = labelMapper;
+        this.roleAssertHelper = roleAssertHelper;
     }
 
     @Override
@@ -150,7 +165,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = USER_CREATE, description = "iam创建用户,包含用户角色", inputSchemaClass = UserEventPayload.class)
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
@@ -159,12 +174,89 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userDTO.setLoginName(randomInfoGenerator.randomLoginName());
         List<RoleDTO> userRoles = userDTO.getRoles();
         if (devopsMessage) {
-            userDTO = sendCreateUserEvent(organizationId, userDTO);
+            userDTO = createUser(userDTO);
+            createUserAndUpdateRole(userDTO, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         } else {
             userDTO = createUser(userDTO);
         }
-        userService.createUserRoles(userDTO, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId, false, false, false);
         return userDTO;
+    }
+
+    public UserDTO createUserAndUpdateRole(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
+        return producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withRefType("user")
+                        .withSagaCode(ORG_USER_CREAT),
+                builder -> {
+                    UserEventPayload userEventPayload = getUserEventPayload(userDTO);
+                    CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
+                    createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
+                    List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(userDTO, userRoles, value, organizationId);
+                    createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
+                    builder
+                            .withPayloadAndSerialize(createAndUpdateUserEventPayload)
+                            .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
+                            .withSourceId(organizationId);
+                    return userDTO;
+                });
+    }
+
+    private UserEventPayload getUserEventPayload(UserDTO user) {
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setEmail(user.getEmail());
+        userEventPayload.setId(user.getId().toString());
+        userEventPayload.setName(user.getRealName());
+        userEventPayload.setUsername(user.getLoginName());
+//        userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
+        userEventPayload.setOrganizationId(user.getOrganizationId());
+        return userEventPayload;
+    }
+
+    private List<UserMemberEventPayload> getListUserMemberEventPayload(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
+        Long userId = userDTO.getId();
+        List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(userRoles)) {
+            List<RoleDTO> resultRoles = new ArrayList<>();
+            for (RoleDTO roleDTO : userRoles) {
+                RoleDTO role = roleAssertHelper.roleNotExisted(roleDTO.getId());
+                RoleValidator.validateRole(value, organizationId, role, false);
+                resultRoles.add(role);
+                MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
+                memberRoleDTO.setMemberId(userId);
+                memberRoleDTO.setMemberType(ResourceLevel.USER.value());
+                memberRoleDTO.setSourceId(organizationId);
+                memberRoleDTO.setSourceType(value);
+                memberRoleDTO.setRoleId(role.getId());
+                memberRoleDTOS.add(memberRoleDTO);
+            }
+            userDTO.setRoles(resultRoles);
+            UserDTO dto = userAssertHelper.userNotExisted(userId);
+            List<MemberRoleDTO> returnList = new ArrayList<>();
+            if (devopsMessage) {
+                UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+                userMemberEventMsg.setResourceId(organizationId);
+                userMemberEventMsg.setUserId(userId);
+                userMemberEventMsg.setResourceType(value);
+                userMemberEventMsg.setUsername(userDTO.getLoginName());
+                List<Long> ownRoleIds = roleMemberService.insertOrUpdateRolesByMemberIdExecute(
+                        false, organizationId, userId, value, memberRoleDTOS, returnList, MemberType.USER.value());
+                if (!ownRoleIds.isEmpty()) {
+                    userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
+                }
+                userMemberEventPayloads.add(userMemberEventMsg);
+            } else {
+                roleMemberService.insertOrUpdateRolesByMemberIdExecute(false,
+                        organizationId,
+                        userId,
+                        value,
+                        memberRoleDTOS,
+                        returnList, MemberType.USER.value());
+            }
+        }
+        return userMemberEventPayloads;
     }
 
     /**
@@ -219,7 +311,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
      * @param userDTO 用户DTO
      * @return 用户DTO
      */
-    private UserDTO createUser(UserDTO userDTO) {
+    public UserDTO createUser(UserDTO userDTO) {
         userDTO.setLocked(false);
         userDTO.setEnabled(true);
         userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
@@ -278,10 +370,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserDTO createUserWithRoles(UserDTO insertUser) {
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId) {
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
-        createUserRoles(resultUser, roleDTOList);
+//       createUserRoles(resultUser, roleDTOList);
+        createUserAndUpdateRole(insertUser, roleDTOList, ResourceLevel.ORGANIZATION.value(), organizationId);
         return resultUser;
     }
 
@@ -526,8 +620,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public List<Long> listUserIds(Long organizationId) {
         return organizationMapper.listMemberIds(organizationId, "organization");
     }
+
     @Override
-    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId) {
+    public List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
         List<UserEventPayload> payloads = new ArrayList<>();
         boolean errorUserFlag = true;
@@ -535,8 +630,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         for (UserDTO user : insertUsers) {
             UserDTO userDTO = null;
             try {
-                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user);
+                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId);
             } catch (Exception e) {
+                e.printStackTrace();
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);
                 errorUser.setCause("用户或角色插入异常");

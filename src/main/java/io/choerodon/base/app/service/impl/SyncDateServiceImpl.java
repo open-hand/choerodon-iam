@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.base.app.service.SyncDateService;
 import io.choerodon.base.infra.dto.LabelDTO;
+import io.choerodon.base.infra.dto.RoleDTO;
 import io.choerodon.base.infra.dto.RoleLabelDTO;
 import io.choerodon.base.infra.mapper.LabelMapper;
 import io.choerodon.base.infra.mapper.RoleLabelMapper;
+import io.choerodon.base.infra.mapper.RoleMapper;
 
 @Service
 public class SyncDateServiceImpl implements SyncDateService {
@@ -29,6 +31,8 @@ public class SyncDateServiceImpl implements SyncDateService {
 
     @Autowired
     private LabelMapper labelMapper;
+    @Autowired
+    private RoleMapper roleMapper;
     @Autowired
     private RoleLabelMapper roleLabelMapper;
 
@@ -71,21 +75,20 @@ public class SyncDateServiceImpl implements SyncDateService {
     }
 
     private void syncRole() {
-        List<String> labels = new ArrayList<>();
-        labels.add("project.deploy.admin");
-        labels.add("organization.gitlab.owner");
+        //删除部署管理员角色
+        LabelDTO deployDTO = labelMapper.selectOne(new LabelDTO("project.deploy.admin"));
+        if (deployDTO != null && deployDTO.getId() != null) {
+            RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+            roleLabelDTO.setLabelId(deployDTO.getId());
+            roleLabelMapper.delete(roleLabelDTO);
+            labelMapper.deleteByPrimaryKey(deployDTO.getId());
+        }
 
-        labels.forEach(label -> {
-            LabelDTO queryDTO = new LabelDTO();
-            queryDTO.setName(label);
-            LabelDTO labelDTO = labelMapper.selectOne(queryDTO);
-            if (labelDTO != null && labelDTO.getId() != null) {
-                RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
-                roleLabelDTO.setLabelId(labelDTO.getId());
-                roleLabelMapper.delete(roleLabelDTO);
-
-                labelMapper.deleteByPrimaryKey(labelDTO.getId());
-            }
-        });
+        // 删除自定义角色拥有组织管理员gitlab角色标签
+        LabelDTO orgDTO = labelMapper.selectOne(new LabelDTO("organization.gitlab.owner"));
+        RoleDTO roleDTO = roleMapper.selectOne(new RoleDTO("role/organization/default/administrator"));
+        if (orgDTO != null && orgDTO.getId() != null && roleDTO != null && roleDTO.getId() != null) {
+            roleLabelMapper.deleteByLabelId(orgDTO.getId(), roleDTO.getId());
+        }
     }
 }

@@ -184,11 +184,7 @@ public class ClientServiceImpl implements ClientService {
         ClientDTO record = new ClientDTO();
         record.setOrganizationId(organizationId);
         record.setSourceId(sourceId);
-        ClientDTO clientDTO = clientMapper.selectOne(record);
-        if (clientDTO == null) {
-            throw new CommonException(SOURCE_NOT_FOUND_EXCEPTION);
-        }
-        return clientDTO;
+        return clientMapper.selectOne(record);
     }
 
 

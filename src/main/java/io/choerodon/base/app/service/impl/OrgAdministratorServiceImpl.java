@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
@@ -10,7 +11,7 @@ import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.OrganizationDTO;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
+import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
@@ -26,8 +27,6 @@ import io.choerodon.base.infra.dto.MemberRoleDTO;
 import io.choerodon.base.infra.dto.RoleDTO;
 import io.choerodon.base.infra.dto.UserDTO;
 import io.choerodon.base.infra.enums.MemberType;
-import io.choerodon.base.infra.mapper.MemberRoleMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -56,6 +55,8 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
     private TransactionalProducer producer;
 
+    private LabelMapper labelMapper;
+
 
     public OrgAdministratorServiceImpl(UserMapper userMapper,
                                        MemberRoleMapper memberRoleMapper,
@@ -63,7 +64,8 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
                                        UserService userService,
                                        OrganizationMapper organizationMapper,
                                        RoleMemberService roleMemberService,
-                                       TransactionalProducer producer) {
+                                       TransactionalProducer producer,
+                                       LabelMapper labelMapper) {
         this.userMapper = userMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
@@ -71,6 +73,7 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         this.organizationMapper = organizationMapper;
         this.roleMemberService = roleMemberService;
         this.producer = producer;
+        this.labelMapper = labelMapper;
     }
 
     @Override
@@ -113,11 +116,13 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         if (CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
             throw new CommonException("error.memberRole.not.exist", roleId, userId);
         }
+        //查询用户的角色标签名称
+        Set<String> lableNames = labelMapper.selectLableNameByUserId(userId).stream().map(labelDTO -> labelDTO.getName()).collect(Collectors.toSet());
         if (memberRoleMapper.delete(memberRoleDTO) != 1) {
             throw new CommonException("error.memberRole.delete");
         }
         //删除组织管理员成功后也要发saga删除gitlab相应的权限。
-        roleMemberService.deleteOrgAdmin(organizationId, userId, Arrays.asList(memberRoleDTO), ResourceLevel.ORGANIZATION.value());
+        roleMemberService.deleteOrgAdmin(organizationId, userId, Arrays.asList(memberRoleDTO), ResourceLevel.ORGANIZATION.value(), lableNames);
         return true;
     }
 

@@ -52,6 +52,9 @@ public class ExcelImportUserTask {
     private static final String ADD_USER = "addUser";
     private static final String USER_DEFAULT_PWD = "abcd1234";
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String SITE_ROOT = "role/site/default/administrator";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
 
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
@@ -122,7 +125,7 @@ public class ExcelImportUserTask {
         int validateErrorUsers = errorUsers.size();
         list.forEach(l -> {
             if (!l.isEmpty()) {
-                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l,userId,organizationId));
+                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l, userId, organizationId));
             }
         });
         int insertErrorUsers = errorUsers.size() - validateErrorUsers;
@@ -233,7 +236,7 @@ public class ExcelImportUserTask {
             if (memberRole == null) {
                 return;
             }
-            roleMemberService.insertAndSendEvent(userDTO,memberRole, loginName);
+            roleMemberService.insertAndSendEvent(userDTO, memberRole, loginName);
             excelMemberRoleDTOS.put(memberRole, loginName);
         });
 
@@ -258,13 +261,28 @@ public class ExcelImportUserTask {
             uploadHistory.setFinished(true);
             finishFallback.callback(uploadHistory);
         }
-        //组织层批量导入用户及角色时发送消息通知成员
+        //批量导入用户及角色时发送消息通知成员
+        sendNoticeMsg(fromUserId, excelMemberRoleDTOS);
+
+    }
+
+    private void sendNoticeMsg(Long fromUserId, Map<MemberRoleDTO, String> excelMemberRoleDTOS) {
         for (Map.Entry<MemberRoleDTO, String> memberRoleDTOStringEntry : excelMemberRoleDTOS.entrySet()) {
             UserDTO userDTO = userService.queryByLoginName(memberRoleDTOStringEntry.getValue());
             Map<String, Object> params = new HashMap<>();
-            params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
-            params.put("roleName", roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId()).getName());
-            userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
+            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId());
+            if (memberRoleDTOStringEntry.getKey().getSourceId() == 0) {
+                if (SITE_ROOT.equals(roleDTO.getCode())) {
+                    userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+                } else {
+                    params.put("roleName", roleDTO.getName());
+                    userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), USER_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+                }
+            } else {
+                params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
+                params.put("roleName", roleDTO.getName());
+                userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
+            }
         }
     }
 

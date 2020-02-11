@@ -1122,6 +1122,7 @@
         from iam_user iu
         ) iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
+        JOIN iam_role ir on ir.id=imr.role_id
         <if test="roleName != null">
             left join iam_role ir on ir.id = imr.role_id
         </if>
@@ -1168,6 +1169,7 @@
         from iam_user iu
         ) iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
+        JOIN iam_role ir on ir.id=imr.role_id
         <if test="roleName != null">
             left join iam_role ir on ir.id = imr.role_id
         </if>

@@ -25,7 +25,6 @@ import io.choerodon.base.api.dto.OrgSharesDTO;
 import io.choerodon.base.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.base.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.base.api.dto.payload.OrganizationPayload;
-import io.choerodon.base.app.service.LdapService;
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.core.enums.ResourceType;
@@ -191,8 +190,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageInfo<OrganizationDTO> pagingQuery(Pageable pageable, String name, String code, String ownerRealName, Boolean enabled, String params) {
-        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() ->
-                organizationMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
+
+        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort())).doSelectPageInfo(() ->
+            organizationMapper.fulltextSearch( name, code, ownerRealName, enabled, params));
     }
 
     @Override

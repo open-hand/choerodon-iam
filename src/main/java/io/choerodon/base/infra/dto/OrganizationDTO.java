@@ -82,6 +82,10 @@ public class OrganizationDTO extends BaseDTO {
     @ApiModelProperty(value = "项目数量")
     private Integer projectCount;
 
+    @Transient
+    @ApiModelProperty(value = "用户数量")
+    private Integer userCount;
+
     @Column(name = "is_remote_token_enabled")
     @ApiModelProperty(value = "远程令牌连接功能是否开启，默认为true")
     private Boolean remoteTokenEnabled;
@@ -304,5 +308,13 @@ public class OrganizationDTO extends BaseDTO {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
     }
 }

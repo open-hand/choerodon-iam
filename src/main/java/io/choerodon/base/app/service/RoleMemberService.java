@@ -61,7 +61,7 @@ public interface RoleMemberService {
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
-    void insertAndSendEvent(UserDTO userDTO,MemberRoleDTO memberRole, String loginName);
+    void insertAndSendEvent(Long fromUserId, UserDTO userDTO, MemberRoleDTO memberRole, String loginName);
 
     /**
      * 删除组织root
@@ -73,9 +73,10 @@ public interface RoleMemberService {
      */
     void deleteOrgAdmin(Long organizationId, Long userId, List<MemberRoleDTO> memberRoleDTOS, String value, Set<String> lableNames);
 
-    List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
-                                                        Long memberId, String sourceType,
-                                                        List<MemberRoleDTO> memberRoleList,
-                                                        List<MemberRoleDTO> returnList, String memberType);
+
+    List<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
+                                                    Long memberId, String sourceType,
+                                                    List<MemberRoleDTO> memberRoleList,
+                                                    List<MemberRoleDTO> returnList, String memberType);
 
 }

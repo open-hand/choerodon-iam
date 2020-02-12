@@ -29,6 +29,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,6 +76,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String SITE_ROOT = "role/site/default/administrator";
     private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
     private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
+    private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String PROJECT_ADD_USER = "projectAddUser";
     private ExcelImportUserTask excelImportUserTask;
     private OrganizationMapper organizationMapper;
     private ProjectMapper projectMapper;
@@ -101,6 +106,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private UserService userService;
 
+    private UserMapper userMapper;
+
 
     public RoleMemberServiceImpl(ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
@@ -114,7 +121,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ClientMapper clientMapper,
                                  UploadHistoryMapper uploadHistoryMapper,
                                  OrganizationUserService organizationUserService,
-                                 UserService userService) {
+                                 UserService userService,
+                                 UserMapper userMapper) {
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
         this.organizationMapper = organizationMapper;
@@ -128,6 +136,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.uploadHistoryMapper = uploadHistoryMapper;
         this.organizationUserService = organizationUserService;
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
 
@@ -363,7 +372,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (memberRoleDTO.getMemberType() == null) {
             memberRoleDTO.setMemberType("user");
         }
-        if (roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId()) == null) {
+        RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+        if (roleDTO == null) {
             throw new CommonException("error.member_role.insert.role.not.exist");
         }
         if (ResourceLevel.PROJECT.value().equals(memberRoleDTO.getSourceType())
@@ -379,6 +389,12 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         if (memberRoleMapper.insertSelective(memberRoleDTO) != 1) {
             throw new CommonException("error.member_role.create");
+        }
+        //如果是平台root更新user表
+        if (SITE_ROOT.equals(roleDTO.getCode())) {
+            UserDTO userDTO = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
+            userDTO.setAdmin(true);
+            userMapper.updateByPrimaryKey(userDTO);
         }
         return memberRoleMapper.selectByPrimaryKey(memberRoleDTO.getId());
     }
@@ -422,6 +438,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     @Transactional(rollbackFor = Exception.class)
     public List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         UserDTO userDTO = userAssertHelper.userNotExisted(memberId);
         List<MemberRoleDTO> returnList = new ArrayList<>();
         if (devopsMessage) {
@@ -432,7 +449,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventMsg.setResourceType(sourceType);
             userMemberEventMsg.setUsername(userDTO.getLoginName());
 
-            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
+            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(userId,
                     isEdit, sourceId, memberId, sourceType, memberRoles, returnList, MemberType.USER.value());
             if (!ownRoleIds.isEmpty()) {
                 userMemberEventMsg.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(ownRoleIds));
@@ -441,7 +458,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             sendEvent(userMemberEventPayloads, MEMBER_ROLE_UPDATE);
             return returnList;
         } else {
-            insertOrUpdateRolesByMemberIdExecute(isEdit,
+            insertOrUpdateRolesByMemberIdExecute(userId, isEdit,
                     sourceId,
                     memberId,
                     sourceType,
@@ -451,7 +468,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    public List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
+    public List<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
                                                            Long memberId, String sourceType,
                                                            List<MemberRoleDTO> memberRoleList,
                                                            List<MemberRoleDTO> returnList, String memberType) {
@@ -485,20 +502,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             returnList.add(memberRoleDTO);
             memberRoleDTOS.add(memberRoleDTO);
         });
-        //插入成功后发送消息通知被添加者，添加平台Root和其他平台用户
+        //批量添加，导入成功发送消息
         memberRoleDTOS.stream().forEach(memberRoleDTO -> {
-            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
-            Long fromUserId = DetailsHelper.getUserDetails().getUserId();
-            if (SITE_ROOT.equals(roleDTO.getCode())) {
-                userService.sendNotice(fromUserId, Arrays.asList(memberRole.getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, sourceId);
-            } else {
-                //添加组织管理员发送消息通知被添加者,异步发送消息
-                Map<String, Object> params = new HashMap<>();
-                params.put("roleName", roleDTO.getName());
-                userService.sendNotice(fromUserId, Arrays.asList(memberRole.getMemberId()), USER_BUSINESS_TYPE_CODE, params, sourceId);
-            }
+            snedMsg(sourceType, fromUserId, memberRoleDTO, sourceId);
         });
-
 
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
             memberRoleMapper.selectDeleteList(memberId, sourceId, memberType, sourceType, deleteList)
@@ -512,6 +519,31 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         //查当前用户/客户端有那些角色
         return memberRoleMapper.select(memberRole)
                 .stream().map(MemberRoleDTO::getRoleId).collect(Collectors.toList());
+    }
+
+    private void snedMsg(String sourceType, Long fromUserId, MemberRoleDTO memberRoleDTO, Long sourceId) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+        Map<String, Object> params = new HashMap<>();
+        if (ResourceType.SITE.value().equals(sourceType)) {
+            if (SITE_ROOT.equals(roleDTO.getCode())) {
+                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, sourceId);
+            } else {
+                params.put("roleName", roleDTO.getName());
+                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), USER_BUSINESS_TYPE_CODE, params, sourceId);
+            }
+        }
+        if (ResourceType.ORGANIZATION.value().equals(sourceType)) {
+            params.put("organizationName", organizationMapper.selectByPrimaryKey(sourceId).getName());
+            params.put("roleName", roleDTO.getName());
+            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), BUSINESS_TYPE_CODE, params, sourceId);
+        }
+        if (ResourceType.PROJECT.value().equals(sourceType)) {
+            params.put("projectName", projectMapper.selectByPrimaryKey(sourceId).getName());
+            params.put("roleName", roleDTO.getName());
+            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), PROJECT_ADD_USER, params, sourceId);
+        }
+
     }
 
     private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads, String code) {
@@ -528,12 +560,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public List<MemberRoleDTO> insertOrUpdateRolesOfClientByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         ClientDTO client = clientMapper.selectByPrimaryKey(memberId);
         if (client == null) {
             throw new CommonException("error.client.not.exist");
         }
         List<MemberRoleDTO> returnList = new ArrayList<>();
-        insertOrUpdateRolesByMemberIdExecute(isEdit,
+        insertOrUpdateRolesByMemberIdExecute(userId, isEdit,
                 sourceId,
                 memberId,
                 sourceType,
@@ -642,14 +675,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    public void insertAndSendEvent(UserDTO userDTO, MemberRoleDTO memberRole, String loginName) {
-        if (memberRoleMapper.insertSelective(memberRole) != 1) {
-            throw new CommonException("error.member_role.create");
-        }
+    public void insertAndSendEvent(Long fromUserId, UserDTO userDTO, MemberRoleDTO memberRole, String loginName) {
         RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
         List<RoleDTO> roles = userDTO.getRoles();
         if (devopsMessage) {
-            organizationUserService.createUserAndUpdateRole(userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
+            organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
         }
     }
 

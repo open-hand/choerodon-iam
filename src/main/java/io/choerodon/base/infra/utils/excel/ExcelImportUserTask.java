@@ -236,7 +236,7 @@ public class ExcelImportUserTask {
             if (memberRole == null) {
                 return;
             }
-            roleMemberService.insertAndSendEvent(userDTO, memberRole, loginName);
+            roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
             excelMemberRoleDTOS.put(memberRole, loginName);
         });
 
@@ -262,26 +262,25 @@ public class ExcelImportUserTask {
             finishFallback.callback(uploadHistory);
         }
         //批量导入用户及角色时发送消息通知成员
-        sendNoticeMsg(fromUserId, excelMemberRoleDTOS);
+//        sendNoticeMsg(fromUserId, excelMemberRoleDTOS);
 
     }
 
     private void sendNoticeMsg(Long fromUserId, Map<MemberRoleDTO, String> excelMemberRoleDTOS) {
         for (Map.Entry<MemberRoleDTO, String> memberRoleDTOStringEntry : excelMemberRoleDTOS.entrySet()) {
-            UserDTO userDTO = userService.queryByLoginName(memberRoleDTOStringEntry.getValue());
             Map<String, Object> params = new HashMap<>();
             RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId());
             if (memberRoleDTOStringEntry.getKey().getSourceId() == 0) {
                 if (SITE_ROOT.equals(roleDTO.getCode())) {
-                    userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
                 } else {
                     params.put("roleName", roleDTO.getName());
-                    userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), USER_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), USER_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
                 }
             } else {
                 params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
                 params.put("roleName", roleDTO.getName());
-                userService.sendNotice(fromUserId, Arrays.asList(userDTO.getId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
+                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
             }
         }
     }

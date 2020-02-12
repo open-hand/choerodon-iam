@@ -16,6 +16,7 @@ import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.infra.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -56,10 +57,6 @@ import io.choerodon.base.infra.enums.RoleEnum;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.ImageUtils;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.ParamUtils;
-import io.choerodon.base.infra.utils.SagaTopic;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
@@ -678,6 +675,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {

@@ -28,7 +28,7 @@ public interface OrganizationUserService {
      */
     UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles);
 
-    UserDTO createUserAndUpdateRole(UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId);
+    UserDTO createUserAndUpdateRole(Long formUserId, UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId);
 
     UserDTO createUser(UserDTO userDTO);
 
@@ -63,7 +63,7 @@ public interface OrganizationUserService {
 
     List<Long> listUserIds(Long organizationId);
 
-    UserDTO createUserWithRoles(UserDTO userDTO,Long organizationId);
+    UserDTO createUserWithRoles(UserDTO userDTO, Long organizationId);
 
     List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 }

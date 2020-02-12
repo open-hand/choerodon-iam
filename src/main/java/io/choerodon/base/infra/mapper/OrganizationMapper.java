@@ -15,17 +15,18 @@ import io.choerodon.mybatis.common.Mapper;
  */
 public interface OrganizationMapper extends Mapper<OrganizationDTO> {
 
-    List<OrganizationDTO> fulltextSearch(@Param("name") String name,
+    List<OrganizationDTO> fulltextSearch(
+                                         @Param("name") String name,
                                          @Param("code") String code,
                                          @Param("ownerRealName") String ownerRealName,
                                          @Param("enabled") Boolean enabled,
                                          @Param("params") String params);
 
     Set<OrganizationDTO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
-                                                         @Param("includedDisabled") Boolean includedDisabled);
+                                                        @Param("includedDisabled") Boolean includedDisabled);
 
     Set<OrganizationDTO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
-                                                 @Param("includedDisabled") Boolean includedDisabled);
+                                                @Param("includedDisabled") Boolean includedDisabled);
 
     List<OrganizationDTO> selectOrganizationsWithRoles(
             @Param("id") Long id,

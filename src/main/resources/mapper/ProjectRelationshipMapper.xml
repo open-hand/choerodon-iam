@@ -3,42 +3,20 @@
 
 <mapper namespace="io.choerodon.base.infra.mapper.ProjectRelationshipMapper">
 
-    <resultMap id="ProjectRelationshipUser" type="io.choerodon.base.infra.dto.ProjectRelationshipDTO">
-        <id column="id" property="id"/>
-        <result column="project_id" property="projectId" />
-        <result column="parent_id" property="parentId" />
-        <result column="start_date" property="startDate" />
-        <result column="end_date" property="endDate" />
-        <result column="enabled" property="enabled" />
-        <result column="program_id" property="programId" />
-        <result column="creation_date" property="creationDate" />
-        <association property="responsibilityUser" javaType="io.choerodon.base.api.vo.UserVO">
-            <id column="id" property="id"/>
-            <result column="is_ldap" property="ldap"/>
-            <result column="login_name" property="loginName"/>
-            <result column="email" property="email"/>
-            <result column="real_name" property="realName"/>
-            <result column="image_url" property="imageUrl"/>
-            <result column="profile_photo" property="profilePhoto"/>
-        </association>
-    </resultMap>
-    <select id="selectProjectsByParentId" resultMap="ProjectRelationshipUser">
+    <select id="selectProjectsByParentId" resultType="io.choerodon.base.infra.dto.ProjectRelationshipDTO">
         SELECT
         fpr.*,
         fpr.IS_ENABLED AS enabled,
         fp.CODE AS projCode,
         fp.NAME AS projName,
-        iu.id,
-        iu.login_name,
-        iu.real_name,
-        iu.email,
-        iu.is_ldap,
-        iu.image_url,
-        iu.profile_photo
+        (
+        SELECT count(distinct imr.MEMBER_ID) FROM
+        iam_member_role imr
+        where imr.source_id = fp.id and imr.source_type='project' and imr.MEMBER_TYPE='user'
+        ) as user_count
         FROM
         fd_project_relationship fpr
         LEFT JOIN fd_project fp ON fpr.PROJECT_ID = fp.ID
-        LEFT JOIN iam_user iu on  iu.id=fpr.RESPONSIBILITY_USER_ID
         WHERE
         fpr.PARENT_ID = #{parentId}
         <if test="onlySelectEnable">

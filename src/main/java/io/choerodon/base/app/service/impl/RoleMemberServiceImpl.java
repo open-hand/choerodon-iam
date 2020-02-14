@@ -16,11 +16,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.base.api.vo.ProjectUserVO;
 import io.choerodon.base.app.service.OrganizationUserService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.api.vo.ProjectUserVO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -701,10 +699,5 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventPayloads.add(userMemberEventMsg);
             sendEvent(userMemberEventPayloads, MEMBER_ROLE_DELETE);
         }
-    }
-
-    @Override
-    public List<ProjectUserVO> queryMemberInProject(List<Long> projectIds) {
-        return memberRoleMapper.selectMemberInproject(projectIds);
     }
 }

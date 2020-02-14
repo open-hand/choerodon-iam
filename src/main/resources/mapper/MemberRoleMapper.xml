@@ -13,17 +13,6 @@
         </collection>
     </resultMap>
 
-    <resultMap id="projectUserList" type="io.choerodon.base.api.vo.ProjectUserVO" autoMapping="true">
-        <id property="projectId" column="project_id"/>
-        <collection property="userVOS" ofType="io.choerodon.base.api.vo.UserVO"  autoMapping="true">
-            <result property="id" column="id"/>
-            <result property="loginName" column="login_name"/>
-            <result property="email" column="email"/>
-            <result property="realName" column="real_name"/>
-            <result property="imageUrl" column="IMAGE_URL"/>
-        </collection>
-    </resultMap>
-
     <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="mysql">
         <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         SELECT
@@ -272,31 +261,4 @@
           AND iam_member_role.source_type = #{type}
     </select>
 
-    <select id="selectMemberInproject" resultMap="projectUserList">
-        SELECT
-        t.id AS project_id,
-        iu.id,
-        iu.login_name AS login_name,
-        iu.email,
-        iu.real_name,
-        iu.IMAGE_URL
-        FROM
-        iam_user iu,
-        (
-        SELECT DISTINCT
-        fp.id,
-        imr.member_id
-        FROM
-        fd_project fp
-        LEFT JOIN iam_member_role imr ON imr.source_id = fp.id
-        AND imr.source_type = 'project'
-        AND imr.MEMBER_TYPE = 'user'
-        WHERE
-        fp.id in
-        <foreach item="item" index="index" collection="projectIds" open="(" separator="," close=")">
-            #{item}
-        </foreach>)t
-        WHERE
-        iu.id = t.member_id
-    </select>
 </mapper>

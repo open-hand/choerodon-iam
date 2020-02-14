@@ -64,11 +64,11 @@ public class ProjectRelationshipDTO extends BaseDTO {
     private Date creationDate;
 
     @ApiModelProperty(value = "负责人id")
-    private Long directorId;
+    private Long responsibilityUserId;
 
     @Transient
     @ApiModelProperty(value = "负责人")
-    private UserVO director;
+    private UserVO responsibilityUser;
 
     public Long getId() {
         return id;
@@ -172,19 +172,19 @@ public class ProjectRelationshipDTO extends BaseDTO {
         this.creationDate = creationDate;
     }
 
-    public Long getDirectorId() {
-        return directorId;
+    public Long getResponsibilityUserId() {
+        return responsibilityUserId;
     }
 
-    public void setDirectorId(Long directorId) {
-        this.directorId = directorId;
+    public void setResponsibilityUserId(Long responsibilityUserId) {
+        this.responsibilityUserId = responsibilityUserId;
     }
 
-    public UserVO getDirector() {
-        return director;
+    public UserVO getResponsibilityUser() {
+        return responsibilityUser;
     }
 
-    public void setDirector(UserVO director) {
-        this.director = director;
+    public void setResponsibilityUser(UserVO responsibilityUser) {
+        this.responsibilityUser = responsibilityUser;
     }
 }

@@ -94,16 +94,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
         List<ProjectRelationshipDTO> projectRelationshipDTOS = projectRelationshipMapper.selectProjectsByParentId(projectId, onlySelectEnable);
-        if (!CollectionUtils.isEmpty(projectRelationshipDTOS)) {
-            List<Long> projectList = projectRelationshipDTOS.stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toList());
-            List<ProjectUserVO> projectUserVOS = roleMemberService.queryMemberInProject(projectList);
-            if (!CollectionUtils.isEmpty(projectList)) {
-                Map<Long, List<UserVO>> longListMap = projectUserVOS.stream().collect(Collectors.toMap(ProjectUserVO::getProjectId, ProjectUserVO::getUserVOS));
-                projectRelationshipDTOS.forEach(v -> {
-                    v.setUserVOs(longListMap.get(v.getProjectId()));
-                });
-            }
-        }
+        handleProjectMember(projectRelationshipDTOS);
         return projectRelationshipDTOS;
     }
 
@@ -389,6 +380,18 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         String sonCategory = son.getCategory();
         if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(sonCategory) || ProjectCategory.GENERAL.value().equalsIgnoreCase(sonCategory))) {
             throw new CommonException(PROGRAM_CANNOT_BE_CONFIGURA_SUBPROJECTS);
+        }
+    }
+    private void handleProjectMember(List<ProjectRelationshipDTO> projectRelationshipDTOS){
+        if (!CollectionUtils.isEmpty(projectRelationshipDTOS)) {
+            List<Long> projectList = projectRelationshipDTOS.stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toList());
+            List<ProjectUserVO> projectUserVOS = roleMemberService.queryMemberInProject(projectList);
+            if (!CollectionUtils.isEmpty(projectList)) {
+                Map<Long, List<UserVO>> longListMap = projectUserVOS.stream().collect(Collectors.toMap(ProjectUserVO::getProjectId, ProjectUserVO::getUserVOS));
+                projectRelationshipDTOS.forEach(v -> {
+                    v.setUserVOs(longListMap.get(v.getProjectId()));
+                });
+            }
         }
     }
 }

@@ -40,9 +40,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_relationship.groovy') {
         setTableRemarks(tableName:"FD_PROJECT_RELATIONSHIP",remarks: "项目关系表")
     }
 
-    changeSet(author: 'lizhaozhong@163.com', id: '2020-02-14-fd_project_relationship-add-director_id') {
+    changeSet(author: 'lizhaozhong@163.com', id: '2020-02-14-fd_project_relationship-add-responsibility_user_id') {
         addColumn(tableName: 'FD_PROJECT_RELATIONSHIP') {
-            column(name: 'DIRECTOR_ID', type: 'BIGINT UNSIGNED', remarks: '负责人id', afterColumn: 'PARENT_ID')
+            column(name: 'RESPONSIBILITY_USER_ID', type: 'BIGINT UNSIGNED', remarks: '负责人id', afterColumn: 'PARENT_ID')
         }
     }
 }

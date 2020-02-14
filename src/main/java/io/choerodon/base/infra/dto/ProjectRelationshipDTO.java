@@ -1,10 +1,12 @@
 package io.choerodon.base.infra.dto;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.choerodon.base.api.vo.UserVO;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -54,8 +56,19 @@ public class ProjectRelationshipDTO extends BaseDTO {
     @ApiModelProperty(value = "项目人员总数")
     private Long userCount;
 
+    @Transient
+    @ApiModelProperty(value = "项目成员")
+    private List<UserVO> userVOs;
+
     @ApiModelProperty(value = "项目群关系创建时间")
     private Date creationDate;
+
+    @ApiModelProperty(value = "负责人id")
+    private Long directorId;
+
+    @Transient
+    @ApiModelProperty(value = "负责人")
+    private UserVO director;
 
     public Long getId() {
         return id;
@@ -139,6 +152,14 @@ public class ProjectRelationshipDTO extends BaseDTO {
         this.userCount = userCount;
     }
 
+    public List<UserVO> getUserVOs() {
+        return userVOs;
+    }
+
+    public void setUserVOs(List<UserVO> userVOs) {
+        this.userVOs = userVOs;
+    }
+
     @Override
     @JsonIgnore(value = false)
     public Date getCreationDate() {
@@ -149,5 +170,21 @@ public class ProjectRelationshipDTO extends BaseDTO {
     @JsonIgnore(value = false)
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Long getDirectorId() {
+        return directorId;
+    }
+
+    public void setDirectorId(Long directorId) {
+        this.directorId = directorId;
+    }
+
+    public UserVO getDirector() {
+        return director;
+    }
+
+    public void setDirector(UserVO director) {
+        this.director = director;
     }
 }

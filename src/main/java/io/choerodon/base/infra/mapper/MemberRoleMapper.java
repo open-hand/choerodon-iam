@@ -1,6 +1,7 @@
 package io.choerodon.base.infra.mapper;
 
 import io.choerodon.base.api.query.ClientRoleQuery;
+import io.choerodon.base.api.vo.ProjectUserVO;
 import io.choerodon.base.infra.dto.ClientDTO;
 import io.choerodon.base.infra.dto.MemberRoleDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -33,4 +34,6 @@ public interface MemberRoleMapper extends Mapper<MemberRoleDTO> {
             @Param("param") String param,
             @Param("start") Integer start,
             @Param("size") Integer size);
+
+    List<ProjectUserVO> selectMemberInproject(@Param("projectIds") List<Long> projectIds);
 }

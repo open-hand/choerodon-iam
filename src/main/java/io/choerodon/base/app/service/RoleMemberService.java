@@ -1,7 +1,9 @@
 package io.choerodon.base.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ProjectUserVO;
 import io.choerodon.base.infra.dto.UserDTO;
+import io.choerodon.base.api.vo.ProjectUserVO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.api.query.ClientRoleQuery;
@@ -79,4 +81,11 @@ public interface RoleMemberService {
                                                     List<MemberRoleDTO> memberRoleList,
                                                     List<MemberRoleDTO> returnList, String memberType);
 
+
+    /**
+     * 查询项目下的成员
+     * @param projectIds
+     * @return
+     */
+    List<ProjectUserVO> queryMemberInProject(List<Long> projectIds);
 }

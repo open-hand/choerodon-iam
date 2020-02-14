@@ -8,9 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.base.api.vo.ProjectUserVO;
-import io.choerodon.base.api.vo.UserVO;
-import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -63,17 +60,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     private ProjectAssertHelper projectAssertHelper;
 
-    private RoleMemberService roleMemberService;
-
     public ProjectRelationshipServiceImpl(TransactionalProducer producer, ProjectRelationshipMapper relationshipMapper,
                                           ProjectCategoryMapper projectCategoryMapper, ProjectMapCategoryMapper projectMapCategoryMapper,
                                           OrganizationProjectService organizationProjectService,
                                           ProjectRelationshipMapper projectRelationshipMapper,
-                                          RoleMemberService roleMemberService,
                                           ProjectAssertHelper projectAssertHelper) {
         this.producer = producer;
         this.relationshipMapper = relationshipMapper;
-        this.roleMemberService = roleMemberService;
         this.projectCategoryMapper = projectCategoryMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.organizationProjectService = organizationProjectService;
@@ -93,9 +86,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 !projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.ANALYTICAL.value())) {
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
-        List<ProjectRelationshipDTO> projectRelationshipDTOS = projectRelationshipMapper.selectProjectsByParentId(projectId, onlySelectEnable);
-        handleProjectMember(projectRelationshipDTOS);
-        return projectRelationshipDTOS;
+        return projectRelationshipMapper.selectProjectsByParentId(projectId, onlySelectEnable);
     }
 
     @Override
@@ -199,7 +190,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 ProjectRelationshipDTO projectRelationship = new ProjectRelationshipDTO();
                 BeanUtils.copyProperties(relationshipDTO, projectRelationship);
                 // update
-                if (projectRelationshipMapper.updateByPrimaryKeySelective(projectRelationship) != 1) {
+                if (projectRelationshipMapper.updateByPrimaryKey(projectRelationship) != 1) {
                     throw new CommonException("error.project.group.update");
                 }
                 projectRelationship = projectRelationshipMapper.selectByPrimaryKey(projectRelationship.getId());
@@ -380,18 +371,6 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         String sonCategory = son.getCategory();
         if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(sonCategory) || ProjectCategory.GENERAL.value().equalsIgnoreCase(sonCategory))) {
             throw new CommonException(PROGRAM_CANNOT_BE_CONFIGURA_SUBPROJECTS);
-        }
-    }
-    private void handleProjectMember(List<ProjectRelationshipDTO> projectRelationshipDTOS){
-        if (!CollectionUtils.isEmpty(projectRelationshipDTOS)) {
-            List<Long> projectList = projectRelationshipDTOS.stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toList());
-            List<ProjectUserVO> projectUserVOS = roleMemberService.queryMemberInProject(projectList);
-            if (!CollectionUtils.isEmpty(projectList)) {
-                Map<Long, List<UserVO>> longListMap = projectUserVOS.stream().collect(Collectors.toMap(ProjectUserVO::getProjectId, ProjectUserVO::getUserVOS));
-                projectRelationshipDTOS.forEach(v -> {
-                    v.setUserVOs(longListMap.get(v.getProjectId()));
-                });
-            }
         }
     }
 }

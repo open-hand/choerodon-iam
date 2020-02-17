@@ -204,7 +204,13 @@ const ListView = ({ context, level, modal, base }) => {
         <TextField name="code" colSpan={1} disabled={status !== 'add'} renderer={renderCode} />
         <TextField name="name" colSpan={1} disabled={!edit.current} />
         {level === 'project' && (
-          <Select name="gitlabLabelId" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
+          <Select
+            name="gitlabLabelId"
+            colSpan={2}
+            clearButton={false}
+            optionRenderer={renderLabelOption}
+            disabled={status !== 'add'}
+          />
         )}
       </Form>
     );

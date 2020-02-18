@@ -258,13 +258,23 @@ public class RoleServiceImpl implements RoleService {
         return ((RoleServiceImpl) AopContext.currentProxy()).create(roleDTO);
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public RoleDTO update(RoleDTO roleDTO) {
         updateCheck(roleDTO);
         //更新操作不能改level
         roleDTO.setResourceLevel(null);
         roleDTO.setCode(null);
+        // gitlab标签不可修改，所以预先将gitlab标签传入labels集合中，确保不会被删除
+        if (roleDTO.getGitlabLabel() != null) {
+            if (CollectionUtils.isEmpty(roleDTO.getLabels())) {
+                List<LabelDTO> lables = new ArrayList<>();
+                lables.add(roleDTO.getGitlabLabel());
+                roleDTO.setLabels(lables);
+            } else {
+                roleDTO.getLabels().add(roleDTO.getGitlabLabel());
+            }
+        }
         Long id = roleDTO.getId();
         RoleDTO role1 = roleAssertHelper.roleNotExisted(id);
         //内置的角色不允许更新字段，只能更新label

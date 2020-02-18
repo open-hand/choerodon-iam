@@ -45,6 +45,7 @@
         <result property="loginName" column="login_name"/>
         <result property="enabled" column="is_enabled"/>
         <result property="locked" column="is_locked"/>
+        <result property="email" column="email"/>
         <result property="ldap" column="is_ldap"/>
         <result property="creationDate" column="creation_date"/>
         <collection property="roles" ofType="io.choerodon.base.infra.dto.RoleDTO"

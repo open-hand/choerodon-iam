@@ -9,7 +9,9 @@ public enum RoleLabel {
 
     PROJECT_OWNER("project.owner"),
 
-    ORGANIZATION_OWNER("organization.owner");
+    ORGANIZATION_OWNER("organization.owner"),
+
+    ORGANIZATION_GITLAB_OWNER("organization.gitlab.owner");
 
     private final String value;
 

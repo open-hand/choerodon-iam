@@ -16,8 +16,10 @@ import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.infra.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -55,10 +57,6 @@ import io.choerodon.base.infra.enums.RoleEnum;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.ImageUtils;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.ParamUtils;
-import io.choerodon.base.infra.utils.SagaTopic;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
@@ -86,6 +84,8 @@ public class UserServiceImpl implements UserService {
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String SITE_ROOT = "role/site/default/administrator";
     @Value("${choerodon.category.enabled:false}")
     private boolean enableCategory;
     @Value("${choerodon.devops.message:false}")
@@ -502,7 +502,11 @@ public class UserServiceImpl implements UserService {
                 updateSelective(dto);
             }
         }
-
+        //添加成功后发送站内信和邮件通知被添加者
+        Long fromUserId = DetailsHelper.getUserDetails().getUserId();
+        if (!adminUserIds.isEmpty()) {
+            ((UserServiceImpl) AopContext.currentProxy()).sendNotice(fromUserId, adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+        }
         if (!adminUserIds.isEmpty()) {
             AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
             producer.apply(StartSagaBuilder.newBuilder()
@@ -525,6 +529,14 @@ public class UserServiceImpl implements UserService {
         if (userMapper.selectCount(userDTO) > 1) {
             if (dto.getAdmin()) {
                 dto.setAdmin(false);
+                //删除member-role的关系
+                RoleDTO roleDTO = new RoleDTO();
+                roleDTO.setCode(SITE_ROOT);
+                roleMapper.selectOne(roleDTO);
+                MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
+                memberRoleDTO.setRoleId(roleDTO.getId());
+                memberRoleDTO.setMemberId(id);
+                memberRoleMapper.delete(memberRoleDTO);
                 producer.apply(StartSagaBuilder.newBuilder()
                                 .withRefId(String.valueOf(id))
                                 .withRefType("user")
@@ -672,6 +684,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {

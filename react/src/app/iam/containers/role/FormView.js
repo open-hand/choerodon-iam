@@ -13,7 +13,7 @@ const { Column } = Table;
 const { TabPane } = Tabs;
 
 const LEVEL_OBJ = {
-  site: ['site', 'user'],
+  site: ['site'],
   project: ['project'],
   organization: ['organization'],
 };
@@ -38,16 +38,8 @@ const ListView = ({ context, level, modal, base }) => {
   const [userPermissionsArr, setUserPermissionsArr] = useState([]);
   const edit = useRef(true);
   const modalPermission = useRef(null);
-  
-  const ds = useMemo(() => new DataSet(FormListDataSet({ level })), [level]);
 
-  const userDs = useMemo(() => {
-    if (level === 'site') {
-      return new DataSet(FormListDataSet({ level: 'user' }));
-    } else {
-      return null;
-    }
-  }, [level]);
+  const ds = useMemo(() => new DataSet(FormListDataSet({ level })), [level]);
 
   const wrapSetPermissionArr = useCallback(({ dataSet: dataset }) => {
     if (status === 'add') {
@@ -71,19 +63,13 @@ const ListView = ({ context, level, modal, base }) => {
       const combineArr = userPermissionsArr.concat(arr);
       setUserPermissionsArr([...new Set(combineArr)]);
     }
-  }, [userPermissionsArr, userDs]);
+  }, [userPermissionsArr]);
 
   useEffect(() => {
     if (status === 'add' && (!base || !base.length)) {
       ds.addEventListener('load', wrapSetPermissionArr);
-      if (level === 'site') {
-        userDs.addEventListener('load', wrapSetUserPermissionArr);
-      }
       return () => {
         ds.removeEventListener('load', wrapSetPermissionArr);
-        if (level === 'site') {
-          userDs.removeEventListener('load', wrapSetUserPermissionArr);
-        }
       };
     }
   }, [wrapSetPermissionArr, level]);
@@ -106,11 +92,6 @@ const ListView = ({ context, level, modal, base }) => {
         ds.forEach((r) => {
           r.selectable = false;
         });
-        if (userDs) {
-          userDs.forEach((r) => {
-            r.selectable = false;
-          });
-        }
       }
     }
     if (base && base.length) {
@@ -202,7 +183,7 @@ const ListView = ({ context, level, modal, base }) => {
         >
           {((itemProps) => (
             <div style={{ position: 'relative' }}>
-              <Select 
+              <Select
                 {...itemProps}
                 label="角色标签"
                 labelLayout="float"
@@ -223,7 +204,13 @@ const ListView = ({ context, level, modal, base }) => {
         <TextField name="code" colSpan={1} disabled={status !== 'add'} renderer={renderCode} />
         <TextField name="name" colSpan={1} disabled={!edit.current} />
         {level === 'project' && (
-          <Select name="gitlabLabelId" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
+          <Select
+            name="gitlabLabelId"
+            colSpan={2}
+            clearButton={false}
+            optionRenderer={renderLabelOption}
+            disabled={status !== 'add'}
+          />
         )}
       </Form>
     );
@@ -366,7 +353,7 @@ const ListView = ({ context, level, modal, base }) => {
   function renderTable() {
     return (
       <Table
-        dataSet={tabLevel !== 'site' && level === 'site' ? userDs : ds}
+        dataSet={ds}
         queryBar="none"
         mode="tree"
         buttons={['expandAll', 'collapseAll']}

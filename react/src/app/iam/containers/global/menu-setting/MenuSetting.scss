@@ -1,6 +1,9 @@
 $drop-gradient: rgba(140, 158, 255, 0.16);
 .page-content.menu-setting {
   padding-top: 0;
+  .c7n-tabs-bar {
+    margin: 0 !important;
+  }
 }
 .permission-list {
   &-modal {

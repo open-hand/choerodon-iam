@@ -63,7 +63,7 @@ public interface OrganizationUserService {
 
     List<Long> listUserIds(Long organizationId);
 
-    UserDTO createUserWithRoles(UserDTO userDTO, Long organizationId);
+    UserDTO createUserWithRoles(UserDTO userDTO, Long organizationId, Long fromUserId);
 
     List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 }

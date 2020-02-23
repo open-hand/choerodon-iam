@@ -1,10 +1,13 @@
 package io.choerodon.base.app.service;
 
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
 import io.choerodon.base.infra.dto.LookupDTO;
+import io.choerodon.base.infra.dto.LookupValueDTO;
 
 /**
  * @author superlee
@@ -22,6 +25,8 @@ public interface LookupService {
     LookupDTO queryById(Long id);
 
     LookupDTO queryByCode(String code);
+
+    List<LookupValueDTO> queryCodeValueByCode(String code);
 
     void check(Long lookupId, String code);
 }

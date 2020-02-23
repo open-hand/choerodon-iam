@@ -130,6 +130,12 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
+    public List<LookupValueDTO> queryCodeValueByCode(String code) {
+        LookupDTO lookupDTO = queryByCode(code);
+        return lookupDTO == null ? null : lookupDTO.getLookupValues();
+    }
+
+    @Override
     public void check(Long lookupId, String code) {
         Long count = lookupMapper.check(lookupId, code);
         if (count >= 1) {

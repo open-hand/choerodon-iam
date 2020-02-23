@@ -103,7 +103,6 @@ public class ExcelImportUserTask {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         List<UserDTO> validateUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         long begin = System.currentTimeMillis();
         users.forEach(u -> {
                     u.setOrganizationId(organizationId);

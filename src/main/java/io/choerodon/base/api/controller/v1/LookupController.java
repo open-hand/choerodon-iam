@@ -1,5 +1,7 @@
 package io.choerodon.base.api.controller.v1;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
@@ -118,6 +120,12 @@ public class LookupController extends BaseController {
         return new ResponseEntity<>(lookupService.queryByCode(code), HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "通过code查询快码")
+    @GetMapping(value = "/code/{code}")
+    public ResponseEntity<List<LookupValueDTO>> queryCodeValueByCode(@PathVariable String code) {
+        return new ResponseEntity<>(lookupService.queryCodeValueByCode(code), HttpStatus.OK);
+    }
     /**
      * 校验 code || code + lookupId 是否已存在
      *

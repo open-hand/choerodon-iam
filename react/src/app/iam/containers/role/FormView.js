@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Action, axios } from '@choerodon/boot';
 import { Tabs, Icon, message, Checkbox, Popover } from 'choerodon-ui';
 import { Table, Form, TextField, DataSet, Modal, Button, Select, Tooltip } from 'choerodon-ui/pro';
+import map from 'lodash/map';
 import FormSelectEditor from '../../components/formSelectEditor';
 import FormListDataSet from './stores/FormListDataSet';
 import LabelDataSet from './stores/LabelDataSet';
@@ -84,7 +85,7 @@ const ListView = ({ context, level, modal, base }) => {
       const res = await axios.get(`base/v1/roles/${record.get('id')}`);
       edit.current = !res.builtIn;
       setPermissionsArr(res.permissions.map((p) => p.code));
-      record.set('labels', res.labels);
+      record.set('labels', map(res.labels || [], 'id'));
       if (level === 'project') {
         record.set('gitlabLabelId', res.gitlabLabel ? res.gitlabLabel.id : null);
       }
@@ -204,7 +205,13 @@ const ListView = ({ context, level, modal, base }) => {
         <TextField name="code" colSpan={1} disabled={status !== 'add'} renderer={renderCode} />
         <TextField name="name" colSpan={1} disabled={!edit.current} />
         {level === 'project' && (
-          <Select name="gitlabLabelId" colSpan={2} clearButton={false} optionRenderer={renderLabelOption} />
+          <Select
+            name="gitlabLabelId"
+            colSpan={2}
+            clearButton={false}
+            optionRenderer={renderLabelOption}
+            disabled={status !== 'add'}
+          />
         )}
       </Form>
     );

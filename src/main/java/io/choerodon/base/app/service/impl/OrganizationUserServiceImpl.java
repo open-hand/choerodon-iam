@@ -372,12 +372,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId) {
-        Long userId = DetailsHelper.getUserDetails().getUserId();
+    public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId, Long fromUserId) {
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
 //       createUserRoles(resultUser, roleDTOList);
-        createUserAndUpdateRole(userId, insertUser, roleDTOList, ResourceLevel.ORGANIZATION.value(), organizationId);
+        createUserAndUpdateRole(fromUserId, insertUser, roleDTOList, ResourceLevel.ORGANIZATION.value(), organizationId);
         return resultUser;
     }
 
@@ -632,7 +631,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         for (UserDTO user : insertUsers) {
             UserDTO userDTO = null;
             try {
-                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId);
+                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId, fromUserId);
             } catch (Exception e) {
                 e.printStackTrace();
                 ErrorUserDTO errorUser = new ErrorUserDTO();

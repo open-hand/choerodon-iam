@@ -85,6 +85,7 @@ public class UserServiceImpl implements UserService {
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String SITE_ROOT = "role/site/default/administrator";
     @Value("${choerodon.category.enabled:false}")
     private boolean enableCategory;
     @Value("${choerodon.devops.message:false}")
@@ -528,6 +529,14 @@ public class UserServiceImpl implements UserService {
         if (userMapper.selectCount(userDTO) > 1) {
             if (dto.getAdmin()) {
                 dto.setAdmin(false);
+                //删除member-role的关系
+                RoleDTO roleDTO = new RoleDTO();
+                roleDTO.setCode(SITE_ROOT);
+                roleMapper.selectOne(roleDTO);
+                MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
+                memberRoleDTO.setRoleId(roleDTO.getId());
+                memberRoleDTO.setMemberId(id);
+                memberRoleMapper.delete(memberRoleDTO);
                 producer.apply(StartSagaBuilder.newBuilder()
                                 .withRefId(String.valueOf(id))
                                 .withRefType("user")

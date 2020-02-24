@@ -33,7 +33,7 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="OrganizationDTO">
+    <select id="fulltextSearch"   resultMap="OrganizationDTO">
         SELECT
         org.*,iu.login_name as owner_login_name,iu.real_name as owner_real_name,
         CASE
@@ -42,7 +42,13 @@
         THEN 0
         ELSE t.project_count
         END
-        AS project_count
+        AS projectCount,
+        CASE
+        WHEN f.user_count IS NULL
+        THEN 0
+        ELSE f.user_count
+        END
+        AS userCount
         FROM fd_organization org
         LEFT JOIN
         (
@@ -54,6 +60,14 @@
         ON o.id = p.organization_id
         GROUP BY p.organization_id
         ) t ON org.id = t.org_id
+        LEFT JOIN(
+        SELECT
+        imr.source_id AS source_id,
+        COUNT(imr.member_id) AS user_count
+        FROM iam_member_role imr
+        WHERE imr.SOURCE_TYPE='organization'
+        GROUP BY imr.source_id
+        ) f ON org.id= f.source_id
         left join iam_user iu on org.user_id = iu.id
         <where>
             <if test="name != null">
@@ -74,8 +88,11 @@
                 org.code LIKE concat(concat('%', #{params}), '%')
                 )
             </if>
+
         </where>
-        order by org.id desc
+
+
+
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">

@@ -6,6 +6,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
+import io.choerodon.base.api.vo.LookupValueVO;
 import io.choerodon.base.infra.dto.LookupDTO;
 import io.choerodon.base.infra.dto.LookupValueDTO;
 
@@ -26,7 +27,7 @@ public interface LookupService {
 
     LookupDTO queryByCode(String code);
 
-    List<LookupValueDTO> queryCodeValueByCode(String code);
+    List<LookupValueVO> queryCodeValueByCode(String code);
 
     void check(Long lookupId, String code);
 }

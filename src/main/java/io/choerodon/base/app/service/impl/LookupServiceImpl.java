@@ -2,13 +2,16 @@ package io.choerodon.base.app.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import io.choerodon.base.api.vo.LookupValueVO;
 import io.choerodon.base.app.service.*;
 import io.choerodon.base.infra.asserts.*;
 import io.choerodon.base.infra.dto.*;
@@ -130,9 +133,18 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public List<LookupValueDTO> queryCodeValueByCode(String code) {
+    public List<LookupValueVO> queryCodeValueByCode(String code) {
         LookupDTO lookupDTO = queryByCode(code);
-        return lookupDTO == null ? null : lookupDTO.getLookupValues();
+        if (lookupDTO == null) {
+            return null;
+        }
+        return lookupDTO.getLookupValues().stream().map(t -> {
+            LookupValueVO lookupValueVO=new LookupValueVO();
+            BeanUtils.copyProperties(t,lookupValueVO);
+            lookupValueVO.setValue(t.getCode());
+            lookupValueVO.setMeaning(t.getDescription());
+            return lookupValueVO;
+        }).collect(Collectors.toList());
     }
 
     @Override

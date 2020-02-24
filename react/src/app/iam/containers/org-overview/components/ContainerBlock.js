@@ -7,6 +7,7 @@ const ContainerBlock = observer((props) => {
     children,
     width,
     height,
+    title,
   } = props;
   return (
     <div
@@ -16,6 +17,13 @@ const ContainerBlock = observer((props) => {
         height,
       }}
     >
+      <div style={{
+        marginBottom: 10,
+        display: title ? 'block' : 'none',
+      }}
+      >
+        <span className="c7n-overview-containerBlock-title">{title}</span>
+      </div>
       {children}
     </div>
   );

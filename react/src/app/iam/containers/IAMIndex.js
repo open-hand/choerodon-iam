@@ -51,6 +51,8 @@ const lovConfig = asyncRouter(() => import('./lov-config'));
 // 多语言配置
 const langConfig = asyncRouter(() => import('./lang-config'));
 
+const orgOverview = asyncRouter(() => import('./org-overview'));
+
 @inject('AppState')
 class IAMIndex extends React.Component {
   render() {
@@ -82,6 +84,7 @@ class IAMIndex extends React.Component {
             <Route path={`${match.url}/safe`} component={siteSafe} />
             <Route path={`${match.url}/client`} component={orgClient} />
             <Route path={`${match.url}/org-admin`} component={orgAdmin} />
+            <Route path={`${match.url}/org-overview`} component={orgOverview} />
             <Route path={`${match.url}/market-publish`} component={AppRelease} />
             <Route path={`${match.url}/app-market`} component={AppMarket} />
             <Route path={`${match.url}/application-management`} component={applicationManagement} />

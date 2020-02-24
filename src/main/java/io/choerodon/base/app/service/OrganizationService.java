@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ProjectOverViewVO;
 import org.springframework.data.domain.Pageable;
 
 import io.choerodon.base.api.dto.OrgSharesDTO;
@@ -64,4 +65,6 @@ public interface OrganizationService {
      * @return 存在返回组织信息，不存在抛出not.exist exception
      */
     OrganizationDTO checkNotExistAndGet(Long orgId);
+
+    ProjectOverViewVO projectOverview(Long organizationId);
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.api.vo.ProjectOverViewVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,7 +193,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public PageInfo<OrganizationDTO> pagingQuery(Pageable pageable, String name, String code, String ownerRealName, Boolean enabled, String params) {
 
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort())).doSelectPageInfo(() ->
-            organizationMapper.fulltextSearch( name, code, ownerRealName, enabled, params));
+                organizationMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
     }
 
     @Override
@@ -307,4 +308,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         return organizationDTO;
     }
 
+    @Override
+    public ProjectOverViewVO projectOverview(Long organizationId) {
+        ProjectOverViewVO projectOverViewVO = organizationMapper.projectOverview(organizationId);
+        if (projectOverViewVO == null) {
+            throw new CommonException("error.organization.not.exist");
+        }
+        return projectOverViewVO;
+    }
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.ProjectOverViewVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -228,4 +229,13 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.pagingSpecified(orgIds, name, code, enabled, params, pageable), HttpStatus.OK);
     }
 
+
+    @GetMapping("/{organization_id}/project/overview")
+    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @ApiOperation(value = "组织概览，返回启用项目数量和停用项目数量")
+    public ResponseEntity<ProjectOverViewVO> projectOverview(
+            @PathVariable(name = "organization_id") Long organizationId) {
+        return new ResponseEntity<>(organizationService.projectOverview(organizationId), HttpStatus.OK);
+    }
+    
 }

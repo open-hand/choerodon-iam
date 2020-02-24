@@ -10,6 +10,37 @@ public class ProjectOverViewVO {
     //组织下停用项目的总数
     private Integer stopSum;
 
+    //项目的名称
+    private String projectName;
+    //项目下应用服务的数量
+    private Integer appServerSum;
+    //项目的id
+    private Long id;
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public Integer getAppServerSum() {
+        return appServerSum;
+    }
+
+    public void setAppServerSum(Integer appServerSum) {
+        this.appServerSum = appServerSum;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public ProjectOverViewVO() {
     }
 

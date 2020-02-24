@@ -92,4 +92,8 @@ public interface DevopsFeignClient {
             @RequestParam(value = "app_service_id", required = true) String id,
             @ApiParam(value = "查询参数", required = false)
             @RequestParam(value = "params", required = false) String params);
+
+    @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
+    Integer countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
+                                      @PathVariable(value = "project_id") Long projectId);
 }

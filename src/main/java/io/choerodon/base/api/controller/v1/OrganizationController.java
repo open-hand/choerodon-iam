@@ -237,5 +237,13 @@ public class OrganizationController extends BaseController {
             @PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationService.projectOverview(organizationId), HttpStatus.OK);
     }
-    
+
+    @GetMapping("/{organization_id}/appserver/overview")
+    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @ApiOperation(value = "组织概览，返回应用服务的概览")
+    public ResponseEntity<List<ProjectOverViewVO>> appServerOverview(
+            @PathVariable(name = "organization_id") Long organizationId) {
+        return new ResponseEntity<>(organizationService.appServerOverview(organizationId), HttpStatus.OK);
+    }
+
 }

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import io.choerodon.base.api.vo.ProjectOverViewVO;
+import io.choerodon.base.infra.feign.DevopsFeignClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private MemberRoleMapper memberRoleMapper;
 
+    private DevopsFeignClient devopsFeignClient;
+
 
     public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
@@ -85,7 +88,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    UserMapper userMapper,
                                    OrganizationMapper organizationMapper,
                                    RoleMapper roleMapper,
-                                   MemberRoleMapper memberRoleMapper) {
+                                   MemberRoleMapper memberRoleMapper,
+                                   DevopsFeignClient devopsFeignClient) {
         this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
         this.userService = userService;
@@ -96,6 +100,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         this.organizationMapper = organizationMapper;
         this.roleMapper = roleMapper;
         this.memberRoleMapper = memberRoleMapper;
+        this.devopsFeignClient = devopsFeignClient;
     }
 
     @Override
@@ -315,5 +320,24 @@ public class OrganizationServiceImpl implements OrganizationService {
             return new ProjectOverViewVO(0, 0);
         }
         return projectOverViewVO;
+    }
+
+    @Override
+    public List<ProjectOverViewVO> appServerOverview(Long organizationId) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        List<ProjectDTO> projectDTOS = projectMapper.select(projectDTO);
+        if (org.springframework.util.CollectionUtils.isEmpty(projectDTOS)) {
+            return Collections.emptyList();
+        }
+        List<ProjectOverViewVO> projectOverViewVOS = new ArrayList<>();
+        ProjectOverViewVO projectOverViewVO = new ProjectOverViewVO();
+        projectDTOS.forEach(v -> {
+            projectOverViewVO.setId(v.getId());
+            projectOverViewVO.setProjectName(v.getName());
+            projectOverViewVO.setAppServerSum(devopsFeignClient.countAppServerByProjectId(v.getId()));
+            projectOverViewVOS.add(projectOverViewVO);
+        });
+        return projectOverViewVOS;
     }
 }

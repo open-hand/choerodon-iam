@@ -237,9 +237,5 @@ public class OrganizationController extends BaseController {
             @PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationService.projectOverview(organizationId), HttpStatus.OK);
     }
-
-    @GetMapping("/{organization_id}/project/overview")
-    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
-    @ApiOperation(value = "组织下集群的概览")
-    public ResponseEntity<>
+    
 }

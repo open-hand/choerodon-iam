@@ -3,6 +3,7 @@ package io.choerodon.base.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.base.api.vo.ProjectOverViewVO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.base.api.dto.OrgSharesDTO;
@@ -73,4 +74,6 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
      * @return 用户所属组织信息
      */
     OrganizationDTO selectOwnOrgByUserId(@Param("userId") Long userId);
+
+    ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
 }

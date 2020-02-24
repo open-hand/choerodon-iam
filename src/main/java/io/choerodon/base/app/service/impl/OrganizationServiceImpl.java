@@ -332,7 +332,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         List<ProjectOverViewVO> projectOverViewVOS = new ArrayList<>();
         ProjectOverViewVO projectOverViewVO = new ProjectOverViewVO();
-        projectDTOS.forEach(v -> {
+        projectDTOS.stream().distinct().forEach(v -> {
             projectOverViewVO.setId(v.getId());
             projectOverViewVO.setProjectName(v.getName());
             projectOverViewVO.setAppServerSum(devopsFeignClient.countAppServerByProjectId(v.getId()));

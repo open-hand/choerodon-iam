@@ -10,6 +10,14 @@ public class ProjectOverViewVO {
     //组织下停用项目的总数
     private Integer stopSum;
 
+    public ProjectOverViewVO() {
+    }
+
+    public ProjectOverViewVO(Integer enableSum, Integer stopSum) {
+        this.enableSum = enableSum;
+        this.stopSum = stopSum;
+    }
+
     public Integer getEnableSum() {
         return enableSum;
     }

@@ -312,7 +312,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public ProjectOverViewVO projectOverview(Long organizationId) {
         ProjectOverViewVO projectOverViewVO = organizationMapper.projectOverview(organizationId);
         if (projectOverViewVO == null) {
-            throw new CommonException("error.organization.not.exist");
+            return new ProjectOverViewVO(0, 0);
         }
         return projectOverViewVO;
     }

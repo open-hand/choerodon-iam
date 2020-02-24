@@ -65,4 +65,9 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     public ResponseEntity<List<AppServiceVersionVO>> listVersionById(Long projectId, String id, String params) {
         return null;
     }
+
+    @Override
+    public Integer countAppServerByProjectId(Long projectId) {
+        throw new CommonException("error.feign.devops.query.app.server");
+    }
 }

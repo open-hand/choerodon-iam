@@ -67,4 +67,6 @@ public interface OrganizationService {
     OrganizationDTO checkNotExistAndGet(Long orgId);
 
     ProjectOverViewVO projectOverview(Long organizationId);
+
+    List<ProjectOverViewVO> appServerOverview(Long organizationId);
 }

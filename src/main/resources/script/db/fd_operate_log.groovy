@@ -24,9 +24,6 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_operate_log.groovy') {
             column(name: 'CONTENT', type: 'VARCHAR(128)', remarks: '操作内容') {
                 constraints(nullable: false)
             }
-            column(name: 'OPERATION_TIME', type: 'DATETIME', remarks: '操作时间') {
-                constraints(nullable: false)
-            }
             column(name: 'IS_SUCCESS', type: 'TINYINT UNSIGNED', remarks: '执行成功与否,1成功，0未成功') {
                 constraints(nullable: false)
             }

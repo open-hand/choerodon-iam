@@ -34,6 +34,10 @@ public class OperateLogAspect {
 
     //解锁用户
     private static final String unlockUser = "unlockUser";
+    //启用用户
+    private static final String enableUser = "enableUser";
+    //禁用用户
+    private static final String disableUser = "disableUser";
 
     @Autowired
     private OperateLogMapper operateLogMapper;
@@ -49,43 +53,35 @@ public class OperateLogAspect {
 
     @Around("updateMethodPointcut()")
     public Object interceptor(ProceedingJoinPoint pjp) {
-
         Long operatorId = DetailsHelper.getUserDetails().getUserId();
         OperateLogDTO operateLogDTO = new OperateLogDTO();
-
         MethodSignature signature = (MethodSignature) pjp.getSignature();
-        //获取被拦截的方法
         Method method = signature.getMethod();
         OperateLog operateLog = method.getAnnotation(OperateLog.class);
-        // 拦截的方法参数
         Object[] args = pjp.getArgs();
-        // 获取注解的modules 设为操作模块
         String type = operateLog.type();
-        // 获取注解的操作内容的
         String content = operateLog.content();
-        //获取操作的层级
         ResourceType[] level = operateLog.level();
-
         if (null != operateLog && null != method && null != type) {
             switch (type) {
                 case unlockUser:
                     content = handleUnlockUserOperateLog(content, operatorId, args);
+                    break;
+                case enableUser:
+                    content = handleEnableUserOperateLog(content, operatorId, args);
                     break;
                 default:
                     break;
             }
         }
         Object object = null;
-        //整理参数
         operateLogDTO.setOperatorId(operatorId);
         operateLogDTO.setContent(content);
-        operateLogDTO.setOperationTime(new Date());
         operateLogDTO.setSuccess(true);
         operateLogDTO.setMethod(method.getName());
         operateLogDTO.setType(type);
         try {
             object = pjp.proceed();
-            // 添加到数据库
             Stream.of(level).forEach(v -> {
                 operateLogDTO.setLevel(v.value());
                 operateLogMapper.insert(operateLogDTO);
@@ -99,8 +95,17 @@ public class OperateLogAspect {
                 }
             });
         }
-
         return object;
+    }
+
+    private String handleEnableUserOperateLog(String content, Long operatorId, Object[] args) {
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        UserDTO targeter = userMapper.selectByPrimaryKey(args[1]);
+        String parms = targeter.getId() + "(" + targeter.getRealName() + ")";
+        if (!Objects.isNull(operator) && !Objects.isNull(targeter)) {
+            return String.format(content, parms, operator.getRealName());
+        }
+        return null;
     }
 
     private String handleUnlockUserOperateLog(String content, Long operatorId, Object[] args) {
@@ -112,5 +117,4 @@ public class OperateLogAspect {
         }
         throw new CommonException("error.query.user");
     }
-
 }

@@ -77,7 +77,6 @@ public class OperateLogAspect {
         Object object = null;
         operateLogDTO.setOperatorId(operatorId);
         operateLogDTO.setContent(content);
-        operateLogDTO.setOperationTime(new Date());
         operateLogDTO.setSuccess(true);
         operateLogDTO.setMethod(method.getName());
         operateLogDTO.setType(type);

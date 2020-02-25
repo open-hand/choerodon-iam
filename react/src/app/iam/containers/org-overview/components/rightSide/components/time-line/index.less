@@ -1,0 +1,87 @@
+.c7ncd-timeLine {
+    width: 100%;
+    &-body {
+        margin-top: .32rem;
+        ul {
+            border-left: 2px dotted #979797FF;
+            padding-left: 48px;
+            margin-left: 17px;
+            li {
+                list-style: none;
+                position: relative;
+                display: flex;
+            }
+            li + li {
+                margin-top: 24px;
+            }
+        }
+    }
+    &-date {
+        width: 46px;
+        height: 62px;
+        padding: 5px 0;
+        box-sizing: border-box;
+        position: absolute;
+        background: #fff;
+        top: 0;
+        bottom: 0;
+        left: -71px;
+        margin: auto;
+        text-align: center;
+        span {
+            display: block;
+        }
+        span:first-of-type {
+            font-size:24px;
+            font-weight:bold;
+            color:rgba(58,52,95,1);
+            line-height:29px;
+        }
+        span:nth-of-type(2) {
+            font-size:13px;
+            font-weight:400;
+            color:rgba(58,52,95,0.65);
+            line-height:23px;
+        }
+    }
+    &-content {
+        height: auto;
+        flex: 1;
+        background: rgba(245,246,250,1);
+        border-radius: 10px;
+        padding: .2rem;
+        &-header {
+            align-items: center;
+            display: flex;
+            i.icon {
+                width:26px;
+                height:26px;
+                color: #fff;
+                line-height: .26rem;
+                text-align: center;
+                background: #6887E8FF;
+                border-radius: 50%;
+            }
+            i.stop {
+                background: #CACAE4FF;
+            }
+            i.blur_linear {
+                background: #F48590FF;
+            }
+            span {
+                font-size: .14rem;
+                font-weight: 500;
+                margin-left: .15rem;
+                color: rgba(58, 52, 95, 1);
+                line-height: .26rem;
+            }
+        }
+        p {
+            font-size: .12rem;
+            font-weight: 400;
+            margin: .08rem 0 0 0;
+            color: rgba(58, 52, 95, 0.65);
+            line-height: .12rem;
+        }
+    }
+}

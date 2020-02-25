@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
 import echarts from 'echarts';
 
 const Charts = () => {
+  const [resizeIf, setResizeIf] = useState(false);
+
+  useEffect(() => {
+    function resizeCharts() {
+      setResizeIf(true);
+      setTimeout(() => {
+        setResizeIf(false);
+      }, 500);
+    }
+    window.addEventListener('resize', () => {
+      resizeCharts();
+    });
+    resizeCharts();
+    return () => {
+      window.removeEventListener('resize');
+    };
+  }, []);
+
   const getOption = () => ({
     grid: {
       top: '30px',
@@ -90,18 +108,23 @@ const Charts = () => {
       },
     }],
   });
-  return (
+  return !resizeIf ? (
     <ReactEchartsCore
       echarts={echarts}
       option={getOption()}
       notMerge
+      onChartReady={(chart) => {
+        setTimeout(() => {
+          chart.resize();
+        }, 1000);
+      }}
       style={{
         width: '100%',
         height: 216,
       }}
       lazyUpdate
     />
-  );
+  ) : '';
 };
 
 export default Charts;

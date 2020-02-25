@@ -12,6 +12,7 @@ const ContainerBlock = observer((props) => {
     title,
     hasDaysPicker,
     handleChangeDays,
+    titleExtra,
     style,
   } = props;
   return (
@@ -30,7 +31,12 @@ const ContainerBlock = observer((props) => {
       }}
       >
         <span className="c7n-overview-containerBlock-title">{title}</span>
-        { hasDaysPicker && <DaysPicker handleChangeDays={handleChangeDays} /> }
+        <div className="c7n-overview-containerBlock-titleRight">
+          <div style={{ marginRight: 24 }}>
+            {titleExtra}
+          </div>
+          { hasDaysPicker && <DaysPicker handleChangeDays={handleChangeDays} /> }
+        </div>
       </div>
       {children}
     </div>

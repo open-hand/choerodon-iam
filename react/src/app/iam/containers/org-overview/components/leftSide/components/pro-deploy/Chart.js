@@ -22,6 +22,21 @@ const Charts = () => {
   }, []);
 
   const getOption = () => ({
+    color: ['#6887E8', '#514FA0', '#F48590'],
+    legend: {
+      right: 0,
+      itemHeight: 10,
+      data: [{
+        name: 'project A',
+        icon: 'circle',
+      }, {
+        name: 'project B',
+        icon: 'circle',
+      }, {
+        name: 'project C',
+        icon: 'circle',
+      }],
+    },
     grid: {
       top: '30px',
       left: 0,
@@ -73,7 +88,7 @@ const Charts = () => {
         color: 'rgba(0,0,0,1)',
         fontSize: '13px',
       },
-      name: '人数',
+      name: '次数',
       type: 'value',
       axisLabel: { color: 'rgba(0,0,0,0.65)' },
       axisLine: {
@@ -83,29 +98,32 @@ const Charts = () => {
       },
     },
     series: [{
-      data: [820, 932, 901, 934, 1290, 1330, 1320],
-      type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      areaStyle: {
-        normal: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-            offset: 0,
-            color: 'rgba(80, 107, 255, 0.3)',
-          }, {
-            offset: 1,
-            color: 'rgba(82, 102, 212, 0)',
-          }]),
-        },
-      },
+      name: 'project A',
+      type: 'bar',
+      data: [10, 11, 12, 13, 14, 15, 16],
       itemStyle: {
-        normal: {
-          color: '#5266D4', // 改变折线点的颜色
-          // lineStyle:{
-          //   color:'#8cd5c2' //改变折线颜色
-          // }
-        },
+        barBorderRadius: [4, 4, 0, 0],
       },
+      barWidth: 6,
+      barGap: '50%',
+    }, {
+      name: 'project B',
+      type: 'bar',
+      data: [11, 12, 13, 14, 15, 16, 17],
+      barWidth: 6,
+      itemStyle: {
+        barBorderRadius: [4, 4, 0, 0],
+      },
+      barGap: '50%',
+    }, {
+      name: 'project C',
+      type: 'bar',
+      data: [12, 13, 14, 15, 16, 17, 18],
+      barWidth: 6,
+      itemStyle: {
+        barBorderRadius: [4, 4, 0, 0],
+      },
+      barGap: '50%',
     }],
   });
   return !resizeIf ? (

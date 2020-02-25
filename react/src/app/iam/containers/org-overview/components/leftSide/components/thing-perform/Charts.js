@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
 import echarts from 'echarts';
 
@@ -55,7 +55,7 @@ const Charts = () => {
         color: 'rgba(0,0,0,1)',
         fontSize: '13px',
       },
-      name: '人数',
+      name: '失败次数',
       type: 'value',
       axisLabel: { color: 'rgba(0,0,0,0.65)' },
       axisLine: {
@@ -73,16 +73,16 @@ const Charts = () => {
         normal: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
             offset: 0,
-            color: 'rgba(80, 107, 255, 0.3)',
+            color: 'rgba(244, 133, 144, 0.3)',
           }, {
             offset: 1,
-            color: 'rgba(82, 102, 212, 0)',
+            color: 'rgba(244, 133, 144, 0)',
           }]),
         },
       },
       itemStyle: {
         normal: {
-          color: '#5266D4', // 改变折线点的颜色
+          color: '#F48590', // 改变折线点的颜色
           // lineStyle:{
           //   color:'#8cd5c2' //改变折线颜色
           // }

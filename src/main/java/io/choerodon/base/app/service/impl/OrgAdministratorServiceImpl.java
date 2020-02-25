@@ -10,6 +10,7 @@ import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.oauth.CustomUserDetails;

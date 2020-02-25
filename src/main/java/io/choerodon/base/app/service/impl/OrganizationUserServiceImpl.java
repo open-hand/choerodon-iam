@@ -11,10 +11,12 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.mapper.LabelMapper;
+import io.choerodon.core.enums.ResourceType;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -558,6 +560,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "unlockUser", content = "%s解锁用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO unlock(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO userDTO = userAssertHelper.userNotExisted(userId);

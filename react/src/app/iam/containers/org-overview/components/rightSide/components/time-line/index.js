@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import './index.less';
-import { Icon } from 'choerodon-ui';
+import { Icon, Button } from 'choerodon-ui';
 
 // const data =
 
@@ -103,6 +103,7 @@ const TimeLine = observer(() => (
         </li>
       </ul>
     </div>
+    <Button type="primary">加载更多</Button>
   </div>
 ));
 

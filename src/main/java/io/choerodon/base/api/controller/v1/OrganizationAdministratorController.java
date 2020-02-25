@@ -51,7 +51,7 @@ public class OrganizationAdministratorController {
     @ApiOperation(value = "删除该User在本组织的组织管理员角色")
     public ResponseEntity<Boolean> deleteOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "id") Long userId) {
-        return new ResponseEntity<>(orgAdministratorService.deleteOrgAdministrator(userId, organizationId), HttpStatus.OK);
+        return new ResponseEntity<>(orgAdministratorService.deleteOrgAdministrator(organizationId, userId), HttpStatus.OK);
 
     }
 

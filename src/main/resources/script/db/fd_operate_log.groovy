@@ -9,13 +9,13 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_operate_log.groovy') {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_OPERATE_LOG')
             }
-            column(name: 'OPERATOR_ID', type: 'VARCHAR(32)', remarks: '操作者的id') {
+            column(name: 'OPERATOR_ID', type: 'BIGINT UNSIGNED', remarks: '操作者的id') {
                 constraints(nullable: false)
             }
             column(name: 'TYPE', type: 'VARCHAR(32)', remarks: '操作的类型') {
                 constraints(nullable: false)
             }
-            column(name: 'LEVEL', type: 'VARCHAR(15)', remarks: '层级') {
+            column(name: 'SOURCE_TYPE', type: 'VARCHAR(15)', remarks: '创建该记录的源类型') {
                 constraints(nullable: false)
             }
             column(name: 'METHOD', type: 'VARCHAR(128)', remarks: '执行方法') {
@@ -24,6 +24,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_operate_log.groovy') {
             column(name: 'CONTENT', type: 'VARCHAR(128)', remarks: '操作内容') {
                 constraints(nullable: false)
             }
+            column(name: 'SOURCE_ID', type: 'BIGINT UNSIGNED', remarks: '创建该记录的源ID') {
+                constraints(nullable: true)
+            }
+
             column(name: 'IS_SUCCESS', type: 'TINYINT UNSIGNED', remarks: '执行成功与否,1成功，0未成功') {
                 constraints(nullable: false)
             }
@@ -41,9 +45,6 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_operate_log.groovy') {
                 constraints(nullable: true)
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
-        }
-        createIndex(tableName: "FD_OPERATE_LOG", indexName: "IDX_LEVEL") {
-            column(name: "LEVEL")
         }
     }
 

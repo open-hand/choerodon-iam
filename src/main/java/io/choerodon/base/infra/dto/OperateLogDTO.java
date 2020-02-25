@@ -26,17 +26,28 @@ public class OperateLogDTO extends BaseDTO {
     @ApiModelProperty(value = "操作的类型")
     private String type;
 
-    @ApiModelProperty(value = "层级")
-    private String level;
-
     @ApiModelProperty(value = "执行方法")
     private String method;
 
     @ApiModelProperty(value = "操作内容")
     private String content;
 
+    @ApiModelProperty(value = "源id")
+    private Long sourceId;
+
+    @ApiModelProperty(value = "源类型")
+    private String sourceType;
+
     @ApiModelProperty(value = "执行成功与否")
     private Boolean isSuccess;
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
 
     public Long getId() {
         return id;
@@ -62,12 +73,12 @@ public class OperateLogDTO extends BaseDTO {
         this.type = type;
     }
 
-    public String getLevel() {
-        return level;
+    public String getSourceType() {
+        return sourceType;
     }
 
-    public void setLevel(String level) {
-        this.level = level;
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 
     public String getMethod() {

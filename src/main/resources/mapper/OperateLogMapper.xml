@@ -2,4 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.base.infra.mapper.OperateLogMapper">
 
+    <select id="listNewOperateLod" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
+     SELECT
+      *
+     FROM fd_operate_log fol
+     WHERE fol.SOURCE_ID=#{organizationId}
+     ORDER BY fol.creation_date DESC
+     LIMIT 8
+    </select>
 </mapper>

@@ -15,7 +15,7 @@ public interface OrgAdministratorService {
     PageInfo<OrgAdministratorVO> pagingQueryOrgAdministrator(Pageable Pageable, Long organizationId,
                                                              String realName, String loginName, String params);
 
-    Boolean deleteOrgAdministrator(Long userId, Long organizationId);
+    Boolean deleteOrgAdministrator(Long organizationId, Long userId);
 
     Boolean createOrgAdministrator(List<Long> userIds, Long organizationId);
 }

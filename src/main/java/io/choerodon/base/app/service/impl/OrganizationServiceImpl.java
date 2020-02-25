@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import io.choerodon.base.api.vo.ProjectOverViewVO;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -135,6 +136,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_UPDATE, description = "iam更新组织", inputSchemaClass = OrganizationPayload.class)
+    @OperateLog(type = "updateOrganization", content = "%s修改组织【%s】的信息", level = {ResourceType.ORGANIZATION})
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
         preUpdate(organizationId, organizationDTO);
 
@@ -203,6 +205,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
+    @OperateLog(type = "enableOrganization", content = "%s启用组织【%s】", level = {ResourceType.ORGANIZATION})
     public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organization = organizationAssertHelper.notExisted(organizationId);
         organization.setEnabled(true);
@@ -211,6 +214,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
+    @OperateLog(type = "disableOrganization", content = "%s停用组织【%s】", level = {ResourceType.ORGANIZATION})
     public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organizationDTO = organizationAssertHelper.notExisted(organizationId);
         organizationDTO.setEnabled(false);

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.infra.annotation.OperateLog;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -142,6 +143,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO createProject(ProjectDTO projectDTO) {
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
@@ -312,6 +314,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "enableProject", content = "%s启用项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
@@ -320,6 +323,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "disableProject", content = "%s禁用项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
         if (organizationId != null) {
             organizationAssertHelper.notExisted(organizationId);

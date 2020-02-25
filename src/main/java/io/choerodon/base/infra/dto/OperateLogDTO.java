@@ -35,9 +35,6 @@ public class OperateLogDTO extends BaseDTO {
     @ApiModelProperty(value = "操作内容")
     private String content;
 
-    @ApiModelProperty(value = "操作时间")
-    private Date operationTime;
-
     @ApiModelProperty(value = "执行成功与否")
     private Boolean isSuccess;
 
@@ -87,14 +84,6 @@ public class OperateLogDTO extends BaseDTO {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public Date getOperationTime() {
-        return operationTime;
-    }
-
-    public void setOperationTime(Date operationTime) {
-        this.operationTime = operationTime;
     }
 
     public Boolean getSuccess() {

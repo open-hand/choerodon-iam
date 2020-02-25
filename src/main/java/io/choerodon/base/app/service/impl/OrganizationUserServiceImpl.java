@@ -60,6 +60,7 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import retrofit2.http.OPTIONS;
 
 /**
  * @author superlee
@@ -573,6 +574,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
+    @OperateLog(type = "enableUser", content = "用户%s被%s启用", level = {ResourceType.ORGANIZATION})
     public UserDTO enableUser(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO user = updateStatus(organizationId, userId, true);
@@ -603,6 +605,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
+    @OperateLog(type = "disableUser", content = "用户%s已被%s停用", level = {ResourceType.ORGANIZATION})
     public UserDTO disableUser(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO user = updateStatus(organizationId, userId, false);

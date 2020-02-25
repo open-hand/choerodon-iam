@@ -53,20 +53,25 @@
         &-header {
             align-items: center;
             display: flex;
-            i.icon {
-                width: 26px;
-                height: 26px;
-                color: #fff;
-                line-height: .26rem;
-                text-align: center;
-                background: #6887e8ff;
-                border-radius: 50%;
+            &-icon {
+                i.icon {
+                    width: 26px;
+                    height: 26px;
+                    color: #fff;
+                    line-height: .26rem;
+                    text-align: center;
+                    background: #6887e8ff;
+                    border-radius: 50%;
+                }
+                i.stop {
+                    background: #cacae4ff;
+                }
+                i.icon-blur_linear {
+                    background: #f48590ff !important;
+                }
             }
-            i.stop {
-                background: #cacae4ff;
-            }
-            i.icon-blur_linear {
-                background: #f48590ff !important;
+            &-btn {
+                margin-left: .15rem;
             }
             span {
                 font-size: .14rem;
@@ -81,7 +86,11 @@
             font-weight: 400;
             margin: .08rem 0 0 0;
             color: rgba(58, 52, 95, 0.65);
-            line-height: .12rem;
+            line-height: .2rem;
+            max-width: 4.09rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 }

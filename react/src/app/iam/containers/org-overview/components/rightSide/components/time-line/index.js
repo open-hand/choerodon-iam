@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import './index.less';
-import { Icon } from 'choerodon-ui';
+import { Icon, Button } from 'choerodon-ui';
 
 // const data =
 
@@ -43,7 +43,7 @@ const TimeLine = observer(() => (
           </div>
           <div className="c7ncd-timeLine-content">
             <div className="c7ncd-timeLine-content-header">
-              <Icon type="blur_linear" />
+              <Icon type="account_circle" />
               <span>权限分配</span>
             </div>
             <p>Will 为 Leon分配了【组织成员】</p>
@@ -56,7 +56,7 @@ const TimeLine = observer(() => (
           </div>
           <div className="c7ncd-timeLine-content">
             <div className="c7ncd-timeLine-content-header">
-              <Icon type="blur_linear" className="stop" />
+              <Icon type="account_circle" className="stop" />
               <span>权限分配</span>
             </div>
             <p>用户XXX（用户名）被 XXX（用户名）</p>
@@ -75,8 +75,35 @@ const TimeLine = observer(() => (
             <p>Leon 创建了项目【Choerodon</p>
           </div>
         </li>
+        <li>
+          <div className="c7ncd-timeLine-date">
+            <span>22</span>
+            <span>Feb</span>
+          </div>
+          <div className="c7ncd-timeLine-content">
+            <div className="c7ncd-timeLine-content-header">
+              <Icon type="settings" />
+              <span>基础设置修改</span>
+            </div>
+            <p>Leon 创建了项目【Choerodon</p>
+          </div>
+        </li>
+        <li>
+          <div className="c7ncd-timeLine-date">
+            <span>22</span>
+            <span>Feb</span>
+          </div>
+          <div className="c7ncd-timeLine-content">
+            <div className="c7ncd-timeLine-content-header">
+              <Icon type="blur_linear" />
+              <span>重试事务</span>
+            </div>
+            <p>Leon 重试了事务【iam-enabl</p>
+          </div>
+        </li>
       </ul>
     </div>
+    <Button type="primary">加载更多</Button>
   </div>
 ));
 

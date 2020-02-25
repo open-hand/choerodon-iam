@@ -2,6 +2,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import DaysPicker from './DaysPicker';
 
+import './ContainerBlock.less';
+
 const ContainerBlock = observer((props) => {
   const {
     children,
@@ -10,6 +12,7 @@ const ContainerBlock = observer((props) => {
     title,
     hasDaysPicker,
     handleChangeDays,
+    style,
   } = props;
   return (
     <div
@@ -17,6 +20,7 @@ const ContainerBlock = observer((props) => {
       style={{
         width,
         height,
+        ...style,
       }}
     >
       <div style={{

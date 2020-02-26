@@ -1,12 +1,10 @@
 package io.choerodon.base.api.controller.v1;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.UserNumberVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -433,5 +431,12 @@ public class UserController extends BaseController {
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userService.checkIsGitlabOrgOwner(id, projectId));
+    }
+    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @ApiOperation(value = "平台人数统计")
+    @GetMapping(value = "/count_by_date")
+    public ResponseEntity<UserNumberVO> countByDate(@RequestParam(value = "start_time") Date startTime,
+                                                    @RequestParam(value = "end_time") Date endTime) {
+        return ResponseEntity.ok(userService.countByDate(null, startTime, endTime));
     }
 }

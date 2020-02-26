@@ -136,7 +136,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_UPDATE, description = "iam更新组织", inputSchemaClass = OrganizationPayload.class)
-    @OperateLog(type = "updateOrganization", content = "%s修改组织【%s】的信息", level = {ResourceType.ORGANIZATION})
+    @OperateLog(type = "updateOrganization", content = "%s修改组织【%s】的信息", level = {ResourceType.SITE})
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
         preUpdate(organizationId, organizationDTO);
 
@@ -205,7 +205,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
-    @OperateLog(type = "enableOrganization", content = "%s启用组织【%s】", level = {ResourceType.ORGANIZATION})
+    @OperateLog(type = "enableOrganization", content = "%s启用组织【%s】", level = {ResourceType.SITE})
     public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organization = organizationAssertHelper.notExisted(organizationId);
         organization.setEnabled(true);
@@ -214,7 +214,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
-    @OperateLog(type = "disableOrganization", content = "%s停用组织【%s】", level = {ResourceType.ORGANIZATION})
+    @OperateLog(type = "disableOrganization", content = "%s停用组织【%s】", level = {ResourceType.SITE})
     public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organizationDTO = organizationAssertHelper.notExisted(organizationId);
         organizationDTO.setEnabled(false);

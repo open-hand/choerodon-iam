@@ -1,14 +1,8 @@
 package io.choerodon.base.infra.aspect;
 
 import io.choerodon.base.infra.annotation.OperateLog;
-import io.choerodon.base.infra.dto.OperateLogDTO;
-import io.choerodon.base.infra.dto.OrganizationDTO;
-import io.choerodon.base.infra.dto.ProjectDTO;
-import io.choerodon.base.infra.dto.UserDTO;
-import io.choerodon.base.infra.mapper.OperateLogMapper;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
-import io.choerodon.base.infra.mapper.ProjectMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -17,7 +11,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,21 +32,23 @@ public class OperateLogAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OperateLogAspect.class);
 
-    //解锁用户
+    //组织层解锁用户
     private static final String unlockUser = "unlockUser";
-    //启用用户
+    //组织层创建用户
+    private static final String createUserOrg = "createUserOrg";
+    //组织层启用用户
     private static final String enableUser = "enableUser";
-    //禁用用户
+    //组织层禁用用户
     private static final String disableUser = "disableUser";
     //删除组织管理员角色
     private static final String deleteOrgAdministrator = "deleteOrgAdministrator";
     //添加管理员角色
     private static final String createOrgAdministrator = "createOrgAdministrator";
-    //组织层修改组织的信息
+    //平台层修改组织的信息
     private static final String updateOrganization = "updateOrganization";
-    //启用组织
+    //平台层启用组织
     private static final String enableOrganization = "enableOrganization";
-    //停用组织
+    //平台层停用组织
     private static final String disableOrganization = "disableOrganization";
     //创建项目
     private static final String createProject = "createProject";
@@ -61,6 +56,12 @@ public class OperateLogAspect {
     private static final String enableProject = "enableProject";
     //禁用项目
     private static final String disableProject = "disableProject";
+    //分配Root权限
+    private static final String addAdminUsers = "addAdminUsers";
+    //平台角色分配
+    private static final String assignUsersRoles = "assignUsersRoles";
+    //平台层创建组织
+    private static final String createOrg = "createOrg";
 
     @Autowired
     private OperateLogMapper operateLogMapper;
@@ -73,6 +74,9 @@ public class OperateLogAspect {
 
     @Autowired
     private ProjectMapper projectMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
 
     @Pointcut("bean(*ServiceImpl) && @annotation(io.choerodon.base.infra.annotation.OperateLog)")
@@ -125,11 +129,9 @@ public class OperateLogAspect {
                     break;
                 case enableOrganization:
                     contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
                     break;
                 case disableOrganization:
                     contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
                     break;
                 case createProject:
                     contentList = handleCreateProjectOperateLog(content, operatorId, parmMap);
@@ -142,6 +144,19 @@ public class OperateLogAspect {
                 case disableProject:
                     contentList = handleProjectOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
+                    break;
+                case addAdminUsers:
+                    contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
+                    break;
+                case assignUsersRoles:
+                    contentList = handleAssignUsersRolesOperateLog(content, operatorId, parmMap);
+                    break;
+                case createUserOrg:
+                    contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
+                    organizationId = getOrganizationId(parmMap);
+                    break;
+                case createOrg:
+                    contentList = handleCreateOrgOperateLog(content, operatorId, parmMap);
                     break;
                 default:
                     break;
@@ -186,6 +201,63 @@ public class OperateLogAspect {
             });
         });
         return object;
+    }
+
+    private List<String> handleCreateOrgOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        OrganizationDTO busOrganizationDTO = (OrganizationDTO) parmMap.get("busOrganizationDTO");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator) || Objects.isNull(busOrganizationDTO)) {
+            return contentList;
+        }
+        String format = String.format(content, operator.getRealName(), busOrganizationDTO.getName());
+        contentList.add(format);
+        return contentList;
+    }
+
+    private List<String> handleCreateUserOrgOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        UserDTO userDTO = (UserDTO) parmMap.get("userDTO");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
+            return contentList;
+        }
+        String format = String.format(content, operator.getRealName(), userDTO.getRealName());
+        contentList.add(format);
+        return contentList;
+    }
+
+    private List<String> handleAssignUsersRolesOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        List<MemberRoleDTO> memberRoleDTOList = (List<MemberRoleDTO>) parmMap.get("memberRoleDTOList");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator)) {
+            return contentList;
+        }
+        memberRoleDTOList.forEach(memberRoleDTO -> {
+            String parms = getParms(operatorId, memberRoleDTO.getMemberId());
+            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            if (!Objects.isNull(roleDTO)) {
+                String format = String.format(content, parms, operator.getRealName(), roleDTO.getName());
+                contentList.add(format);
+            }
+        });
+        return contentList;
+    }
+
+    private List<String> handleAddAdminUsersOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        Long[] ids = (Long[]) parmMap.get("ids");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator)) {
+            return contentList;
+        }
+        Stream.of(ids).forEach(id -> {
+            String parms = getParms(operatorId, id);
+            String format = String.format(content, parms, operator.getRealName());
+            contentList.add(format);
+        });
+        return contentList;
     }
 
     private Long getOrganizationIdByProject(Map<Object, Object> parmMap) {

@@ -169,6 +169,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);

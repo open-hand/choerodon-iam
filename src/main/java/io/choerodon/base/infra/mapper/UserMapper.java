@@ -1,5 +1,6 @@
 package io.choerodon.base.infra.mapper;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -318,4 +319,23 @@ public interface UserMapper extends Mapper<UserDTO> {
      */
     List<UserDTO> queryAllOrgAdmin(@Param("roleId") Long roleId);
 
+    /**
+     * 统计指定时间前平台或组织人数
+     * @param organizationId 如果为null，则统计平台人数
+     * @param startTime
+     * @return
+     */
+    long countPreviousNumberByOrgIdAndDate(@Param("organizationId") Long organizationId,
+                                           @Param("startTime") Date startTime);
+
+    /**
+     * 查询指定时间平台或组织新增人数
+     * @param organizationId 如果为null，则查询平台人数
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<UserDTO> selectByOrgIdAndDate(@Param("organizationId")Long organizationId,
+                                       @Param("startTime") Date startTime,
+                                       @Param("endTime") Date endTime);
 }

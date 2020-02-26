@@ -1353,4 +1353,29 @@
         FROM  iam_user iu ,iam_member_role imr
         WHERE iu.id=imr.member_id AND imr.role_id=#{roleId}
     </select>
+    <select id="countPreviousNumberByOrgIdAndDate" resultType="java.lang.Long">
+        select count(1)
+        from iam_user iu
+        where iu.is_enabled = true
+        <if test="organizationId">
+            AND iu.organization_id = #{organizationId}
+        </if>
+        <if test="startTime">
+            AND iu.creation_date <![CDATA[<]]> CONCAT('','${startTime}',' 00:00:00')
+        </if>
+    </select>
+    <select id="selectByOrgIdAndDate" resultType="io.choerodon.base.infra.dto.UserDTO">
+        select *
+        from iam_user iu
+        where iu.is_enabled = true
+        <if test="organizationId">
+            AND iu.organization_id = #{organizationId}
+        </if>
+        <if test="startTime">
+            AND iu.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime">
+            AND iu.creation_date <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
+        </if>
+    </select>
 </mapper>

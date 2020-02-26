@@ -1,11 +1,13 @@
 package io.choerodon.base.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.UserNumberVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.api.dto.UserInfoDTO;
@@ -299,4 +301,12 @@ public interface UserService {
      */
     List<UserDTO> queryAllOrgAdmin();
 
+    /**
+     * 按时间段统计组织或平台人数
+     * @param organizationId 如果为null，则统计平台人数
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 }

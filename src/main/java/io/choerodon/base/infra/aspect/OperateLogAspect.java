@@ -60,8 +60,6 @@ public class OperateLogAspect {
     private static final String addAdminUsers = "addAdminUsers";
     //平台角色分配
     private static final String assignUsersRoles = "assignUsersRoles";
-    //平台层创建组织
-    private static final String createOrg = "createOrg";
 
     @Autowired
     private OperateLogMapper operateLogMapper;
@@ -155,9 +153,6 @@ public class OperateLogAspect {
                     contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case createOrg:
-                    contentList = handleCreateOrgOperateLog(content, operatorId, parmMap);
-                    break;
                 default:
                     break;
             }
@@ -203,17 +198,6 @@ public class OperateLogAspect {
         return object;
     }
 
-    private List<String> handleCreateOrgOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
-        OrganizationDTO busOrganizationDTO = (OrganizationDTO) parmMap.get("busOrganizationDTO");
-        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
-        List<String> contentList = new ArrayList<>();
-        if (Objects.isNull(operator) || Objects.isNull(busOrganizationDTO)) {
-            return contentList;
-        }
-        String format = String.format(content, operator.getRealName(), busOrganizationDTO.getName());
-        contentList.add(format);
-        return contentList;
-    }
 
     private List<String> handleCreateUserOrgOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
         UserDTO userDTO = (UserDTO) parmMap.get("userDTO");
@@ -246,14 +230,14 @@ public class OperateLogAspect {
     }
 
     private List<String> handleAddAdminUsersOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
-        Long[] ids = (Long[]) parmMap.get("ids");
+        long[] ids = (long[]) parmMap.get("ids");
         UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         List<String> contentList = new ArrayList<>();
         if (Objects.isNull(operator)) {
             return contentList;
         }
         Stream.of(ids).forEach(id -> {
-            String parms = getParms(operatorId, id);
+            String parms = getParms(operatorId, id[0]);
             String format = String.format(content, parms, operator.getRealName());
             contentList.add(format);
         });

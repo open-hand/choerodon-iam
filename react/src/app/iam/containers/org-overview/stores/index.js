@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -12,10 +12,14 @@ export function useOrgOverview() {
 export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
   const {
     children,
+    AppState: { currentMenuType: { type, id, organizationId } }, intl,
   } = props;
 
   const value = {
     ...props,
+    permissions: [
+      'devops-service.devops-organization.clusterOverview',
+    ],
   };
 
   return (

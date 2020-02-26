@@ -1,10 +1,13 @@
 package io.choerodon.base.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
+import io.choerodon.base.api.vo.BarLabelRotationVO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.base.infra.dto.ProjectDTO;
 
@@ -67,4 +70,13 @@ public interface OrganizationProjectService {
     List<ProjectDTO> listProjectsByOrgId(Long organizationId);
 
     PageInfo<ProjectDTO> pagingQuery(Long organizationId, Pageable Pageable, ProjectDTO projectDTO, String params);
+
+    /**
+     * 统计项目部署次数
+     * @param projectIds
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime);
 }

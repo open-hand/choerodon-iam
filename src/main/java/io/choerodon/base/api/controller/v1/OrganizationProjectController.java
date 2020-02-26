@@ -1,10 +1,13 @@
 package io.choerodon.base.api.controller.v1;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.vo.BarLabelRotationVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -156,5 +159,13 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.pagingQuery(organizationId, Pageable, project, params),
                 HttpStatus.OK);
     }
-
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "查询组织下项目部署次数")
+    @PostMapping("/deploy_records")
+    public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
+                                                                 @RequestBody Set<Long> projectIds,
+                                                                 @RequestParam(value = "start_time") Date startTime,
+                                                                 @RequestParam(value = "end_time") Date endTime) {
+        return ResponseEntity.ok(organizationProjectService.countDeployRecords(projectIds, startTime, endTime));
+    }
 }

@@ -3,12 +3,14 @@ package io.choerodon.base.infra.feign;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.vo.AppServiceDetailsVO;
 import io.choerodon.base.api.vo.AppServiceVersionVO;
+import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.infra.dto.devops.*;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -96,4 +98,10 @@ public interface DevopsFeignClient {
     @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
     Integer countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
                                       @PathVariable(value = "project_id") Long projectId);
+
+    @GetMapping("/v1/projects/{project_id}/deploy_record/count_by_date")
+    ResponseEntity<BarLabelRotationItemVO> countByDate(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam("startTime") Date startTime,
+            @RequestParam("endTime") Date endTime);
 }

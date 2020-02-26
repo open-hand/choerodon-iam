@@ -59,7 +59,9 @@ public class OperateLogAspect {
     //分配Root权限
     private static final String addAdminUsers = "addAdminUsers";
     //平台角色分配
-    private static final String assignUsersRoles = "assignUsersRoles";
+    private static final String assignUsersRolesOnSite = "assignUsersRolesOnSite";
+    //组织层分配角色
+    private static final String assignUsersRolesOnOrg = "assignUsersRolesOnOrg";
 
     @Autowired
     private OperateLogMapper operateLogMapper;
@@ -77,7 +79,7 @@ public class OperateLogAspect {
     private RoleMapper roleMapper;
 
 
-    @Pointcut("bean(*ServiceImpl) && @annotation(io.choerodon.base.infra.annotation.OperateLog)")
+    @Pointcut("@annotation(io.choerodon.base.infra.annotation.OperateLog)")
     public void updateMethodPointcut() {
         throw new UnsupportedOperationException();
     }
@@ -146,13 +148,16 @@ public class OperateLogAspect {
                 case addAdminUsers:
                     contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
                     break;
-                case assignUsersRoles:
-                    contentList = handleAssignUsersRolesOperateLog(content, operatorId, parmMap);
+                case assignUsersRolesOnSite:
+                    contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
                     break;
                 case createUserOrg:
                     contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
+                case assignUsersRolesOnOrg:
+                    contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
+                    organizationId = getOrganizationId(parmMap);
                 default:
                     break;
             }
@@ -168,19 +173,21 @@ public class OperateLogAspect {
         try {
             object = pjp.proceed();
         } catch (Throwable e) {
-            operateLogDTO.setSuccess(false);
-            contentList.forEach(s -> {
-                operateLogDTO.setContent(s);
-                Stream.of(level).forEach(v -> {
-                    if (ResourceType.SITE.value().equals(v.value())) {
-                        operateLogDTO.setSourceId(0L);
-                    }
-                    operateLogDTO.setSourceType(v.value());
-                    if (operateLogMapper.insert(operateLogDTO) != 1) {
-                        LOGGER.info("error.insert.operate.failure.log:{}", e.getMessage());
-                    }
-                });
-            });
+//            operateLogDTO.setSuccess(false);
+//            contentList.forEach(s -> {
+//                operateLogDTO.setContent(s);
+//                Stream.of(level).forEach(v -> {
+//                    if (ResourceType.SITE.value().equals(v.value())) {
+//                        operateLogDTO.setSourceId(0L);
+//                    }
+//                    operateLogDTO.setId(null);
+//                    operateLogDTO.setSourceType(v.value());
+//                    if (operateLogMapper.insert(operateLogDTO) != 1) {
+//                        LOGGER.info("error.insert.operate.failure.log:{}", e.getMessage());
+//                    }
+//                });
+//            });
+            LOGGER.info("erro.target.method");
             throw e;
         }
         contentList.forEach(s -> {
@@ -190,6 +197,7 @@ public class OperateLogAspect {
                     operateLogDTO.setSourceId(0L);
                 }
                 operateLogDTO.setSourceType(v.value());
+                operateLogDTO.setId(null);
                 if (operateLogMapper.insert(operateLogDTO) != 1) {
                     LOGGER.info("error.insert.operate.success.log");
                 }
@@ -211,8 +219,8 @@ public class OperateLogAspect {
         return contentList;
     }
 
-    private List<String> handleAssignUsersRolesOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
-        List<MemberRoleDTO> memberRoleDTOList = (List<MemberRoleDTO>) parmMap.get("memberRoleDTOList");
+    private List<String> handleAssignUsersRolesOnSiteLevelOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        List<MemberRoleDTO> memberRoleDTOList = (List<MemberRoleDTO>) parmMap.get("memberRoleDTOS");
         UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         List<String> contentList = new ArrayList<>();
         if (Objects.isNull(operator)) {

@@ -2,39 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.base.infra.mapper.OperateLogMapper">
 
-    <select id="listNewOperateLogOrg" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
-     SELECT
-      *
-     FROM fd_operate_log fol
-     WHERE fol.SOURCE_ID=#{sourceId} AND fol.SOURCE_TYPE='organization'  AND fol.IS_SUCCESS=1
-     ORDER BY fol.creation_date DESC
-     LIMIT 8
-    </select>
 
-    <select id="listNewOperateLogSite" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
+    <select id="listOperateLogSite" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
      SELECT
       *
      FROM fd_operate_log fol
      WHERE fol.SOURCE_ID=0 AND fol.SOURCE_TYPE='site' AND fol.IS_SUCCESS=1
      ORDER BY fol.creation_date DESC
-     LIMIT 8
-    </select>
-    <select id="listMoreOperateLogSite" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
-     SELECT
-      *
-     FROM fd_operate_log fol
-     WHERE fol.SOURCE_ID=0 AND fol.SOURCE_TYPE='site' AND fol.IS_SUCCESS=1
-     ORDER BY fol.creation_date DESC
-     LIMIT 100
+
     </select>
 
-    <select id="listMoreOperateLogOrg" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
+    <select id="listOperateLogOrg" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
      SELECT
       *
      FROM fd_operate_log fol
      WHERE fol.SOURCE_ID=#{sourceId} AND fol.SOURCE_TYPE='organization' AND fol.IS_SUCCESS=1
      ORDER BY fol.creation_date DESC
-     LIMIT 100
+
     </select>
 
 </mapper>

@@ -16,6 +16,7 @@ import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -492,6 +493,7 @@ public class UserServiceImpl implements UserService {
     @Saga(code = SagaTopic.User.ASSIGN_ADMIN, description = "分配Root权限同步事件", inputSchemaClass = AssignAdminVO.class)
     @Override
     @Transactional
+    @OperateLog(type = "addAdminUsers", content = "用户%s已被%s分配平台Root权限", level = {ResourceType.SITE})
     public void addAdminUsers(long[] ids) {
         List<Long> adminUserIds = new ArrayList<>();
         for (long id : ids) {
@@ -683,6 +685,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceNotExisted(sourceType, sourceId);

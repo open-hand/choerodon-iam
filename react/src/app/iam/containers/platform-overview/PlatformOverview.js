@@ -9,7 +9,9 @@ import EmailSend from './component/email-send';
 
 import './PlatformOverview.less';
 import TimeLine from './component/time-line';
+import LineChart from './component/onLine-chart';
 
+// 公告模拟数据
 const notifications = [
   {
     id: 1,
@@ -37,6 +39,7 @@ const notifications = [
   },
 ];
 
+// 操作记录模拟数据
 const optsRecord = [
   {
     id: 1,
@@ -94,7 +97,9 @@ const PlatformOverview = observer(() => (
           width="40%"
           height="100%"
           title="在线人数统计"
-        />
+        >
+          <LineChart />
+        </ContainerBlock>
         <PlatformPeople />
       </div>
       <div className="c7n-platform-overview-content">

@@ -1,5 +1,7 @@
-FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/javabase:0.8.0
+FROM registry.cn-shanghai.aliyuncs.com/c7n/javabase:0.9.0
 COPY app.jar /base-service.jar
 COPY dist /dist
-RUN chmod 777 /dist/env.sh
+RUN chmod +x /dist/env.sh \
+    && chown -R www-data:www-data /base-service.jar /dist
+USER www-data
 CMD /dist/env.sh java $JAVA_OPTS $SKYWALKING_OPTS -jar /base-service.jar

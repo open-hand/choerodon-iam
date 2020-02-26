@@ -13,11 +13,8 @@ import java.util.List;
  */
 public interface OperateLogMapper extends Mapper<OperateLogDTO> {
 
-    List<OperateLogDTO> listNewOperateLogOrg(@Param("sourceId") Long sourceId);
 
-    List<OperateLogDTO> listNewOperateLogSite();
+    List<OperateLogDTO> listOperateLogSite();
 
-    List<OperateLogDTO> listMoreOperateLogSite();
-
-    List<OperateLogDTO> listMoreOperateLogOrg(@Param("sourceId") Long sourceId);
+    List<OperateLogDTO> listOperateLogOrg(@Param("sourceId") Long sourceId);
 }

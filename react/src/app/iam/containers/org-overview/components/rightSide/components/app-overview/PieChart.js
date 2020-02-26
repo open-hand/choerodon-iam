@@ -83,7 +83,7 @@ const PieChart = observer(() => {
       tooltip: {
         trigger: 'item',
         formatter: renderChartNumber, // 自定义label
-        triggerOn: 'click',
+        // triggerOn: 'click',
         padding: 13,
         backgroundColor: 'rgba(255,255,255,1)',
         textStyle: {
@@ -96,7 +96,7 @@ const PieChart = observer(() => {
       },
       legend: {
         orient: 'vertical',
-        right: '23.5%',
+        right: '20%',
         height: '194px',
         icon: 'circle',
         selectMode: false,

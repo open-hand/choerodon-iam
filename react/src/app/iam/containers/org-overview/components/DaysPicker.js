@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import './DaysPicker.less';
+
 const DaysPicker = (props) => {
   const {
     handleChangeDays,
@@ -8,7 +10,9 @@ const DaysPicker = (props) => {
 
   const clickDay = (i) => {
     setDay(i);
-    handleChangeDays(i);
+    if (handleChangeDays) {
+      handleChangeDays(i);
+    }
   };
 
   const getContent = () => [7, 15, 30].map(i => (

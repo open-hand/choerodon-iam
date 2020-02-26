@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import ContainerBlock from '../../../ContainerBlock';
+import ContainerBlock from '../../../org-overview/components/ContainerBlock';
 import Charts from './Charts';
 import FailedStatistics from './FailedStatistics';
 import { useFailedStatisticsStore } from './stores';
@@ -13,13 +13,10 @@ const ThingPerform = observer(() => {
   const {
     ThingPerformStore,
     FailedStatisticsTableDataSet,
-    AppState: {
-      menuType: { orgId },
-    },
   } = useFailedStatisticsStore();
 
   const initData = (days) => {
-    ThingPerformStore.initThingPerformChartData(orgId, days);
+    ThingPerformStore.initThingPerformChartData(days);
     FailedStatisticsTableDataSet.setQueryParameter('date', days);
     FailedStatisticsTableDataSet.query();
   };

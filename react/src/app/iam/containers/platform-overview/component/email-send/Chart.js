@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
-import echarts from 'echarts';
 import { observer } from 'mobx-react-lite';
-import { useFailedStatisticsStore } from './stores';
+import echarts from 'echarts';
+import { useEmailSendStore } from './stores';
 
 const Charts = observer(() => {
   const [resizeIf, setResizeIf] = useState(false);
 
   const {
-    ThingPerformStore,
-  } = useFailedStatisticsStore();
+    EmailSendStore,
+  } = useEmailSendStore();
 
   useEffect(() => {
     function resizeCharts() {
@@ -29,10 +29,27 @@ const Charts = observer(() => {
 
   const getOption = () => {
     const {
-      x,
-      y,
-    } = ThingPerformStore.getChartData;
+      dates,
+      successNums,
+      failedNums,
+    } = EmailSendStore.getEmailSendData;
+
+    const totalSuccess = successNums.length > 0 ? successNums.reduce((total, currentValue) => total + currentValue) : '';
+    const totalFailed = failedNums.length > 0 ? failedNums.reduce((total, currentValue) => total + currentValue) : '';
+
     return {
+      color: ['#6887E8', '#F48590'],
+      legend: {
+        right: 0,
+        itemHeight: 10,
+        data: [{
+          name: `成功次数: ${totalSuccess}`,
+          icon: 'circle',
+        }, {
+          name: `失败次数: ${totalFailed}`,
+          icon: 'circle',
+        }],
+      },
       grid: {
         top: '30px',
         left: 0,
@@ -52,15 +69,16 @@ const Charts = observer(() => {
         extraCssText: 'box-shadow:0px 2px 6px 0px rgba(0,0,0,0.12);padding: 15px 17px;',
         formatter(params) {
           return `
-          日期: ${params[0].name}</br>
-          较昨日新增: </br>
-          总人数: ${params[0].value}
-        `;
+            日期: ${params[0].name}</br>
+            成功发送数目: ${params[0].data}</br>
+            失败发送数目: ${params[1].data}</br>
+            发送总数: ${totalSuccess + totalFailed}</br>
+            发送成功率 ${((params[0].data / (totalSuccess + totalFailed)) * 100).toFixed()}%
+          `;
         },
       },
       xAxis: {
-        type: 'category',
-        data: x,
+        data: dates,
         name: '时间',
         nameTextStyle: {
           color: 'rgba(0,0,0,1)',
@@ -84,7 +102,7 @@ const Charts = observer(() => {
           color: 'rgba(0,0,0,1)',
           fontSize: '13px',
         },
-        name: '失败次数',
+        name: '次数',
         type: 'value',
         axisLabel: { color: 'rgba(0,0,0,0.65)' },
         axisLine: {
@@ -93,33 +111,31 @@ const Charts = observer(() => {
           },
         },
       },
-      series: [{
-        data: y,
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        areaStyle: {
-          normal: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-              offset: 0,
-              color: 'rgba(244, 133, 144, 0.3)',
-            }, {
-              offset: 1,
-              color: 'rgba(244, 133, 144, 0)',
-            }]),
+      series: [
+        {
+          name: `成功次数: ${totalSuccess}`,
+          type: 'bar',
+          stack: 'one',
+          data: successNums,
+          itemStyle: {
+            barBorderRadius: [0, 0, 0, 0],
           },
+          barWidth: 8,
         },
-        itemStyle: {
-          normal: {
-            color: '#F48590', // 改变折线点的颜色
-          // lineStyle:{
-          //   color:'#8cd5c2' //改变折线颜色
-          // }
+        {
+          name: `失败次数: ${totalFailed}`,
+          type: 'bar',
+          stack: 'one',
+          data: failedNums,
+          itemStyle: {
+            barBorderRadius: [4, 4, 0, 0],
           },
+          barWidth: 8,
         },
-      }],
+      ],
     };
   };
+
   return !resizeIf ? (
     <ReactEchartsCore
       echarts={echarts}
@@ -132,7 +148,7 @@ const Charts = observer(() => {
       }}
       style={{
         width: '100%',
-        height: 216,
+        height: 300,
       }}
       lazyUpdate
     />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
-import echarts from 'echarts';
 import { observer } from 'mobx-react-lite';
+import echarts from 'echarts';
 import { useFailedStatisticsStore } from './stores';
 
 const Charts = observer(() => {
@@ -18,10 +18,13 @@ const Charts = observer(() => {
         setResizeIf(false);
       }, 500);
     }
+
     window.addEventListener('resize', () => {
       resizeCharts();
     });
+
     resizeCharts();
+
     return () => {
       window.removeEventListener('resize', () => {});
     };
@@ -53,8 +56,7 @@ const Charts = observer(() => {
         formatter(params) {
           return `
           日期: ${params[0].name}</br>
-          较昨日新增: </br>
-          总人数: ${params[0].value}
+          失败次数: ${params[0].value}
         `;
         },
       },
@@ -112,14 +114,15 @@ const Charts = observer(() => {
         itemStyle: {
           normal: {
             color: '#F48590', // 改变折线点的颜色
-          // lineStyle:{
-          //   color:'#8cd5c2' //改变折线颜色
-          // }
+            // lineStyle:{
+            //   color:'#8cd5c2' //改变折线颜色
+            // }
           },
         },
       }],
     };
   };
+
   return !resizeIf ? (
     <ReactEchartsCore
       echarts={echarts}

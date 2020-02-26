@@ -17,7 +17,7 @@ const Charts = () => {
     });
     resizeCharts();
     return () => {
-      window.removeEventListener('resize');
+      window.removeEventListener('resize', () => {});
     };
   }, []);
 

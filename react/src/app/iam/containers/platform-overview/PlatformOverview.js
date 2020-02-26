@@ -3,6 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { Breadcrumb, TabPage, Content } from '@choerodon/boot';
 
 import ContainerBlock from '../org-overview/components/ContainerBlock';
+import PlatformPeople from './component/platform-people';
+import ThingPerform from './component/thing-perform';
+import EmailSend from './component/email-send';
 
 import './PlatformOverview.less';
 import TimeLine from './component/time-line';
@@ -92,27 +95,12 @@ const PlatformOverview = observer(() => (
           height="100%"
           title="在线人数统计"
         />
-        <ContainerBlock
-          width="57%"
-          height="100%"
-          title="平台人数统计"
-        />
+        <PlatformPeople />
       </div>
       <div className="c7n-platform-overview-content">
         <div className="c7n-platform-overview-content-left">
-          <ContainerBlock
-            width="100%"
-            height="400px"
-            title="邮件发送情况"
-          />
-          <ContainerBlock
-            style={{
-              marginTop: 20,
-            }}
-            width="100%"
-            height="574px"
-            title="事物执行情况"
-          />
+          <EmailSend />
+          <ThingPerform />
         </div>
         <div className="c7n-platform-overview-content-right">
           <ContainerBlock

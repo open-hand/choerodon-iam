@@ -1,8 +1,8 @@
-export default ({ orgId }) => ({
+export default () => ({
   selection: false,
   transport: {
     read: ({ data: { date } }) => ({
-      url: `/asgard/v1/sagas/organizations/${orgId}/instances/statistics/failure/list?date=${date}`,
+      url: `/asgard/v1/sagas/instances/statistics/failure/list?date=${date}`,
       method: 'get',
     }),
   },

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @FeignClient(value = "devops-service")
@@ -96,8 +97,9 @@ public interface DevopsFeignClient {
             @RequestParam(value = "params", required = false) String params);
 
     @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
-    Integer countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
-                                      @PathVariable(value = "project_id") Long projectId);
+    ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
+                                                                 @PathVariable(value = "project_id") Long projectId,
+                                                                 @RequestParam("longList") List<Long> longList);
 
     @GetMapping("/v1/projects/{project_id}/deploy_record/count_by_date")
     ResponseEntity<BarLabelRotationItemVO> countByDate(

@@ -517,4 +517,16 @@
             AND fp.name LIKE concat(concat('%',#{name}),'%')
         </if>
     </select>
+    <select id="selectProjectsByOrgIdAndNameWithLimit" resultType="io.choerodon.base.infra.dto.ProjectDTO">
+        select fp.*
+        from fd_project fp
+        where fp.organization_id = #{organizationId}
+        <if test="name != null">
+            AND fp.name LIKE concat(concat('%',#{name}),'%')
+        </if>
+        order by fp.creation_date desc
+        <if test="limit != null">
+            limit #{limit}
+        </if>
+    </select>
 </mapper>

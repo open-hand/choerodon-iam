@@ -114,4 +114,8 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
 
 
     List<Long> getProListByName(@Param("name") String name);
+
+    List<ProjectDTO> selectProjectsByOrgIdAndNameWithLimit(@Param("organizationId") Long organizationId,
+                                                           @Param("name") String name,
+                                                           @Param("limit") Integer limit);
 }

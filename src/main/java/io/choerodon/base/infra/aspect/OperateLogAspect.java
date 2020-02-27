@@ -58,10 +58,9 @@ public class OperateLogAspect {
     private static final String disableProject = "disableProject";
     //分配Root权限
     private static final String addAdminUsers = "addAdminUsers";
-    //平台角色分配
-    private static final String assignUsersRolesOnSite = "assignUsersRolesOnSite";
-    //组织层分配角色
-    private static final String assignUsersRolesOnOrg = "assignUsersRolesOnOrg";
+    //平台/组织层角色分配
+    private static final String assignUsersRoles = "assignUsersRoles";
+
 
     @Autowired
     private OperateLogMapper operateLogMapper;
@@ -98,7 +97,7 @@ public class OperateLogAspect {
         OperateLog operateLog = method.getAnnotation(OperateLog.class);
         String type = operateLog.type();
         String content = operateLog.content();
-        ResourceType[] level = operateLog.level();
+        List<ResourceType> level = Arrays.asList(operateLog.level());
         List<String> contentList = new ArrayList<>();
         Long organizationId = null;
         if (null != operateLog && null != method && null != type) {
@@ -148,16 +147,21 @@ public class OperateLogAspect {
                 case addAdminUsers:
                     contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
                     break;
-                case assignUsersRolesOnSite:
-                    contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
-                    break;
                 case createUserOrg:
                     contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case assignUsersRolesOnOrg:
-                    contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
+                case assignUsersRoles:
+                    if (ResourceType.ORGANIZATION.value().equals((String) parmMap.get("sourceType"))) {
+                        level.remove(ResourceType.SITE);
+                        contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                    }
+                    if (ResourceType.SITE.value().equals((String) parmMap.get("sourceType"))) {
+                        level.remove(ResourceType.ORGANIZATION);
+                        contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -190,9 +194,10 @@ public class OperateLogAspect {
             LOGGER.info("erro.target.method");
             throw e;
         }
+
         contentList.forEach(s -> {
             operateLogDTO.setContent(s);
-            Stream.of(level).forEach(v -> {
+            level.forEach(v -> {
                 if (ResourceType.SITE.value().equals(v.value())) {
                     operateLogDTO.setSourceId(0L);
                 }

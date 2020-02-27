@@ -98,6 +98,7 @@ public class OperateLogAspect {
         String type = operateLog.type();
         String content = operateLog.content();
         EnumSet<ResourceType> level = EnumSet.allOf(ResourceType.class);
+        level.remove(ResourceType.PROJECT);
         ResourceType[] resourceTypes = operateLog.level();
         for (int i = 0; i < resourceTypes.length; i++) {
             level.add(resourceTypes[i]);
@@ -159,7 +160,7 @@ public class OperateLogAspect {
                     if (ResourceType.ORGANIZATION.value().equals((String) parmMap.get("sourceType"))) {
                         level.remove(ResourceType.SITE);
                         contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
-                        organizationId = getOrganizationId(parmMap);
+                        organizationId = (Long) parmMap.get("sourceId");
                     }
                     if (ResourceType.SITE.value().equals((String) parmMap.get("sourceType"))) {
                         level.remove(ResourceType.ORGANIZATION);

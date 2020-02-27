@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.base.infra.mapper.OperateLogMapper">
 
 
-    <select id="listOperateLogSite" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
+    <select id="listOperateLogSite" resultType="io.choerodon.base.api.vo.OperateLogVO">
      SELECT
       *
      FROM fd_operate_log fol
@@ -12,7 +12,7 @@
 
     </select>
 
-    <select id="listOperateLogOrg" resultType="io.choerodon.base.infra.dto.OperateLogDTO">
+    <select id="listOperateLogOrg" resultType="io.choerodon.base.api.vo.OperateLogVO">
      SELECT
       *
      FROM fd_operate_log fol

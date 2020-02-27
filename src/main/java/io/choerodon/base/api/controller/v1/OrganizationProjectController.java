@@ -133,7 +133,7 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.getProjectByOrgIdAndCode(organizationId, code), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/all")
     public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId) {

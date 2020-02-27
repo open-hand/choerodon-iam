@@ -682,6 +682,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {

@@ -656,7 +656,6 @@ public class RoleMemberController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层批量分配用户角色")
     @PostMapping(value = "/site/users/assign_roles")
-    @OperateLog(type = "assignUsersRolesOnSite", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE})
     public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnSiteLevel(@RequestBody List<MemberRoleDTO> memberRoleDTOS) {
         return new ResponseEntity<>(userService.assignUsersRoles(ResourceLevel.SITE.value(), 0L, memberRoleDTOS), HttpStatus.OK);
     }
@@ -664,7 +663,6 @@ public class RoleMemberController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层批量分配用户角色")
     @PostMapping(value = "/organizations/{organization_id}/users/assign_roles")
-    @OperateLog(type = "assignUsersRolesOnOrg", content = "用户%s被%s分配【%s】角色", level = {ResourceType.ORGANIZATION})
     public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                                    @RequestBody List<MemberRoleDTO> memberRoleDTOS) {
         return new ResponseEntity<>(userService.assignUsersRoles(ResourceLevel.ORGANIZATION.value(), organizationId, memberRoleDTOS), HttpStatus.OK);

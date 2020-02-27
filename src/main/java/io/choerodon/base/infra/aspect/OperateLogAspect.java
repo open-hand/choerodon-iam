@@ -97,7 +97,11 @@ public class OperateLogAspect {
         OperateLog operateLog = method.getAnnotation(OperateLog.class);
         String type = operateLog.type();
         String content = operateLog.content();
-        List<ResourceType> level = Arrays.asList(operateLog.level());
+        EnumSet<ResourceType> level = EnumSet.allOf(ResourceType.class);
+        ResourceType[] resourceTypes = operateLog.level();
+        for (int i = 0; i < resourceTypes.length; i++) {
+            level.add(resourceTypes[i]);
+        }
         List<String> contentList = new ArrayList<>();
         Long organizationId = null;
         if (null != operateLog && null != method && null != type) {
@@ -225,7 +229,7 @@ public class OperateLogAspect {
     }
 
     private List<String> handleAssignUsersRolesOnSiteLevelOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
-        List<MemberRoleDTO> memberRoleDTOList = (List<MemberRoleDTO>) parmMap.get("memberRoleDTOS");
+        List<MemberRoleDTO> memberRoleDTOList = (List<MemberRoleDTO>) parmMap.get("memberRoleDTOList");
         UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         List<String> contentList = new ArrayList<>();
         if (Objects.isNull(operator)) {

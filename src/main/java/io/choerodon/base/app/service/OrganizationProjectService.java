@@ -79,4 +79,6 @@ public interface OrganizationProjectService {
      * @return
      */
     BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime);
+
+    List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name);
 }

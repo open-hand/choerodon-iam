@@ -407,6 +407,7 @@ public class UserServiceImpl implements UserService {
     public void check(UserDTO user) {
         boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
         boolean checkPhone = !StringUtils.isEmpty(user.getPhone());
+
         if (!checkEmail && !checkPhone) {
             throw new CommonException("error.user.validation.fields.empty");
         }
@@ -430,7 +431,8 @@ public class UserServiceImpl implements UserService {
         userDTO.setPhone(phone);
         userDTO.setEnabled(true);
         if (createCheck) {
-            boolean existed = userMapper.selectOne(userDTO) != null;
+            List<UserDTO> select = userMapper.select(userDTO);
+            boolean existed = select != null && select.size() != 0;
             if (existed) {
                 throw new CommonException("error.user.phone.exist");
             }

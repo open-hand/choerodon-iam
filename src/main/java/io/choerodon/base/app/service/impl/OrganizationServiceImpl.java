@@ -3,6 +3,7 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.utils.SagaTopic.Organization.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -342,6 +343,25 @@ public class OrganizationServiceImpl implements OrganizationService {
             projectOverViewVO.setAppServerSum(devopsFeignClient.countAppServerByProjectId(v.getId()));
             projectOverViewVOS.add(projectOverViewVO);
         });
-        return projectOverViewVOS;
+        List<ProjectOverViewVO> collect = projectOverViewVOS
+                .stream()
+                .sorted(Comparator.comparing(ProjectOverViewVO::getAppServerSum).reversed())
+                .collect(Collectors.toList());
+        List<ProjectOverViewVO> reOverViewVOS = new ArrayList<>();
+        List<ProjectOverViewVO> temOverViewVOS = new ArrayList<>();
+        collect.stream().forEach(projectOverViewVO -> {
+            if (reOverViewVOS.size() <24){
+                reOverViewVOS.add(projectOverViewVO);
+            }
+            if (reOverViewVOS.size() >=24) {
+                temOverViewVOS.add(projectOverViewVO);
+            }
+        });
+        ProjectOverViewVO projectOverViewVO1 = new ProjectOverViewVO();
+        int sum = temOverViewVOS.stream().mapToInt(ProjectOverViewVO::getAppServerSum).sum();
+        projectOverViewVO1.setProjectName("其他剩余：");
+        projectOverViewVO1.setAppServerSum(sum);
+        reOverViewVOS.add(projectOverViewVO1);
+        return reOverViewVOS;
     }
 }

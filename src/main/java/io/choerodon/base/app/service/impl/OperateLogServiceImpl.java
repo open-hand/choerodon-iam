@@ -28,14 +28,10 @@ public class OperateLogServiceImpl implements OperateLogService {
     public PageInfo<OperateLogVO> listOperateLog(Pageable pageable, Long sourceId) {
         if (sourceId == 0L) {
             return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                    .doSelectPageInfo(() -> modelMapper.map(operateLogMapper.listOperateLogSite(),
-                            new TypeToken<List<OperateLogVO>>() {
-                            }.getType()));
+                    .doSelectPageInfo(() -> operateLogMapper.listOperateLogSite());
 
         }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() ->
-                modelMapper.map(operateLogMapper.listOperateLogOrg(sourceId),
-                        new TypeToken<List<OperateLogVO>>() {
-                        }.getType()));
+                operateLogMapper.listOperateLogOrg(sourceId));
     }
 }

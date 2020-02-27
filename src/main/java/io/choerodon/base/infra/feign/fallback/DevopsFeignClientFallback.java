@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -69,7 +70,7 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     }
 
     @Override
-    public Integer countAppServerByProjectId(Long projectId) {
+    public ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(Long aLong, List<Long> longs) {
         throw new CommonException("error.feign.devops.query.app.server");
     }
 

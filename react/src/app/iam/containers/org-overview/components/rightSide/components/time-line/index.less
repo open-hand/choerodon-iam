@@ -1,7 +1,10 @@
 .c7ncd-timeLine {
     width: 100%;
+    overflow-y: auto;
+    height: 9.8rem;
+    margin-top: .32rem;
     &-body {
-        margin-top: .32rem;
+        padding-right: .07rem;
         ul {
             border-left: 2px dotted #979797ff;
             padding-left: 48px;
@@ -63,10 +66,10 @@
                     background: #6887e8ff;
                     border-radius: 50%;
                 }
-                i.stop {
-                    background: #cacae4ff;
+                i.disabled {
+                    background: #cacae4ff !important;
                 }
-                i.icon-blur_linear {
+                i.icon-blur_linear i.delete{
                     background: #f48590ff !important;
                 }
             }

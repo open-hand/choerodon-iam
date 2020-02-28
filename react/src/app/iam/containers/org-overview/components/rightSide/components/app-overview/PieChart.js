@@ -9,6 +9,7 @@ import 'echarts/lib/component/title';
 import 'echarts/lib/component/legend';
 import 'echarts/lib/chart/pie';
 import 'echarts/lib/component/markPoint';
+import { useOrgOverviewRightSide } from '../../stores';
 
 const colorStyle = ['#FD818DFF', '#6887E8FF', '#514FA0FF', '#F48590FF', '#CACAE4FF', '#6480DEFF'];
 
@@ -64,7 +65,7 @@ const dataSource = [
 ];
 
 function handleDataSource() {
-  
+
 }
 
 function renderChartNumber(data) {
@@ -78,12 +79,17 @@ function renderChartNumber(data) {
 }
 
 const PieChart = observer(() => {
+  const {
+    appServiceDs,
+  } = useOrgOverviewRightSide();
+
+  const record = appServiceDs.current && appServiceDs.toData();
+  // console.log(record);
   const getOpts = () => {
     const option = {
       tooltip: {
         trigger: 'item',
         formatter: renderChartNumber, // 自定义label
-        // triggerOn: 'click',
         padding: 13,
         backgroundColor: 'rgba(255,255,255,1)',
         textStyle: {

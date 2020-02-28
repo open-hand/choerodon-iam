@@ -69,7 +69,7 @@ const Charts = observer(() => {
         extraCssText: 'box-shadow:0px 2px 6px 0px rgba(0,0,0,0.12);padding: 15px 17px;',
         formatter(params) {
           return `
-            日期: ${params[0].name}</br>
+            日期: ${`${dates[0].split('-')[0]}-${params[0].name}`}</br>
             成功发送数目: ${params[0].data}</br>
             失败发送数目: ${params[1].data}</br>
             发送总数: ${totalSuccess + totalFailed}</br>
@@ -78,7 +78,8 @@ const Charts = observer(() => {
         },
       },
       xAxis: {
-        data: dates,
+        boundaryGap: false,
+        data: dates.map(d => `${d.split('-')[1]}-${d.split('-')[2]}`),
         name: '时间',
         nameTextStyle: {
           color: 'rgba(0,0,0,1)',
@@ -87,7 +88,9 @@ const Charts = observer(() => {
         splitLine: {
           show: true,
         },
-        axisLabel: { color: 'rgba(0,0,0,0.65)' },
+        axisLabel: {
+          color: 'rgba(0,0,0,0.65)',
+        },
         axisLine: {
           lineStyle: {
             color: '#EEEEEE',

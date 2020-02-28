@@ -34,11 +34,13 @@ const Charts = observer(() => {
     const {
       x,
       y,
+      percentage,
+      totalCount,
     } = ThingPerformStore.getChartData;
     return {
       grid: {
         top: '30px',
-        left: 0,
+        left: '5px',
         right: '50px',
         bottom: 0,
         containLabel: true,
@@ -55,14 +57,17 @@ const Charts = observer(() => {
         extraCssText: 'box-shadow:0px 2px 6px 0px rgba(0,0,0,0.12);padding: 15px 17px;',
         formatter(params) {
           return `
-          日期: ${params[0].name}</br>
-          失败次数: ${params[0].value}
+          日期: ${`${x[0].split('-')[0]}-${params[0].name}`}</br>
+          事务失败率: ${percentage[params[0].dataIndex]}%</br>
+          失败次数: ${params[0].value}</br>
+          总次数: ${totalCount[params[0].dataIndex]}
         `;
         },
       },
       xAxis: {
+        boundaryGap: false,
         type: 'category',
-        data: x,
+        data: x.map(d => `${d.split('-')[1]}-${d.split('-')[2]}`),
         name: '时间',
         nameTextStyle: {
           color: 'rgba(0,0,0,1)',

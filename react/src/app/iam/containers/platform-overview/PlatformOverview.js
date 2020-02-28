@@ -10,7 +10,7 @@ import EmailSend from './component/email-send';
 import './PlatformOverview.less';
 import TimeLine from './component/time-line';
 import LineChart from './component/onLine-chart';
-
+import OptsLine from './component/opts-line';
 // 公告模拟数据
 const notifications = [
   {
@@ -120,10 +120,9 @@ const PlatformOverview = observer(() => (
               marginTop: 20,
             }}
             width="100%"
-            height="678px"
             title="平台层操作记录"
           >
-            <TimeLine dataSource={optsRecord} />
+            <OptsLine />
           </ContainerBlock>
         </div>
       </div>

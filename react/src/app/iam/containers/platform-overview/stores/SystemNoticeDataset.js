@@ -5,7 +5,7 @@ export default () => ({
   selection: false,
   transport: {
     read: {
-      url: '/devops/v1/online/current',
+      url: '/notify-service/v1/system_notice/completed?size=3',
       method: 'get',
     },
   },

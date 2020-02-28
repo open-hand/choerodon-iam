@@ -1,7 +1,11 @@
-.c7ncd-notice-timeLine {
+.c7ncd-opts-timeLine {
     width: 100%;
+    margin-top: .32rem;
     &-body {
-        margin-top: .32rem;
+        padding-right: .07rem;
+        overflow-y: auto;
+        max-height: 5.9rem;
+        min-height: 5.9rem;
         ul {
             border-left: 2px dotted #979797ff;
             padding-left: .48rem;
@@ -9,6 +13,7 @@
             li {
                 list-style: none;
                 position: relative;
+                display: flex;
             }
             li + li {
                 margin-top: .24rem;
@@ -44,8 +49,8 @@
         }
     }
     &-content {
-        // height: auto;
-        // width: auto;
+        height: auto;
+        flex: 1;
         background: rgba(245, 246, 250, 1);
         border-radius: .10rem;
         padding: .2rem;
@@ -62,10 +67,10 @@
                     background: #6887e8ff;
                     border-radius: 50%;
                 }
-                i.stop {
-                    background: #cacae4ff;
+                i.disabled {
+                    background: #cacae4ff !important;
                 }
-                i.icon-blur_linear {
+                i.icon-blur_linear i.delete {
                     background: #f48590ff !important;
                 }
             }

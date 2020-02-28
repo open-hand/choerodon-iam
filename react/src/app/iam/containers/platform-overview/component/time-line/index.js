@@ -1,9 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import './index.less';
-import { Icon, Button } from 'choerodon-ui';
 
-// 点击加载更多
+import { Icon, Button } from 'choerodon-ui';
+import './index.less';
+
+// 点击展示
 function handleDropDown(e) {
   const pNode = e.currentTarget.parentNode.parentNode.getElementsByTagName('p')[0]; // p元素
   const i = e.currentTarget.getElementsByClassName('icon')[0]; // btn的图标
@@ -24,24 +25,24 @@ const TimeLine = observer(({ dataSource }) => {
     return dataSource ? (
       <ul>
         {
-          dataSource.map((item, index) => {
+          dataSource.map((item) => {
             const { id, day, month, content, title, icon, isDisabled } = item;
             return (
               <li key={id}>
-                <div className="c7ncd-timeLine-date">
+                <div className="c7ncd-notice-timeLine-date">
                   <span>{day}</span>
                   <span>{month}</span>
                 </div>
-                <div className="c7ncd-timeLine-content">
-                  <div className="c7ncd-timeLine-content-header">
-                    <div className="c7ncd-timeLine-content-header-icon">
+                <div className="c7ncd-notice-timeLine-content">
+                  <div className="c7ncd-notice-timeLine-content-header">
+                    <div className="c7ncd-notice-timeLine-content-header-icon">
                       <Icon type={icon} className={isDisabled ? 'stop' : null} />
                     </div>
-                    <span className="c7ncd-timeLine-content-header-title">{title}</span>
+                    <span className="c7ncd-notice-timeLine-content-header-title">{title}</span>
                     {
                       content.length > 60 ? (
                         <Button
-                          className="c7ncd-timeLine-content-header-btn"
+                          className="c7ncd-notice-timeLine-content-header-btn"
                           shape="circle"
                           funcType="flat"
                           icon="expand_more"
@@ -63,8 +64,8 @@ const TimeLine = observer(({ dataSource }) => {
   }
 
   return (
-    <div className="c7ncd-timeLine">
-      <div className="c7ncd-timeLine-body">
+    <div className="c7ncd-notice-timeLine">
+      <div className="c7ncd-notice-timeLine-body">
         {renderData()}
       </div>
       <Button type="primary">加载更多</Button>

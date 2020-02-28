@@ -7,7 +7,7 @@ import PieChart from './PieChart';
 
 const AppOverview = observer(() => (
   <div className="c7n-overview-appOverview">
-    <ContainerBlock width="100%" height={286}>
+    <ContainerBlock width="100%">
       <div className="c7n-overview-appOverview-header">
         <span>应用服务概览</span>
         <span>单位：应用服务数量（个）</span>

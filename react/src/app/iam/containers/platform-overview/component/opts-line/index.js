@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import './index.less';
 import { Icon, Button, Tooltip } from 'choerodon-ui';
-import { useOrgOverviewRightSide } from '../../stores';
+import { usePlatformOverviewStore } from '../../stores';
 
 // 点击展示更多
 function handleDropDown(e) {
@@ -77,6 +77,21 @@ const iconType = {
     className: '',
     typeTxt: '创建组织',
   },
+  enableOrganization: {
+    icon: 'project_line',
+    className: '',
+    typeTxt: '启用组织',
+  },
+  disableOrganization: {
+    icon: 'project_line',
+    className: 'disabled',
+    typeTxt: '停用组织',
+  },
+  updateOrganization: {
+    icon: 'project_line',
+    className: '',
+    typeTxt: '平台层修改组织信息',
+  },
   unlockUser: {
     icon: 'account_circle',
     className: '',
@@ -124,11 +139,11 @@ const iconType = {
   },
 };
 
-const TimeLine = observer(() => {
+const OptsLine = observer(() => {
   const {
     optsDs,
-    overStores,
-  } = useOrgOverviewRightSide();
+    platOverStores,
+  } = usePlatformOverviewStore();
 
   const [isMore, setLoadMoreBtn] = useState(false);
 
@@ -137,12 +152,12 @@ const TimeLine = observer(() => {
   // 加载记录
   async function loadData(page = 1) {
     const res = await optsDs.query(page);
-    const records = overStores.getOldOptsRecord;
+    const records = platOverStores.getOldOptsRecord;
     if (res && !res.failed) {
       if (!res.isFirstPage) {
         optsDs.unshift(...records);
       }
-      overStores.setOldOptsRecord(optsDs.records);
+      platOverStores.setOldOptsRecord(optsDs.records);
       setLoadMoreBtn(res.hasNextPage);
       return res;
     } else {
@@ -163,7 +178,7 @@ const TimeLine = observer(() => {
     const month = renderMonth(dateArr[1]);
     return (
       <Tooltip title={date}>
-        <div className="c7ncd-timeLine-date">
+        <div className="c7ncd-opts-timeLine-date">
           <span>{dateArr[2].split(' ')[0]}</span>
           <span>{month}</span>
         </div>
@@ -180,16 +195,16 @@ const TimeLine = observer(() => {
             return (
               <li key={id}>
                 {renderDateLine(creationDate)}
-                <div className="c7ncd-timeLine-content">
-                  <div className="c7ncd-timeLine-content-header">
-                    <div className="c7ncd-timeLine-content-header-icon">
+                <div className="c7ncd-opts-timeLine-content">
+                  <div className="c7ncd-opts-timeLine-content-header">
+                    <div className="c7ncd-opts-timeLine-content-header-icon">
                       <Icon type={iconType[type].icon} className={iconType[type].className} />
                     </div>
-                    <span className="c7ncd-timeLine-content-header-title">{iconType[type].typeTxt}</span>
+                    <span className="c7ncd-opts-timeLine-content-header-title">{iconType[type].typeTxt}</span>
                     {
                       content.length > 60 ? (
                         <Button
-                          className="c7ncd-timeLine-content-header-btn"
+                          className="c7ncd-opts-timeLine-content-header-btn"
                           shape="circle"
                           funcType="flat"
                           icon="expand_more"
@@ -211,17 +226,16 @@ const TimeLine = observer(() => {
   }
 
   return (
-    <div className="c7ncd-timeLine">
-      {
-        record && record.length > 0 ? (
-          <div className="c7ncd-timeLine-body">
-            {renderData()}
-          </div>
-        ) : '暂无更多记录...'
-      }
+    <div className="c7ncd-opts-timeLine">
+      {record && record.length > 0 ? (
+        <div className="c7ncd-opts-timeLine-body">
+          {renderData()}
+        </div>
+      ) : '暂无更多记录...'}
+
       {isMore && <Button type="primary" onClick={loadMoreOptsRecord}>加载更多</Button>}
     </div>
   );
 });
 
-export default TimeLine;
+export default OptsLine;

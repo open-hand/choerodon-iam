@@ -49,12 +49,5 @@ export default function useStore() {
       });
       this.chartData = data;
     },
-
-    initProjectsCanChose(orgId) {
-      return axios({
-        method: 'GET',
-        url: `/base/v1/organizations/${orgId}/projects/with_limit`,
-      });
-    },
   }));
 }

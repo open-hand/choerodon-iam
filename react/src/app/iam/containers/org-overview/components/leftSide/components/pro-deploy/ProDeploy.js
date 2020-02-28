@@ -18,17 +18,6 @@ const ProDeploy = observer(() => {
     ProDeploySelectDataSet,
   } = useProDeployStore();
 
-  const projectsArray = ProDeployStore.getProjectsArray;
-
-  useEffect(() => {
-    ProDeployStore.initProjectsCanChose(orgId).then((res) => {
-      ProDeployStore.setProjectArray(res);
-      const initSelected = JSON.parse(JSON.stringify(res)).splice(0, 3).map(i => i.id);
-      ProDeploySelectDataSet.loadData([{ proSelect: initSelected }]);
-      ProDeployStore.initData(orgId, initSelected);
-    });
-  }, []);
-
   const handleChangeDays = (days) => {
     ProDeployStore.setChosenDay(days);
     ProDeployStore.initData(orgId, ProDeploySelectDataSet.current.get('proSelect'));
@@ -40,13 +29,8 @@ const ProDeploy = observer(() => {
       name="proSelect"
       searchable
       maxTagCount={2}
-    >
-      {
-        projectsArray.map(p => (
-          <Option value={p.id}>{p.name}</Option>
-        ))
-      }
-    </Select>
+      searchMatcher="name"
+    />
   );
 
   return (

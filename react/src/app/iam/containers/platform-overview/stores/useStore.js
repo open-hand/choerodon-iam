@@ -9,5 +9,12 @@ export default function useStore() {
     get getOldOptsRecord() {
       return this.oldOptsRecord;
     },
+    oldNoticeRecord: [],
+    setOldNoticeRecord(data) {
+      this.oldNoticeRecord = data || [];
+    },
+    get getOldNoticeRecord() {
+      return this.oldNoticeRecord;
+    },
   }));
 }

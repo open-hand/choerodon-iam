@@ -5,11 +5,11 @@ export default () => ({
   selection: false,
   transport: {
     read: {
-      url: '/notify/v1/system_notice/completed?size=3',
+      url: '/notify/v1/online/current/list',
       method: 'get',
     },
   },
   fields: [
-
+  
   ],
 });

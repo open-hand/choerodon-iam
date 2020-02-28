@@ -10,9 +10,17 @@ import 'echarts/lib/component/title';
 import 'echarts/lib/component/legend';
 import 'echarts/lib/chart/line';
 import 'echarts/lib/component/markPoint';
+import { usePlatformOverviewStore } from '../../stores';
 
 
 const LineChart = observer(() => {
+  const {
+    onlineNumDs,
+    onlineHourDs,
+  } = usePlatformOverviewStore();
+
+  const record = onlineHourDs.current && onlineHourDs.toData()[0];
+
   const getOpts = () => {
     const option = {
       tooltip: {
@@ -31,7 +39,7 @@ const LineChart = observer(() => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00'],
+        data: record && Object.keys(record),
         show: false,
       },
       yAxis: {
@@ -40,7 +48,7 @@ const LineChart = observer(() => {
       },
       series: [{
         smooth: true,
-        data: [820, 1332, 1001, 934, 1290, 930, 720],
+        data: record && Object.values(record),
         type: 'line',
         color: ['rgb(168, 185, 237)'],
         symbolSize: 5,
@@ -73,7 +81,7 @@ const LineChart = observer(() => {
   return (
     <div className="c7n-online-chart">
       <div className="c7n-online-number">
-        <span>312</span>
+        <span>{onlineNumDs.current && onlineNumDs.current.get('OnlineCount')}</span>
         <span>人</span>
       </div>
       <div className="c7n-online-mainChart">
@@ -86,7 +94,7 @@ const LineChart = observer(() => {
       </div>
       <div className="c7n-online-daily">
         <span>日访问量：</span>
-        <span>132人</span>
+        <span>{onlineNumDs.current && onlineNumDs.current.get('NumberOfVisitorsToday')}人</span>
       </div>
     </div>
   );

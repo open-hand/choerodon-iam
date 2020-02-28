@@ -1,11 +1,11 @@
 
 export default () => ({
-  autoQuery: false,
+  autoQuery: true,
   autoCreate: false,
   selection: false,
   transport: {
     read: {
-      url: '/devops/v1/online/current',
+      url: '/notify/v1/online/current',
       method: 'get',
     },
   },

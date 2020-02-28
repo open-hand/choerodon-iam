@@ -97,8 +97,7 @@ public class OperateLogAspect {
         OperateLog operateLog = method.getAnnotation(OperateLog.class);
         String type = operateLog.type();
         String content = operateLog.content();
-        EnumSet<ResourceType> level = EnumSet.allOf(ResourceType.class);
-        level.remove(ResourceType.PROJECT);
+        EnumSet<ResourceType> level = EnumSet.noneOf(ResourceType.class);
         ResourceType[] resourceTypes = operateLog.level();
         for (int i = 0; i < resourceTypes.length; i++) {
             level.add(resourceTypes[i]);

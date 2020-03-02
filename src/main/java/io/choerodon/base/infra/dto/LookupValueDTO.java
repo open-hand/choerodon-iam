@@ -38,6 +38,15 @@ public class LookupValueDTO extends BaseDTO {
     @ApiModelProperty(value = "排列顺序")
     private Integer displayOrder;
 
+    @Transient
+    @ApiModelProperty(value = "同code")
+    private String  value;
+
+    @Transient
+    @ApiModelProperty(value = "同description")
+    private String  meaning;
+
+
     public Long getId() {
         return id;
     }
@@ -76,5 +85,21 @@ public class LookupValueDTO extends BaseDTO {
 
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getMeaning() {
+        return meaning;
+    }
+
+    public void setMeaning(String meaning) {
+        this.meaning = meaning;
     }
 }

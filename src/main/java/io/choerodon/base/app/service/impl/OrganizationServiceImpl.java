@@ -3,11 +3,15 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.utils.SagaTopic.Organization.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.api.vo.ProjectOverViewVO;
+import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.feign.DevopsFeignClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +78,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private MemberRoleMapper memberRoleMapper;
 
+    private DevopsFeignClient devopsFeignClient;
+
 
     public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
@@ -84,7 +90,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    UserMapper userMapper,
                                    OrganizationMapper organizationMapper,
                                    RoleMapper roleMapper,
-                                   MemberRoleMapper memberRoleMapper) {
+                                   MemberRoleMapper memberRoleMapper,
+                                   DevopsFeignClient devopsFeignClient) {
         this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
         this.userService = userService;
@@ -95,6 +102,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         this.organizationMapper = organizationMapper;
         this.roleMapper = roleMapper;
         this.memberRoleMapper = memberRoleMapper;
+        this.devopsFeignClient = devopsFeignClient;
     }
 
     @Override
@@ -129,6 +137,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_UPDATE, description = "iam更新组织", inputSchemaClass = OrganizationPayload.class)
+    @OperateLog(type = "updateOrganization", content = "%s修改组织【%s】的信息", level = {ResourceType.SITE})
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
         preUpdate(organizationId, organizationDTO);
 
@@ -192,11 +201,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     public PageInfo<OrganizationDTO> pagingQuery(Pageable pageable, String name, String code, String ownerRealName, Boolean enabled, String params) {
 
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageableHelper.getSortSql(pageable.getSort())).doSelectPageInfo(() ->
-            organizationMapper.fulltextSearch( name, code, ownerRealName, enabled, params));
+                organizationMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
     }
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
+    @OperateLog(type = "enableOrganization", content = "%s启用组织【%s】", level = {ResourceType.SITE})
     public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organization = organizationAssertHelper.notExisted(organizationId);
         organization.setEnabled(true);
@@ -205,6 +215,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
+    @OperateLog(type = "disableOrganization", content = "%s停用组织【%s】", level = {ResourceType.SITE})
     public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
         OrganizationDTO organizationDTO = organizationAssertHelper.notExisted(organizationId);
         organizationDTO.setEnabled(false);
@@ -307,4 +318,52 @@ public class OrganizationServiceImpl implements OrganizationService {
         return organizationDTO;
     }
 
+    @Override
+    public ProjectOverViewVO projectOverview(Long organizationId) {
+        ProjectOverViewVO projectOverViewVO = organizationMapper.projectOverview(organizationId);
+        if (projectOverViewVO == null) {
+            return new ProjectOverViewVO(0, 0);
+        }
+        return projectOverViewVO;
+    }
+
+    @Override
+    public List<ProjectOverViewVO> appServerOverview(Long organizationId) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        List<ProjectDTO> projectDTOS = projectMapper.select(projectDTO);
+        if (org.springframework.util.CollectionUtils.isEmpty(projectDTOS)) {
+            return Collections.emptyList();
+        }
+        List<ProjectOverViewVO> projectOverViewVOS = new ArrayList<>();
+        List<Long> longList = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
+        Map<Long, Integer> map = devopsFeignClient.countAppServerByProjectId(longList.get(0), longList).getBody();
+        projectDTOS.stream().distinct().forEach(v -> {
+            ProjectOverViewVO projectOverViewVO = new ProjectOverViewVO();
+            projectOverViewVO.setId(v.getId());
+            projectOverViewVO.setProjectName(v.getName());
+            projectOverViewVO.setAppServerSum(map.get(v.getId()));
+            projectOverViewVOS.add(projectOverViewVO);
+        });
+        List<ProjectOverViewVO> collect = projectOverViewVOS
+                .stream()
+                .sorted(Comparator.comparing(ProjectOverViewVO::getAppServerSum).reversed())
+                .collect(Collectors.toList());
+        List<ProjectOverViewVO> reOverViewVOS = new ArrayList<>();
+        List<ProjectOverViewVO> temOverViewVOS = new ArrayList<>();
+        collect.stream().forEach(projectOverViewVO -> {
+            if (reOverViewVOS.size() < 24) {
+                reOverViewVOS.add(projectOverViewVO);
+            }
+            if (reOverViewVOS.size() >= 24) {
+                temOverViewVOS.add(projectOverViewVO);
+            }
+        });
+        ProjectOverViewVO projectOverViewVO1 = new ProjectOverViewVO();
+        int sum = temOverViewVOS.stream().mapToInt(ProjectOverViewVO::getAppServerSum).sum();
+        projectOverViewVO1.setProjectName("其他剩余：");
+        projectOverViewVO1.setAppServerSum(sum);
+        reOverViewVOS.add(projectOverViewVO1);
+        return reOverViewVOS;
+    }
 }

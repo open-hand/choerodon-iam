@@ -3,12 +3,15 @@ package io.choerodon.base.infra.feign.fallback;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.vo.AppServiceDetailsVO;
 import io.choerodon.base.api.vo.AppServiceVersionVO;
+import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.infra.dto.devops.*;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.core.exception.CommonException;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -64,5 +67,15 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     @Override
     public ResponseEntity<List<AppServiceVersionVO>> listVersionById(Long projectId, String id, String params) {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(Long aLong, List<Long> longs) {
+        throw new CommonException("error.feign.devops.query.app.server");
+    }
+
+    @Override
+    public ResponseEntity<BarLabelRotationItemVO> countByDate(Long projectId, Date startTime, Date endTime) {
+        throw new CommonException("error.feign.devops.query.deploy.records");
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.base.api.vo.LookupValueVO;
 import io.choerodon.base.app.service.*;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.core.annotation.*;
@@ -123,7 +124,7 @@ public class LookupController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过code查询快码")
     @GetMapping(value = "/code/{code}")
-    public ResponseEntity<List<LookupValueDTO>> queryCodeValueByCode(@PathVariable String code) {
+    public ResponseEntity<List<LookupValueVO>> queryCodeValueByCode(@PathVariable String code) {
         return new ResponseEntity<>(lookupService.queryCodeValueByCode(code), HttpStatus.OK);
     }
     /**

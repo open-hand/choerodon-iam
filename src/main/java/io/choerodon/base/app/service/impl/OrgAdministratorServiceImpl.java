@@ -10,8 +10,10 @@ import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.base.infra.mapper.*;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
@@ -104,7 +106,8 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteOrgAdministrator(Long userId, Long organizationId) {
+    @OperateLog(type = "deleteOrgAdministrator", content = "用户%s被%删除组织管理员角色", level = {ResourceType.ORGANIZATION})
+    public Boolean deleteOrgAdministrator(Long organizationId, Long userId) {
         RoleDTO roleDTO = roleAssertHelper.roleNotExisted(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         Long roleId = roleDTO.getId();
         MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
@@ -128,6 +131,7 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "createOrgAdministrator", content = "用户%s被%s添加为组织管理员", level = {ResourceType.ORGANIZATION})
     public Boolean createOrgAdministrator(List<Long> userIds, Long organizationId) {
         RoleDTO roleDTO = roleAssertHelper.roleNotExisted(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         Long roleId = roleDTO.getId();

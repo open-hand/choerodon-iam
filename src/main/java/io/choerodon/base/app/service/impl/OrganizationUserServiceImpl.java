@@ -11,10 +11,12 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.mapper.LabelMapper;
+import io.choerodon.core.enums.ResourceType;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +60,7 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import retrofit2.http.OPTIONS;
 
 /**
  * @author superlee
@@ -166,6 +169,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);
@@ -558,6 +562,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "unlockUser", content = "%s解锁用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO unlock(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO userDTO = userAssertHelper.userNotExisted(userId);
@@ -570,6 +575,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
+    @OperateLog(type = "enableUser", content = "用户%s被%s启用", level = {ResourceType.ORGANIZATION})
     public UserDTO enableUser(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO user = updateStatus(organizationId, userId, true);
@@ -600,6 +606,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
+    @OperateLog(type = "disableUser", content = "用户%s已被%s停用", level = {ResourceType.ORGANIZATION})
     public UserDTO disableUser(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO user = updateStatus(organizationId, userId, false);

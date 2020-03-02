@@ -33,7 +33,7 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch"   resultMap="OrganizationDTO">
+    <select id="fulltextSearch" resultMap="OrganizationDTO">
         SELECT
         org.*,iu.login_name as owner_login_name,iu.real_name as owner_real_name,
         CASE
@@ -92,7 +92,6 @@
         </where>
 
 
-
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">
@@ -101,7 +100,8 @@
         inner join iam_member_role imr on (fo.id = imr.source_id and imr.source_type = 'organization')
         inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = 1)
         <where>
-            imr.member_id = #{memberId} and imr.member_type='user' and ir.code != 'role/organization/default/organization-member'
+            imr.member_id = #{memberId} and imr.member_type='user' and ir.code !=
+            'role/organization/default/organization-member'
             <if test="!includedDisabled">
                 AND fo.is_enabled = 1
             </if>
@@ -311,6 +311,15 @@
         FROM fd_organization fo
         left join iam_user iu on fo.id = iu.organization_id
         where iu.id = #{userId}
+    </select>
+
+    <select id="projectOverview" resultType="io.choerodon.base.api.vo.ProjectOverViewVO">
+        SELECT
+        SUM(CASE WHEN fp.is_enabled=1 THEN 1 ELSE 0 END) AS enableSum,
+        SUM(CASE WHEN fp.is_enabled=0 THEN 1 ELSE  0 END) AS stopSum
+        FROM
+        fd_project  fp
+        WHERE fp.organization_id=#{organizationId}
     </select>
 
 </mapper>

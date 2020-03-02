@@ -1,22 +1,52 @@
 package io.choerodon.base.app.service.impl;
 
-import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
-import static io.choerodon.base.infra.utils.SagaTopic.User.*;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
-import io.choerodon.base.app.service.OrganizationService;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.api.dto.*;
+import io.choerodon.base.api.dto.payload.UserEventPayload;
+import io.choerodon.base.api.validator.ResourceLevelValidator;
+import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.api.validator.UserPasswordValidator;
+import io.choerodon.base.api.validator.UserValidator;
+import io.choerodon.base.api.vo.AssignAdminVO;
+import io.choerodon.base.api.vo.DeleteAdminVO;
+import io.choerodon.base.api.vo.UserNumberVO;
+import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.base.app.service.OrganizationUserService;
-import io.choerodon.base.infra.utils.*;
+import io.choerodon.base.app.service.RoleMemberService;
+import io.choerodon.base.app.service.UserService;
+import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.asserts.*;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.enums.RoleEnum;
+import io.choerodon.base.infra.feign.FileFeignClient;
+import io.choerodon.base.infra.feign.NotifyFeignClient;
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.base.infra.utils.ImageUtils;
+import io.choerodon.base.infra.utils.PageUtils;
+import io.choerodon.base.infra.utils.ParamUtils;
+import io.choerodon.base.infra.utils.SagaTopic;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -34,42 +64,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.*;
-import io.choerodon.base.api.dto.payload.UserEventPayload;
-import io.choerodon.base.api.validator.ResourceLevelValidator;
-import io.choerodon.base.api.validator.RoleValidator;
-import io.choerodon.base.api.validator.UserPasswordValidator;
-import io.choerodon.base.api.validator.UserValidator;
-import io.choerodon.base.api.vo.AssignAdminVO;
-import io.choerodon.base.api.vo.DeleteAdminVO;
-import io.choerodon.base.api.vo.UserVO;
-import io.choerodon.base.app.service.RoleMemberService;
-import io.choerodon.base.app.service.UserService;
-import io.choerodon.base.infra.asserts.*;
-import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.enums.MemberType;
-import io.choerodon.base.infra.enums.RoleEnum;
-import io.choerodon.base.infra.feign.FileFeignClient;
-import io.choerodon.base.infra.feign.NotifyFeignClient;
-import io.choerodon.base.infra.mapper.*;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
@@ -78,7 +81,7 @@ import io.choerodon.oauth.core.password.record.PasswordRecord;
 @RefreshScope
 public class UserServiceImpl implements UserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
@@ -122,9 +125,6 @@ public class UserServiceImpl implements UserService {
 
     private RoleMapper roleMapper;
 
-    private OrganizationUserService organizationUserService;
-    private LabelMapper labelMapper;
-
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
@@ -143,9 +143,7 @@ public class UserServiceImpl implements UserService {
                            RoleMemberService roleMemberService,
                            TransactionalProducer producer,
                            RouteMemberRuleMapper routeMemberRuleMapper,
-                           RoleMapper roleMapper,
-                           OrganizationUserService organizationUserService,
-                           LabelMapper labelMapper) {
+                           RoleMapper roleMapper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.sagaClient = sagaClient;
@@ -165,8 +163,6 @@ public class UserServiceImpl implements UserService {
         this.producer = producer;
         this.routeMemberRuleMapper = routeMemberRuleMapper;
         this.roleMapper = roleMapper;
-        this.organizationUserService = organizationUserService;
-        this.labelMapper = labelMapper;
     }
 
     @Override
@@ -411,6 +407,7 @@ public class UserServiceImpl implements UserService {
     public void check(UserDTO user) {
         boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
         boolean checkPhone = !StringUtils.isEmpty(user.getPhone());
+
         if (!checkEmail && !checkPhone) {
             throw new CommonException("error.user.validation.fields.empty");
         }
@@ -434,7 +431,8 @@ public class UserServiceImpl implements UserService {
         userDTO.setPhone(phone);
         userDTO.setEnabled(true);
         if (createCheck) {
-            boolean existed = userMapper.selectOne(userDTO) != null;
+            List<UserDTO> select = userMapper.select(userDTO);
+            boolean existed = select != null && select.size() != 0;
             if (existed) {
                 throw new CommonException("error.user.phone.exist");
             }
@@ -492,6 +490,7 @@ public class UserServiceImpl implements UserService {
     @Saga(code = SagaTopic.User.ASSIGN_ADMIN, description = "分配Root权限同步事件", inputSchemaClass = AssignAdminVO.class)
     @Override
     @Transactional
+    @OperateLog(type = "addAdminUsers", content = "用户%s已被%s分配平台Root权限", level = {ResourceType.SITE})
     public void addAdminUsers(long[] ids) {
         List<Long> adminUserIds = new ArrayList<>();
         for (long id : ids) {
@@ -683,8 +682,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
@@ -1211,5 +1210,39 @@ public class UserServiceImpl implements UserService {
         roleDTO.setCode(RoleEnum.ORG_ADMINISTRATOR.value());
         RoleDTO reDto = roleMapper.selectOne(roleDTO);
         return userMapper.queryAllOrgAdmin(reDto.getId());
+    }
+
+    @Override
+    public UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime) {
+        UserNumberVO userNumberVO = new UserNumberVO();
+        long previousNumber = userMapper.countPreviousNumberByOrgIdAndDate(organizationId, new java.sql.Date(startTime.getTime()));
+        List<UserDTO> userDTOS = userMapper.selectByOrgIdAndDate(organizationId,
+                new java.sql.Date(startTime.getTime()),
+                new java.sql.Date(endTime.getTime()));
+        // 按日期分组
+        Map<String, List<UserDTO>> userMap = userDTOS.stream()
+                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate startDate = startTime.toInstant().atZone(zoneId).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(zoneId).toLocalDate();
+        long totalNumber = previousNumber;
+        while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
+            long newUserNumber = 0;
+            String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            List<UserDTO> userList = userMap.get(date);
+            if (!CollectionUtils.isEmpty(userList)) {
+                newUserNumber = userList.size();
+                totalNumber += newUserNumber;
+            }
+
+            userNumberVO.getDateList().add(date);
+            userNumberVO.getTotalUserNumberList().add(totalNumber);
+            userNumberVO.getNewUserNumberList().add(newUserNumber);
+
+            startDate = startDate.plusDays(1);
+        }
+
+        return userNumberVO;
     }
 }

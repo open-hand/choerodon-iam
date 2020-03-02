@@ -3,13 +3,16 @@ package io.choerodon.base.infra.feign;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.api.vo.AppServiceDetailsVO;
 import io.choerodon.base.api.vo.AppServiceVersionVO;
+import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.infra.dto.devops.*;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @FeignClient(value = "devops-service")
@@ -92,4 +95,15 @@ public interface DevopsFeignClient {
             @RequestParam(value = "app_service_id", required = true) String id,
             @ApiParam(value = "查询参数", required = false)
             @RequestParam(value = "params", required = false) String params);
+
+    @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
+    ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
+                                                                 @PathVariable(value = "project_id") Long projectId,
+                                                                 @RequestParam("longList") List<Long> longList);
+
+    @GetMapping("/v1/projects/{project_id}/deploy_record/count_by_date")
+    ResponseEntity<BarLabelRotationItemVO> countByDate(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam("startTime") Date startTime,
+            @RequestParam("endTime") Date endTime);
 }

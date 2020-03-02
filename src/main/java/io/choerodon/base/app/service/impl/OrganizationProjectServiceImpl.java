@@ -3,6 +3,9 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.Project.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,6 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.api.vo.BarLabelRotationItemVO;
+import io.choerodon.base.api.vo.BarLabelRotationVO;
+import io.choerodon.base.infra.feign.DevopsFeignClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,6 +82,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private AsgardFeignClient asgardFeignClient;
 
+    private DevopsFeignClient devopsFeignClient;
+
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     private ProjectRelationshipMapper projectRelationshipMapper;
@@ -119,7 +128,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           ProjectRelationshipMapper projectRelationshipMapper,
                                           RoleMemberService roleMemberService,
                                           ProjectValidator projectValidator,
-                                          TransactionalProducer producer) {
+                                          TransactionalProducer producer,
+                                          DevopsFeignClient devopsFeignClient) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
@@ -136,12 +146,14 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.roleMemberService = roleMemberService;
         this.projectValidator = projectValidator;
         this.producer = producer;
+        this.devopsFeignClient = devopsFeignClient;
     }
 
 
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO createProject(ProjectDTO projectDTO) {
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
@@ -312,6 +324,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "enableProject", content = "%s启用项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
@@ -320,6 +333,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "disableProject", content = "%s禁用项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
         if (organizationId != null) {
             organizationAssertHelper.notExisted(organizationId);
@@ -570,6 +584,34 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             result.setTotal(result.size());
             return result.toPageInfo();
         }
+    }
+
+    @Override
+    public BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime) {
+        BarLabelRotationVO barLabelRotationVO = new BarLabelRotationVO();
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate startDate = startTime.toInstant().atZone(zoneId).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(zoneId).toLocalDate();
+        while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
+            String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            barLabelRotationVO.getDateList().add(date);
+            startDate = startDate.plusDays(1);
+        }
+
+        projectIds.forEach(id -> {
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
+            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, startTime, endTime).getBody();
+            labelRotationItemVO.setName(projectDTO.getName());
+            labelRotationItemVO.setId(id);
+            barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
+        });
+        return barLabelRotationVO;
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name) {
+        return projectMapper.selectProjectsByOrgIdAndNameWithLimit(organizationId, name, 20);
     }
 
     private String getSortStringForPageQuery(Sort sort) {

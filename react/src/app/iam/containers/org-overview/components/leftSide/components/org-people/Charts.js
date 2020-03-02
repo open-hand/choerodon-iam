@@ -54,8 +54,8 @@ const Charts = observer(() => {
         formatter(params) {
           return `
           日期: ${`${dateList[0].split('-')[0]}-${params[0].name}`}</br>
-          较昨日新增: ${params[0].value}</br>
-          总人数: ${totalUserNumberList[params[0].dataIndex]}
+          较昨日新增: ${newUserNumberList[params[0].dataIndex]}</br>
+          总人数: ${params[0].value}
         `;
         },
       },
@@ -96,7 +96,7 @@ const Charts = observer(() => {
         },
       },
       series: [{
-        data: newUserNumberList,
+        data: totalUserNumberList,
         type: 'line',
         smooth: true,
         symbol: 'circle',

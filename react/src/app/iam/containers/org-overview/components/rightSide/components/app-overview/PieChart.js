@@ -95,31 +95,34 @@ const PieChart = observer(() => {
     return option;
   };
 
-  const renderChart = () => (
-    <div className="c7n-overview-appOverview-pieChart">
-      {
-        getPieRecord.length > 0 ? (
-          <Fragment>
-            <ReactEchartsCore
-              echarts={echarts}
-              option={getOpts()}
-              notMerge
-              lazyUpdate
-            />
-            <Icon type="dashboard" />
-          </Fragment>
-        ) : <Spin />
+  const renderChart = () => {
+    if (appServiceDs.current) {
+      if (appServiceDs.toData().length > 0 && getPieRecord.length > 0) {
+        return (
+          <div className="c7n-overview-appOverview-pieChart">
+            <Fragment>
+              <ReactEchartsCore
+                echarts={echarts}
+                option={getOpts()}
+                notMerge
+                lazyUpdate
+              />
+              <Icon type="dashboard" />
+            </Fragment>
+          </div>
+        );
+      } else {
+        return '此组织应用服务为空';
       }
-    </div>
-  );
+    } else {
+      return <Spin />;
+    }
+  };
 
   return (
     <Fragment>
-      {
-        appServiceDs.current && appServiceDs.toData().length > 0 ? renderChart() : '此组织应用服务为空'
-      }
+      {renderChart()}
     </Fragment>
-
   );
 });
 

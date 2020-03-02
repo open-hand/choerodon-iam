@@ -7,6 +7,7 @@ export default function useStore() {
       dates: [],
       successNums: [],
       failedNums: [],
+      totalNums: [],
     },
 
     get getEmailSendData() {

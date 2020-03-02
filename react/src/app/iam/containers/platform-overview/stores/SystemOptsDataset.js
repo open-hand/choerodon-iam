@@ -5,7 +5,7 @@ export default ({ organizationId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/operatelog/${organizationId}/operate/log?size=5`,
+      url: '/base/v1/operatelog/0/operate/log?size=5',
       method: 'get',
     },
   },

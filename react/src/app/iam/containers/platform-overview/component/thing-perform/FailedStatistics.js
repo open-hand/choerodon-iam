@@ -20,7 +20,7 @@ const FailedStatistics = withRouter(observer((props) => {
   } = useFailedStatisticsStore();
 
   const handleClickSagaRecord = (record) => {
-    history.push(`/asgard/org-saga-instance${search}&sagaId=${record.get('id')}`);
+    history.push(`/asgard/saga-instance${search}&sagaId=${record.get('id')}`);
   };
 
   const renderSagaCode = ({ value, record }) => (

@@ -133,7 +133,7 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.getProjectByOrgIdAndCode(organizationId, code), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/all")
     public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId) {
@@ -159,6 +159,7 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.pagingQuery(organizationId, Pageable, project, params),
                 HttpStatus.OK);
     }
+
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
@@ -167,5 +168,13 @@ public class OrganizationProjectController extends BaseController {
                                                                  @RequestParam(value = "start_time") Date startTime,
                                                                  @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(organizationProjectService.countDeployRecords(projectIds, startTime, endTime));
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "查询组织下项目（最多20个）")
+    @GetMapping("/with_limit")
+    public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(@PathVariable(name = "organization_id") Long organizationId,
+                                                                      @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(organizationProjectService.listProjectsWithLimit(organizationId, name));
     }
 }

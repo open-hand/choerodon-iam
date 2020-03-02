@@ -609,6 +609,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return barLabelRotationVO;
     }
 
+    @Override
+    public List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name) {
+        return projectMapper.selectProjectsByOrgIdAndNameWithLimit(organizationId, name, 20);
+    }
+
     private String getSortStringForPageQuery(Sort sort) {
         return sort.stream().map(t -> {
             String field;

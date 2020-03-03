@@ -16,6 +16,7 @@ import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.mapper.LabelMapper;
+import io.choerodon.base.infra.mapper.RoleMapper;
 import io.choerodon.core.enums.ResourceType;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
@@ -106,6 +107,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleAssertHelper roleAssertHelper;
 
+    private RoleMapper roleMapper;
+
     public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
@@ -122,7 +125,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleMemberService roleMemberService,
                                        LabelMapper labelMapper,
-                                       RoleAssertHelper roleAssertHelper) {
+                                       RoleAssertHelper roleAssertHelper,
+                                       RoleMapper roleMapper) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
@@ -140,6 +144,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.roleMemberService = roleMemberService;
         this.labelMapper = labelMapper;
         this.roleAssertHelper = roleAssertHelper;
+        this.roleMapper = roleMapper;
     }
 
     @Override
@@ -184,6 +189,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } else {
             userDTO = createUser(userDTO);
         }
+        //创建用户成功后发送消息通知用户
+        List<Long> list = Arrays.asList(userDTO.getId());
+        userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
+            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+            if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("organizationName", organizationDTO.getName());
+                params.put("roleName", roleDTO.getName());
+                userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
+            }
+        });
         return userDTO;
     }
 

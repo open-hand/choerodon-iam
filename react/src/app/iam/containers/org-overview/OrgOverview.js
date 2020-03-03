@@ -9,7 +9,7 @@ import './OrgOverview.less';
 const OrgOverview = observer(() => (
   <TabPage className="c7n-org-overview">
     <Breadcrumb />
-    <Content className="c7n-org-overview-content">
+    <Content className="c7n-org-overview-content" style={{ paddingTop: 0 }}>
       <LeftSide />
       <RightSide />
     </Content>

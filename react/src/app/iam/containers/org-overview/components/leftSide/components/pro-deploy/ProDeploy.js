@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Select } from 'choerodon-ui/pro';
 import ContainerBlock from '../../../ContainerBlock';
 import { useProDeployStore } from './stores';
+import MaxTagPopover from '../../../../../../components/MaxTagPopover';
 import Chart from './Chart';
 
 import './index.less';
@@ -28,8 +29,9 @@ const ProDeploy = observer(() => {
       dataSet={ProDeploySelectDataSet}
       name="proSelect"
       searchable
-      maxTagCount={2}
+      maxTagCount={1}
       searchMatcher="name"
+      maxTagPlaceholder={(omittedValues) => <MaxTagPopover dataSource={ProDeployStore.getProjectsArray} value={omittedValues} />}
     />
   );
 

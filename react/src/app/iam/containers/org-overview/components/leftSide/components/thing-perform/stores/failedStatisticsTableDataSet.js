@@ -9,7 +9,7 @@ export default ({ orgId }) => ({
   fields: [{
     name: 'sagaCode',
     type: 'string',
-    label: '事物实例',
+    label: '事务实例',
   }, {
     name: 'refType',
     type: 'string',

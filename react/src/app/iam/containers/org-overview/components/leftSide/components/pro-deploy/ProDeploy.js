@@ -29,6 +29,7 @@ const ProDeploy = observer(() => {
       dataSet={ProDeploySelectDataSet}
       name="proSelect"
       searchable
+      popupCls="proDeploy-select-dropdown"
       maxTagCount={1}
       searchMatcher="name"
       maxTagPlaceholder={(omittedValues) => <MaxTagPopover dataSource={ProDeployStore.getProjectsArray} value={omittedValues} />}

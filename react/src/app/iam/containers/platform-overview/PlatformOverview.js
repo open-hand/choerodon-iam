@@ -91,7 +91,7 @@ const optsRecord = [
 const PlatformOverview = observer(() => (
   <TabPage className="c7n-platform-overview">
     <Breadcrumb />
-    <Content>
+    <Content style={{ paddingTop: 0 }}>
       <div className="c7n-platform-overview-firstline">
         <ContainerBlock
           width="40%"

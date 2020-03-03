@@ -202,6 +202,12 @@ const TimeLine = observer(() => {
                   </div>
                   <p>{content}</p>
                 </div>
+                <div className="c7ncd-timeLine-border">
+                  <div />
+                  <div />
+                  <div />
+                  <div />
+                </div>
               </li>
             );
           })

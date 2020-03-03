@@ -217,6 +217,12 @@ const OptsLine = observer(() => {
                   </div>
                   <p>{content}</p>
                 </div>
+                <div className="c7ncd-opts-timeLine-border">
+                  <div />
+                  <div />
+                  <div />
+                  <div />
+                </div>
               </li>
             );
           })

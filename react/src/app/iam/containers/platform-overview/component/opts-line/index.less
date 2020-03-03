@@ -6,7 +6,6 @@
         overflow-y: auto;
         max-height: 5.9rem;
         ul {
-            border-left: 2px dotted #979797ff;
             padding-left: .48rem;
             margin-left: .20rem;
             li {
@@ -16,6 +15,11 @@
             }
             li + li {
                 margin-top: .24rem;
+            }
+            li:last-of-type {
+                .c7ncd-opts-timeLine-border {
+                    display: none;
+                }
             }
         }
     }
@@ -39,6 +43,7 @@
             font-weight: bold;
             color: rgba(58, 52, 95, 1);
             line-height: .29rem;
+            font-family: 'Akrobat Bold';
         }
         span:nth-of-type(2) {
             font-size: .13rem;
@@ -94,6 +99,22 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+    }
+    &-border {
+        position: absolute;
+        left: -.49rem;
+        width: .02rem;
+        bottom: -.41rem;
+        z-index: 99;
+        height: 58%;
+        div {
+            width: .02rem;
+            background: #979797ff;
+            height: calc(79%/4);
+        }
+        div + div {
+            margin-top: .04rem;
         }
     }
 }

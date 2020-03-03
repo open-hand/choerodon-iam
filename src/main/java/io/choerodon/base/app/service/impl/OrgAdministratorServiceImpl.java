@@ -106,7 +106,7 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @OperateLog(type = "deleteOrgAdministrator", content = "用户%s被%删除组织管理员角色", level = {ResourceType.ORGANIZATION})
+    @OperateLog(type = "deleteOrgAdministrator", content = "用户%s被%s删除组织管理员角色", level = {ResourceType.ORGANIZATION})
     public Boolean deleteOrgAdministrator(Long organizationId, Long userId) {
         RoleDTO roleDTO = roleAssertHelper.roleNotExisted(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         Long roleId = roleDTO.getId();

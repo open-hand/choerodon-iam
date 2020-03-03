@@ -15,11 +15,14 @@ const DaysPicker = (props) => {
     }
   };
 
-  const getContent = () => [7, 15, 30].map(i => (
-    <div
-      className={day === i ? 'c7n-overview-dayspicker-days c7n-overview-dayspicker-days-picked' : 'c7n-overview-dayspicker-days'}
-      onClick={() => clickDay(i)}
-    ><span>{`近${i}天`}</span>
+  const getContent = () => [7, 15, 30].map((i, iIndex) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        className={day === i ? 'c7n-overview-dayspicker-days c7n-overview-dayspicker-days-picked' : 'c7n-overview-dayspicker-days'}
+        onClick={() => clickDay(i)}
+      ><span>{`近${i}天`}</span>
+      </div>
+      {iIndex !== 2 ? (<span className="c7n-overview-dayspicker-splitSpan" />) : ''}
     </div>
   ));
 

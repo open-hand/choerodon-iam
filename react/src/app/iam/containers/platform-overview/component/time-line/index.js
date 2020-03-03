@@ -139,7 +139,7 @@ const TimeLine = observer(() => {
                       ) : null
                     }
                   </div>
-                  <div dangerouslySetInnerHTML={{ __html: content }} />
+                  <p dangerouslySetInnerHTML={{ __html: content }} />
                 </div>
               </li>
             );

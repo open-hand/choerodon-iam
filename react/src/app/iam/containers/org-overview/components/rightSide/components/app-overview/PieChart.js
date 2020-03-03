@@ -55,6 +55,8 @@ const PieChart = observer(() => {
         orient: 'vertical',
         right: '10%',
         icon: 'circle',
+        itemHeight: 10,
+        itemWidth: 10,
         selectMode: false,
         data: getLegendArr,
       },
@@ -62,7 +64,7 @@ const PieChart = observer(() => {
         {
           name: '项目名称',
           type: 'pie',
-          radius: ['62%', '100%'],
+          radius: ['69%', '100%'],
           center: ['58.6%', '50%'], // 设置饼图位置
           width: '170px',
           height: '170px',

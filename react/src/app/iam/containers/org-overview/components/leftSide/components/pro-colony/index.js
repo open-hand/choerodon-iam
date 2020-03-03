@@ -64,7 +64,7 @@ const ProColony = observer(() => {
           </div>
         </div>
       </ContainerBlock>
-      <ContainerBlock width="49%" height={140}>
+      <ContainerBlock width="47.5%" height={140}>
         <div className="c7n-overview-content">
           <Icon type="cluster" />
           <div className="c7n-overview-number_group">

@@ -20,7 +20,7 @@ const FailedStatistics = withRouter(observer((props) => {
   } = useFailedStatisticsStore();
 
   const handleClickSagaRecord = (record) => {
-    history.push(`/asgard/saga-instance${search}&sagaId=${record.get('id')}`);
+    history.push(`/asgard/saga-instance${search}&sagaCode=${record.get('sagaCode')}`);
   };
 
   const renderSagaCode = ({ value, record }) => (
@@ -29,7 +29,7 @@ const FailedStatistics = withRouter(observer((props) => {
 
   return (
     <div className="c7n-overview-failedStatistics">
-      <span className="c7n-overview-failedStatistics-titlespan">失败事物统计</span>
+      <span className="c7n-overview-failedStatistics-titlespan">失败事务统计</span>
       <Table
         className="c7n-overview-failedStatistics-table"
         dataSet={FailedStatisticsTableDataSet}

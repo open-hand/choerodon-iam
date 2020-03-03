@@ -32,6 +32,7 @@ const Charts = observer(() => {
       dates,
       successNums,
       failedNums,
+      totalNums,
     } = EmailSendStore.getEmailSendData;
 
     const totalSuccess = successNums.length > 0 ? successNums.reduce((total, currentValue) => total + currentValue) : '';
@@ -72,8 +73,8 @@ const Charts = observer(() => {
             日期: ${`${dates[0].split('-')[0]}-${params[0].name}`}</br>
             成功发送数目: ${params[0].data}</br>
             失败发送数目: ${params[1].data}</br>
-            发送总数: ${totalSuccess + totalFailed}</br>
-            发送成功率 ${((params[0].data / (totalSuccess + totalFailed)) * 100).toFixed()}%
+            发送总数: ${totalNums[params[0].dataIndex]}</br>
+            发送成功率 ${totalNums[params[0].dataIndex] !== 0 ? ((params[0].data / (totalNums[params[0].dataIndex])) * 100).toFixed(1) : 0}%
           `;
         },
       },

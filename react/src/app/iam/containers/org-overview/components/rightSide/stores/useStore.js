@@ -58,6 +58,7 @@ export default function useStore() {
               emphasis: { color: this.colorStyle[i] },
             },
           };
+          this.lengendArr.push(item.projectName);
           this.pieChartRecord.push(obj);
         }
       }

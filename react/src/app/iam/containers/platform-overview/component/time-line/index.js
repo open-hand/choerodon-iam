@@ -126,7 +126,7 @@ const TimeLine = observer(() => {
                     </div>
                     <span className="c7ncd-notice-timeLine-content-header-title">{title}</span>
                     {
-                      content.length > 60 ? (
+                      content.length > 50 ? (
                         <Button
                           className="c7ncd-notice-timeLine-content-header-btn"
                           shape="circle"
@@ -139,7 +139,7 @@ const TimeLine = observer(() => {
                       ) : null
                     }
                   </div>
-                  <p dangerouslySetInnerHTML={{ __html: content }} />
+                  <div dangerouslySetInnerHTML={{ __html: content }} />
                 </div>
               </li>
             );

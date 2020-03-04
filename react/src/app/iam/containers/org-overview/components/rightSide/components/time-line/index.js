@@ -187,7 +187,7 @@ const TimeLine = observer(() => {
                     </div>
                     <span className="c7ncd-timeLine-content-header-title">{iconType[type].typeTxt}</span>
                     {
-                      content.length > 60 ? (
+                      content.length > 50 ? (
                         <Button
                           className="c7ncd-timeLine-content-header-btn"
                           shape="circle"

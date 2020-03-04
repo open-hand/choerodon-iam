@@ -25,8 +25,9 @@ public class OperateLogServiceImpl implements OperateLogService {
     private OperateLogMapper operateLogMapper;
     private AsgardFeignClient asgardFeignClient;
 
-    public OperateLogServiceImpl(OperateLogMapper operateLogMapper) {
+    public OperateLogServiceImpl(OperateLogMapper operateLogMapper, AsgardFeignClient asgardFeignClient) {
         this.operateLogMapper = operateLogMapper;
+        this.asgardFeignClient = asgardFeignClient;
     }
 
 

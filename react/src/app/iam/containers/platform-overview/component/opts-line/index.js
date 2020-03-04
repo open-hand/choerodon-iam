@@ -65,7 +65,7 @@ const iconType = {
   addAdminUsers: {
     icon: 'account_circle',
     className: '',
-    typeTxt: '分配root',
+    typeTxt: '分配root权限',
   },
   assignUsersRoles: {
     icon: 'account_circle',

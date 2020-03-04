@@ -11,4 +11,8 @@ import org.springframework.data.domain.Pageable;
  */
 public interface OperateLogService {
     PageInfo<OperateLogVO> listOperateLog(Pageable pageable, Long sourceId);
+
+    void siteRetry(Long sourceId, long id);
+
+    void orgRetry(Long sourceId, long id);
 }

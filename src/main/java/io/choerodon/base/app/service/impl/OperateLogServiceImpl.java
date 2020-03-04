@@ -4,7 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import io.choerodon.base.api.vo.OperateLogVO;
 import io.choerodon.base.app.service.OperateLogService;
+import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.base.infra.mapper.OperateLogMapper;
+import io.choerodon.core.enums.ResourceType;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +22,12 @@ import java.util.List;
  */
 @Service
 public class OperateLogServiceImpl implements OperateLogService {
-    @Autowired
     private OperateLogMapper operateLogMapper;
-    private ModelMapper modelMapper = new ModelMapper();
+    private AsgardFeignClient asgardFeignClient;
+
+    public OperateLogServiceImpl(OperateLogMapper operateLogMapper) {
+        this.operateLogMapper = operateLogMapper;
+    }
 
 
     @Override
@@ -33,5 +39,17 @@ public class OperateLogServiceImpl implements OperateLogService {
         }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() ->
                 operateLogMapper.listOperateLogOrg(sourceId));
+    }
+
+    @Override
+    @OperateLog(type = "siteRetry", content = "%s重试了事务实例“%s”", level = {ResourceType.SITE})
+    public void siteRetry(Long sourceId, long id) {
+        asgardFeignClient.retry(id);
+    }
+
+    @Override
+    @OperateLog(type = "orgRetry", content = "%s重试了事务实例“%s”", level = {ResourceType.ORGANIZATION})
+    public void orgRetry(Long sourceId, long id) {
+        asgardFeignClient.retry(id);
     }
 }

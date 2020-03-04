@@ -505,6 +505,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "resetUserPassword", content = "%s重置%s的登录密码", level = {ResourceType.ORGANIZATION})
     public UserDTO resetUserPassword(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         UserDTO user = userAssertHelper.userNotExisted(userId);

@@ -361,6 +361,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         });
         ProjectOverViewVO projectOverViewVO1 = new ProjectOverViewVO();
         int sum = temOverViewVOS.stream().mapToInt(ProjectOverViewVO::getAppServerSum).sum();
+        //项目数量不足9个不要其他剩余
+        if (reOverViewVOS.size() <= 9) {
+            return reOverViewVOS;
+        }
         projectOverViewVO1.setProjectName("其他剩余：");
         projectOverViewVO1.setAppServerSum(sum);
         reOverViewVOS.add(projectOverViewVO1);

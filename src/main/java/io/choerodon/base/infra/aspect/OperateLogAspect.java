@@ -1,7 +1,9 @@
 package io.choerodon.base.infra.aspect;
 
+import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
@@ -14,6 +16,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,33 +36,39 @@ public class OperateLogAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(OperateLogAspect.class);
 
     //组织层解锁用户
-    private static final String unlockUser = "unlockUser";
+    private static final String UNLOCK_USER = "unlockUser";
     //组织层创建用户
-    private static final String createUserOrg = "createUserOrg";
+    private static final String CREATE_USERORG = "createUserOrg";
     //组织层启用用户
-    private static final String enableUser = "enableUser";
+    private static final String ENABLE_USER = "enableUser";
     //组织层禁用用户
-    private static final String disableUser = "disableUser";
+    private static final String DISABLE_USER = "disableUser";
     //删除组织管理员角色
-    private static final String deleteOrgAdministrator = "deleteOrgAdministrator";
+    private static final String DELETE_ORGADMINISTRATOR = "deleteOrgAdministrator";
     //添加管理员角色
     private static final String createOrgAdministrator = "createOrgAdministrator";
     //平台层修改组织的信息
-    private static final String updateOrganization = "updateOrganization";
+    private static final String UPDATE_ORGANIZATION = "updateOrganization";
     //平台层启用组织
-    private static final String enableOrganization = "enableOrganization";
+    private static final String ENABLE_ORGANIZATION = "enableOrganization";
     //平台层停用组织
-    private static final String disableOrganization = "disableOrganization";
+    private static final String DISABLE_ORGANIZATION = "disableOrganization";
     //创建项目
-    private static final String createProject = "createProject";
+    private static final String CREATE_PROJECT = "createProject";
     //启用项目
-    private static final String enableProject = "enableProject";
+    private static final String ENABLE_PROJECT = "enableProject";
     //禁用项目
-    private static final String disableProject = "disableProject";
+    private static final String DISABLE_PROJECT = "disableProject";
     //分配Root权限
-    private static final String addAdminUsers = "addAdminUsers";
+    private static final String ADDADMIN_USERS = "addAdminUsers";
     //平台/组织层角色分配
-    private static final String assignUsersRoles = "assignUsersRoles";
+    private static final String ASSIGN_USERS_ROLES = "assignUsersRoles";
+    //平台层重试事务实例
+    private static final String SITE_RETRY = "siteRetry";
+    //组织层重试是实例
+    private static final String ORG_RETRY = "orgRetry";
+    //组织层重置用户密码
+    private static final String RESET_USERPASSWORD = "resetUserPassword";
 
 
     @Autowired
@@ -76,6 +85,9 @@ public class OperateLogAspect {
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private AsgardFeignClient asgardFeignClient;
 
 
     @Pointcut("@annotation(io.choerodon.base.infra.annotation.OperateLog)")
@@ -106,19 +118,19 @@ public class OperateLogAspect {
         Long organizationId = null;
         if (null != operateLog && null != method && null != type) {
             switch (type) {
-                case unlockUser:
+                case UNLOCK_USER:
                     contentList.add(handleUnlockUserOperateLog(content, operatorId, parmMap));
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case enableUser:
+                case ENABLE_USER:
                     contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case disableUser:
+                case DISABLE_USER:
                     contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case deleteOrgAdministrator:
+                case DELETE_ORGADMINISTRATOR:
                     contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
                     organizationId = getOrganizationId(parmMap);
                     break;
@@ -126,36 +138,36 @@ public class OperateLogAspect {
                     contentList = handleCreateOrgAdministratorOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case updateOrganization:
+                case UPDATE_ORGANIZATION:
                     contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case enableOrganization:
+                case ENABLE_ORGANIZATION:
                     contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
                     break;
-                case disableOrganization:
+                case DISABLE_ORGANIZATION:
                     contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
                     break;
-                case createProject:
+                case CREATE_PROJECT:
                     contentList = handleCreateProjectOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationIdByProject(parmMap);
                     break;
-                case enableProject:
+                case ENABLE_PROJECT:
                     contentList = handleProjectOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case disableProject:
+                case DISABLE_PROJECT:
                     contentList = handleProjectOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case addAdminUsers:
+                case ADDADMIN_USERS:
                     contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
                     break;
-                case createUserOrg:
+                case CREATE_USERORG:
                     contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case assignUsersRoles:
+                case ASSIGN_USERS_ROLES:
                     if (ResourceType.ORGANIZATION.value().equals((String) parmMap.get("sourceType"))) {
                         level.remove(ResourceType.SITE);
                         contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
@@ -166,6 +178,16 @@ public class OperateLogAspect {
                         contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
                     }
                     break;
+                case SITE_RETRY:
+                    contentList = handleRetryOperateLog(content, operatorId, parmMap);
+                    break;
+                case ORG_RETRY:
+                    contentList = handleRetryOperateLog(content, operatorId, parmMap);
+                    organizationId = (Long) parmMap.get("sourceId");
+                    break;
+                case RESET_USERPASSWORD:
+                    contentList = handleResetUserpasswordOperateLog(content, operatorId, parmMap);
+                    organizationId = getOrganizationId(parmMap);
                 default:
                     break;
             }
@@ -213,6 +235,37 @@ public class OperateLogAspect {
             });
         });
         return object;
+    }
+
+    private List<String> handleResetUserpasswordOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        Long userId = (Long) parmMap.get("userId");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        UserDTO userDTO = userMapper.selectByPrimaryKey(userId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
+            return contentList;
+        }
+        String format = String.format(content, operator.getRealName(), userDTO.getId() + "(" + userDTO.getRealName() + ")");
+        contentList.add(format);
+        return contentList;
+    }
+
+
+    private List<String> handleRetryOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
+        long id = (long) parmMap.get("id");
+        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+        List<String> contentList = new ArrayList<>();
+        if (Objects.isNull(operator)) {
+            return contentList;
+        }
+        SagaTaskInstanceDTO body = asgardFeignClient.query(id).getBody();
+        if (Objects.isNull(body)) {
+            return contentList;
+        }
+        String format = String.format(content, operator.getRealName(), body.getSagaCode());
+        contentList.add(format);
+        return contentList;
+
     }
 
 

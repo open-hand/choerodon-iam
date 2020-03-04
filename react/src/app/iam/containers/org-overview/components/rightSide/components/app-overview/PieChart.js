@@ -56,7 +56,7 @@ const PieChart = observer(() => {
       legend: {
         type: 'scroll',
         orient: 'vertical',
-        right: '1%',
+        left: '200px',
         icon: 'circle',
         itemHeight: 10,
         selectMode: false,

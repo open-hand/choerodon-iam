@@ -202,7 +202,7 @@ const OptsLine = observer(() => {
                     </div>
                     <span className="c7ncd-opts-timeLine-content-header-title">{iconType[type].typeTxt}</span>
                     {
-                      content.length > 60 ? (
+                      content.length > 50 ? (
                         <Button
                           className="c7ncd-opts-timeLine-content-header-btn"
                           shape="circle"

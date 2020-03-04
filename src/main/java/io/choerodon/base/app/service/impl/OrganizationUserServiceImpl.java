@@ -189,18 +189,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } else {
             userDTO = createUser(userDTO);
         }
-        //创建用户成功后发送消息通知用户
-        List<Long> list = Arrays.asList(userDTO.getId());
-        userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
-            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
-            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-            if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
-                Map<String, Object> params = new HashMap<>();
-                params.put("organizationName", organizationDTO.getName());
-                params.put("roleName", roleDTO.getName());
-                userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
-            }
-        });
+        if (userDTO.getRoles() != null && userDTO.getRoles().size() > 0) {
+            //创建用户成功后发送消息通知用户
+            List<Long> list = Arrays.asList(userDTO.getId());
+            userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
+                RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
+                OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+                if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("organizationName", organizationDTO.getName());
+                    params.put("roleName", roleDTO.getName());
+                    userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
+                }
+            });
+        }
         return userDTO;
     }
 

@@ -35,6 +35,8 @@ const PieChart = observer(() => {
       return getLeftDataArr.map((item) => `${item.projectName}：${item.appServerSum}`).join('<br/>');
     }
   }
+
+
   const getOpts = () => {
     const option = {
       tooltip: {
@@ -52,8 +54,10 @@ const PieChart = observer(() => {
         extraCssText: 'box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.12);width:auto;height:auto;',
       },
       legend: {
+        type: 'scroll',
         orient: 'vertical',
-        right: '10%',
+        // formatter: renderLegendName,
+        left: '200px',
         icon: 'circle',
         itemHeight: 10,
         itemWidth: 10,

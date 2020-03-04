@@ -21,6 +21,14 @@ const LineChart = observer(() => {
 
   const record = onlineHourDs.current && onlineHourDs.toData()[0];
 
+  function renderY() {
+    const yArr = [];
+    const xArr = record && Object.keys(record).sort((a, b) => a.split(':')[0] - b.split(':')[0]);
+    xArr.forEach((item) => {
+      yArr.push(record[item]);
+    });
+    return yArr;
+  }
   const getOpts = () => {
     const option = {
       tooltip: {
@@ -39,7 +47,7 @@ const LineChart = observer(() => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: record && Object.keys(record),
+        data: record && Object.keys(record).sort((a, b) => a.split(':')[0] - b.split(':')[0]),
         show: false,
       },
       yAxis: {
@@ -48,7 +56,7 @@ const LineChart = observer(() => {
       },
       series: [{
         smooth: true,
-        data: record && Object.values(record),
+        data: record && renderY(),
         type: 'line',
         color: ['rgb(168, 185, 237)'],
         symbolSize: 5,
@@ -57,10 +65,6 @@ const LineChart = observer(() => {
           color: '#6887E8C2',
         },
         itemStyle: {
-          normal: {
-            // color:'#6887E8C2',
-            // borderColor:'#6887E8C2',
-          },
           emphasis: {
             color: '#CACAE4FF',
             borderColor: '#CACAE4FF',
@@ -77,7 +81,6 @@ const LineChart = observer(() => {
     };
     return option;
   };
-
   return (
     <div className="c7n-online-chart">
       <div className="c7n-online-number">
@@ -94,7 +97,7 @@ const LineChart = observer(() => {
       </div>
       <div className="c7n-online-daily">
         <span>日访问量：</span>
-        <span>{onlineNumDs.current && onlineNumDs.current.get('NumberOfVisitorsToday')}人</span>
+        <span>{onlineNumDs.current && onlineNumDs.current.get('NumberOfVisitorsToday')}次</span>
       </div>
     </div>
   );

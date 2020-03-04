@@ -122,6 +122,16 @@ const iconType = {
     className: '',
     typeTxt: '创建用户',
   },
+  orgRetry: {
+    icon: 'ballot',
+    className: '',
+    typeTxt: '重试事物',
+  },
+  resetUserPassword: {
+    icon: 'password',
+    className: '',
+    typeTxt: '重置密码',
+  },
 };
 
 const TimeLine = observer(() => {

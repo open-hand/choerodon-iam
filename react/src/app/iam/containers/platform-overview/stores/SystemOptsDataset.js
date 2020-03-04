@@ -1,15 +1,15 @@
 
-export default ({ organizationId }) => ({
+export default () => ({
   autoQuery: false,
   autoCreate: false,
   selection: false,
   transport: {
     read: {
-      url: '/base/v1/operatelog/0/operate/log?size=5',
+      url: '/base/v1/site/0/operate/log?size=5',
       method: 'get',
     },
   },
   fields: [
-    
+
   ],
 });

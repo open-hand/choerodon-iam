@@ -5,11 +5,11 @@ export default ({ organizationId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/operatelog/${organizationId}/operate/log?size=8`,
+      url: `/base/v1/organization/${organizationId}/operate/log?size=8`,
       method: 'get',
     },
   },
   fields: [
-  
+
   ],
 });

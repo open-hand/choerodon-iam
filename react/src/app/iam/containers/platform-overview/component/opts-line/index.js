@@ -137,6 +137,16 @@ const iconType = {
     className: '',
     typeTxt: '创建用户',
   },
+  registersApproval: {
+    icon: 'filter_frames',
+    className: '',
+    typeTxt: '审批注册',
+  },
+  siteRetry: {
+    icon: 'ballot',
+    className: '',
+    typeTxt: '重试事物',
+  },
 };
 
 const OptsLine = observer(() => {

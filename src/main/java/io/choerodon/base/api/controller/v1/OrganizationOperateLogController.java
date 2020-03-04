@@ -33,7 +33,7 @@ public class OrganizationOperateLogController {
 
     @GetMapping("/operate/log")
     @ApiOperation("加载更多操作记录")
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.SITE_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @CustomPageRequest
     public ResponseEntity<PageInfo<OperateLogVO>> listMoreOperateLog(
             @PathVariable(value = "source_id") Long sourceId,

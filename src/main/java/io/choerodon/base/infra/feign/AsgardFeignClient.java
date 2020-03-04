@@ -2,14 +2,12 @@ package io.choerodon.base.infra.feign;
 
 import java.util.List;
 
+import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
+import io.choerodon.base.infra.dto.asgard.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.base.infra.dto.asgard.QuartzTask;
-import io.choerodon.base.infra.dto.asgard.ScheduleMethodDTO;
-import io.choerodon.base.infra.dto.asgard.ScheduleTaskDTO;
-import io.choerodon.base.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.base.infra.feign.fallback.AsgardFeignClientFallback;
 
 /**
@@ -39,7 +37,7 @@ public interface AsgardFeignClient {
 
     @PutMapping("/v1/schedules/organizations/{organization_id}/tasks/{id}/disable")
     void disableOrgTask(@PathVariable("organization_id") long orgId,
-                        @PathVariable("id") long id,  @RequestParam("objectVersionNumber") long objectVersionNumber);
+                        @PathVariable("id") long id, @RequestParam("objectVersionNumber") long objectVersionNumber);
 
     @GetMapping("/v1/schedules/organizations/{organization_id}/tasks/{id}")
     ResponseEntity<ScheduleTaskDetail> getTaskDetail(@PathVariable("organization_id") long orgId,
@@ -48,4 +46,11 @@ public interface AsgardFeignClient {
     @GetMapping("/v1/schedules/organizations/{organization_id}/methods/service")
     ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(@PathVariable("organization_id") long orgId,
                                                                @RequestParam(value = "service") String service);
+
+    @PutMapping("/v1/sagas/tasks/instances/{id}/retry")
+    void retry(@PathVariable("id") long id);
+
+    @GetMapping("/v1/sagas/tasks/instances/{id}")
+    ResponseEntity<SagaTaskInstanceDTO> query(@PathVariable("id") Long id);
+
 }

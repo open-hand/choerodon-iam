@@ -145,7 +145,7 @@ const iconType = {
   siteRetry: {
     icon: 'ballot',
     className: '',
-    typeTxt: '重试事物',
+    typeTxt: '重试事务',
   },
 };
 

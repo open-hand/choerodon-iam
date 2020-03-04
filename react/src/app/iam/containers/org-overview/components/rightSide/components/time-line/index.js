@@ -125,7 +125,7 @@ const iconType = {
   orgRetry: {
     icon: 'ballot',
     className: '',
-    typeTxt: '重试事物',
+    typeTxt: '重试事务',
   },
   resetUserPassword: {
     icon: 'password',

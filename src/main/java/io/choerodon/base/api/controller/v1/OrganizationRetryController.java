@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Date: 2020/2/25
  */
 @RestController
-@RequestMapping("/v1/organization")
+@RequestMapping("/v1/organization/{source_id}")
 public class OrganizationRetryController {
     private OperateLogService operateLogService;
 

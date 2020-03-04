@@ -1,25 +1,25 @@
 package io.choerodon.base.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.base.app.service.SyncDateService;
+import io.choerodon.base.infra.dto.LabelDTO;
+import io.choerodon.base.infra.dto.RoleDTO;
+import io.choerodon.base.infra.dto.RoleLabelDTO;
+import io.choerodon.base.infra.dto.RolePermissionDTO;
+import io.choerodon.base.infra.mapper.LabelMapper;
+import io.choerodon.base.infra.mapper.RoleLabelMapper;
+import io.choerodon.base.infra.mapper.RoleMapper;
+import io.choerodon.base.infra.mapper.RolePermissionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.app.service.SyncDateService;
-import io.choerodon.base.infra.dto.LabelDTO;
-import io.choerodon.base.infra.dto.RoleDTO;
-import io.choerodon.base.infra.dto.RoleLabelDTO;
-import io.choerodon.base.infra.mapper.LabelMapper;
-import io.choerodon.base.infra.mapper.RoleLabelMapper;
-import io.choerodon.base.infra.mapper.RoleMapper;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SyncDateServiceImpl implements SyncDateService {
@@ -33,6 +33,8 @@ public class SyncDateServiceImpl implements SyncDateService {
     private LabelMapper labelMapper;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private RolePermissionMapper rolePermissionMapper;
     @Autowired
     private RoleLabelMapper roleLabelMapper;
 
@@ -62,6 +64,8 @@ public class SyncDateServiceImpl implements SyncDateService {
                 if ("0.21.0".equals(version)) {
                     LOGGER.info("修复数据开始");
                     syncRole();
+                    // 删除与角色层级不匹配的接口权限
+                    deleteInvalidRolePermission();
                     LOGGER.info("修复数据完成");
                 } else {
                     LOGGER.info("version not matched");
@@ -72,7 +76,16 @@ public class SyncDateServiceImpl implements SyncDateService {
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
         }
+        private void deleteInvalidRolePermission() {
+            // 查询与角色层级不匹配的接口权限
+            List<RolePermissionDTO> rolePermissionDTOS = rolePermissionMapper.selectInvalidData();
+            // 删除不合法的权限
+            rolePermissionDTOS.forEach(rolePermissionDTO -> rolePermissionMapper.deleteByPrimaryKey(rolePermissionDTO.getId()));
+
+        }
     }
+
+
 
     private void syncRole() {
         //删除部署管理员角色

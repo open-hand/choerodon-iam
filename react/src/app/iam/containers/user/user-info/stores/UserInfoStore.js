@@ -38,6 +38,9 @@ class UserInfoStore {
   checkPhoneExist = phone => (
     axios.post('/base/v1/users/check', JSON.stringify({ id: this.userInfo.id, phone }))
   );
-}
 
+  resetPassword = (userId) => (
+    axios.put(`/devops/v1/users/${userId}/git_password`)
+  );
+}
 export default UserInfoStore;

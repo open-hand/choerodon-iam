@@ -1,8 +1,9 @@
 import React, { Component, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Form, Icon, Input, Select, Modal as OldModal } from 'choerodon-ui';
-import { Modal, Tooltip } from 'choerodon-ui/pro';
+import { Modal, Spin, Tooltip } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Content, Header, Page, Permission, axios, Breadcrumb, Choerodon } from '@choerodon/boot';
 import './Userinfo.less';
 import TextEditToggle from './textEditToggle';
@@ -13,9 +14,11 @@ import EditPassword from './EditPassword';
 const { Text, Edit } = TextEditToggle;
 
 const createKey = Modal.key();
+const resetGitlabKey = Modal.key();
+
 function UserInfo(props) {
   const context = useStore();
-  const { AppState, UserInfoStore, intl, intlPrefix, prefixCls } = context;
+  const { AppState, UserInfoStore, intl, intlPrefix, prefixCls, userId } = context;
   const [enablePwd, setEnablePwd] = useState({});
   const [avatar, setAvatar] = useState('');
   const modalRef = React.createRef();
@@ -140,19 +143,22 @@ function UserInfo(props) {
       },
     });
   }
+
+  function goToGitlab() {
+    const { resetGitlabPasswordUrl } = enablePwd;
+    if (enablePwd.enable_reset) {
+      window.open(resetGitlabPasswordUrl);
+    }
+  }
+
   function handleUpdateStore() {
     OldModal.confirm({
       className: 'c7n-iam-confirm-modal',
-      title: '修改仓库密码',
-      content: '确定要修改您的gitlab仓库密码吗？点击确定后，您将跳转至GitLab仓库克隆密码的修改页面。',
+      title: '修改GitLab密码',
+      content: '确定要修改您的gitlab仓库密码吗？确定修改后，您将跳转至GitLab仓库密码的修改页面。',
       okText: '修改',
       width: 560,
-      onOk: () => {
-        const { resetGitlabPasswordUrl } = enablePwd;
-        if (enablePwd.enable_reset) {
-          window.open(resetGitlabPasswordUrl);
-        }
-      },
+      onOk: goToGitlab,
     });
   }
 
@@ -189,6 +195,68 @@ function UserInfo(props) {
       ,
     });
   }
+  
+  function handleCopy() {
+    Choerodon.prompt('复制成功');
+  }
+
+  async function handleResetGitlab(modal) {
+    modal.update({
+      children: <Spin spinning />,
+      footer: null,
+    });
+    try {
+      const res = await UserInfoStore.resetPassword(userId);
+      if (res && !res.falied) {
+        const children = (
+          <div className={`${prefixCls}-reset-content`}>
+            <span>您的GitLab密码已被重置为：</span>
+            <span className={`${prefixCls}-reset-content-password`}>{res}</span>
+            <CopyToClipboard
+              text={res}
+              onCopy={handleCopy}
+            >
+              <Icon type="content_copy" className={`${prefixCls}-reset-content-icon`} />
+            </CopyToClipboard>
+            <div>为了您的账号安全，请复制以上密码，并尽快前往GitLab修改重置后的密码。</div>
+          </div>
+        );
+        modal.update({
+          children,
+          okText: '前往修改密码',
+          onOk: goToGitlab,
+          footer: (okBtn, cancelBtn) => (
+            <div>
+              {cancelBtn}
+              {okBtn}
+            </div>
+          ),
+        });
+      } else {
+        modal.update({
+          children: <Spin spinning />,
+          footer: (okBtn, cancelBtn) => cancelBtn,
+        });
+      }
+    } catch (e) {
+      modal.update({
+        children: <Spin spinning />,
+        footer: (okBtn, cancelBtn) => cancelBtn,
+      });
+    }
+    return false;
+  }
+
+  function openResetGitlab() {
+    const resetModal = Modal.open({
+      key: resetGitlabKey,
+      title: '重置GitLab密码',
+      children: '确定要重置您当前的gitlab仓库密码吗？密码重置后，为了您的账号安全，请务必尽快修改重置后的密码。',
+      okText: '重置',
+      movable: false,
+      onOk: () => handleResetGitlab(resetModal),
+    });
+  }
 
   useEffect(() => {
     loadUserInfo();
@@ -210,7 +278,11 @@ function UserInfo(props) {
         ]}
       >
         <Header className={`${prefixCls}-header`}>
-          <Button className={`${prefixCls}-header-btn`} onClick={handleUpdateInfo.bind(this)} icon="mode_edit">
+          <Button
+            className={`${prefixCls}-header-btn`}
+            onClick={handleUpdateInfo.bind(this)}
+            icon="mode_edit"
+          >
             修改信息
           </Button>
           <Tooltip title={AppState.getUserInfo.ldap ? 'LDAP用户无法修改登录密码' : ''}>
@@ -230,6 +302,13 @@ function UserInfo(props) {
             disabled={!enablePwd.enable_reset}
           >
             修改仓库密码
+          </Button>
+          <Button
+            onClick={openResetGitlab}
+            icon="swap_horiz"
+            className="user-info-header-btn"
+          >
+            重置GitLab密码
           </Button>
         </Header>
         <Breadcrumb />

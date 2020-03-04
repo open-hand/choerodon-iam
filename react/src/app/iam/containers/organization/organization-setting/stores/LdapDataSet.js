@@ -21,7 +21,7 @@ export default ({ orgId, name }) => {
       },
       submit: ({ data: [ldap] }) => ({
         url: `/base/v1/organizations/${orgId}/ldaps`,
-        method: 'post',
+        method: 'put',
         dataKey: null,
         data: ldap,
       }),

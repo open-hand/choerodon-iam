@@ -12,11 +12,12 @@ export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { AppState: { currentMenuType: { type, id, organizationId } }, intl, children } = props;
+    const { AppState: { currentMenuType: { type, id, organizationId }, getUserId: userId }, intl, children } = props;
     const intlPrefix = 'user.userinfo';
     const UserInfoStore = useMemo(() => new UserInfoStoreObject(), []);
     const value = {
       ...props,
+      userId,
       prefixCls: 'user-info',
       intlPrefix,
       permissions: [

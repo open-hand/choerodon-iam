@@ -18,6 +18,7 @@
     "hjson": "^3.1.1",
     "mobx-react-lite": "^1.4.1",
     "react-codemirror": "^1.0.0",
+    "react-copy-to-clipboard": "^5.0.2",
     "react-image-lightbox": "^4.6.0",
     "react-markdown": "^4.2.2",
     "react-quill": "^1.2.6",

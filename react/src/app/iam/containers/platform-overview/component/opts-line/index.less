@@ -1,6 +1,9 @@
 .c7ncd-opts-timeLine {
     width: 100%;
     margin-top: .32rem;
+    &-empty {
+        color: rgba(58, 52, 95, 0.65);
+    }
     &-body {
         padding-right: .07rem;
         overflow-y: auto;
@@ -102,6 +105,7 @@
             white-space: nowrap;
         }
     }
+
     &-border {
         position: absolute;
         left: -.49rem;
@@ -112,7 +116,7 @@
         div {
             width: .02rem;
             background: #979797ff;
-            height: calc(79%/4);
+            height: calc(79% / 4);
         }
         div + div {
             margin-top: .04rem;

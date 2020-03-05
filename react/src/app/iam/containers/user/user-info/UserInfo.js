@@ -195,7 +195,7 @@ function UserInfo(props) {
       ,
     });
   }
-  
+
   function handleCopy() {
     Choerodon.prompt('复制成功');
   }
@@ -300,13 +300,19 @@ function UserInfo(props) {
             onClick={handleUpdateStore.bind(this)}
             icon="mode_edit"
             disabled={!enablePwd.enable_reset}
+            style={{
+              textTransform: 'none',
+            }}
           >
-            修改仓库密码
+            修改GitLab密码
           </Button>
           <Button
             onClick={openResetGitlab}
             icon="swap_horiz"
             className="user-info-header-btn"
+            style={{
+              textTransform: 'none',
+            }}
           >
             重置GitLab密码
           </Button>

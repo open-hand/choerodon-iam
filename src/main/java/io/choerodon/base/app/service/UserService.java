@@ -309,4 +309,19 @@ public interface UserService {
      * @return
      */
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
+
+    /**
+     * 校验用户是否是root用户
+     * @param id
+     * @return
+     */
+    Boolean checkIsRoot(Long id);
+
+    /**
+     * 校验用户是否是组织Root用户
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    Boolean checkIsOrgRoot(Long organizationId, Long userId);
 }

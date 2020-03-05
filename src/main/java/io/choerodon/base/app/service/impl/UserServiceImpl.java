@@ -19,7 +19,6 @@ import io.choerodon.base.api.vo.AssignAdminVO;
 import io.choerodon.base.api.vo.DeleteAdminVO;
 import io.choerodon.base.api.vo.UserNumberVO;
 import io.choerodon.base.api.vo.UserVO;
-import io.choerodon.base.app.service.OrganizationUserService;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.annotation.OperateLog;
@@ -86,6 +85,7 @@ public class UserServiceImpl implements UserService {
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
+    private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
     private static final String SITE_ROOT = "role/site/default/administrator";
@@ -1244,5 +1244,19 @@ public class UserServiceImpl implements UserService {
         }
 
         return userNumberVO;
+    }
+
+    @Override
+    public Boolean checkIsRoot(Long id) {
+        UserDTO userDTO = userMapper.selectByPrimaryKey(id);
+        if (userDTO == null) {
+            throw new CommonException(USER_NOT_FOUND_EXCEPTION);
+        }
+        return userDTO.getAdmin();
+    }
+
+    @Override
+    public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
+        return userMapper.isOrgAdministrator(organizationId, userId);
     }
 }

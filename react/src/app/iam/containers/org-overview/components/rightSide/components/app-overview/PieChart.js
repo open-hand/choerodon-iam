@@ -115,7 +115,7 @@ const PieChart = observer(() => {
         </div>
       );
     } else {
-      return '此组织应用服务为空';
+      return <span className="c7n-overview-appOverview-empty">此组织应用服务为空</span>;
     }
   };
 

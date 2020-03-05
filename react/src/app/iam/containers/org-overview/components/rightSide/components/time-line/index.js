@@ -233,7 +233,7 @@ const TimeLine = observer(() => {
           <div className="c7ncd-timeLine-body">
             {renderData()}
           </div>
-        ) : '暂无更多记录...'
+        ) : <span className="c7ncd-timeLine-empty">暂无更多记录...</span>
       }
       {isMore && <Button type="primary" onClick={loadMoreOptsRecord}>加载更多</Button>}
     </div>

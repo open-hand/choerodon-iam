@@ -38,11 +38,11 @@ const LineChart = observer(() => {
         backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
           fontWeight: 400,
-          color: '#fff',
+          color: '#FFF',
           fontSize: '13px',
           lineHeight: '12px',
         },
-        extraCssText: 'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);width:auto;height:auto;z-index:999',
+        extraCssText: 'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);width:156px;height:63px;',
       },
       xAxis: {
         type: 'category',

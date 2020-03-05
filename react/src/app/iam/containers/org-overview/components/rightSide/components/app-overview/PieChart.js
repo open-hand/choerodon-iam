@@ -43,15 +43,15 @@ const PieChart = observer(() => {
         trigger: 'item',
         formatter: renderChartNumber, // 自定义label
         padding: 13,
-        backgroundColor: 'rgba(255,255,255,1)',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         position: 'bottom',
         textStyle: {
           fontWeight: 400,
-          color: 'rgba(58, 52, 95, 0.65)',
+          color: '#fff',
           fontSize: '13px',
           lineHeight: '12px',
         },
-        extraCssText: 'box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.12);width:auto;height:auto;z-index:999',
+        extraCssText: 'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);width:auto;height:auto;z-index:999',
       },
       legend: {
         type: 'scroll',

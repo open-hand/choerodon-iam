@@ -35,14 +35,14 @@ const LineChart = observer(() => {
         trigger: 'item',
         formatter: '时间：{b}<br/>在线人数：{c}',
         padding: 13,
-        backgroundColor: 'rgba(255,255,255,1)',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
           fontWeight: 400,
-          color: '#3A345FA6',
+          color: '#fff',
           fontSize: '13px',
           lineHeight: '12px',
         },
-        extraCssText: 'box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.12);width:156px;height:63px;',
+        extraCssText: 'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);width:auto;height:auto;z-index:999',
       },
       xAxis: {
         type: 'category',

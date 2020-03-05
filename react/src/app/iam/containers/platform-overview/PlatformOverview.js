@@ -29,7 +29,7 @@ const PlatformOverview = observer(() => (
       <div className="c7n-platform-overview-content">
         <div className="c7n-platform-overview-content-left">
           <EmailSend />
-          <ThingPerform />
+          <ThingPerform /> 
         </div>
         <div className="c7n-platform-overview-content-right">
           <ContainerBlock

@@ -245,7 +245,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), userDTO.getId() + "(" + userDTO.getRealName() + ")");
+        String format = String.format(content, operator.getRealName(), userDTO.getRealName() + "(" + userDTO.getLoginName() + ")");
         contentList.add(format);
         return contentList;
     }
@@ -400,7 +400,7 @@ public class OperateLogAspect {
         UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         UserDTO targeter = userMapper.selectByPrimaryKey(userId);
         if (!Objects.isNull(operator) && !Objects.isNull(targeter)) {
-            return targeter.getId() + "(" + targeter.getRealName() + ")";
+            return targeter.getRealName() + "(" + targeter.getLoginName() + ")";
         }
         throw new CommonException("error.query.user");
     }

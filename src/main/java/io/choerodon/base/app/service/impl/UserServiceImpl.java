@@ -1259,4 +1259,9 @@ public class UserServiceImpl implements UserService {
     public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
         return userMapper.isOrgAdministrator(organizationId, userId);
     }
+
+    @Override
+    public List<UserDTO> listProjectOwnerById(Long projectId) {
+        return userMapper.listProjectOwnerById(projectId);
+    }
 }

@@ -245,8 +245,10 @@ public interface UserService {
     OrganizationProjectDTO queryOrganizationProjectByUserId(Long userId);
 
     List<UserDTO> listEnableUsersByRouteRuleCode(String userName);
+
     /**
      * 查询用户下指定项目，
+     *
      * @param id
      * @param projectId
      * @return null (项目不存在或者用户没有项目权限)
@@ -255,6 +257,7 @@ public interface UserService {
 
     /**
      * 校验用户是否是项目的所有者
+     *
      * @param id
      * @param projectId
      * @return true 是
@@ -266,6 +269,7 @@ public interface UserService {
 
     /**
      * 校验用户是否是gitlab项目所有者
+     *
      * @param id
      * @param projectId
      * @return
@@ -274,6 +278,7 @@ public interface UserService {
 
     /**
      * 查询项目下指定角色的用户列表
+     *
      * @param projectId
      * @param roleLable
      * @return
@@ -282,6 +287,7 @@ public interface UserService {
 
     /**
      * 根据projectId和param模糊查询loginName和realName两列
+     *
      * @param projectId
      * @param param
      * @return
@@ -291,18 +297,21 @@ public interface UserService {
 
     /**
      * 查询所有的Root用户
+     *
      * @return 所有的root用户
      */
     List<UserDTO> queryAllAdminUsers();
 
     /**
      * 查询所有的组织管理员
+     *
      * @return
      */
     List<UserDTO> queryAllOrgAdmin();
 
     /**
      * 按时间段统计组织或平台人数
+     *
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
      * @param endTime
@@ -312,6 +321,7 @@ public interface UserService {
 
     /**
      * 校验用户是否是root用户
+     *
      * @param id
      * @return
      */
@@ -319,9 +329,17 @@ public interface UserService {
 
     /**
      * 校验用户是否是组织Root用户
+     *
      * @param organizationId
      * @param userId
      * @return
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
+
+    /**
+     * 查询项目下的项目所有者
+     * @param projectId
+     * @return
+     */
+    List<UserDTO> listProjectOwnerById(Long projectId);
 }

@@ -1378,4 +1378,15 @@
             AND iu.creation_date <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
         </if>
     </select>
+    <select id="listProjectOwnerById" resultType="io.choerodon.base.infra.dto.UserDTO">
+         SELECT
+               iu.id,iu.email,iu.real_name,iu.phone
+         FROM iam_user iu
+         JOIN iam_member_role imr ON iu.id =imr.member_id
+         JOIN iam_role ir ON ir.id=imr.role_id
+         WHERE
+               imr.source_type='project'
+         AND   ir.code='role/project/default/project-owner'
+         AND   imr.source_id=#{projectId}
+    </select>
 </mapper>

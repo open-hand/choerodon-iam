@@ -47,6 +47,7 @@ public class ProjectUserController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, Pageable, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下指定角色的用户列表")
     @GetMapping(value = "/{project_id}/users/{role_lable}")
@@ -64,5 +65,12 @@ public class ProjectUserController extends BaseController {
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
                                                          @RequestParam(required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByName(projectId, param));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation("根据项目id查询项目下的项目所有者")
+    @GetMapping("/{project_id}/owner/list")
+    public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(userService.listProjectOwnerById(projectId));
     }
 }

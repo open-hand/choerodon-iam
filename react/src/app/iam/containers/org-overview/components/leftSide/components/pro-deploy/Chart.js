@@ -46,8 +46,8 @@ const Charts = observer(() => {
       },
       grid: {
         top: '30px',
-        left: 0,
-        right: '50px',
+        left: projectDataList && projectDataList.length > 0 ? 0 : '20px',
+        right: projectDataList && projectDataList.length > 0 ? '50px' : '53px',
         bottom: 0,
         containLabel: true,
       },

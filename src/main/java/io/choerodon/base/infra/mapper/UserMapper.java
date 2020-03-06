@@ -321,6 +321,7 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 统计指定时间前平台或组织人数
+     *
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
      * @return
@@ -330,12 +331,15 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 查询指定时间平台或组织新增人数
+     *
      * @param organizationId 如果为null，则查询平台人数
      * @param startTime
      * @param endTime
      * @return
      */
-    List<UserDTO> selectByOrgIdAndDate(@Param("organizationId")Long organizationId,
+    List<UserDTO> selectByOrgIdAndDate(@Param("organizationId") Long organizationId,
                                        @Param("startTime") Date startTime,
                                        @Param("endTime") Date endTime);
+
+    List<UserDTO> listProjectOwnerById(@Param("projectId") Long projectId);
 }

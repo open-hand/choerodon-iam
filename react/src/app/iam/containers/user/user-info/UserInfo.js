@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Form, Icon, Input, Select, Modal as OldModal } from 'choerodon-ui';
-import { Modal, Spin, Tooltip } from 'choerodon-ui/pro';
+import { Button, Form, Icon, Input, Select, Modal as OldModal, Tooltip } from 'choerodon-ui';
+import { Modal, Spin } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Content, Header, Page, Permission, axios, Breadcrumb, Choerodon } from '@choerodon/boot';
@@ -285,7 +285,7 @@ function UserInfo(props) {
           >
             修改信息
           </Button>
-          <Tooltip title={AppState.getUserInfo.ldap ? 'LDAP用户无法修改登录密码' : ''}>
+          <Tooltip placement="bottom" title={AppState.getUserInfo.ldap ? 'LDAP用户无法修改登录密码' : ''}>
             <Button
               className="user-info-header-btn"
               onClick={handleUpdatePassword.bind(this)}

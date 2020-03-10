@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { Progress, message } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
+import moment from 'moment';
 import { useInterval } from '../../../../../components/costomHooks';
 import Store from './stores';
 
@@ -10,32 +11,20 @@ import './index.less';
 // 计算时间差
 function handleLoadTime(startTime, endTime) {
   if (startTime && endTime) {
-    const formatDate1 = startTime.replace(/ /g, '/');
-    const formatData2 = endTime.replace(/ /g, '/');
-    const date1 = new Date(formatDate1);
-    const date2 = new Date(formatData2);
-    const date3 = date2.getTime() - date1.getTime();// 时间差的毫秒数
+    const releaseDate = moment(endTime);
+    const currentDate = moment(startTime);
 
-    // 计算出相差天数
-    const days = Math.floor(date3 / (24 * 3600 * 1000));
-    // 计算出小时数
+    const diff = releaseDate.diff(currentDate);
+    const diffDuration = moment.duration(diff);
 
-    const leave1 = date3 % (24 * 3600 * 1000);// 计算天数后剩余的毫秒数
-    const hours = Math.floor(leave1 / (3600 * 1000));
-    // 计算相差分钟数
-    const leave2 = leave1 % (3600 * 1000);// 计算小时数后剩余的毫秒数
-    const minutes = Math.floor(leave2 / (60 * 1000));
+    const diffYears = diffDuration.years();
+    const diffMonths = diffDuration.months();
+    const diffDays = diffDuration.days();
+    const diffHours = diffDuration.hours();
+    const diffMinutes = diffDuration.minutes();
+    const diffSeconds = diffDuration.seconds();
 
-    // 计算相差秒数
-
-    const leave3 = leave2 % (60 * 1000);// 计算分钟数后剩余的毫秒数
-    const seconds = Math.round(leave3 / 1000);
-    const setDay = days !== 0 ? `${days}天` : '';
-    const setHours = hours !== 0 ? `${hours}小时` : '';
-    const setMinutes = minutes !== 0 ? `${minutes} 分钟` : '';
-    const setSeconds = `${seconds} 秒`;
-    const time = setDay + setHours + setMinutes + setSeconds;
-    return time;
+    return `${diffYears ? `${diffYears}年` : ''}${diffMonths ? `${diffMonths}月` : ''}${diffDays ? `${diffDays}日` : ''}${diffHours ? `${diffHours}小时` : ''}${diffMinutes ? `${diffMinutes}分钟` : ''}${diffSeconds ? `${diffSeconds}秒` : ''}`;
   } else {
     return '正在计算时间...';
   }

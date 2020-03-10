@@ -365,7 +365,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (reOverViewVOS.size() <= 9) {
             return reOverViewVOS;
         }
-        projectOverViewVO1.setProjectName("其他剩余：");
+        projectOverViewVO1.setProjectName("其他剩余");
         projectOverViewVO1.setAppServerSum(sum);
         reOverViewVOS.add(projectOverViewVO1);
         return reOverViewVOS;

@@ -439,4 +439,12 @@ public class UserController extends BaseController {
                                                     @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userService.countByDate(null, startTime, endTime));
     }
+
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation("校验用户是否是Root用户")
+    @GetMapping("/{id}/check_is_root")
+    public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userService.checkIsRoot(id));
+    }
+
 }

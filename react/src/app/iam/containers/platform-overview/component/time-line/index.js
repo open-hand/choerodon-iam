@@ -155,7 +155,7 @@ const TimeLine = observer(() => {
         <div className="c7ncd-notice-timeLine-body">
           {renderData()}
         </div>
-      ) : '暂无更多记录...'}
+      ) : <span className="c7ncd-notice-timeLine-empty">暂无更多记录...</span>}
       {isMore && <Button type="primary" onClick={loadMoreNoticeRecord}>加载更多</Button>}
     </div>
   );

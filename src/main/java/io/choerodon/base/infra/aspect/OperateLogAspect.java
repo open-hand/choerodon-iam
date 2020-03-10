@@ -46,7 +46,7 @@ public class OperateLogAspect {
     //删除组织管理员角色
     private static final String DELETE_ORGADMINISTRATOR = "deleteOrgAdministrator";
     //添加管理员角色
-    private static final String createOrgAdministrator = "createOrgAdministrator";
+    private static final String CREATE_ORGADMINISTRATOR = "createOrgAdministrator";
     //平台层修改组织的信息
     private static final String UPDATE_ORGANIZATION = "updateOrganization";
     //平台层启用组织
@@ -134,7 +134,7 @@ public class OperateLogAspect {
                     contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
                     organizationId = getOrganizationId(parmMap);
                     break;
-                case createOrgAdministrator:
+                case CREATE_ORGADMINISTRATOR:
                     contentList = handleCreateOrgAdministratorOperateLog(content, operatorId, parmMap);
                     organizationId = getOrganizationId(parmMap);
                     break;
@@ -245,7 +245,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), userDTO.getId() + "(" + userDTO.getRealName() + ")");
+        String format = String.format(content, operator.getRealName(), userDTO.getRealName() + "(" + userDTO.getLoginName() + ")");
         contentList.add(format);
         return contentList;
     }
@@ -400,7 +400,7 @@ public class OperateLogAspect {
         UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         UserDTO targeter = userMapper.selectByPrimaryKey(userId);
         if (!Objects.isNull(operator) && !Objects.isNull(targeter)) {
-            return targeter.getId() + "(" + targeter.getRealName() + ")";
+            return targeter.getRealName() + "(" + targeter.getLoginName() + ")";
         }
         throw new CommonException("error.query.user");
     }

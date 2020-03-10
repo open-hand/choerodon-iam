@@ -21,7 +21,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * Date: 2020/2/25
  */
 @RestController
-@RequestMapping("/v1/site")
+@RequestMapping("/v1/site/{source_id}")
 public class SiteRetryController {
     private OperateLogService operateLogService;
 

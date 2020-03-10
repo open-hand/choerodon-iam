@@ -204,4 +204,12 @@ public class OrganizationUserController extends BaseController {
                                                       @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userService.countByDate(organizationId, startTime, endTime));
     }
+
+    @Permission(type = ResourceType.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "判断用户是否是组织管理员")
+    @GetMapping(value = "/users/{user_id}/check_is_root")
+    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
+                                                  @PathVariable(name = "user_id") Long userId) {
+        return ResponseEntity.ok(userService.checkIsOrgRoot(organizationId, userId));
+    }
 }

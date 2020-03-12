@@ -265,7 +265,6 @@ public class OperateLogAspect {
         String format = String.format(content, getParms(operatorId), body.getSagaCode());
         contentList.add(format);
         return contentList;
-
     }
 
 

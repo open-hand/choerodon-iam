@@ -61,6 +61,9 @@ const PieChart = observer(() => {
         itemHeight: 10,
         selectMode: false,
         data: getLegendArr,
+        textStyle: {
+          color: '#3A345FA6',
+        },
       },
       series: [
         {

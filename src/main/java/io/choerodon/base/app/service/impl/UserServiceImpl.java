@@ -1271,4 +1271,9 @@ public class UserServiceImpl implements UserService {
     public List<UserDTO> listProjectOwnerById(Long projectId) {
         return userMapper.listProjectOwnerById(projectId);
     }
+
+    @Override
+    public List<UserDTO> listUsersByNameWithLimit(Long projectId, String name) {
+        return userMapper.listUsersByNameWithLimit(projectId, name);
+    }
 }

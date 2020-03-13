@@ -342,4 +342,6 @@ public interface UserService {
      * @return
      */
     List<UserDTO> listProjectOwnerById(Long projectId);
+
+    List<UserDTO> listUsersByNameWithLimit(Long projectId, String name);
 }

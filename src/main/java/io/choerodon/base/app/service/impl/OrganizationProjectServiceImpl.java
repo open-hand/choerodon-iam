@@ -579,10 +579,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (doPage) {
             return PageMethod.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
         } else {
-            Page<ProjectDTO> result = new Page<>();
-            result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
-            result.setTotal(result.size());
-            return result.toPageInfo();
+            try (Page<ProjectDTO> result = new Page<>()) {
+                result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
+                result.setTotal(result.size());
+                return result.toPageInfo();
+            }
         }
     }
 

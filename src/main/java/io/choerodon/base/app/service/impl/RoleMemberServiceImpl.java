@@ -221,11 +221,12 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         int size = pageable.getPageSize();
         int start = PageUtils.getBegin(page, size);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDTO> result = new Page<>(page, size);
-        int count = memberRoleMapper.selectCountClients(sourceId, resourceType.value(), clientRoleSearchDTO, param);
-        result.setTotal(count);
-        result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, resourceType.value(), clientRoleSearchDTO, param, start, size));
-        return result.toPageInfo();
+        try (Page<ClientDTO> result = new Page<>(page, size)) {
+            int count = memberRoleMapper.selectCountClients(sourceId, resourceType.value(), clientRoleSearchDTO, param);
+            result.setTotal(count);
+            result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, resourceType.value(), clientRoleSearchDTO, param, start, size));
+            return result.toPageInfo();
+        }
     }
 
 

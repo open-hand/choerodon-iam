@@ -153,22 +153,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
-                    loginName, realName, roleName, enabled, locked, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
+                        loginName, realName, roleName, enabled, locked, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
+                        organizationId, loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
+                        organizationId, loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override

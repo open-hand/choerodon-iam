@@ -1273,7 +1273,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> listUsersByNameWithLimit(Long projectId, String name) {
-        return userMapper.listUsersByNameWithLimit(projectId, name);
+    public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
+        return userMapper.listUsersByNameWithLimit(projectId, param);
     }
 }

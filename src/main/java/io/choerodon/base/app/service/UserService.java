@@ -343,5 +343,5 @@ public interface UserService {
      */
     List<UserDTO> listProjectOwnerById(Long projectId);
 
-    List<UserDTO> listUsersByNameWithLimit(Long projectId, String name);
+    List<UserDTO> listUsersByNameWithLimit(Long projectId, String param);
 }

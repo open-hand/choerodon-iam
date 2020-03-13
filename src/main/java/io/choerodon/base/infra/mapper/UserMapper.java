@@ -346,9 +346,9 @@ public interface UserMapper extends Mapper<UserDTO> {
     /**
      * 按用户名搜索项目下的用户（限制20个）
      * @param projectId
-     * @param name
+     * @param param
      * @return
      */
     List<UserDTO> listUsersByNameWithLimit(@Param("projectId")Long projectId,
-                                           @Param("name")String name);
+                                           @Param("param")String param);
 }

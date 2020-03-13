@@ -73,4 +73,12 @@ public class ProjectUserController extends BaseController {
     public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(userService.listProjectOwnerById(projectId));
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)")
+    @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
+    public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
+                                                                  @RequestParam(name = "param", required = false) String param) {
+        return ResponseEntity.ok(userService.listUsersByNameWithLimit(projectId, param));
+    }
 }

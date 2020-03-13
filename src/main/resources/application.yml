@@ -16,6 +16,9 @@ spring:
   resources:
     static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
 choerodon:
+  user:
+    default:
+      password: abcd1234
   gateway:
     url: http://api.staging.saas.hand-china.com
   category:

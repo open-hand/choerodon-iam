@@ -18,6 +18,9 @@ import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.mapper.LabelMapper;
 import io.choerodon.base.infra.mapper.RoleMapper;
 import io.choerodon.core.enums.ResourceType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,6 +72,7 @@ import retrofit2.http.OPTIONS;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -661,7 +665,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             try {
                 userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId, fromUserId);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("context", e);
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);
                 errorUser.setCause("用户或角色插入异常");

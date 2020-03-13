@@ -9,12 +9,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -50,11 +49,12 @@ import io.choerodon.core.iam.ResourceLevel;
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
     private static final String ADD_USER = "addUser";
-    private static final String USER_DEFAULT_PWD = "abcd1234";
     private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String SITE_ROOT = "role/site/default/administrator";
     private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
     private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
+    @Value("${choerodon.user.default.password}")
+    private String userDefaultPassword;
 
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
@@ -496,7 +496,7 @@ public class ExcelImportUserTask {
             user.setOriginalPassword(user.getPassword());
             // 如果excel中用户密码为空，设置默认密码
             if (StringUtils.isEmpty(user.getPassword())) {
-                user.setPassword(USER_DEFAULT_PWD);
+                user.setPassword(userDefaultPassword);
             }
             //加密
             user.setPassword(ENCODER.encode(user.getPassword()));

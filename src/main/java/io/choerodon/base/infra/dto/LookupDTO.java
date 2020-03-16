@@ -72,4 +72,5 @@ public class LookupDTO extends BaseDTO {
     public void setLookupValues(List<LookupValueDTO> lookupValues) {
         this.lookupValues = lookupValues;
     }
+    
 }

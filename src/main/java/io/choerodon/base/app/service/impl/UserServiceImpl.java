@@ -211,25 +211,26 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, resourceType.value(),
-                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            List<UserDTO> users =
-                    userMapper.selectUserWithRolesByOption(
-                            roleAssignmentSearchDTO, sourceId, resourceType.value(), start, size,
-                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users =
-                    userMapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, resourceType.value(), null, null,
-                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, resourceType.value(),
+                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                List<UserDTO> users =
+                        userMapper.selectUserWithRolesByOption(
+                                roleAssignmentSearchDTO, sourceId, resourceType.value(), start, size,
+                                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users =
+                        userMapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, resourceType.value(), null, null,
+                                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -240,10 +241,11 @@ public class UserServiceImpl implements UserService {
     private PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(Pageable pageable, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         if (!doPage) {
-            Page<UserDTO> result = new Page<>();
-            result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
-            result.setTotal(result.size());
-            return result.toPageInfo();
+            try (Page<UserDTO> result = new Page<>()) {
+                result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
+                result.setTotal(result.size());
+                return result.toPageInfo();
+            }
         }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                 level, roleAssignmentSearchDTO, param));
@@ -639,22 +641,23 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
-                    roleName, enabled, locked, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
-                    loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
-                    loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
+                        roleName, enabled, locked, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
+                        loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
+                        loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -663,21 +666,22 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                        start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                        null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -861,31 +865,33 @@ public class UserServiceImpl implements UserService {
     public PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(Pageable pageable, Long id, String params) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        Page<OrganizationDTO> result = new Page<>(page, size);
-        int start = PageUtils.getBegin(page, size);
-        int count = memberRoleMapper.selectCountBySourceId(id, "organization");
-        result.setTotal(count);
-        result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
-        return result.toPageInfo();
+        try (Page<OrganizationDTO> result = new Page<>(page, size)) {
+            int start = PageUtils.getBegin(page, size);
+            int count = memberRoleMapper.selectCountBySourceId(id, "organization");
+            result.setTotal(count);
+            result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
+            return result.toPageInfo();
+        }
     }
 
     @Override
     public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(Pageable pageable, Long id, String params) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        Page<ProjectDTO> result = new Page<>(page, size);
-        if (size == 0) {
-            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
-            result.setTotal(projectList.size());
-            result.addAll(projectList);
-        } else {
-            int start = PageUtils.getBegin(page, size);
-            int count = memberRoleMapper.selectCountBySourceId(id, "project");
-            result.setTotal(count);
-            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-            result.addAll(projectList);
+        try (Page<ProjectDTO> result = new Page<>(page, size)) {
+            if (size == 0) {
+                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+                result.setTotal(projectList.size());
+                result.addAll(projectList);
+            } else {
+                int start = PageUtils.getBegin(page, size);
+                int count = memberRoleMapper.selectCountBySourceId(id, "project");
+                result.setTotal(count);
+                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+                result.addAll(projectList);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -1015,9 +1021,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(Pageable pageable, String param, Long organizationId) {
         if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
-            Page<SimplifiedUserDTO> result = new Page<>(0, 20);
-            result.setTotal(0);
-            return result.toPageInfo();
+            try (Page<SimplifiedUserDTO> result = new Page<>(0, 20)) {
+                result.setTotal(0);
+                return result.toPageInfo();
+            }
         }
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -1263,5 +1270,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> listProjectOwnerById(Long projectId) {
         return userMapper.listProjectOwnerById(projectId);
+    }
+
+    @Override
+    public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
+        return userMapper.listUsersByNameWithLimit(projectId, param);
     }
 }

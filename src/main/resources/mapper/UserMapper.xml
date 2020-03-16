@@ -1389,4 +1389,17 @@
          AND   ir.code='role/project/default/project-owner'
          AND   imr.source_id=#{projectId}
     </select>
+    <select id="listUsersByNameWithLimit" resultType="io.choerodon.base.infra.dto.UserDTO">
+        SELECT iu.*
+        FROM iam_member_role imr
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE imr.member_type = 'user' AND imr.source_id = #{projectId}
+        AND imr.source_type = 'project'
+        <if test="param != null">
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
+            #{param}),'%'))
+        </if>
+        GROUP BY iu.id
+        limit 20
+    </select>
 </mapper>

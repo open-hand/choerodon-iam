@@ -342,4 +342,13 @@ public interface UserMapper extends Mapper<UserDTO> {
                                        @Param("endTime") Date endTime);
 
     List<UserDTO> listProjectOwnerById(@Param("projectId") Long projectId);
+
+    /**
+     * 按用户名搜索项目下的用户（限制20个）
+     * @param projectId
+     * @param param
+     * @return
+     */
+    List<UserDTO> listUsersByNameWithLimit(@Param("projectId")Long projectId,
+                                           @Param("param")String param);
 }

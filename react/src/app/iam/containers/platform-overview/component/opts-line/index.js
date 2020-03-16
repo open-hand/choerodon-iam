@@ -225,7 +225,9 @@ const OptsLine = observer(() => {
                       ) : null
                     }
                   </div>
-                  <p>{content}</p>
+                  <Tooltip placement="top" title={content}>
+                    <p>{content}</p>
+                  </Tooltip>
                 </div>
                 <div className="c7ncd-opts-timeLine-border">
                   <div />

@@ -73,7 +73,7 @@ public class OrganizationProjectController extends BaseController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "启用项目(同时启用项目关联的项目群关系)")
+    @ApiOperation(value = "启用项目")
     @PutMapping(value = "/{project_id}/enable")
     public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                     @PathVariable(name = "project_id") Long projectId) {
@@ -82,7 +82,7 @@ public class OrganizationProjectController extends BaseController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "禁用项目(同时禁用项目关联的项目群关系)")
+    @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                      @PathVariable(name = "project_id") Long projectId) {
@@ -106,23 +106,6 @@ public class OrganizationProjectController extends BaseController {
     @GetMapping("/under_the_type")
     public ResponseEntity<Map<String, Object>> getProjectsByType(@PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationProjectService.getProjectsByType(organizationId), HttpStatus.OK);
-    }
-
-
-    @Permission(type = ResourceType.PROJECT)
-    @ApiOperation(value = "查询项目群下可选的敏捷或普通应用项目")
-    @GetMapping("/{project_id}/agile")
-    public ResponseEntity<List<ProjectDTO>> getProjectsNotGroup(@PathVariable(name = "organization_id") Long organizationId,
-                                                                @PathVariable(name = "project_id") Long projectId) {
-        return new ResponseEntity<>(organizationProjectService.getAvailableProject(organizationId, projectId), HttpStatus.OK);
-    }
-
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询当前项目生效的普通项目群信息(项目为启用状态)")
-    @GetMapping(value = "/{project_id}/program")
-    public ResponseEntity<ProjectDTO> getGroupInfoByEnableProject(@PathVariable(name = "organization_id") Long organizationId,
-                                                                  @PathVariable(name = "project_id") Long projectId) {
-        return new ResponseEntity<>(organizationProjectService.getGroupInfoByEnableProject(organizationId, projectId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, permissionWithin = true)

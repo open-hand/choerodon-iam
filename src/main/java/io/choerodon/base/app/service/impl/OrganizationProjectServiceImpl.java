@@ -458,17 +458,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public List<ProjectDTO> getAvailableProject(Long organizationId, Long projectId) {
-        organizationAssertHelper.notExisted(organizationId);
-        ProjectDTO projectDTO = selectCategoryByPrimaryKey(projectId);
-        if (!projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-            throw new CommonException("error.only.programs.can.configure.subprojects");
-        } else {
-            return projectMapper.selectProjectsNotGroup(organizationId, projectId);
-        }
-    }
-
-    @Override
     public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
         ProjectDTO projectDTO = projectMapper.selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
@@ -480,13 +469,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         projectDTO.setCategory(projectCategories.get(0).getCode());
         return projectDTO;
-    }
-
-    @Override
-    public ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId) {
-        organizationAssertHelper.notExisted(organizationId);
-        projectAssertHelper.projectNotExisted(projectId);
-        return projectMapper.selectGroupInfoByEnableProject(organizationId, projectId);
     }
 
     @Override

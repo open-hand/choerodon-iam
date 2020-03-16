@@ -86,10 +86,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
-    private ProjectRelationshipMapper projectRelationshipMapper;
-
-    private ProjectCategoryMapper projectCategoryMapper;
-
     private ProjectMapper projectMapper;
 
     private ProjectTypeMapper projectTypeMapper;
@@ -117,7 +113,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           UserService userService,
                                           AsgardFeignClient asgardFeignClient,
                                           ProjectMapCategoryMapper projectMapCategoryMapper,
-                                          ProjectCategoryMapper projectCategoryMapper,
                                           ProjectMapper projectMapper,
                                           ProjectAssertHelper projectAssertHelper,
                                           ProjectTypeMapper projectTypeMapper,
@@ -125,7 +120,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           UserAssertHelper userAssertHelper,
                                           RoleMapper roleMapper,
                                           LabelMapper labelMapper,
-                                          ProjectRelationshipMapper projectRelationshipMapper,
                                           RoleMemberService roleMemberService,
                                           ProjectValidator projectValidator,
                                           TransactionalProducer producer,
@@ -134,7 +128,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
-        this.projectCategoryMapper = projectCategoryMapper;
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -142,7 +135,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.userAssertHelper = userAssertHelper;
         this.roleMapper = roleMapper;
         this.labelMapper = labelMapper;
-        this.projectRelationshipMapper = projectRelationshipMapper;
         this.roleMemberService = roleMemberService;
         this.projectValidator = projectValidator;
         this.producer = producer;
@@ -357,60 +349,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        // 项目所属项目群Id
-        Long programId = null;
-        if (!enabled) {
-            if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)) {
-                // 项目禁用时，禁用项目关联的项目群关系
-                ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
-                relationshipDTO.setProjectId(projectId);
-                relationshipDTO.setEnabled(true);
-                relationshipDTO = projectRelationshipMapper.selectOne(relationshipDTO);
-                programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
-            } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
-                // 项目群禁用时，禁用项目群下所有项目关系
-                List<ProjectRelationshipDTO> relationshipDTOS = projectRelationshipMapper.selectProjectsByParentId(projectId, true);
-                if (CollectionUtils.isNotEmpty(relationshipDTOS)) {
-                    for (ProjectRelationshipDTO relationshipDTO : relationshipDTOS) {
-                        updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
-                    }
-                }
-            }
+        if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
+                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category)) {
+            throw new CommonException("error.project.type");
         }
         // 发送通知消息
-        sendEvent(consumerType, enabled, userId, programId, projectDTO);
+        sendEvent(consumerType, enabled, userId, null, projectDTO);
         return projectDTO;
-    }
-
-    /**
-     * 启用、禁用项目群关系.
-     *
-     * @param relationshipDTO 项目群关系
-     * @param enabled         是否启用
-     * @return 项目所属项目群Id或null
-     */
-    private Long updateProjectRelationShip(ProjectRelationshipDTO relationshipDTO, boolean enabled) {
-        if (relationshipDTO == null || !relationshipDTO.getEnabled()) {
-            return null;
-        }
-        relationshipDTO.setEnabled(enabled);
-        if (projectRelationshipMapper.updateByPrimaryKey(relationshipDTO) != 1) {
-            throw new UpdateException("error.project.group.update");
-        }
-        if (categoryEnable) {
-            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-            projectCategoryDTO.setCode("PROGRAM_PROJECT");
-            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-
-            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
-            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-
-            if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
-                throw new CommonException("error.project.map.category.delete");
-            }
-        }
-        return relationshipDTO.getProgramId();
     }
 
     /**

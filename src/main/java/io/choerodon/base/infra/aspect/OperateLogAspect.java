@@ -245,7 +245,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), userDTO.getRealName() + "(" + userDTO.getLoginName() + ")");
+        String format = String.format(content, getParms(operatorId), getParms(userId));
         contentList.add(format);
         return contentList;
     }
@@ -262,21 +262,19 @@ public class OperateLogAspect {
         if (Objects.isNull(body)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), body.getSagaCode());
+        String format = String.format(content, getParms(operatorId), body.getSagaCode());
         contentList.add(format);
         return contentList;
-
     }
 
 
     private List<String> handleCreateUserOrgOperateLog(String content, Long operatorId, Map<Object, Object> parmMap) {
         UserDTO userDTO = (UserDTO) parmMap.get("userDTO");
-        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
         List<String> contentList = new ArrayList<>();
-        if (Objects.isNull(operator) || Objects.isNull(userDTO)) {
+        if (Objects.isNull(userDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), userDTO.getRealName());
+        String format = String.format(content, getParms(operatorId), getEmailParms(userDTO));
         contentList.add(format);
         return contentList;
     }
@@ -289,10 +287,9 @@ public class OperateLogAspect {
             return contentList;
         }
         memberRoleDTOList.forEach(memberRoleDTO -> {
-            String parms = getParms(operatorId, memberRoleDTO.getMemberId());
             RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
             if (!Objects.isNull(roleDTO)) {
-                String format = String.format(content, parms, operator.getRealName(), roleDTO.getName());
+                String format = String.format(content, getParms(memberRoleDTO.getMemberId()), getParms(operatorId), roleDTO.getName());
                 contentList.add(format);
             }
         });
@@ -307,8 +304,7 @@ public class OperateLogAspect {
             return contentList;
         }
         Stream.of(ids).forEach(id -> {
-            String parms = getParms(operatorId, id[0]);
-            String format = String.format(content, parms, operator.getRealName());
+            String format = String.format(content, getParms(id[0]), getParms(operatorId));
             contentList.add(format);
         });
         return contentList;
@@ -339,7 +335,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator) || Objects.isNull(projectDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), projectDTO.getName());
+        String format = String.format(content, getParms(operatorId), projectDTO.getName());
         contentList.add(format);
         return contentList;
     }
@@ -351,7 +347,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), projectDTO.getName());
+        String format = String.format(content, getParms(operatorId), projectDTO.getName());
         contentList.add(format);
         return contentList;
     }
@@ -363,7 +359,7 @@ public class OperateLogAspect {
         if (Objects.isNull(operator) || Objects.isNull(organizationDTO)) {
             return contentList;
         }
-        String format = String.format(content, operator.getRealName(), organizationDTO.getName());
+        String format = String.format(content, getParms(operatorId), organizationDTO.getName());
         contentList.add(format);
         return contentList;
     }
@@ -377,31 +373,33 @@ public class OperateLogAspect {
             return contentList;
         }
         userIds.forEach(userId -> {
-            String parms = getParms(operatorId, userId);
-            contentList.add(String.format(content, parms, operator.getRealName()));
+            contentList.add(String.format(content, getParms(userId), getParms(operatorId)));
         });
         return contentList;
     }
 
 
     private String handleCommonOperateLog(String content, Long operatorId, Map map) {
-        String parms = getParms(operatorId, (Long) map.get("userId"));
-        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
-        return String.format(content, parms, operator.getRealName());
+        return String.format(content, getParms(operatorId), getParms((Long) map.get("userId")));
     }
 
     private String handleUnlockUserOperateLog(String content, Long operatorId, Map map) {
-        String parms = getParms(operatorId, (Long) map.get("userId"));
-        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
-        return String.format(content, operator.getRealName(), parms);
+        return String.format(content, getParms(operatorId), getParms((Long) map.get("userId")));
     }
 
-    private String getParms(Long operatorId, Long userId) {
-        UserDTO operator = userMapper.selectByPrimaryKey(operatorId);
+    private String getParms(Long userId) {
         UserDTO targeter = userMapper.selectByPrimaryKey(userId);
-        if (!Objects.isNull(operator) && !Objects.isNull(targeter)) {
-            return targeter.getRealName() + "(" + targeter.getLoginName() + ")";
+        if (!Objects.isNull(targeter)) {
+            if (targeter.getLdap()) {
+                return targeter.getRealName() + "(" + targeter.getLoginName() + ")";
+            } else {
+                return targeter.getRealName() + "(" + targeter.getEmail() + ")";
+            }
         }
         throw new CommonException("error.query.user");
+    }
+
+    private String getEmailParms(UserDTO userDTO) {
+        return userDTO.getRealName() + "(" + userDTO.getEmail() + ")";
     }
 }

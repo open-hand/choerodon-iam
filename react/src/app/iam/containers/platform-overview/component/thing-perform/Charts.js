@@ -40,9 +40,9 @@ const Charts = observer(() => {
     return {
       grid: {
         top: '30px',
-        left: '5px',
-        right: '50px',
-        bottom: 0,
+        left: y && y.length > 0 ? '5px' : '20px',
+        right: y && y.length > 0 ? '50px' : '53px',
+        bottom: y && y.length > 0 ? 0 : '10px',
         containLabel: true,
       },
       tooltip: {

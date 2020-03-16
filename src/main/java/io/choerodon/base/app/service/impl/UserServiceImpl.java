@@ -194,7 +194,8 @@ public class UserServiceImpl implements UserService {
         return getOwnedOrganizations(userId, includedDisabled, isAdmin);
     }
 
-    private CustomUserDetails checkLoginUser(Long id) {
+    @Override
+    public CustomUserDetails checkLoginUser(Long id) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
@@ -731,7 +732,8 @@ public class UserServiceImpl implements UserService {
         return projects;
     }
 
-    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
+    @Override
+    public void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
                 p.setCategory(p.getCategories().get(0).getCode());

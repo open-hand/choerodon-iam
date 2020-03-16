@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.core.oauth.CustomUserDetails;
 
 
 /**
@@ -344,4 +345,8 @@ public interface UserService {
     List<UserDTO> listProjectOwnerById(Long projectId);
 
     List<UserDTO> listUsersByNameWithLimit(Long projectId, String param);
+
+    CustomUserDetails checkLoginUser(Long id);
+
+    void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin);
 }

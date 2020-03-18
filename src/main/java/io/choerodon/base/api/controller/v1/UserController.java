@@ -209,15 +209,17 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    // TODO delete
     @Permission(permissionWithin = true)
-    @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
+    @ApiOperation(value = "查询所有的Root用户 / DevOps服务0.21.0版本迁移数据需要")
     @GetMapping("/admin_all")
     public ResponseEntity<List<UserDTO>> queryAllAdminUsers() {
         return new ResponseEntity<>(userService.queryAllAdminUsers(), HttpStatus.OK);
     }
 
+    // TODO delete
     @Permission(permissionWithin = true)
-    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
+    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到 0.21.0")
     @GetMapping("/admin_org_all")
     public ResponseEntity<List<UserDTO>> queryAllOrgAdmin() {
         return new ResponseEntity<>(userService.queryAllOrgAdmin(), HttpStatus.OK);

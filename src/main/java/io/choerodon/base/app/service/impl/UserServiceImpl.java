@@ -24,8 +24,10 @@ import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.*;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.dto.devops.UserAttrVO;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.enums.RoleEnum;
+import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
 import io.choerodon.base.infra.mapper.*;
@@ -125,6 +127,8 @@ public class UserServiceImpl implements UserService {
 
     private RoleMapper roleMapper;
 
+    private DevopsFeignClient devopsFeignClient;
+
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
@@ -133,6 +137,7 @@ public class UserServiceImpl implements UserService {
                            PasswordPolicyManager passwordPolicyManager,
                            MemberRoleMapper memberRoleMapper,
                            NotifyFeignClient notifyFeignClient,
+                           DevopsFeignClient devopsFeignClient,
                            UserMapper userMapper,
                            UserAssertHelper userAssertHelper,
                            OrganizationAssertHelper organizationAssertHelper,
@@ -146,6 +151,7 @@ public class UserServiceImpl implements UserService {
                            RoleMapper roleMapper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
+        this.devopsFeignClient = devopsFeignClient;
         this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
@@ -683,6 +689,26 @@ public class UserServiceImpl implements UserService {
             }
             return result.toPageInfo();
         }
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIds(Long projectId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<UserDTO> userDTOS = userMapper.listUserWithRolesOnProjectLevelByIds(projectId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(projectId, userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> {
+            UserWithGitlabIdDTO userWithGitlabIdDTO = new UserWithGitlabIdDTO();
+            BeanUtils.copyProperties(user, userWithGitlabIdDTO);
+            userWithGitlabIdDTO.setGitlabUserId(userIdMap.get(user.getId()));
+            return userWithGitlabIdDTO;
+        }).collect(Collectors.toList());
     }
 
     @Override

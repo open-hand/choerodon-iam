@@ -78,4 +78,9 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     public ResponseEntity<BarLabelRotationItemVO> countByDate(Long projectId, Date startTime, Date endTime) {
         throw new CommonException("error.feign.devops.query.deploy.records");
     }
+
+    @Override
+    public ResponseEntity<List<UserAttrVO>> listByUserIds(Long projectId, Set<Long> iamUserIds) {
+        throw new CommonException("error.feign.devops.query.gitlab.user.id");
+    }
 }

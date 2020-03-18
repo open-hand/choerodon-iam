@@ -1,8 +1,11 @@
 package io.choerodon.base.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+
+import io.choerodon.base.api.dto.UserWithGitlabIdDTO;
 import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,7 @@ import org.springframework.data.web.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 import java.util.List;
+import java.util.Set;
 
 
 @RestController
@@ -47,6 +51,17 @@ public class ProjectUserController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, Pageable, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的项目角色信息以及GitlabUserId）")
+    @GetMapping(value = "/{project_id}/users/list_by_ids")
+    public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
+            @PathVariable(name = "project_id") Long projectId,
+            @ApiParam(value = "多个用户id", required = true)
+            @RequestParam(name = "user_ids") Set<Long> userIds) {
+        return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIds(projectId, userIds), HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下指定角色的用户列表")

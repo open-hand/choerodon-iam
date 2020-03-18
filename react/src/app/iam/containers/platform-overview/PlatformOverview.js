@@ -11,25 +11,32 @@ import './PlatformOverview.less';
 import TimeLine from './component/time-line';
 import LineChart from './component/onLine-chart';
 import OptsLine from './component/opts-line';
+import ClusterOverview from './component/cluster-overview';
 
 const PlatformOverview = observer(() => (
   <TabPage className="c7n-platform-overview">
     <Breadcrumb />
     <Content style={{ paddingTop: 0 }}>
       <div className="c7n-platform-overview-firstline">
-        <ContainerBlock
-          width="40%"
-          height="100%"
-          title="在线人数统计"
-        >
-          <LineChart />
-        </ContainerBlock>
+        <div className="c7n-platform-overview-firstline-left">
+          <ContainerBlock height="108px" width="100%" style={{ marginBottom: '20px' }}>
+            <ClusterOverview />
+          </ContainerBlock>
+          <ContainerBlock
+            width="100%"
+            height="255px"
+            title="在线人数统计"
+            titleMarginBottom="0"
+          >
+            <LineChart />
+          </ContainerBlock>
+        </div>
         <PlatformPeople />
       </div>
       <div className="c7n-platform-overview-content">
         <div className="c7n-platform-overview-content-left">
           <EmailSend />
-          <ThingPerform /> 
+          <ThingPerform />
         </div>
         <div className="c7n-platform-overview-content-right">
           <ContainerBlock

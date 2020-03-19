@@ -157,9 +157,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             res = create(projectDTO);
             initMemberRole(projectDTO);
         }
-        if (categoryEnable) {
-            insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
-        }
+        insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
         return res;
     }
 

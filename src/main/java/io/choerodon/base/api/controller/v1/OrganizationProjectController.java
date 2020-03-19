@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.api.validator.ProjectValidator;
 import io.choerodon.base.api.vo.BarLabelRotationVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Pageable;
@@ -36,11 +37,12 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 public class OrganizationProjectController extends BaseController {
 
     private OrganizationProjectService organizationProjectService;
+    private ProjectValidator projectValidator;
 
-    public OrganizationProjectController(OrganizationProjectService organizationProjectService) {
+    public OrganizationProjectController(OrganizationProjectService organizationProjectService, ProjectValidator projectValidator) {
         this.organizationProjectService = organizationProjectService;
+        this.projectValidator = projectValidator;
     }
-
 
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "创建项目")
@@ -48,6 +50,7 @@ public class OrganizationProjectController extends BaseController {
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                              @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
+        projectValidator.validateProjectCategoryCode(projectDTO.getCode());
         return new ResponseEntity<>(organizationProjectService.createProject(projectDTO), HttpStatus.OK);
     }
 

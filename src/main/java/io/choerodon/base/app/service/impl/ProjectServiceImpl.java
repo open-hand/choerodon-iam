@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
@@ -222,6 +223,20 @@ public class ProjectServiceImpl implements ProjectService {
             throw new CommonException(ERROR_PROJECT_NOT_EXIST);
         }
         return projectDTO;
+    }
+
+    @Override
+    public List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
+            throw new CommonException(ERROR_PROJECT_NOT_EXIST);
+        }
+        int limit = 50;
+
+        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByOrgIdAndNameWithLimit(projectDTO.getOrganizationId(), name, limit);
+        return projectDTOS.stream()
+                .filter(project -> !project.getId().equals(projectId))
+                .collect(Collectors.toList());
     }
 
     @Override

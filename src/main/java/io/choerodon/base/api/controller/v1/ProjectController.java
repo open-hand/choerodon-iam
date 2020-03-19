@@ -130,4 +130,12 @@ public class ProjectController extends BaseController {
     public ResponseEntity<List<Long>> getProListByName(@RequestParam(required = false) String name) {
         return new ResponseEntity<>(projectService.getProListByName(name), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询项目所属组织下所有可用项目（不包含本项目，限制50个)")
+    @GetMapping("/{project_id}/except_self/with_limit")
+    public ResponseEntity<List<ProjectDTO>> listOrgProjectsWithLimitExceptSelf(@PathVariable(name = "project_id") Long projectId,
+                                                                               @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(projectService.listOrgProjectsWithLimitExceptSelf(projectId, name));
+    }
 }

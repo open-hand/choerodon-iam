@@ -160,7 +160,7 @@ public class OrganizationProjectController extends BaseController {
     @ApiOperation(value = "查询组织下项目（最多20个）")
     @GetMapping("/with_limit")
     public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(@PathVariable(name = "organization_id") Long organizationId,
-                                                                      @RequestParam(required = false) String name) {
+                                                                  @RequestParam(required = false) String name) {
         return ResponseEntity.ok(organizationProjectService.listProjectsWithLimit(organizationId, name));
     }
 }

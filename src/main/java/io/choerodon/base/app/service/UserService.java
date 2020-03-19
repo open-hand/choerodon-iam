@@ -177,6 +177,14 @@ public interface UserService {
 
 
     /**
+     * 项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己.
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
+
+
+    /**
      * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
      *
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）

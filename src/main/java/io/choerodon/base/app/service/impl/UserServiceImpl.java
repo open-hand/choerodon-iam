@@ -692,6 +692,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
+        List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
+        return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
+    }
+
+    @Override
     public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIds(Long projectId, Set<Long> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
             return Collections.emptyList();

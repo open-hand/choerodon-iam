@@ -52,6 +52,18 @@ public class ProjectUserController extends BaseController {
                 enabled, params), HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.PROJECT)
+    @ApiOperation(value = "项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己")
+    @GetMapping(value = "/{project_id}/users/search/list")
+    public ResponseEntity<List<UserDTO>> listUsersWithRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                          @RequestParam(required = false) String loginName,
+                                                                          @RequestParam(required = false) String realName,
+                                                                          @RequestParam(required = false) String roleName,
+                                                                          @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
+    }
+
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的项目角色信息以及GitlabUserId）")
     @GetMapping(value = "/{project_id}/users/list_by_ids")

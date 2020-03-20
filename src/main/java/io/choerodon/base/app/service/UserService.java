@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 
 
@@ -124,7 +125,18 @@ public interface UserService {
      */
     Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
 
-    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll);
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
+
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
+
+    /**
+     * 单独发送webhook
+     * @param code
+     * @param sourceId
+     * @param webHookJsonSendDTO
+     * @return
+     */
+    Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
 
     Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
 
@@ -365,4 +377,6 @@ public interface UserService {
     CustomUserDetails checkLoginUser(Long id);
 
     void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin);
+
+    WebHookJsonSendDTO.User getWebHookUser(Long userId);
 }

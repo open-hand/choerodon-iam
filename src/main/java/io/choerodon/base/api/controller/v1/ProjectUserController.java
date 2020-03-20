@@ -71,7 +71,7 @@ public class ProjectUserController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
             @RequestParam(name = "user_ids") Set<Long> userIds) {
-        return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIds(projectId, userIds), HttpStatus.OK);
+        return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
 

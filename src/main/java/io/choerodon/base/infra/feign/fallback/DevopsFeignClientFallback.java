@@ -80,7 +80,7 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     }
 
     @Override
-    public ResponseEntity<List<UserAttrVO>> listByUserIds(Long projectId, Set<Long> iamUserIds) {
+    public ResponseEntity<List<UserAttrVO>> listByUserIds(Set<Long> iamUserIds) {
         throw new CommonException("error.feign.devops.query.gitlab.user.id");
     }
 }

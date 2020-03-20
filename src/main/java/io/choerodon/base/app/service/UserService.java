@@ -201,7 +201,15 @@ public interface UserService {
      *
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）
      */
-    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIds(Long projectId, Set<Long> userIds);
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds);
+
+
+    /**
+     * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
 
     /**
      * 在全局层/组织层/项目层 批量分配给用户角色.

@@ -108,10 +108,8 @@ public interface DevopsFeignClient {
             @RequestParam("startTime") Date startTime,
             @RequestParam("endTime") Date endTime);
 
-    @GetMapping("/v1/projects/{project_id}/users/list_by_ids")
+    @GetMapping("/v1/users/list_by_ids")
     ResponseEntity<List<UserAttrVO>> listByUserIds(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_ids") Set<Long> iamUserIds);
     }

@@ -73,6 +73,8 @@ import java.util.stream.Collectors;
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.User.*;
 
+import javax.annotation.Nullable;
+
 /**
  * @author superlee
  */
@@ -697,23 +699,43 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIds(Long projectId, Set<Long> userIds) {
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
             return Collections.emptyList();
         }
         List<UserDTO> userDTOS = userMapper.listUserWithRolesOnProjectLevelByIds(projectId, userIds);
-        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(projectId, userIds).getBody();
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
         if (userAttrVOS == null) {
             userAttrVOS = new ArrayList<>();
         }
         Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
         // 填充gitlabUserId
-        return userDTOS.stream().map(user -> {
-            UserWithGitlabIdDTO userWithGitlabIdDTO = new UserWithGitlabIdDTO();
-            BeanUtils.copyProperties(user, userWithGitlabIdDTO);
-            userWithGitlabIdDTO.setGitlabUserId(userIdMap.get(user.getId()));
-            return userWithGitlabIdDTO;
-        }).collect(Collectors.toList());
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<UserDTO> userDTOS = userMapper.listUserWithRolesOnOrganizationLevelByIds(organizationId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
+    }
+
+    private UserWithGitlabIdDTO toUserWithGitlabIdDTO(UserDTO userDTO, @Nullable Long gitlabUserId) {
+        if (userDTO == null) {
+            return null;
+        }
+        UserWithGitlabIdDTO userWithGitlabIdDTO = new UserWithGitlabIdDTO();
+        BeanUtils.copyProperties(userDTO, userWithGitlabIdDTO);
+        userWithGitlabIdDTO.setGitlabUserId(gitlabUserId);
+        return userWithGitlabIdDTO;
     }
 
     @Override

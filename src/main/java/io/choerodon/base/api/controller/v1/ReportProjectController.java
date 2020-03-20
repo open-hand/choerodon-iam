@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +32,7 @@ public class ReportProjectController {
     @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_MEMBER)
     @ApiOperation(value = "查询报表列表")
     @GetMapping(value = "/list")
-    public ResponseEntity<List<ReportDTO>> queryReportList() {
-        return new ResponseEntity<>(reportService.queryReportList(), HttpStatus.OK);
+    public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId) {
+        return new ResponseEntity<>(reportService.queryReportList(projectId), HttpStatus.OK);
     }
 }

@@ -31,16 +31,14 @@ import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.ImageUtils;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.ParamUtils;
-import io.choerodon.base.infra.utils.SagaTopic;
+import io.choerodon.base.infra.utils.*;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
@@ -1120,12 +1118,19 @@ public class UserServiceImpl implements UserService {
     @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
                                      Map<String, Object> params, Long sourceId) {
-        return sendNotice(fromUserId, userIds, code, params, sourceId, false);
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false, null);
     }
 
     @Override
     @Async("notify-executor")
-    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
+                                     Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO) {
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false, webHookJsonSendDTO);
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO) {
         LOGGER.info("ready : send Notice to {} users", userIds.size());
         if (CollectionUtils.isEmpty(userIds)) {
             return new AsyncResult<>("userId is null");
@@ -1155,9 +1160,22 @@ public class UserServiceImpl implements UserService {
             }
         });
         noticeSendDTO.setTargetUsers(users);
+        noticeSendDTO.setWebHookJsonSendDTO(webHookJsonSendDTO);
         LOGGER.info("start : send Notice to {} users", userIds.size());
         notifyFeignClient.postNotice(noticeSendDTO);
         LOGGER.info("end : send Notice to {} users", userIds.size());
+        return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO) {
+        long beginTime = System.currentTimeMillis();
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(code);
+        noticeSendDTO.setSourceId(sourceId);
+        noticeSendDTO.setWebHookJsonSendDTO(webHookJsonSendDTO);
+        notifyFeignClient.postNotice(noticeSendDTO);
         return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 
@@ -1310,5 +1328,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
         return userMapper.listUsersByNameWithLimit(projectId, param);
+    }
+
+    @Override
+    public WebHookJsonSendDTO.User getWebHookUser(Long userId) {
+        UserDTO userDTO = userMapper.selectByPrimaryKey(userId);
+        if (ObjectUtils.isEmpty(userDTO) || StringUtils.isEmpty(userDTO.getLoginName())) {
+            return new WebHookJsonSendDTO.User("0", "unknown");
+        } else {
+            return new WebHookJsonSendDTO.User(userDTO.getLoginName(), userDTO.getRealName());
+        }
     }
 }

@@ -20,7 +20,7 @@ choerodon:
     default:
       password: abcd1234
   gateway:
-    url: http://api.staging.saas.hand-china.com
+    url: http://api.example.choerodon.io/
   category:
     enabled: true # 是否开启项目/组织类型控制
   devops:

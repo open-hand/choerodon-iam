@@ -5,9 +5,11 @@ import static io.choerodon.base.infra.utils.SagaTopic.User.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.google.gson.JsonObject;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
@@ -15,10 +17,12 @@ import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.enums.SendSettingEnum;
 import io.choerodon.base.infra.mapper.LabelMapper;
 import io.choerodon.base.infra.mapper.RoleMapper;
 import io.choerodon.core.enums.ResourceType;
 
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -194,20 +198,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } else {
             userDTO = createUser(userDTO);
         }
-        if (userDTO.getRoles() != null && userDTO.getRoles().size() > 0) {
-            //创建用户成功后发送消息通知用户
-            List<Long> list = Arrays.asList(userDTO.getId());
-            userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
-                RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
-                OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-                if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("organizationName", organizationDTO.getName());
-                    params.put("roleName", roleDTO.getName());
-                    userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
-                }
-            });
-        }
+//        if (userDTO.getRoles() != null && userDTO.getRoles().size() > 0) {
+//            //创建用户成功后发送消息通知用户
+//            List<Long> list = Arrays.asList(userDTO.getId());
+//            userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
+//                RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
+//                OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+//                if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
+//                    Map<String, Object> params = new HashMap<>();
+//                    params.put("organizationName", organizationDTO.getName());
+//                    params.put("roleName", roleDTO.getName());
+//                    userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
+//                }
+//            });
+//        }
         return userDTO;
     }
 
@@ -646,6 +650,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         }
+        if (Objects.isNull(user)) {
+            //禁用成功后还要发送webhook json消息
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("loginName", user.getLoginName());
+            jsonObject.addProperty("userName", user.getRealName());
+            jsonObject.addProperty("enabled", user.getEnabled());
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingEnum.STOP_USER.value(),
+                    SendSettingEnum.map.get(SendSettingEnum.STOP_USER.value()),
+                    jsonObject,
+                    user.getLastUpdateDate(),
+                    userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
+            );
+            Map<String, Object> params = new HashMap<>();
+
+            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
+        }
         return user;
     }
 
@@ -687,7 +708,26 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(e.getOrganizationId());
             params.put("organizationName", organizationDTO.getName());
             params.put("roleName", e.getRoles().stream().map(v -> v.getName()).collect(Collectors.joining(",")));
-            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId());
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("organizationId", organizationDTO.getId());
+            jsonObject.addProperty("addCount", insertUsers.size());
+            List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(userList)) {
+                for (UserDTO userDTO : insertUsers) {
+                    userList.add(userService.getWebHookUser(userDTO.getId()));
+                }
+            }
+
+            jsonObject.addProperty("userList", JSON.toJSONString(userList));
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingEnum.ADD_MEMBER.value(),
+                    SendSettingEnum.map.get(SendSettingEnum.ADD_MEMBER.value()),
+                    jsonObject,
+                    new Date(),
+                    userService.getWebHookUser(fromUserId)
+            );
+            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), webHookJsonSendDTO);
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());

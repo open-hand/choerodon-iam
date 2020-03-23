@@ -13,10 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.gson.JsonObject;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.api.vo.BarLabelRotationVO;
+import io.choerodon.base.infra.enums.SendSettingEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -158,6 +161,25 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             initMemberRole(projectDTO);
         }
         insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
+        //创建项目成功发送webhook
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("projectId", res.getId());
+        jsonObject.addProperty("name", res.getName());
+        jsonObject.addProperty("code", res.getCode());
+        jsonObject.addProperty("organizationId", res.getOrganizationId());
+        jsonObject.addProperty("enabled", res.getEnabled());
+        jsonObject.addProperty("category", res.getCategory());
+
+        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                SendSettingEnum.CREATE_PROJECT.value(),
+                SendSettingEnum.map.get(SendSettingEnum.CREATE_PROJECT.value()),
+                jsonObject,
+                res.getCreationDate(),
+                userService.getWebHookUser(res.getCreatedBy())
+        );
+        Map<String, Object> params = new HashMap<>();
+
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
 
@@ -386,11 +408,32 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             // 给项目下所有用户发送通知
             List<Long> userIds = projectMapper.listUserIds(projectId);
             Map<String, Object> params = new HashMap<>();
-            params.put("projectName", projectMapper.selectByPrimaryKey(projectId).getName());
+            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
+            params.put("projectName", dto.getName());
             if (PROJECT_DISABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "disableProject", params, projectId);
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("projectId", dto.getId());
+                jsonObject.addProperty("enabled", dto.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingEnum.DISABLE_PROJECT.value(),
+                        SendSettingEnum.map.get(SendSettingEnum.DISABLE_PROJECT.value()),
+                        jsonObject,
+                        projectDTO.getLastUpdateDate(),
+                        userService.getWebHookUser(userId)
+                );
+                userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
             } else if (PROJECT_ENABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "enableProject", params, projectId);
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("projectId", dto.getId());
+                jsonObject.addProperty("enabled", dto.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingEnum.ENABLE_PROJECT.value(),
+                        SendSettingEnum.map.get(SendSettingEnum.ENABLE_PROJECT.value()),
+                        jsonObject,
+                        projectDTO.getLastUpdateDate(),
+                        userService.getWebHookUser(userId)
+                );
+                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
             }
         }
     }

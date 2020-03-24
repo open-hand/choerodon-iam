@@ -22,8 +22,8 @@ try {
 const { Column } = Table;
 export default function ListView(props) {
   const { intlPrefix,
-    orgUserListDataSet: dataSet, 
-    projectId, 
+    orgUserListDataSet: dataSet,
+    projectId,
     orgUserCreateDataSet,
     orgUserRoleDataSet,
     organizationId,
@@ -55,7 +55,7 @@ export default function ListView(props) {
   function openModal(type) {
     Modal.open({
       ...modalProps[type],
-      children: <Sider 
+      children: <Sider
         type={type}
         allRoleDataSet={allRoleDataSet}
         orgRoleDataSet={orgRoleDataSet}
@@ -128,13 +128,17 @@ export default function ListView(props) {
     }
     return <span onClick={() => handleUserRole(record)} className="link">{value}</span>;
   }
-  
+
+  function checkCannotDelete(record) {
+    return record.get('programOwner') && record.get('roles').some(r => r.code === 'role/project/default/project-owner');
+  }
+
   function renderAction({ record }) {
     const actionDatas = [{
       text: '删除',
       action: () => handleDeleteUser(record),
     }];
-    return <Action data={actionDatas} />;
+    return InviteModal && checkCannotDelete(record) ? '' : <Action data={actionDatas} />;
   }
 
   function getInitialButton() {

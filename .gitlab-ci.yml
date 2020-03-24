@@ -119,12 +119,21 @@ build combine:
       - $CI_COMMIT_MESSAGE =~ /combine/
 
 
+
 maven-deploy-snapshot:
   stage: build
   script:
     - mvn clean install -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL}
   only:
     - master
+
+maven-deploy-release:
+  stage: build
+  script:
+    - mvn clean install -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL}
+  only:
+    - /^hotfix-.*$/
+
 
 release backend:
   stage: release

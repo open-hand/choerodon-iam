@@ -6,7 +6,15 @@ import { observer } from 'mobx-react-lite';
 import Store from './stores';
 import './index.less';
 
-export default observer(({ name, optionDataSetConfig, optionDataSet, record, children, addButton, maxDisable, canDeleteAll = true, idField, alwaysRequired = false, required = false }) => {
+let InviteModal = false;
+try {
+  const { default: requireData } = require('@choerodon/base-pro/lib/routes/invite-user');
+  InviteModal = requireData;
+} catch (error) {
+  InviteModal = false;
+}
+
+export default observer(({ name, optionDataSetConfig, optionDataSet, record, children, addButton, maxDisable, canDeleteAll = true, idField, alwaysRequired = false, required = false, allRoleDataSet }) => {
   const formElement = useRef(null);
 
   async function handleSubmit({ dataSet, data }) {
@@ -28,7 +36,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
   const { dsStore } = useContext(Store);
   const valueField = record && record.fields.get(name).get('valueField');
   const textField = record && record.fields.get(name).get('textField');
-  
+
   function handleCreatOther() {
     if (idField) {
       record.set(name, (record.get(name) || []).concat({ [idField]: '' }));
@@ -98,6 +106,16 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
     });
   }
 
+  function checkCanDisabled(recordd, v) {
+    if (InviteModal && recordd.get('programOwner')) {
+      const item = allRoleDataSet.find(i => i.get('id') === v);
+      if (item && item.get('code') === 'role/project/default/project-owner') {
+        return true;
+      }
+    }
+    return false;
+  }
+
   return (
     <React.Fragment>
       <Form ref={formElement} className="form-select-editor" columns={12}>
@@ -109,7 +127,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
             dsStore.set(index, optionDataSet || new DataSet(optionDataSetConfig));
           }
           return [
-            React.createElement(children, { 
+            React.createElement(children, {
               onChange: (text) => handleChange(text, index),
               value: v,
               options: optionDataSet || dsStore.get(index),
@@ -123,22 +141,22 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
               required: (record.get(name).length > 1 ? false : required || record.fields.get(name).get('required')) || alwaysRequired,
             }),
             !canDeleteAll && (record.get(name) || []).length <= 1 ? undefined : (
-              <Button 
+              <Button
                 colSpan={1}
                 className="form-select-editor-button"
-                disabled={!canDeleteAll && (record.get(name) || []).length <= 1}
+                disabled={(!canDeleteAll && (record.get(name) || []).length <= 1) || checkCanDisabled(record, v)}
                 onClick={() => handleDeleteItem(index)}
                 icon="delete"
               />
-            ),    
+            ),
           ];
         })}
-      
+
       </Form>
       {buttonVisibility() && (
         <Button
           colSpan={12}
-          disabled={buttonDisable()} 
+          disabled={buttonDisable()}
           color={buttonDisable() ? 'gray' : 'blue'}
           onClick={handleCreatOther}
           style={{ textAlign: 'left', marginTop: '-0.04rem' }}

@@ -60,11 +60,12 @@ export default observer((props) => {
         name="roles"
         addButton="添加其他角色"
         maxDisable
+        allRoleDataSet={allRoleDataSet}
       >
         {((itemProps) => {
           const result = allRoleDataSet.find(item => item.get('id') === itemProps.value);
           return (
-            <Select 
+            <Select
               {...itemProps}
               labelLayout="float"
               renderer={renderOption}
@@ -74,7 +75,7 @@ export default observer((props) => {
           );
         })}
       </FormSelectEditor>
-      
+
     </div>
   );
 });

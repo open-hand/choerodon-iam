@@ -72,7 +72,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
-    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
     public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
 
     @Value("${choerodon.devops.message:false}")
@@ -211,15 +210,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
      * @param organizationId
      */
     private void checkEnableCreateProject(Long organizationId) {
-        OrganizationDTO organizationDTO = organizationService.checkNotExistAndGet(organizationId);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        if (organizationDTO.getCreationDate().after(date)) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countProjectNum(organizationId);
             if (num >= 20) {
                 throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);

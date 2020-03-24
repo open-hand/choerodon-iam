@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.app.service.*;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
@@ -46,10 +47,6 @@ import io.choerodon.base.api.dto.payload.UserEventPayload;
 import io.choerodon.base.api.validator.UserPasswordValidator;
 import io.choerodon.base.api.validator.UserValidator;
 import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.app.service.OrganizationUserService;
-import io.choerodon.base.app.service.RoleMemberService;
-import io.choerodon.base.app.service.SystemSettingService;
-import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.base.infra.asserts.UserAssertHelper;
 import io.choerodon.base.infra.enums.LdapErrorUserCause;
@@ -77,10 +74,13 @@ import io.choerodon.oauth.core.password.record.PasswordRecord;
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
+    @Value("${choerodon.site.default.password:abcd1234}")
+    private String siteDefaultPassword;
     private PasswordRecord passwordRecord;
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -88,8 +88,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private UserPasswordValidator userPasswordValidator;
     private OauthTokenFeignClient oauthTokenFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
-    @Value("${choerodon.site.default.password:abcd1234}")
-    private String siteDefaultPassword;
+
     private SystemSettingService systemSettingService;
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
@@ -116,6 +115,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleMapper roleMapper;
 
+    private OrganizationService organizationService;
+
     public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
@@ -133,7 +134,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RoleMemberService roleMemberService,
                                        LabelMapper labelMapper,
                                        RoleAssertHelper roleAssertHelper,
-                                       RoleMapper roleMapper) {
+                                       RoleMapper roleMapper,
+                                       OrganizationService organizationService) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
@@ -152,6 +154,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.labelMapper = labelMapper;
         this.roleAssertHelper = roleAssertHelper;
         this.roleMapper = roleMapper;
+        this.organizationService = organizationService;
     }
 
     @Override
@@ -184,6 +187,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
+        checkEnableCreateUser(organizationId, 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
@@ -197,21 +201,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } else {
             userDTO = createUser(userDTO);
         }
-//        if (userDTO.getRoles() != null && userDTO.getRoles().size() > 0) {
-//            //创建用户成功后发送消息通知用户
-//            List<Long> list = Arrays.asList(userDTO.getId());
-//            userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
-//                RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
-//                OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-//                if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
-//                    Map<String, Object> params = new HashMap<>();
-//                    params.put("organizationName", organizationDTO.getName());
-//                    params.put("roleName", roleDTO.getName());
-//                    userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
-//                }
-//            });
-//        }
         return userDTO;
+    }
+    /**
+     * 校验组织是否还能新增用户
+      */
+    private void checkEnableCreateUser(Long organizationId, int newUserNum) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
+            int num = organizationService.countUserNum(organizationId);
+            if (num + newUserNum >= 100) {
+                throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
+            }
+        }
     }
 
     public UserDTO createUserAndUpdateRole(Long fromUserId, UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {

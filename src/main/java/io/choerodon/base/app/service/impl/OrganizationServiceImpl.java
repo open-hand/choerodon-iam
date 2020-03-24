@@ -2,6 +2,8 @@ package io.choerodon.base.app.service.impl;
 
 import static io.choerodon.base.infra.utils.SagaTopic.Organization.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,9 +57,8 @@ import io.choerodon.web.util.PageableHelper;
 @Component
 public class OrganizationServiceImpl implements OrganizationService {
 
-    private final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
-
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
     private AsgardFeignClient asgardFeignClient;
 
@@ -400,8 +401,29 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    public boolean checkOrganizationIsNew(Long organizationId) {
+        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return organizationDTO.getCreationDate().after(date);
+    }
+
+    @Override
     public int countProjectNum(Long organizationId) {
         ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
         return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        UserDTO example = new UserDTO();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
     }
 }

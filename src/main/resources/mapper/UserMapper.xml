@@ -24,6 +24,8 @@
         <result property="realName" column="real_name"/>
         <result property="loginName" column="login_name"/>
         <result property="enabled" column="is_enabled"/>
+        <result property="ldap" column="is_ldap"/>
+        <result property="imageUrl" column="image_url"/>
         <result property="locked" column="is_locked"/>
         <result property="organizationId" column="organization_id"/>
         <result property="organizationName" column="user_org_name"/>
@@ -1152,8 +1154,8 @@
     </select>
 
     <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMap">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,
-        t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,
+        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,
+        t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
         fo.name as user_org_name,fo.code as user_org_code, ir2.id as role_id,ir2.code as role_code,
         ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.organization_id as role_org_id

@@ -69,4 +69,12 @@ public interface OrganizationService {
     ProjectOverViewVO projectOverview(Long organizationId);
 
     List<ProjectOverViewVO> appServerOverview(Long organizationId);
+
+    /**
+     * 统计组织下的项目数量
+     * @param organizationId
+     * @return
+     */
+    int countProjectNum(Long organizationId);
+
 }

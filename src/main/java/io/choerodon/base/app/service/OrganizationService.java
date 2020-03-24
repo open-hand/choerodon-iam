@@ -71,10 +71,23 @@ public interface OrganizationService {
     List<ProjectOverViewVO> appServerOverview(Long organizationId);
 
     /**
+     * 判读组织是否是新组织
+     * @param organizationId
+     * @return
+     */
+    boolean checkOrganizationIsNew(Long organizationId);
+
+    /**
      * 统计组织下的项目数量
      * @param organizationId
      * @return
      */
     int countProjectNum(Long organizationId);
 
+    /**
+     * 统计组织下的用户数量
+     * @param organizationId
+     * @return
+     */
+    int countUserNum(Long organizationId);
 }

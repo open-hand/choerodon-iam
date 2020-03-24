@@ -398,4 +398,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         reOverViewVOS.add(projectOverViewVO1);
         return reOverViewVOS;
     }
+
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        return projectMapper.selectCount(example);
+    }
 }

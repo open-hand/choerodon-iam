@@ -51,7 +51,7 @@ public class OrganizationProjectController extends BaseController {
                                              @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         projectValidator.validateProjectCategoryCode(projectDTO.getCode());
-        return new ResponseEntity<>(organizationProjectService.createProject(projectDTO), HttpStatus.OK);
+        return new ResponseEntity<>(organizationProjectService.createProject(organizationId, projectDTO), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)

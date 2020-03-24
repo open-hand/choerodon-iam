@@ -3,6 +3,8 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.Project.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +16,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.google.gson.JsonObject;
+import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.api.vo.BarLabelRotationVO;
@@ -69,6 +72,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
+    public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -110,6 +115,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
+    private OrganizationService organizationService;
 
 
     public OrganizationProjectServiceImpl(SagaClient sagaClient,
@@ -126,7 +132,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           RoleMemberService roleMemberService,
                                           ProjectValidator projectValidator,
                                           TransactionalProducer producer,
-                                          DevopsFeignClient devopsFeignClient) {
+                                          DevopsFeignClient devopsFeignClient,
+                                          OrganizationService organizationService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
@@ -142,6 +149,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
+        this.organizationService = organizationService;
     }
 
 
@@ -149,7 +157,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceType.ORGANIZATION})
-    public ProjectDTO createProject(ProjectDTO projectDTO) {
+    public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
+        checkEnableCreateProject(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
@@ -183,6 +192,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return res;
     }
 
+
+
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
         Long organizationId = projectDTO.getOrganizationId();
@@ -193,6 +204,27 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             throw new CommonException("error.project.create");
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
+    }
+
+    /**
+     * 判断组织是否还能创建项目（指定日期后的创建的组织，最后能创建20个项目）
+     * @param organizationId
+     */
+    private void checkEnableCreateProject(Long organizationId) {
+        OrganizationDTO organizationDTO = organizationService.checkNotExistAndGet(organizationId);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        if (organizationDTO.getCreationDate().after(date)) {
+            int num = organizationService.countProjectNum(organizationId);
+            if (num >= 20) {
+                throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
+            }
+        }
     }
 
     private void insertProjectMapCategory(Long categoryId, Long projectId) {

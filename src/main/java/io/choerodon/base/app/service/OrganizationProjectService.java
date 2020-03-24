@@ -16,7 +16,7 @@ import io.choerodon.base.infra.dto.ProjectDTO;
  */
 public interface OrganizationProjectService {
 
-    ProjectDTO createProject(ProjectDTO projectDTO);
+    ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO);
 
     ProjectDTO create(ProjectDTO projectDTO);
 

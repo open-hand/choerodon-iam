@@ -9,9 +9,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.gson.JsonObject;
 import io.choerodon.base.api.vo.ProjectOverViewVO;
 import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.enums.SendSettingEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,9 +244,34 @@ public class OrganizationServiceImpl implements OrganizationService {
             Map<String, Object> params = new HashMap<>();
             params.put("organizationName", organizationDTO.getName());
             if (ORG_DISABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId());
+                //封装web hook json的数据
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("organizationId", organizationDTO.getId());
+                jsonObject.addProperty("code", organizationDTO.getCode());
+                jsonObject.addProperty("name", organizationDTO.getName());
+                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingEnum.DISABLE_ORGANIZATION.value(),
+                        SendSettingEnum.map.get(SendSettingEnum.DISABLE_ORGANIZATION.value()),
+                        jsonObject,
+                        organizationDTO.getCreationDate(),
+                        userService.getWebHookUser(organizationDTO.getCreatedBy())
+                );
+                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId(), webHookJsonSendDTO);
             } else if (ORG_ENABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("organizationId", organizationDTO.getId());
+                jsonObject.addProperty("code", organizationDTO.getCode());
+                jsonObject.addProperty("name", organizationDTO.getName());
+                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingEnum.ENABLE_ORGANIZATION.value(),
+                        SendSettingEnum.map.get(SendSettingEnum.ENABLE_ORGANIZATION.value()),
+                        jsonObject,
+                        organizationDTO.getCreationDate(),
+                        userService.getWebHookUser(organizationDTO.getCreatedBy())
+                );
+                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId(), webHookJsonSendDTO);
             }
         }
         return organizationDTO;

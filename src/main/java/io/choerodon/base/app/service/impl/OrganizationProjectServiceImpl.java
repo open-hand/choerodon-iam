@@ -17,7 +17,7 @@ import com.google.gson.JsonObject;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.api.vo.BarLabelRotationVO;
-import io.choerodon.base.infra.enums.SendSettingEnum;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections.CollectionUtils;
@@ -171,15 +171,15 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         jsonObject.addProperty("category", res.getCategory());
 
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                SendSettingEnum.CREATE_PROJECT.value(),
-                SendSettingEnum.map.get(SendSettingEnum.CREATE_PROJECT.value()),
+                SendSettingBaseEnum.CREATE_PROJECT.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.CREATE_PROJECT.value()),
                 jsonObject,
                 res.getCreationDate(),
                 userService.getWebHookUser(res.getCreatedBy())
         );
         Map<String, Object> params = new HashMap<>();
 
-        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
 
@@ -415,8 +415,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 jsonObject.addProperty("projectId", dto.getId());
                 jsonObject.addProperty("enabled", dto.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                        SendSettingEnum.DISABLE_PROJECT.value(),
-                        SendSettingEnum.map.get(SendSettingEnum.DISABLE_PROJECT.value()),
+                        SendSettingBaseEnum.DISABLE_PROJECT.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
                         jsonObject,
                         projectDTO.getLastUpdateDate(),
                         userService.getWebHookUser(userId)
@@ -427,8 +427,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 jsonObject.addProperty("projectId", dto.getId());
                 jsonObject.addProperty("enabled", dto.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                        SendSettingEnum.ENABLE_PROJECT.value(),
-                        SendSettingEnum.map.get(SendSettingEnum.ENABLE_PROJECT.value()),
+                        SendSettingBaseEnum.ENABLE_PROJECT.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),
                         jsonObject,
                         projectDTO.getLastUpdateDate(),
                         userService.getWebHookUser(userId)

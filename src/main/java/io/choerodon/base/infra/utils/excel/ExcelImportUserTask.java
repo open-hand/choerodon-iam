@@ -8,10 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.google.gson.JsonObject;
-import io.choerodon.base.infra.enums.SendSettingEnum;
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

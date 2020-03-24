@@ -8,13 +8,11 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.google.gson.JsonObject;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.dto.OrganizationDTO;
-import io.choerodon.base.infra.enums.SendSettingEnum;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
@@ -182,8 +180,8 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
 
         jsonObject.addProperty("userList", JSON.toJSONString(userList));
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                SendSettingEnum.ADD_MEMBER.value(),
-                SendSettingEnum.map.get(SendSettingEnum.ADD_MEMBER.value()),
+                SendSettingBaseEnum.ADD_MEMBER.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
                 jsonObject,
                 new Date(),
                 userService.getWebHookUser(customUserDetails.getUserId())

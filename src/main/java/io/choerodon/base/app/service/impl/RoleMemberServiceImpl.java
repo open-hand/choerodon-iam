@@ -21,7 +21,7 @@ import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.app.service.OrganizationUserService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.enums.SendSettingEnum;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
@@ -33,9 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -307,14 +304,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         UserDTO userDTO = userMapper.selectByPrimaryKey(collect.get(0));
 
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                SendSettingEnum.DELETE_USERROLES.value(),
-                SendSettingEnum.map.get(SendSettingEnum.DELETE_USERROLES.value()),
+                SendSettingBaseEnum.DELETE_USERROLES.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.DELETE_USERROLES.value()),
                 jsonObject,
                 userDTO.getLastUpdateDate(),
                 userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
         );
         Map<String, Object> params = new HashMap<>();
-        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userDTO.getId()), SendSettingEnum.DELETE_USERROLES.value(), params, roleAssignmentDeleteDTO.getSourceId(), webHookJsonSendDTO);
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userDTO.getId()), SendSettingBaseEnum.DELETE_USERROLES.value(), params, roleAssignmentDeleteDTO.getSourceId(), webHookJsonSendDTO);
 
     }
 
@@ -567,8 +564,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             jsonObject.addProperty("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
 
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                    SendSettingEnum.ADD_MEMBER.value(),
-                    SendSettingEnum.map.get(SendSettingEnum.ADD_MEMBER.value()),
+                    SendSettingBaseEnum.ADD_MEMBER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
                     jsonObject,
                     new Date(),
                     userService.getWebHookUser(fromUserId)
@@ -587,8 +584,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             jsonObject.addProperty("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
 
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                    SendSettingEnum.PROJECT_ADDUSER.value(),
-                    SendSettingEnum.map.get(SendSettingEnum.PROJECT_ADDUSER.value()),
+                    SendSettingBaseEnum.PROJECT_ADDUSER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.PROJECT_ADDUSER.value()),
                     jsonObject,
                     new Date(),
                     userService.getWebHookUser(fromUserId)

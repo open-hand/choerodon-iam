@@ -12,7 +12,7 @@ import com.github.pagehelper.page.PageMethod;
 import com.google.gson.JsonObject;
 import io.choerodon.base.api.vo.ProjectOverViewVO;
 import io.choerodon.base.infra.annotation.OperateLog;
-import io.choerodon.base.infra.enums.SendSettingEnum;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections4.CollectionUtils;
@@ -251,8 +251,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 jsonObject.addProperty("name", organizationDTO.getName());
                 jsonObject.addProperty("enabled", organizationDTO.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                        SendSettingEnum.DISABLE_ORGANIZATION.value(),
-                        SendSettingEnum.map.get(SendSettingEnum.DISABLE_ORGANIZATION.value()),
+                        SendSettingBaseEnum.DISABLE_ORGANIZATION.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_ORGANIZATION.value()),
                         jsonObject,
                         organizationDTO.getCreationDate(),
                         userService.getWebHookUser(organizationDTO.getCreatedBy())
@@ -265,8 +265,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 jsonObject.addProperty("name", organizationDTO.getName());
                 jsonObject.addProperty("enabled", organizationDTO.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                        SendSettingEnum.ENABLE_ORGANIZATION.value(),
-                        SendSettingEnum.map.get(SendSettingEnum.ENABLE_ORGANIZATION.value()),
+                        SendSettingBaseEnum.ENABLE_ORGANIZATION.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_ORGANIZATION.value()),
                         jsonObject,
                         organizationDTO.getCreationDate(),
                         userService.getWebHookUser(organizationDTO.getCreatedBy())

@@ -17,7 +17,7 @@ import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
 import io.choerodon.base.infra.dto.*;
 import io.choerodon.base.infra.enums.MemberType;
-import io.choerodon.base.infra.enums.SendSettingEnum;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.mapper.LabelMapper;
 import io.choerodon.base.infra.mapper.RoleMapper;
 import io.choerodon.core.enums.ResourceType;
@@ -68,7 +68,6 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
-import retrofit2.http.OPTIONS;
 
 /**
  * @author superlee
@@ -657,15 +656,15 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             jsonObject.addProperty("userName", user.getRealName());
             jsonObject.addProperty("enabled", user.getEnabled());
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                    SendSettingEnum.STOP_USER.value(),
-                    SendSettingEnum.map.get(SendSettingEnum.STOP_USER.value()),
+                    SendSettingBaseEnum.STOP_USER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.STOP_USER.value()),
                     jsonObject,
                     user.getLastUpdateDate(),
                     userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
             );
             Map<String, Object> params = new HashMap<>();
 
-            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
+            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingBaseEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
         }
         return user;
     }
@@ -721,8 +720,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             jsonObject.addProperty("userList", JSON.toJSONString(userList));
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-                    SendSettingEnum.ADD_MEMBER.value(),
-                    SendSettingEnum.map.get(SendSettingEnum.ADD_MEMBER.value()),
+                    SendSettingBaseEnum.ADD_MEMBER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
                     jsonObject,
                     new Date(),
                     userService.getWebHookUser(fromUserId)

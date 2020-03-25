@@ -377,4 +377,12 @@ public interface UserMapper extends Mapper<UserDTO> {
      */
     List<UserDTO> listUsersByNameWithLimit(@Param("projectId")Long projectId,
                                            @Param("param")String param);
+
+    /**
+     * 统计组织下的人数，（包括创建和导入的）
+     * @param organizationId
+     * @return
+     */
+    int countUserByOrgId(@Param("organizationId") Long organizationId);
+
 }

@@ -422,8 +422,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public int countUserNum(Long organizationId) {
-        UserDTO example = new UserDTO();
-        example.setOrganizationId(organizationId);
-        return userMapper.selectCount(example);
+        return userMapper.countUserByOrgId(organizationId);
     }
 }

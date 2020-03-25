@@ -746,9 +746,17 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
-        Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
-//        organizationUserService.checkEnableCreateUser(sourceId, userIds.size());
         validateSourceNotExisted(sourceType, sourceId);
+        // 校验组织人数是否已达上限
+        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            organizationUserService.checkEnableCreateUser(sourceId, userIds.size());
+        }
+        if (ResourceLevel.PROJECT.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+            organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId(), userIds.size());
+        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");

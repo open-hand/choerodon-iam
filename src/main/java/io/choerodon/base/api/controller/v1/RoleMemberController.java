@@ -674,9 +674,8 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/projects/{project_id}/users/assign_roles")
     public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                              @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                                               @RequestBody List<MemberRoleDTO> memberRoleDTOS) {
-        return new ResponseEntity<>(userService.assignUsersRoles(ResourceLevel.PROJECT.value(), projectId, memberRoleDTOS, syncAll), HttpStatus.OK);
+        return new ResponseEntity<>(userService.assignUsersRoles(ResourceLevel.PROJECT.value(), projectId, memberRoleDTOS), HttpStatus.OK);
     }
 
 

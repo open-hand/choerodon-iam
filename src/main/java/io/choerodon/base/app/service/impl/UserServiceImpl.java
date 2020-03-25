@@ -610,15 +610,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO updateUserRoles(Long userId, String sourceType, Long sourceId, List<RoleDTO> roleDTOList) {
+        return updateUserRoles(userId, sourceType, sourceId, roleDTOList, false);
+    }
+
+    @Override
+    public UserDTO updateUserRoles(Long userId, String sourceType, Long sourceId, List<RoleDTO> roleDTOList, Boolean syncAll) {
         UserValidator.validateUseRoles(roleDTOList, true);
         UserDTO userDTO = userAssertHelper.userNotExisted(userId);
         validateSourceNotExisted(sourceType, sourceId);
-        createUserRoles(userDTO, roleDTOList, sourceType, sourceId, true, true, true);
+        createUserRoles(userDTO, roleDTOList, sourceType, sourceId, true, true, true, syncAll);
         return userDTO;
     }
 
     @Override
     public List<MemberRoleDTO> createUserRoles(UserDTO userDTO, List<RoleDTO> roleDTOList, String sourceType, Long sourceId, boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable) {
+        return createUserRoles(userDTO, roleDTOList, sourceType, sourceId, isEdit, allowRoleEmpty, false);
+    }
+
+
+    @Override
+    public List<MemberRoleDTO> createUserRoles(UserDTO userDTO, List<RoleDTO> roleDTOList, String sourceType, Long sourceId, boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable, Boolean syncAll) {
         Long userId = userDTO.getId();
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
         if (!CollectionUtils.isEmpty(roleDTOList)) {
@@ -636,11 +647,11 @@ public class UserServiceImpl implements UserService {
                 memberRoleDTOS.add(memberRoleDTO);
             }
             userDTO.setRoles(resultRoles);
-            memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, memberRoleDTOS, sourceType);
+            memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, memberRoleDTOS, sourceType, syncAll);
         } else {
             // 如果允许用户角色为空 则清空当前用户角色
             if (allowRoleEmpty) {
-                memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, new ArrayList<>(), sourceType);
+                memberRoleDTOS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, new ArrayList<>(), sourceType, syncAll);
             }
         }
         return memberRoleDTOS;

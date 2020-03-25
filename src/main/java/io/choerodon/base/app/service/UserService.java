@@ -156,6 +156,8 @@ public interface UserService {
      */
     UserDTO updateUserRoles(Long userId, String sourceType, Long sourceId, List<RoleDTO> roleDTOList);
 
+    UserDTO updateUserRoles(Long userId, String sourceType, Long sourceId, List<RoleDTO> roleDTOList, Boolean syncAll);
+
     /**
      * 创建用户角色.
      *
@@ -170,6 +172,9 @@ public interface UserService {
      */
     List<MemberRoleDTO> createUserRoles(UserDTO userDTO, List<RoleDTO> roleDTOList, String sourceType, Long sourceId,
                                         boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable);
+
+    List<MemberRoleDTO> createUserRoles(UserDTO userDTO, List<RoleDTO> roleDTOList, String sourceType, Long sourceId,
+                                        boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable, Boolean syncAll);
 
     /**
      * 全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）.

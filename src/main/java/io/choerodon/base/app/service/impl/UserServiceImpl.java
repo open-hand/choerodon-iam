@@ -681,9 +681,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
+        return assignUsersRoles(sourceType, sourceId, memberRoleDTOList, false);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
-    public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
+    public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList, Boolean syncAll) {
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
@@ -695,7 +700,7 @@ public class UserServiceImpl implements UserService {
         });
         Map<Long, List<MemberRoleDTO>> memberRolesMap = memberRoleDTOList.stream().collect(Collectors.groupingBy(MemberRoleDTO::getMemberId));
         List<MemberRoleDTO> result = new ArrayList<>();
-        memberRolesMap.forEach((memberId, memberRoleDTOS) -> result.addAll(roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, sourceId, memberId, memberRoleDTOS, sourceType)));
+        memberRolesMap.forEach((memberId, memberRoleDTOS) -> result.addAll(roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, sourceId, memberId, memberRoleDTOS, sourceType, syncAll)));
         return result;
     }
 

@@ -20,6 +20,8 @@ public class UserMemberEventPayload {
 
     private String uuid;
 
+    private Boolean syncAll;
+
     public Set<String> getRoleLabels() {
         return roleLabels;
     }
@@ -66,5 +68,13 @@ public class UserMemberEventPayload {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Boolean getSyncAll() {
+        return syncAll;
+    }
+
+    public void setSyncAll(Boolean syncAll) {
+        this.syncAll = syncAll;
     }
 }

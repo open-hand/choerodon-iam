@@ -29,9 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -287,13 +284,18 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
+    public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, Boolean syncAll) {
         String memberType = roleAssignmentDeleteDTO.getMemberType();
         if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
             deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
             return;
         }
-        delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
+        delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value(), syncAll);
+    }
+
+    @Override
+    public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
+        deleteOnProjectLevel(roleAssignmentDeleteDTO, false);
     }
 
     @Override
@@ -435,9 +437,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    public List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType) {
+        return insertOrUpdateRolesOfUserByMemberId(isEdit,sourceId,memberId,memberRoles,sourceType,false);
+    }
+
+    @Override
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     @Transactional(rollbackFor = Exception.class)
-    public List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType) {
+    public List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType, Boolean syncAll) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserDTO userDTO = userAssertHelper.userNotExisted(memberId);
         List<MemberRoleDTO> returnList = new ArrayList<>();
@@ -448,6 +455,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventMsg.setUserId(memberId);
             userMemberEventMsg.setResourceType(sourceType);
             userMemberEventMsg.setUsername(userDTO.getLoginName());
+            userMemberEventMsg.setSyncAll(syncAll);
 
             List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(userId,
                     isEdit, sourceId, memberId, sourceType, memberRoles, returnList, MemberType.USER.value());
@@ -577,12 +585,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
-        deleteByView(roleAssignmentDeleteDTO, sourceType, null);
+        deleteByView(roleAssignmentDeleteDTO, sourceType, null,false);
     }
 
     private void deleteByView(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO,
                               String sourceType,
-                              List<UserMemberEventPayload> userMemberEventPayloads) {
+                              List<UserMemberEventPayload> userMemberEventPayloads,
+                              Boolean syncAll) {
         boolean doSendEvent = userMemberEventPayloads != null;
         // 默认的 member type 是 'user'
         String memberType =
@@ -591,9 +600,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Long sourceId = roleAssignmentDeleteDTO.getSourceId();
         Map<Long, List<Long>> data = roleAssignmentDeleteDTO.getData();
         if (RoleAssignmentViewValidator.USER_VIEW.equalsIgnoreCase(view)) {
-            deleteFromMap(data, false, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads);
+            deleteFromMap(data, false, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads, syncAll);
         } else if (RoleAssignmentViewValidator.ROLE_VIEW.equalsIgnoreCase(view)) {
-            deleteFromMap(data, true, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads);
+            deleteFromMap(data, true, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads, syncAll);
         }
     }
 
@@ -603,7 +612,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
      * @param data   数据
      * @param isRole data的键是否是 roleId
      */
-    private void deleteFromMap(Map<Long, List<Long>> data, boolean isRole, String memberType, Long sourceId, String sourceType, boolean doSendEvent, List<UserMemberEventPayload> userMemberEventPayloads) {
+    private void deleteFromMap(Map<Long, List<Long>> data, boolean isRole, String memberType, Long sourceId, String sourceType, boolean doSendEvent, List<UserMemberEventPayload> userMemberEventPayloads, Boolean syncAll) {
         for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
             Long key = entry.getKey();
             List<Long> values = entry.getValue();
@@ -621,6 +630,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                     UserMemberEventPayload userMemberEventPayload =
                             delete(roleId, memberId, memberType, sourceId, sourceType, doSendEvent);
                     if (userMemberEventPayload != null) {
+                        userMemberEventPayload.setSyncAll(syncAll);
                         userMemberEventPayloads.add(userMemberEventPayload);
                     }
                 });
@@ -655,11 +665,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
     public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
+        delete( roleAssignmentDeleteDTO,  sourceType,null);
+    }
+
+    @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
+    public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType, Boolean syncAll) {
         if (devopsMessage) {
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads);
+            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads, syncAll);
             try {
                 String input = mapper.writeValueAsString(userMemberEventPayloads);
                 String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
@@ -668,7 +682,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 throw new CommonException("error.iRoleMemberServiceImpl.deleteMemberRole.event", e);
             }
         } else {
-            deleteByView(roleAssignmentDeleteDTO, sourceType, null);
+            deleteByView(roleAssignmentDeleteDTO, sourceType, null, syncAll);
         }
     }
 

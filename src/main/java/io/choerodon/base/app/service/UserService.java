@@ -184,6 +184,8 @@ public interface UserService {
      */
     List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList);
 
+    List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList, Boolean syncAll);
+
     /**
      * 在全局层/组织层/项目层 根据用户名查询启用状态的用户列表.
      *

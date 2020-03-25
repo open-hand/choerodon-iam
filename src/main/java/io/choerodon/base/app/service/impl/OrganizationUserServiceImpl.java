@@ -1,29 +1,50 @@
 package io.choerodon.base.app.service.impl;
 
-import static io.choerodon.base.infra.utils.SagaTopic.User.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.api.dto.ErrorUserDTO;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.base.api.dto.payload.UserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.api.validator.UserPasswordValidator;
+import io.choerodon.base.api.validator.UserValidator;
+import io.choerodon.base.api.vo.SysSettingVO;
 import io.choerodon.base.app.service.*;
 import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
+import io.choerodon.base.infra.asserts.UserAssertHelper;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.enums.LdapErrorUserCause;
 import io.choerodon.base.infra.enums.MemberType;
 import io.choerodon.base.infra.enums.SendSettingBaseEnum;
+import io.choerodon.base.infra.feign.OauthTokenFeignClient;
 import io.choerodon.base.infra.mapper.LabelMapper;
-import io.choerodon.base.infra.mapper.RoleMapper;
+import io.choerodon.base.infra.mapper.OrganizationMapper;
+import io.choerodon.base.infra.mapper.UserMapper;
+import io.choerodon.base.infra.utils.PageUtils;
+import io.choerodon.base.infra.utils.RandomInfoGenerator;
 import io.choerodon.core.enums.ResourceType;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.InsertException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -37,34 +58,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.ErrorUserDTO;
-import io.choerodon.base.api.dto.payload.UserEventPayload;
-import io.choerodon.base.api.validator.UserPasswordValidator;
-import io.choerodon.base.api.validator.UserValidator;
-import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.base.infra.asserts.UserAssertHelper;
-import io.choerodon.base.infra.enums.LdapErrorUserCause;
-import io.choerodon.base.infra.feign.OauthTokenFeignClient;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.RandomInfoGenerator;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.base.infra.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
@@ -113,8 +110,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleAssertHelper roleAssertHelper;
 
-    private RoleMapper roleMapper;
-
     private OrganizationService organizationService;
 
     public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
@@ -134,7 +129,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RoleMemberService roleMemberService,
                                        LabelMapper labelMapper,
                                        RoleAssertHelper roleAssertHelper,
-                                       RoleMapper roleMapper,
                                        OrganizationService organizationService) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
@@ -153,7 +147,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.roleMemberService = roleMemberService;
         this.labelMapper = labelMapper;
         this.roleAssertHelper = roleAssertHelper;
-        this.roleMapper = roleMapper;
         this.organizationService = organizationService;
     }
 
@@ -203,17 +196,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         return userDTO;
     }
-    /**
-     * 校验组织是否还能新增用户
-      */
-    private void checkEnableCreateUser(Long organizationId, int newUserNum) {
-        if (organizationService.checkOrganizationIsNew(organizationId)) {
-            int num = organizationService.countUserNum(organizationId);
-            if (num + newUserNum >= 100) {
-                throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
-            }
-        }
-    }
+
 
     public UserDTO createUserAndUpdateRole(Long fromUserId, UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
         return producer.applyAndReturn(
@@ -236,7 +219,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 });
     }
 
-
+    /**
+     * 校验组织是否还能新增用户
+     */
+    public void checkEnableCreateUser(Long organizationId, int userNumber) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
+            int num = organizationService.countUserNum(organizationId);
+            if (num + userNumber >= 100) {
+                throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
+            }
+        }
+    }
     private UserEventPayload getUserEventPayload(UserDTO user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
@@ -266,7 +259,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 memberRoleDTOS.add(memberRoleDTO);
             }
             userDTO.setRoles(resultRoles);
-            UserDTO dto = userAssertHelper.userNotExisted(userId);
             List<MemberRoleDTO> returnList = new ArrayList<>();
             if (devopsMessage) {
                 UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
@@ -405,6 +397,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId, Long fromUserId) {
+        checkEnableCreateUser(organizationId, 1);
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
 //       createUserRoles(resultUser, roleDTOList);
@@ -689,7 +682,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 LOGGER.error("context", e);
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);
-                errorUser.setCause("用户或角色插入异常");
+                if(e instanceof CommonException && ERROR_ORGANIZATION_USER_NUM_MAX.equals(((CommonException) e).getCode())) {
+                    errorUser.setCause("组织用户数量已达上限：100，无法创建更多用户");
+                } else {
+                    errorUser.setCause("用户或角色插入异常");
+                }
                 errorUsers.add(errorUser);
                 errorUserFlag = false;
             }

@@ -1,15 +1,13 @@
 package io.choerodon.base.app.service;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.api.dto.ErrorUserDTO;
-import io.choerodon.base.infra.dto.RoleDTO;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.base.infra.dto.LdapErrorUserDTO;
+import io.choerodon.base.infra.dto.RoleDTO;
 import io.choerodon.base.infra.dto.UserDTO;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -37,7 +35,7 @@ public interface OrganizationUserService {
      *
      * @return 用户列表（包括用户信息以及所分配的组织角色信息）
      */
-    PageInfo<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, Pageable Pageable, String loginName, String realName,
+    PageInfo<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, Pageable pageable, String loginName, String realName,
                                                                    String roleName, Boolean enabled, Boolean locked, String params);
 
     UserDTO update(Long organizationId, UserDTO userDTO);
@@ -66,4 +64,11 @@ public interface OrganizationUserService {
     UserDTO createUserWithRoles(UserDTO userDTO, Long organizationId, Long fromUserId);
 
     List<ErrorUserDTO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
+
+    /**
+     * 校验组织是否还能新增用户
+     * @param organizationId
+     * @param userNumber
+     */
+    void checkEnableCreateUser(Long organizationId, int userNumber);
 }

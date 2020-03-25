@@ -72,7 +72,6 @@ public class ExcelImportUserTask {
     private RoleAssertHelper roleAssertHelper;
 
     private RandomInfoGenerator randomInfoGenerator;
-    private OrganizationMapper organizationMapper;
 
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
@@ -83,8 +82,7 @@ public class ExcelImportUserTask {
                                RoleMapper roleMapper,
                                MemberRoleMapper memberRoleMapper,
                                RoleAssertHelper roleAssertHelper,
-                               RandomInfoGenerator randomInfoGenerator,
-                               OrganizationMapper organizationMapper) {
+                               RandomInfoGenerator randomInfoGenerator) {
         this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
@@ -95,7 +93,6 @@ public class ExcelImportUserTask {
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
-        this.organizationMapper = organizationMapper;
     }
 
     @Async("excel-executor")
@@ -120,7 +117,6 @@ public class ExcelImportUserTask {
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
         List<List<UserDTO>> list = CollectionUtils.subList(insertUsers, 999);
-        List<UserDTO> userDTOS = new ArrayList<>();
         int validateErrorUsers = errorUsers.size();
         list.forEach(l -> {
             if (!l.isEmpty()) {

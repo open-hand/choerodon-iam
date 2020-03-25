@@ -121,7 +121,7 @@ public class LookupController extends BaseController {
         return new ResponseEntity<>(lookupService.queryByCode(code), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "通过code查询快码")
     @GetMapping(value = "/code/{code}")
     public ResponseEntity<List<LookupValueVO>> queryCodeValueByCode(@PathVariable String code) {

@@ -647,10 +647,11 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层更新用户角色")
     @PutMapping(value = "/projects/{project_id}/users/{user_id}/assign_roles")
     public ResponseEntity<UserDTO> updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                 @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                                  @PathVariable(name = "user_id") Long userId,
                                                                  @RequestBody @Validated List<RoleDTO> roleDTOList) {
         return new ResponseEntity<>(userService.updateUserRoles
-                (userId, ResourceLevel.PROJECT.value(), projectId, roleDTOList), HttpStatus.OK);
+                (userId, ResourceLevel.PROJECT.value(), projectId, roleDTOList, syncAll), HttpStatus.OK);
     }
 
 

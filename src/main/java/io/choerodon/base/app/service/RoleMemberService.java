@@ -39,6 +39,13 @@ public interface RoleMemberService {
 
     void deleteOnOrganizationLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 
+    /**
+     *
+     * @param roleAssignmentDeleteDTO
+     * @param syncAll 删除子项目所有权限
+     */
+    void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, Boolean syncAll);
+
     void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 
     ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel);
@@ -47,6 +54,9 @@ public interface RoleMemberService {
 
     List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType);
+
+    List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(
+            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType, Boolean syncAll);
 
     List<MemberRoleDTO> insertOrUpdateRolesOfClientByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType);

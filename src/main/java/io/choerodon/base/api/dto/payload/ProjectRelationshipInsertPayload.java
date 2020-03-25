@@ -10,7 +10,16 @@ public class ProjectRelationshipInsertPayload {
     private Long parentId;
     private String parentCode;
     private String category;
+    private Boolean syncAll;
     List<ProjectRelationship> relationships;
+
+    public Boolean getSyncAll() {
+        return syncAll;
+    }
+
+    public void setSyncAll(Boolean syncAll) {
+        this.syncAll = syncAll;
+    }
 
     public Long getParentId() {
         return parentId;

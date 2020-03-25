@@ -19,6 +19,7 @@ import io.choerodon.base.api.vo.AssignAdminVO;
 import io.choerodon.base.api.vo.DeleteAdminVO;
 import io.choerodon.base.api.vo.UserNumberVO;
 import io.choerodon.base.api.vo.UserVO;
+import io.choerodon.base.app.service.OrganizationUserService;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.annotation.OperateLog;
@@ -128,6 +129,7 @@ public class UserServiceImpl implements UserService {
     private RoleMapper roleMapper;
 
     private DevopsFeignClient devopsFeignClient;
+    private OrganizationUserService organizationUserService;
 
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
@@ -148,7 +150,8 @@ public class UserServiceImpl implements UserService {
                            RoleMemberService roleMemberService,
                            TransactionalProducer producer,
                            RouteMemberRuleMapper routeMemberRuleMapper,
-                           RoleMapper roleMapper) {
+                           RoleMapper roleMapper,
+                           OrganizationUserService organizationUserService) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.devopsFeignClient = devopsFeignClient;
@@ -169,6 +172,7 @@ public class UserServiceImpl implements UserService {
         this.producer = producer;
         this.routeMemberRuleMapper = routeMemberRuleMapper;
         this.roleMapper = roleMapper;
+        this.organizationUserService = organizationUserService;
     }
 
     @Override
@@ -742,6 +746,8 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
+        Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+//        organizationUserService.checkEnableCreateUser(sourceId, userIds.size());
         validateSourceNotExisted(sourceType, sourceId);
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {

@@ -168,6 +168,7 @@ public class ExcelImportUserTask {
         }
     }
 
+    // TODO 代码逻辑过于复杂，可优化
     @Async("excel-executor")
     public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
@@ -227,6 +228,7 @@ public class ExcelImportUserTask {
             }
             Long roleId = role.getId();
             //检查memberRole是否存在
+            // !!! 存在则不做处理
             MemberRoleDTO memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
             if (memberRole == null) {
                 return;

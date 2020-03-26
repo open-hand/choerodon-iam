@@ -30,7 +30,6 @@ public class IAMServiceApplication {
         EurekaEventHandler.getInstance().init();
         SpringApplication.run(IAMServiceApplication.class, args);
     }
-    
 
     @Bean
     @Qualifier("ldap-executor")

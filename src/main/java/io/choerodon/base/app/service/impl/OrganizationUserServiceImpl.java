@@ -78,6 +78,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private String serviceName;
     @Value("${choerodon.site.default.password:abcd1234}")
     private String siteDefaultPassword;
+
+    @Value("${choerodon.organization.resourceLimit.userMaxNumber:100}")
+    private Integer userMaxNumber;
+
     private PasswordRecord passwordRecord;
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -225,7 +229,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public void checkEnableCreateUser(Long organizationId, int userNumber) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countUserNum(organizationId);
-            if (num + userNumber >= 100) {
+            if (num + userNumber >= userMaxNumber) {
                 throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
             }
         }

@@ -83,6 +83,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Value("${choerodon.category.enabled:false}")
     private Boolean categoryEnable;
 
+    @Value("${choerodon.organization.resourceLimit.projectMaxNumber:20}")
+    private Integer projectMaxNumber;
+
     private SagaClient sagaClient;
 
     private UserService userService;
@@ -212,7 +215,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private void checkEnableCreateProject(Long organizationId) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countProjectNum(organizationId);
-            if (num >= 20) {
+            if (num >= projectMaxNumber) {
                 throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
             }
         }

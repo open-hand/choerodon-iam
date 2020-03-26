@@ -403,6 +403,9 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public boolean checkOrganizationIsNew(Long organizationId) {
         OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
+            throw new CommonException(ORGANIZATION_DOES_NOT_EXIST_EXCEPTION);
+        }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {
@@ -422,6 +425,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public int countUserNum(Long organizationId) {
-        return userMapper.countUserByOrgId(organizationId);
+        UserDTO example = new UserDTO();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
     }
 }

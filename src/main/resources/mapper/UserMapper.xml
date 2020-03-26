@@ -1481,13 +1481,4 @@
         GROUP BY iu.id
         limit 20
     </select>
-    <select id="countUserByOrgId" resultType="java.lang.Integer">
-        SELECT COUNT(1)
-        FROM
-        (
-        SELECT iu.id FROM iam_user iu WHERE iu.organization_id = #{organizationId}
-        UNION
-        SELECT imr.member_id FROM iam_member_role imr WHERE imr.source_type = "organization" AND imr.source_id = #{organizationId} AND member_type = 'user'
-        ) uid
-    </select>
 </mapper>

@@ -4,26 +4,60 @@ import { Action, Content, axios, Page, Permission, Breadcrumb, TabPage, Choerodo
 import { Form, Modal, TextField, Select, EmailField } from 'choerodon-ui/pro';
 import Store from './stores';
 import FormSelectEditor from '../../../../components/formSelectEditor';
+import DeleteRoleModal from '../../DeleteRoleModal';
 import './index.less';
 
 const { Option } = Select;
+
+let InviteModal = false;
+try {
+  const { default: requireData } = require('@choerodon/base-pro/lib/routes/invite-user');
+  InviteModal = requireData;
+} catch (error) {
+  InviteModal = false;
+}
+
 export default observer((props) => {
-  const { prefixCls, modal, intl, orgUserRoleDataSet, onOk, projectId, allRoleDataSet, orgRoleDataSet, orgUserListDataSet } = useContext(Store);
+  const { prefixCls, modal, intl, orgUserRoleDataSet, onOk, projectId, allRoleDataSet, orgRoleDataSet, orgUserListDataSet, AppState } = useContext(Store);
   const { current } = orgUserRoleDataSet;
+
+  const [hasOwner, setHasOwner] = useState(false);
+  const [deleteRoleRecord, setDeleteRoleRecord] = useState(undefined);
+
+  useEffect(() => {
+    setHasOwner(current.get('roles').some(r => r === 9));
+  }, []);
+
   function handleCancel() {
     orgUserRoleDataSet.reset();
   }
-  async function handleOk() {
-    const requestData = current.toJSONData();
-    requestData.roles = requestData.roles.filter((v) => v).map((v) => ({ id: v }));
-    // if (requestData.roles.length === 0) return false;
-    const result = await axios.put(`/base/v1/projects/${projectId}/users/${current.toData().id}/assign_roles`, requestData.roles);
-    if (!result.failed) {
-      await orgUserRoleDataSet.reset();
-      await onOk();
+
+  const handleDeleteRoleRecord = async (isDelete) => {
+    if (isDelete) {
+      const requestData = current.toJSONData();
+      requestData.roles = requestData.roles.filter((v) => v).map((v) => ({ id: v }));
+      // if (requestData.roles.length === 0) return false;
+      const result = await axios.put(`/base/v1/projects/${projectId}/users/${current.toData().id}/assign_roles`, requestData.roles);
+      if (!result.failed) {
+        await orgUserRoleDataSet.reset();
+        await onOk();
+        setDeleteRoleRecord(undefined);
+        modal.close();
+      } else {
+        Choerodon.prompt(result.message);
+        return false;
+      }
     } else {
-      Choerodon.prompt(result.message);
+      setDeleteRoleRecord(undefined);
+    }
+  };
+
+  async function handleOk() {
+    if (InviteModal && AppState.menuType.category === 'PROGRAM' && hasOwner && !current.get('roles').some(r => r === 9)) {
+      await setDeleteRoleRecord(current);
       return false;
+    } else {
+      await handleDeleteRoleRecord(true);
     }
   }
 
@@ -54,6 +88,11 @@ export default observer((props) => {
           <Option value="CTT">中国</Option>
         </Select>
       </Form>
+      <DeleteRoleModal
+        deleteRoleRecord={deleteRoleRecord}
+        handleCancel={handleDeleteRoleRecord}
+        projectId={projectId}
+      />
       <FormSelectEditor
         record={orgUserRoleDataSet.current}
         optionDataSet={orgRoleDataSet}

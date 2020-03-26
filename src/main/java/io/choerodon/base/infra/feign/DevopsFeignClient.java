@@ -1,19 +1,20 @@
 package io.choerodon.base.infra.feign;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.api.vo.AppServiceDetailsVO;
-import io.choerodon.base.api.vo.AppServiceVersionVO;
-import io.choerodon.base.api.vo.BarLabelRotationItemVO;
-import io.choerodon.base.infra.dto.devops.*;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import io.choerodon.base.api.vo.AppServiceDetailsVO;
+import io.choerodon.base.api.vo.AppServiceVersionVO;
+import io.choerodon.base.api.vo.BarLabelRotationItemVO;
+import io.choerodon.base.infra.dto.devops.*;
 
 @FeignClient(value = "devops-service")
 public interface DevopsFeignClient {
@@ -106,4 +107,9 @@ public interface DevopsFeignClient {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("startTime") Date startTime,
             @RequestParam("endTime") Date endTime);
-}
+
+    @GetMapping("/v1/users/list_by_ids")
+    ResponseEntity<List<UserAttrVO>> listByUserIds(
+            @ApiParam(value = "用户id", required = true)
+            @RequestParam(value = "user_ids") Set<Long> iamUserIds);
+    }

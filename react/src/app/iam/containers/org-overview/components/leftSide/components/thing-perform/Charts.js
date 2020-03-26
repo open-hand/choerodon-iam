@@ -47,9 +47,9 @@ const Charts = observer(() => {
         position(pt) {
           return [pt[0], '10%'];
         },
-        backgroundColor: 'rgba(255,255,255,1)',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
-          color: 'rgba(58,52,95,0.65)',
+          color: '#fff',
         },
         extraCssText: 'box-shadow:0px 2px 6px 0px rgba(0,0,0,0.12);padding: 15px 17px;',
         formatter(params) {

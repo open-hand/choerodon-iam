@@ -9,12 +9,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -50,11 +49,12 @@ import io.choerodon.core.iam.ResourceLevel;
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
     private static final String ADD_USER = "addUser";
-    private static final String USER_DEFAULT_PWD = "abcd1234";
     private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String SITE_ROOT = "role/site/default/administrator";
     private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
     private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
+    @Value("${choerodon.user.default.password}")
+    private String userDefaultPassword;
 
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
@@ -72,7 +72,6 @@ public class ExcelImportUserTask {
     private RoleAssertHelper roleAssertHelper;
 
     private RandomInfoGenerator randomInfoGenerator;
-    private OrganizationMapper organizationMapper;
 
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
@@ -83,8 +82,7 @@ public class ExcelImportUserTask {
                                RoleMapper roleMapper,
                                MemberRoleMapper memberRoleMapper,
                                RoleAssertHelper roleAssertHelper,
-                               RandomInfoGenerator randomInfoGenerator,
-                               OrganizationMapper organizationMapper) {
+                               RandomInfoGenerator randomInfoGenerator) {
         this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
@@ -95,7 +93,6 @@ public class ExcelImportUserTask {
         this.memberRoleMapper = memberRoleMapper;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
-        this.organizationMapper = organizationMapper;
     }
 
     @Async("excel-executor")
@@ -120,7 +117,6 @@ public class ExcelImportUserTask {
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
         List<List<UserDTO>> list = CollectionUtils.subList(insertUsers, 999);
-        List<UserDTO> userDTOS = new ArrayList<>();
         int validateErrorUsers = errorUsers.size();
         list.forEach(l -> {
             if (!l.isEmpty()) {
@@ -172,6 +168,7 @@ public class ExcelImportUserTask {
         }
     }
 
+    // TODO 代码逻辑过于复杂，可优化
     @Async("excel-executor")
     public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
@@ -231,6 +228,7 @@ public class ExcelImportUserTask {
             }
             Long roleId = role.getId();
             //检查memberRole是否存在
+            // !!! 存在则不做处理
             MemberRoleDTO memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
             if (memberRole == null) {
                 return;
@@ -260,29 +258,26 @@ public class ExcelImportUserTask {
             uploadHistory.setFinished(true);
             finishFallback.callback(uploadHistory);
         }
-        //批量导入用户及角色时发送消息通知成员
-//        sendNoticeMsg(fromUserId, excelMemberRoleDTOS);
-
     }
 
-    private void sendNoticeMsg(Long fromUserId, Map<MemberRoleDTO, String> excelMemberRoleDTOS) {
-        for (Map.Entry<MemberRoleDTO, String> memberRoleDTOStringEntry : excelMemberRoleDTOS.entrySet()) {
-            Map<String, Object> params = new HashMap<>();
-            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId());
-            if (memberRoleDTOStringEntry.getKey().getSourceId() == 0) {
-                if (SITE_ROOT.equals(roleDTO.getCode())) {
-                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
-                } else {
-                    params.put("roleName", roleDTO.getName());
-                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), USER_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
-                }
-            } else {
-                params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
-                params.put("roleName", roleDTO.getName());
-                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
-            }
-        }
-    }
+//    private void sendNoticeMsg(Long fromUserId, Map<MemberRoleDTO, String> excelMemberRoleDTOS) {
+//        for (Map.Entry<MemberRoleDTO, String> memberRoleDTOStringEntry : excelMemberRoleDTOS.entrySet()) {
+//            Map<String, Object> params = new HashMap<>();
+//            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getRoleId());
+//            if (memberRoleDTOStringEntry.getKey().getSourceId() == 0) {
+//                if (SITE_ROOT.equals(roleDTO.getCode())) {
+//                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+//                } else {
+//                    params.put("roleName", roleDTO.getName());
+//                    userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), USER_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+//                }
+//            } else {
+//                params.put("organizationName", organizationMapper.selectByPrimaryKey(memberRoleDTOStringEntry.getKey().getSourceId()).getName());
+//                params.put("roleName", roleDTO.getName());
+//                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTOStringEntry.getKey().getMemberId()), BUSINESS_TYPE_CODE, params, memberRoleDTOStringEntry.getKey().getSourceId());
+//            }
+//        }
+//    }
 
     private MemberRoleDTO getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
         MemberRoleDTO memberRole = new MemberRoleDTO();
@@ -496,7 +491,7 @@ public class ExcelImportUserTask {
             user.setOriginalPassword(user.getPassword());
             // 如果excel中用户密码为空，设置默认密码
             if (StringUtils.isEmpty(user.getPassword())) {
-                user.setPassword(USER_DEFAULT_PWD);
+                user.setPassword(userDefaultPassword);
             }
             //加密
             user.setPassword(ENCODER.encode(user.getPassword()));

@@ -102,12 +102,9 @@ env:
 
     # 网关地址
     CHOERODON_GATEWAY_URL: http://api.example.com
-    ## skywalking 代理端配置
-    # SKYWALKING_OPTS: >-
-    #   -javaagent:/agent/skywalking-agent.jar
-    #   -Dskywalking.agent.application_code=base-service
-    #   -Dskywalking.agent.sample_n_per_3_secs=6
-    #   -Dskywalking.collector.backend_service=oap.skywalking:11800
+
+    #用户默认密码
+    CHOERODON_USER_DEFAULT_PASSWORD: abcd1234
 
 ## Liveness 和 Readiness 探针相关配置
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
@@ -177,7 +174,8 @@ metrics:
   # 性能指标应用分组
   group: spring-boot
 
-## 日志收集
+# 是否收集日志至EFK
 logs:
+  enabled: false
   # 日志收集格式
   parser: spring-boot

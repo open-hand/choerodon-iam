@@ -240,6 +240,32 @@ public interface UserMapper extends Mapper<UserDTO> {
                                                     @Param("params") String params);
 
     /**
+     * 项目层根据用户id查询用户列表（包括用户信息以及所分配的项目角色信息）.
+     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<UserDTO> listUserWithRolesOnProjectLevelByIds(
+            @Param("projectId") Long projectId,
+            @Param("userIds") Set<Long> userIds);
+
+
+    /**
+     * 组织层根据用户id查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<UserDTO> listUserWithRolesOnOrganizationLevelByIds(
+            @Param("organization_id") Long organizationId,
+            @Param("userIds") Set<Long> userIds);
+
+
+    /**
      * 根据用户名查询启用状态的用户列表.
      * 1. 全局层: 模糊匹配全局用户
      * 2. 组织层: 精确匹配全局用户以及模糊匹配本组织用户
@@ -342,4 +368,21 @@ public interface UserMapper extends Mapper<UserDTO> {
                                        @Param("endTime") Date endTime);
 
     List<UserDTO> listProjectOwnerById(@Param("projectId") Long projectId);
+
+    /**
+     * 按用户名搜索项目下的用户（限制20个）
+     * @param projectId
+     * @param param
+     * @return
+     */
+    List<UserDTO> listUsersByNameWithLimit(@Param("projectId")Long projectId,
+                                           @Param("param")String param);
+
+    /**
+     * 统计组织下的人数，（包括创建和导入的）
+     * @param organizationId
+     * @return
+     */
+    int countUserByOrgId(@Param("organizationId") Long organizationId);
+
 }

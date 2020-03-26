@@ -1,23 +1,52 @@
 package io.choerodon.base.app.service.impl;
 
-import static io.choerodon.base.infra.utils.SagaTopic.User.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.google.gson.JsonObject;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.api.dto.ErrorUserDTO;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.base.api.dto.payload.UserEventPayload;
 import io.choerodon.base.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.api.validator.UserPasswordValidator;
+import io.choerodon.base.api.validator.UserValidator;
+import io.choerodon.base.api.vo.SysSettingVO;
+import io.choerodon.base.app.service.*;
 import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.base.infra.asserts.RoleAssertHelper;
+import io.choerodon.base.infra.asserts.UserAssertHelper;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.enums.LdapErrorUserCause;
 import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
+import io.choerodon.base.infra.feign.OauthTokenFeignClient;
 import io.choerodon.base.infra.mapper.LabelMapper;
-import io.choerodon.base.infra.mapper.RoleMapper;
+import io.choerodon.base.infra.mapper.OrganizationMapper;
+import io.choerodon.base.infra.mapper.UserMapper;
+import io.choerodon.base.infra.utils.PageUtils;
+import io.choerodon.base.infra.utils.RandomInfoGenerator;
 import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.InsertException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,39 +58,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.ErrorUserDTO;
-import io.choerodon.base.api.dto.payload.UserEventPayload;
-import io.choerodon.base.api.validator.UserPasswordValidator;
-import io.choerodon.base.api.validator.UserValidator;
-import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.app.service.OrganizationUserService;
-import io.choerodon.base.app.service.RoleMemberService;
-import io.choerodon.base.app.service.SystemSettingService;
-import io.choerodon.base.app.service.UserService;
-import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.base.infra.asserts.UserAssertHelper;
-import io.choerodon.base.infra.enums.LdapErrorUserCause;
-import io.choerodon.base.infra.feign.OauthTokenFeignClient;
-import io.choerodon.base.infra.mapper.OrganizationMapper;
-import io.choerodon.base.infra.mapper.UserMapper;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.RandomInfoGenerator;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
-import retrofit2.http.OPTIONS;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.base.infra.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
@@ -69,11 +69,15 @@ import retrofit2.http.OPTIONS;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
+    @Value("${choerodon.site.default.password:abcd1234}")
+    private String siteDefaultPassword;
     private PasswordRecord passwordRecord;
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -81,8 +85,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private UserPasswordValidator userPasswordValidator;
     private OauthTokenFeignClient oauthTokenFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
-    @Value("${choerodon.site.default.password:abcd1234}")
-    private String siteDefaultPassword;
+
     private SystemSettingService systemSettingService;
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
@@ -107,7 +110,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleAssertHelper roleAssertHelper;
 
-    private RoleMapper roleMapper;
+    private OrganizationService organizationService;
 
     public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
@@ -126,7 +129,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RoleMemberService roleMemberService,
                                        LabelMapper labelMapper,
                                        RoleAssertHelper roleAssertHelper,
-                                       RoleMapper roleMapper) {
+                                       OrganizationService organizationService) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
@@ -144,7 +147,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.roleMemberService = roleMemberService;
         this.labelMapper = labelMapper;
         this.roleAssertHelper = roleAssertHelper;
-        this.roleMapper = roleMapper;
+        this.organizationService = organizationService;
     }
 
     @Override
@@ -153,22 +156,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
-                    loginName, realName, roleName, enabled, locked, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
+                        loginName, realName, roleName, enabled, locked, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
+                        organizationId, loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
+                        organizationId, loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -176,6 +180,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
+        checkEnableCreateUser(organizationId, 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
@@ -189,22 +194,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } else {
             userDTO = createUser(userDTO);
         }
-        if (userDTO.getRoles() != null && userDTO.getRoles().size() > 0) {
-            //创建用户成功后发送消息通知用户
-            List<Long> list = Arrays.asList(userDTO.getId());
-            userDTO.getRoles().stream().map(RoleDTO::getId).forEach(id -> {
-                RoleDTO roleDTO = roleMapper.selectByPrimaryKey(id);
-                OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-                if (!Objects.isNull(roleDTO) && !Objects.isNull(organizationDTO)) {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("organizationName", organizationDTO.getName());
-                    params.put("roleName", roleDTO.getName());
-                    userService.sendNotice(userId, list, BUSINESS_TYPE_CODE, params, organizationId);
-                }
-            });
-        }
         return userDTO;
     }
+
 
     public UserDTO createUserAndUpdateRole(Long fromUserId, UserDTO userDTO, List<RoleDTO> userRoles, String value, Long organizationId) {
         return producer.applyAndReturn(
@@ -227,7 +219,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 });
     }
 
-
+    /**
+     * 校验组织是否还能新增用户
+     */
+    public void checkEnableCreateUser(Long organizationId, int userNumber) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
+            int num = organizationService.countUserNum(organizationId);
+            if (num + userNumber >= 100) {
+                throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
+            }
+        }
+    }
     private UserEventPayload getUserEventPayload(UserDTO user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
@@ -257,7 +259,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 memberRoleDTOS.add(memberRoleDTO);
             }
             userDTO.setRoles(resultRoles);
-            UserDTO dto = userAssertHelper.userNotExisted(userId);
             List<MemberRoleDTO> returnList = new ArrayList<>();
             if (devopsMessage) {
                 UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
@@ -396,6 +397,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId, Long fromUserId) {
+        checkEnableCreateUser(organizationId, 1);
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
 //       createUserRoles(resultUser, roleDTOList);
@@ -641,6 +643,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         }
+        if (Objects.isNull(user)) {
+            //禁用成功后还要发送webhook json消息
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("loginName", user.getLoginName());
+            jsonObject.addProperty("userName", user.getRealName());
+            jsonObject.addProperty("enabled", user.getEnabled());
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingBaseEnum.STOP_USER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.STOP_USER.value()),
+                    jsonObject,
+                    user.getLastUpdateDate(),
+                    userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
+            );
+            Map<String, Object> params = new HashMap<>();
+
+            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingBaseEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
+        }
         return user;
     }
 
@@ -660,10 +679,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             try {
                 userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user, organizationId, fromUserId);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("context", e);
                 ErrorUserDTO errorUser = new ErrorUserDTO();
                 BeanUtils.copyProperties(user, errorUser);
-                errorUser.setCause("用户或角色插入异常");
+                if(e instanceof CommonException && ERROR_ORGANIZATION_USER_NUM_MAX.equals(((CommonException) e).getCode())) {
+                    errorUser.setCause("组织用户数量已达上限：100，无法创建更多用户");
+                } else {
+                    errorUser.setCause("用户或角色插入异常");
+                }
                 errorUsers.add(errorUser);
                 errorUserFlag = false;
             }
@@ -682,7 +705,26 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(e.getOrganizationId());
             params.put("organizationName", organizationDTO.getName());
             params.put("roleName", e.getRoles().stream().map(v -> v.getName()).collect(Collectors.joining(",")));
-            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId());
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("organizationId", organizationDTO.getId());
+            jsonObject.addProperty("addCount", insertUsers.size());
+            List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(userList)) {
+                for (UserDTO userDTO : insertUsers) {
+                    userList.add(userService.getWebHookUser(userDTO.getId()));
+                }
+            }
+
+            jsonObject.addProperty("userList", JSON.toJSONString(userList));
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingBaseEnum.ADD_MEMBER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+                    jsonObject,
+                    new Date(),
+                    userService.getWebHookUser(fromUserId)
+            );
+            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), webHookJsonSendDTO);
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());

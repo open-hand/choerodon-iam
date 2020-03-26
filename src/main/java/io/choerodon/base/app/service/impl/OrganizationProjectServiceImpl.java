@@ -3,6 +3,8 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.Project.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -13,10 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.gson.JsonObject;
+import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.api.vo.BarLabelRotationItemVO;
 import io.choerodon.base.api.vo.BarLabelRotationVO;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,6 +72,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
+    public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -85,10 +92,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private DevopsFeignClient devopsFeignClient;
 
     private ProjectMapCategoryMapper projectMapCategoryMapper;
-
-    private ProjectRelationshipMapper projectRelationshipMapper;
-
-    private ProjectCategoryMapper projectCategoryMapper;
 
     private ProjectMapper projectMapper;
 
@@ -111,13 +114,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
+    private OrganizationService organizationService;
 
 
     public OrganizationProjectServiceImpl(SagaClient sagaClient,
                                           UserService userService,
                                           AsgardFeignClient asgardFeignClient,
                                           ProjectMapCategoryMapper projectMapCategoryMapper,
-                                          ProjectCategoryMapper projectCategoryMapper,
                                           ProjectMapper projectMapper,
                                           ProjectAssertHelper projectAssertHelper,
                                           ProjectTypeMapper projectTypeMapper,
@@ -125,16 +128,15 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           UserAssertHelper userAssertHelper,
                                           RoleMapper roleMapper,
                                           LabelMapper labelMapper,
-                                          ProjectRelationshipMapper projectRelationshipMapper,
                                           RoleMemberService roleMemberService,
                                           ProjectValidator projectValidator,
                                           TransactionalProducer producer,
-                                          DevopsFeignClient devopsFeignClient) {
+                                          DevopsFeignClient devopsFeignClient,
+                                          OrganizationService organizationService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
-        this.projectCategoryMapper = projectCategoryMapper;
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -142,11 +144,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.userAssertHelper = userAssertHelper;
         this.roleMapper = roleMapper;
         this.labelMapper = labelMapper;
-        this.projectRelationshipMapper = projectRelationshipMapper;
         this.roleMemberService = roleMemberService;
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
+        this.organizationService = organizationService;
     }
 
 
@@ -154,7 +156,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceType.ORGANIZATION})
-    public ProjectDTO createProject(ProjectDTO projectDTO) {
+    public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
+        checkEnableCreateProject(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
@@ -165,11 +168,30 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             res = create(projectDTO);
             initMemberRole(projectDTO);
         }
-        if (categoryEnable) {
-            insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
-        }
+        insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
+        //创建项目成功发送webhook
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("projectId", res.getId());
+        jsonObject.addProperty("name", res.getName());
+        jsonObject.addProperty("code", res.getCode());
+        jsonObject.addProperty("organizationId", res.getOrganizationId());
+        jsonObject.addProperty("enabled", res.getEnabled());
+        jsonObject.addProperty("category", res.getCategory());
+
+        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                SendSettingBaseEnum.CREATE_PROJECT.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.CREATE_PROJECT.value()),
+                jsonObject,
+                res.getCreationDate(),
+                userService.getWebHookUser(res.getCreatedBy())
+        );
+        Map<String, Object> params = new HashMap<>();
+
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
+
+
 
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
@@ -181,6 +203,19 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             throw new CommonException("error.project.create");
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
+    }
+
+    /**
+     * 判断组织是否还能创建项目（指定日期后的创建的组织，最后能创建20个项目）
+     * @param organizationId
+     */
+    private void checkEnableCreateProject(Long organizationId) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
+            int num = organizationService.countProjectNum(organizationId);
+            if (num >= 20) {
+                throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
+            }
+        }
     }
 
     private void insertProjectMapCategory(Long categoryId, Long projectId) {
@@ -357,60 +392,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        // 项目所属项目群Id
-        Long programId = null;
-        if (!enabled) {
-            if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)) {
-                // 项目禁用时，禁用项目关联的项目群关系
-                ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
-                relationshipDTO.setProjectId(projectId);
-                relationshipDTO.setEnabled(true);
-                relationshipDTO = projectRelationshipMapper.selectOne(relationshipDTO);
-                programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
-            } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
-                // 项目群禁用时，禁用项目群下所有项目关系
-                List<ProjectRelationshipDTO> relationshipDTOS = projectRelationshipMapper.selectProjectsByParentId(projectId, true);
-                if (CollectionUtils.isNotEmpty(relationshipDTOS)) {
-                    for (ProjectRelationshipDTO relationshipDTO : relationshipDTOS) {
-                        updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
-                    }
-                }
-            }
+        if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
+                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category)) {
+            throw new CommonException("error.project.type");
         }
         // 发送通知消息
-        sendEvent(consumerType, enabled, userId, programId, projectDTO);
+        sendEvent(consumerType, enabled, userId, null, projectDTO);
         return projectDTO;
-    }
-
-    /**
-     * 启用、禁用项目群关系.
-     *
-     * @param relationshipDTO 项目群关系
-     * @param enabled         是否启用
-     * @return 项目所属项目群Id或null
-     */
-    private Long updateProjectRelationShip(ProjectRelationshipDTO relationshipDTO, boolean enabled) {
-        if (relationshipDTO == null || !relationshipDTO.getEnabled()) {
-            return null;
-        }
-        relationshipDTO.setEnabled(enabled);
-        if (projectRelationshipMapper.updateByPrimaryKey(relationshipDTO) != 1) {
-            throw new UpdateException("error.project.group.update");
-        }
-        if (categoryEnable) {
-            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-            projectCategoryDTO.setCode("PROGRAM_PROJECT");
-            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-
-            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
-            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-
-            if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
-                throw new CommonException("error.project.map.category.delete");
-            }
-        }
-        return relationshipDTO.getProgramId();
     }
 
     /**
@@ -443,11 +431,32 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             // 给项目下所有用户发送通知
             List<Long> userIds = projectMapper.listUserIds(projectId);
             Map<String, Object> params = new HashMap<>();
-            params.put("projectName", projectMapper.selectByPrimaryKey(projectId).getName());
+            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
+            params.put("projectName", dto.getName());
             if (PROJECT_DISABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "disableProject", params, projectId);
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("projectId", dto.getId());
+                jsonObject.addProperty("enabled", dto.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingBaseEnum.DISABLE_PROJECT.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
+                        jsonObject,
+                        projectDTO.getLastUpdateDate(),
+                        userService.getWebHookUser(userId)
+                );
+                userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
             } else if (PROJECT_ENABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "enableProject", params, projectId);
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("projectId", dto.getId());
+                jsonObject.addProperty("enabled", dto.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingBaseEnum.ENABLE_PROJECT.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),
+                        jsonObject,
+                        projectDTO.getLastUpdateDate(),
+                        userService.getWebHookUser(userId)
+                );
+                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
             }
         }
     }
@@ -513,17 +522,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public List<ProjectDTO> getAvailableProject(Long organizationId, Long projectId) {
-        organizationAssertHelper.notExisted(organizationId);
-        ProjectDTO projectDTO = selectCategoryByPrimaryKey(projectId);
-        if (!projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-            throw new CommonException("error.only.programs.can.configure.subprojects");
-        } else {
-            return projectMapper.selectProjectsNotGroup(organizationId, projectId);
-        }
-    }
-
-    @Override
     public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
         ProjectDTO projectDTO = projectMapper.selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
@@ -535,13 +533,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         projectDTO.setCategory(projectCategories.get(0).getCode());
         return projectDTO;
-    }
-
-    @Override
-    public ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId) {
-        organizationAssertHelper.notExisted(organizationId);
-        projectAssertHelper.projectNotExisted(projectId);
-        return projectMapper.selectGroupInfoByEnableProject(organizationId, projectId);
     }
 
     @Override
@@ -579,10 +570,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (doPage) {
             return PageMethod.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
         } else {
-            Page<ProjectDTO> result = new Page<>();
-            result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
-            result.setTotal(result.size());
-            return result.toPageInfo();
+            try (Page<ProjectDTO> result = new Page<>()) {
+                result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
+                result.setTotal(result.size());
+                return result.toPageInfo();
+            }
         }
     }
 

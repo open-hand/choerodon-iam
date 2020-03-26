@@ -274,34 +274,6 @@
         AND organization_id = #{orgId};
     </select>
 
-    <select id="selectProjectsNotGroup" resultMap="projectDTO">
-        SELECT fp.id,fp.name,fp.code,fp.organization_id,fpc.code as category
-        FROM fd_project fp
-        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
-        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'))
-        WHERE fp.organization_id = #{orgId} AND fp.is_enabled = 1
-         and  fp.id not in (
-            select fpr.project_id as id
-            from fd_project_relationship fpr
-            where fpr.is_enabled = 1 or fpr.parent_id =  #{projectId}
-        )
-    </select>
-
-    <select id="selectGroupInfoByEnableProject" resultMap="projectDTO">
-        SELECT
-        FP.ID,
-        FP.NAME,
-        FP.ORGANIZATION_ID,
-        FP.CODE,
-        FP.IS_ENABLED,
-        FP.OBJECT_VERSION_NUMBER,
-        FP.IMAGE_URL,
-        FP.CATEGORY
-        FROM FD_PROJECT_RELATIONSHIP FPR
-        INNER JOIN FD_PROJECT FP ON FPR.PROGRAM_ID = FP.ID
-        WHERE FP.ORGANIZATION_ID = #{orgId} AND FPR.PROJECT_ID = #{projectId}
-        AND FPR.IS_ENABLED = 1
-    </select>
 
     <select id="selectCategoryByPrimaryKey" resultMap="projectWithCategoryMap">
         select fp.*,
@@ -355,20 +327,11 @@
         on p.CATEGORY=pc.CODE
     </select>
 
-    <select id="selectProjectAndCategoryIdByRelationship"
-            resultType="io.choerodon.base.infra.dto.ProjectMapCategoryDTO">
-        select fp.id AS projectId,fpc.id AS categoryId
-        from fd_project_relationship fpr
-        left join fd_project fp ON fp.id = fpr.PROJECT_ID
-        left join fd_project_category fpc ON fpc.code = fp.CATEGORY
-        WHERE fpr.is_enabled=1
-    </select>
-
     <select id="selectProjectsByUserIdOrAdmin" resultMap="projectWithRoleAndCategoryDTO">
         SELECT fp.*,
         iu.real_name as create_user_name,
         iu.image_url as create_user_image_url,
-        fp2.name as program_name,
+        null as program_name,
         ir.id AS role_id,
         ir.name AS role_name,
         ir.code AS role_code,
@@ -387,8 +350,6 @@
         FROM fd_project fp
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
         inner join fd_project_category fpc on fpc.id = fpmc.category_id
-        left join fd_project_relationship fpr on ( fp.id = fpr.project_id and fpr.is_enabled)
-        left join fd_project fp2 on fpr.program_id = fp2.id
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">

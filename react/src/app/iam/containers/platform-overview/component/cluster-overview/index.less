@@ -1,0 +1,42 @@
+.c7n-platform-clusterOverview {
+  display: flex;
+  &-left {
+    i {
+      display: block;
+      width: 60px;
+      height: 60px;
+      font-size: 30px;
+      line-height: 60px;
+      background: rgba(244, 133, 144, 0.12);
+      border-radius: 40%;
+      text-align: center;
+      color: rgba(244, 133, 144, 1);
+    }
+  }
+  &-right {
+    flex: 1 1 auto;
+    display: flex;
+    margin-left: .1rem;
+    &-content {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      span {
+        display: inline-block;
+        flex: auto;
+        text-align: center;
+        &:first-of-type {
+          font-size: 13px;
+          font-weight: 400;
+          color: rgba(58, 52, 95, 0.65);
+        }
+        &:nth-of-type(2) {
+          font-size: 32px;
+          font-family: Akrobat-Bold, Akrobat;
+          font-weight: bold;
+          color: rgba(58, 52, 95, 1);
+        }
+      }
+    }
+  }
+}

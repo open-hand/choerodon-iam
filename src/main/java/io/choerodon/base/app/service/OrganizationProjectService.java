@@ -16,7 +16,7 @@ import io.choerodon.base.infra.dto.ProjectDTO;
  */
 public interface OrganizationProjectService {
 
-    ProjectDTO createProject(ProjectDTO projectDTO);
+    ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO);
 
     ProjectDTO create(ProjectDTO projectDTO);
 
@@ -38,25 +38,7 @@ public interface OrganizationProjectService {
      */
     Map<String, Object> getProjectsByType(Long organizationId);
 
-    /**
-     * 查询组织下可被分配至当前项目群的敏捷项目
-     *
-     * @param organizationId 组织Id
-     * @param projectId      项目Id
-     * @return 项目列表
-     */
-    List<ProjectDTO> getAvailableProject(Long organizationId, Long projectId);
-
     ProjectDTO selectCategoryByPrimaryKey(Long projectId);
-
-    /**
-     * 查询当前项目生效的普通项目群信息(项目为启用状态).
-     *
-     * @param organizationId 组织Id
-     * @param projectId      项目Id
-     * @return 普通项目群信息
-     */
-    ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId);
 
     List<ProjectDTO> getAgileProjects(Long organizationId, String param);
 

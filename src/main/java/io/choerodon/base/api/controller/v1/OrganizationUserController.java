@@ -1,6 +1,26 @@
 package io.choerodon.base.api.controller.v1;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.base.api.dto.UserWithGitlabIdDTO;
 import io.choerodon.base.api.validator.UserValidator;
 import io.choerodon.base.api.vo.UserNumberVO;
 import io.choerodon.base.app.service.ExcelService;
@@ -16,22 +36,6 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author superlee
@@ -73,6 +77,19 @@ public class OrganizationUserController extends BaseController {
         return new ResponseEntity<>(organizationUserService.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, pageable, loginName, realName, roleName,
                 enabled, locked, params), HttpStatus.OK);
     }
+
+
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
+    @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的组织角色信息以及GitlabUserId）")
+    @GetMapping(value = "/users/list_by_ids")
+    public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable(name = "organization_id") Long organizationId,
+            @ApiParam(value = "多个用户id", required = true)
+            @RequestParam(name = "user_ids") Set<Long> userIds) {
+        return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIdsInOrg(organizationId, userIds), HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建用户并分配角色")
@@ -200,8 +217,8 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
     public ResponseEntity<UserNumberVO> countByDate(@PathVariable(name = "organization_id") Long organizationId,
-                                                      @RequestParam(value = "start_time") Date startTime,
-                                                      @RequestParam(value = "end_time") Date endTime) {
+                                                    @RequestParam(value = "start_time") Date startTime,
+                                                    @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userService.countByDate(organizationId, startTime, endTime));
     }
 

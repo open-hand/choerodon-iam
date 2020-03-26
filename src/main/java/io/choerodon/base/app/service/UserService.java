@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import io.choerodon.base.api.vo.UserVO;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
+import io.choerodon.core.oauth.CustomUserDetails;
 
 
 /**
@@ -123,7 +125,18 @@ public interface UserService {
      */
     Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
 
-    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll);
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
+
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
+
+    /**
+     * 单独发送webhook
+     * @param code
+     * @param sourceId
+     * @param webHookJsonSendDTO
+     * @return
+     */
+    Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
 
     Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
 
@@ -178,6 +191,30 @@ public interface UserService {
      */
     PageInfo<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, Pageable Pageable, String loginName, String realName,
                                                               String roleName, Boolean enabled, String params);
+
+
+    /**
+     * 项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己.
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
+
+
+    /**
+     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds);
+
+
+    /**
+     * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
 
     /**
      * 在全局层/组织层/项目层 批量分配给用户角色.
@@ -347,4 +384,12 @@ public interface UserService {
      * @return
      */
     List<UserDTO> listProjectOwnerById(Long projectId);
+
+    List<UserDTO> listUsersByNameWithLimit(Long projectId, String param);
+
+    CustomUserDetails checkLoginUser(Long id);
+
+    void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin);
+
+    WebHookJsonSendDTO.User getWebHookUser(Long userId);
 }

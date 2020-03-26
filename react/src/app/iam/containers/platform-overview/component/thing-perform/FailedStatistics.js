@@ -36,8 +36,8 @@ const FailedStatistics = withRouter(observer((props) => {
         queryBar="none"
       >
         <Column name="sagaCode" renderer={renderSagaCode} />
-        <Column name="refType" />
-        <Column name="startTime" />
+        <Column name="refType" style={{ color: 'rgba(0,0,0,.65)' }} />
+        <Column name="startTime" style={{ color: 'rgba(0,0,0,.65)' }} />
       </Table>
     </div>
   );

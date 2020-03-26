@@ -8,6 +8,7 @@ import SystemNoticeDataset from './SystemNoticeDataset';
 import SystemOptsDataset from './SystemOptsDataset';
 import useStore from './useStore';
 import OnlineHourDataset from './OnlineHourDataset';
+import ClusterDataSet from './ClusterDataSet';
 
 const Store = createContext();
 
@@ -26,6 +27,8 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
   const onlineHourDs = useMemo(() => new DataSet(OnlineHourDataset()), [id]); // 当前每小时在线人数chart
   const noticeDs = useMemo(() => new DataSet(SystemNoticeDataset()), [id]); // 公告DS
   const optsDs = useMemo(() => new DataSet(SystemOptsDataset({ organizationId })), [id]); // 操作DS
+  const clusterDs = useMemo(() => new DataSet(ClusterDataSet()), [id]);
+
 
   const value = {
     ...props,
@@ -34,6 +37,7 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     noticeDs,
     optsDs,
     platOverStores,
+    clusterDs,
   };
 
   return (

@@ -9,5 +9,5 @@ import io.choerodon.base.api.dto.*;
  * @since 2019/9/11
  */
 public interface ReportService {
-    List<ReportDTO> queryReportList();
+    List<ReportDTO> queryReportList(Long projectId);
 }

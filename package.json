@@ -1,15 +1,15 @@
 {
   "name": "@choerodon/base",
   "routeName": "base",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "description": "",
   "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
   "peerDependencies": {
-    "@choerodon/boot": "0.20.0",
-    "@choerodon/master": "0.21.0"
+    "@choerodon/boot": "0.21.0",
+    "@choerodon/master": "0.22.0"
   },
   "dependencies": {
     "choerodon-ui": "^0.8.x",
@@ -25,12 +25,8 @@
     "rxjs-compat": "^6.5.3"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.20.0",
-    "@choerodon/master": "0.21.0",
-    "babel-preset-env": "^1.7.0",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.1",
-    "through2": "^2.0.3"
+    "@choerodon/boot": "0.21.0",
+    "@choerodon/master": "0.22.0"
   },
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",

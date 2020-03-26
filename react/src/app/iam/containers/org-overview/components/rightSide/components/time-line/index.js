@@ -210,7 +210,9 @@ const TimeLine = observer(() => {
                       ) : null
                     }
                   </div>
-                  <p>{content}</p>
+                  <Tooltip placement="top" title={content}>
+                    <p>{content}</p>
+                  </Tooltip>
                 </div>
                 <div className="c7ncd-timeLine-border">
                   <div />

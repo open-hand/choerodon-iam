@@ -2,6 +2,8 @@ package io.choerodon.base.app.service.impl;
 
 import static io.choerodon.base.infra.utils.SagaTopic.Organization.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,9 +11,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.gson.JsonObject;
 import io.choerodon.base.api.vo.ProjectOverViewVO;
 import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.feign.DevopsFeignClient;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +57,8 @@ import io.choerodon.web.util.PageableHelper;
 @Component
 public class OrganizationServiceImpl implements OrganizationService {
 
-    private final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
-
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
     private AsgardFeignClient asgardFeignClient;
 
@@ -241,9 +245,34 @@ public class OrganizationServiceImpl implements OrganizationService {
             Map<String, Object> params = new HashMap<>();
             params.put("organizationName", organizationDTO.getName());
             if (ORG_DISABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId());
+                //封装web hook json的数据
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("organizationId", organizationDTO.getId());
+                jsonObject.addProperty("code", organizationDTO.getCode());
+                jsonObject.addProperty("name", organizationDTO.getName());
+                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingBaseEnum.DISABLE_ORGANIZATION.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_ORGANIZATION.value()),
+                        jsonObject,
+                        organizationDTO.getCreationDate(),
+                        userService.getWebHookUser(organizationDTO.getCreatedBy())
+                );
+                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId(), webHookJsonSendDTO);
             } else if (ORG_ENABLE.equals(consumerType)) {
-                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("organizationId", organizationDTO.getId());
+                jsonObject.addProperty("code", organizationDTO.getCode());
+                jsonObject.addProperty("name", organizationDTO.getName());
+                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                        SendSettingBaseEnum.ENABLE_ORGANIZATION.value(),
+                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_ORGANIZATION.value()),
+                        jsonObject,
+                        organizationDTO.getCreationDate(),
+                        userService.getWebHookUser(organizationDTO.getCreatedBy())
+                );
+                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId(), webHookJsonSendDTO);
             }
         }
         return organizationDTO;
@@ -369,5 +398,30 @@ public class OrganizationServiceImpl implements OrganizationService {
         projectOverViewVO1.setAppServerSum(sum);
         reOverViewVOS.add(projectOverViewVO1);
         return reOverViewVOS;
+    }
+
+    @Override
+    public boolean checkOrganizationIsNew(Long organizationId) {
+        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return organizationDTO.getCreationDate().after(date);
+    }
+
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        return userMapper.countUserByOrgId(organizationId);
     }
 }

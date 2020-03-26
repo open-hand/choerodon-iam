@@ -246,4 +246,11 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.appServerOverview(organizationId), HttpStatus.OK);
     }
 
+    @GetMapping("/{organization_id}/check_is_new")
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "判断组织是否是新组织")
+    public ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId) {
+        return ResponseEntity.ok(organizationService.checkOrganizationIsNew(organizationId));
+    }
+
 }

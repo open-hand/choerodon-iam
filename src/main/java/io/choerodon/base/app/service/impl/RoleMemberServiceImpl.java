@@ -741,7 +741,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public void insertAndSendEvent(Long fromUserId, UserDTO userDTO, MemberRoleDTO memberRole, String loginName) {
         RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
-        List<RoleDTO> roles = userDTO.getRoles();
         if (devopsMessage) {
             organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
         }

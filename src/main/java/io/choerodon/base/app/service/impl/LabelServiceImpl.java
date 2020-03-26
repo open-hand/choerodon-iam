@@ -8,6 +8,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -32,5 +33,15 @@ public class LabelServiceImpl implements LabelService {
                     .collect(Collectors.toList());
         }
         return labelDTOS;
+    }
+
+    @Override
+    public List<LabelDTO> listByRoleId(Long roleId) {
+        return labelMapper.selectByRoleId(roleId);
+    }
+
+    @Override
+    public Set<String> selectLabelNamesInRoleIds(List<Long> ownRoleIds) {
+        return labelMapper.selectLabelNamesInRoleIds(ownRoleIds);
     }
 }

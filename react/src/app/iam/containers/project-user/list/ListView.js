@@ -2,8 +2,9 @@ import React, { useContext, useState } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
 import { Button, Modal as OldModal } from 'choerodon-ui';
-import { Select, SelectBox, Table, TextField, Modal, message } from 'choerodon-ui/pro';
+import { Select, SelectBox, Table, TextField, Modal, message, Radio } from 'choerodon-ui/pro';
 import expandMoreColumn from '../../../components/expandMoreColumn';
+import DeleteRoleModal from '../DeleteRoleModal';
 import StatusTag from '../../../components/statusTag';
 import Store from './stores';
 import Sider from './sider';
@@ -29,7 +30,11 @@ export default function ListView(props) {
     organizationId,
     orgRoleDataSet,
     allRoleDataSet,
+    AppState,
   } = useContext(Store);
+
+  const [deleteRoleRecord, setDeleteRoleRecord] = useState(undefined);
+
   const modalProps = {
     create: {
       okText: '保存',
@@ -85,6 +90,12 @@ export default function ListView(props) {
   function handleImportRole() {
     openModal('importRole');
   }
+
+  const handleCancel = () => {
+    setDeleteRoleRecord(undefined);
+    handleSave();
+  };
+
   function handleDeleteUser(record) {
     const roleIds = (record.get('roles') || []).map(({ id }) => id);
     const postData = {
@@ -93,21 +104,25 @@ export default function ListView(props) {
       sourceId: Number(projectId),
       data: { [record.get('id')]: roleIds },
     };
-    OldModal.confirm({
-      className: 'c7n-iam-confirm-modal',
-      title: '删除用户',
-      content: `确认删除用户"${record.get('realName')}"在本项目下的全部角色吗?`,
-      onOk: async () => {
-        const result = await axios.post(`/base/v1/projects/${projectId}/role_members/delete`, JSON.stringify(postData));
-        if (!result.failed) {
-          await orgUserRoleDataSet.reset();
-          dataSet.query();
-        } else {
-          message.error(result.message);
-          return false;
-        }
-      },
-    });
+    if (InviteModal && AppState.menuType.category === 'PROGRAM' && record.get('roles').some(s => s.code === 'role/project/default/project-owner')) {
+      setDeleteRoleRecord(record);
+    } else {
+      OldModal.confirm({
+        className: 'c7n-iam-confirm-modal',
+        title: '删除用户',
+        content: `确认删除用户"${record.get('realName')}"在本项目下的全部角色吗?`,
+        onOk: async () => {
+          const result = await axios.post(`/base/v1/projects/${projectId}/role_members/delete`, JSON.stringify(postData));
+          if (!result.failed) {
+            await orgUserRoleDataSet.reset();
+            dataSet.query();
+          } else {
+            message.error(result.message);
+            return false;
+          }
+        },
+      });
+    }
   }
   function rednerEnabled({ value }) {
     return <StatusTag name={value ? '启用' : '停用'} colorCode={value ? 'COMPLETED' : 'DEFAULT'} />;
@@ -166,6 +181,11 @@ export default function ListView(props) {
         {getInitialButton()}
       </Header>
       <Breadcrumb />
+      <DeleteRoleModal
+        deleteRoleRecord={deleteRoleRecord}
+        handleCancel={handleCancel}
+        projectId={projectId}
+      />
       <Content
         className="project-user"
       >

@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
@@ -246,11 +247,11 @@ public class OrganizationServiceImpl implements OrganizationService {
             params.put("organizationName", organizationDTO.getName());
             if (ORG_DISABLE.equals(consumerType)) {
                 //封装web hook json的数据
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("organizationId", organizationDTO.getId());
-                jsonObject.addProperty("code", organizationDTO.getCode());
-                jsonObject.addProperty("name", organizationDTO.getName());
-                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("organizationId", organizationDTO.getId());
+                jsonObject.put("code", organizationDTO.getCode());
+                jsonObject.put("name", organizationDTO.getName());
+                jsonObject.put("enabled", organizationDTO.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                         SendSettingBaseEnum.DISABLE_ORGANIZATION.value(),
                         SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_ORGANIZATION.value()),
@@ -260,11 +261,11 @@ public class OrganizationServiceImpl implements OrganizationService {
                 );
                 userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId(), webHookJsonSendDTO);
             } else if (ORG_ENABLE.equals(consumerType)) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("organizationId", organizationDTO.getId());
-                jsonObject.addProperty("code", organizationDTO.getCode());
-                jsonObject.addProperty("name", organizationDTO.getName());
-                jsonObject.addProperty("enabled", organizationDTO.getEnabled());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("organizationId", organizationDTO.getId());
+                jsonObject.put("code", organizationDTO.getCode());
+                jsonObject.put("name", organizationDTO.getName());
+                jsonObject.put("enabled", organizationDTO.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                         SendSettingBaseEnum.ENABLE_ORGANIZATION.value(),
                         SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_ORGANIZATION.value()),

@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.google.gson.JsonObject;
@@ -168,9 +169,9 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         params.put("organizationName", organizationDTO.getName());
         params.put("roleName", roleDTO.getName());
         //添加webhook json
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("organizationId", organizationDTO.getId());
-        jsonObject.addProperty("addCount", notifyUserIds.size());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("organizationId", organizationDTO.getId());
+        jsonObject.put("addCount", notifyUserIds.size());
         List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(userList)) {
             for (Long notifyUserId : notifyUserIds) {
@@ -178,7 +179,7 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
             }
         }
 
-        jsonObject.addProperty("userList", JSON.toJSONString(userList));
+        jsonObject.put("userList", JSON.toJSONString(userList));
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                 SendSettingBaseEnum.ADD_MEMBER.value(),
                 SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),

@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
@@ -649,10 +650,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         if (Objects.isNull(user)) {
             //禁用成功后还要发送webhook json消息
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("loginName", user.getLoginName());
-            jsonObject.addProperty("userName", user.getRealName());
-            jsonObject.addProperty("enabled", user.getEnabled());
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("loginName", user.getLoginName());
+            jsonObject.put("userName", user.getRealName());
+            jsonObject.put("enabled", user.getEnabled());
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                     SendSettingBaseEnum.STOP_USER.value(),
                     SendSettingBaseEnum.map.get(SendSettingBaseEnum.STOP_USER.value()),
@@ -710,9 +711,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             params.put("organizationName", organizationDTO.getName());
             params.put("roleName", e.getRoles().stream().map(v -> v.getName()).collect(Collectors.joining(",")));
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("organizationId", organizationDTO.getId());
-            jsonObject.addProperty("addCount", insertUsers.size());
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("organizationId", organizationDTO.getId());
+            jsonObject.put("addCount", insertUsers.size());
             List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
             if (!CollectionUtils.isEmpty(userList)) {
                 for (UserDTO userDTO : insertUsers) {
@@ -720,7 +721,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 }
             }
 
-            jsonObject.addProperty("userList", JSON.toJSONString(userList));
+            jsonObject.put("userList", JSON.toJSONString(userList));
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                     SendSettingBaseEnum.ADD_MEMBER.value(),
                     SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),

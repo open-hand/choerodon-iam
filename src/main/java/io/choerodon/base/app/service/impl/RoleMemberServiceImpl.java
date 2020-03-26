@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
@@ -297,10 +298,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value(),syncAll);
         //删除用户所有项目角色时发送web hook
-        JsonObject jsonObject = new JsonObject();
+        JSONObject jsonObject = new JSONObject();
         List<Long> collect = roleAssignmentDeleteDTO.getData().keySet().stream().collect(Collectors.toList());
-        jsonObject.addProperty("projectId", roleAssignmentDeleteDTO.getSourceId());
-        jsonObject.addProperty("user", JSON.toJSONString(userService.getWebHookUser(collect.get(0))));
+        jsonObject.put("projectId", roleAssignmentDeleteDTO.getSourceId());
+        jsonObject.put("user", JSON.toJSONString(userService.getWebHookUser(collect.get(0))));
         UserDTO userDTO = userMapper.selectByPrimaryKey(collect.get(0));
 
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
@@ -567,11 +568,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             params.put("organizationName", organizationDTO.getName());
             params.put("roleName", roleDTO.getName());
             //webhook json
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("organizationId", organizationDTO.getId());
-            jsonObject.addProperty("addCount", 1);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("organizationId", organizationDTO.getId());
+            jsonObject.put("addCount", 1);
             WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
-            jsonObject.addProperty("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
 
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                     SendSettingBaseEnum.ADD_MEMBER.value(),
@@ -587,11 +588,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             params.put("projectName", projectDTO);
             params.put("roleName", roleDTO.getName());
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("organizationId", projectDTO.getOrganizationId());
-            jsonObject.addProperty("addCount", 1);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("organizationId", projectDTO.getOrganizationId());
+            jsonObject.put("addCount", 1);
             WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
-            jsonObject.addProperty("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
 
             WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                     SendSettingBaseEnum.PROJECT_ADDUSER.value(),

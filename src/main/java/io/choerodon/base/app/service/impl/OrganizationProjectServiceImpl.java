@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
@@ -173,13 +174,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
         //创建项目成功发送webhook
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("projectId", res.getId());
-        jsonObject.addProperty("name", res.getName());
-        jsonObject.addProperty("code", res.getCode());
-        jsonObject.addProperty("organizationId", res.getOrganizationId());
-        jsonObject.addProperty("enabled", res.getEnabled());
-        jsonObject.addProperty("category", res.getCategory());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("projectId", res.getId());
+        jsonObject.put("name", res.getName());
+        jsonObject.put("code", res.getCode());
+        jsonObject.put("organizationId", res.getOrganizationId());
+        jsonObject.put("enabled", res.getEnabled());
+        jsonObject.put("category", res.getCategory());
 
         WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                 SendSettingBaseEnum.CREATE_PROJECT.value(),
@@ -193,7 +194,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
-
 
 
     @Override
@@ -210,6 +210,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     /**
      * 判断组织是否还能创建项目（指定日期后的创建的组织，最后能创建20个项目）
+     *
      * @param organizationId
      */
     private void checkEnableCreateProject(Long organizationId) {
@@ -437,9 +438,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
             params.put("projectName", dto.getName());
             if (PROJECT_DISABLE.equals(consumerType)) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("projectId", dto.getId());
-                jsonObject.addProperty("enabled", dto.getEnabled());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("projectId", dto.getId());
+                jsonObject.put("enabled", dto.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                         SendSettingBaseEnum.DISABLE_PROJECT.value(),
                         SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
@@ -449,9 +450,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 );
                 userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
             } else if (PROJECT_ENABLE.equals(consumerType)) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("projectId", dto.getId());
-                jsonObject.addProperty("enabled", dto.getEnabled());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("projectId", dto.getId());
+                jsonObject.put("enabled", dto.getEnabled());
                 WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
                         SendSettingBaseEnum.ENABLE_PROJECT.value(),
                         SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),

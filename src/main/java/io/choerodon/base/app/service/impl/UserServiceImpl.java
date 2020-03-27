@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import io.choerodon.base.app.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -133,6 +134,7 @@ public class UserServiceImpl implements UserService {
 
     private DevopsFeignClient devopsFeignClient;
     private OrganizationUserService organizationUserService;
+    private ProjectService projectService;
 
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
@@ -154,7 +156,8 @@ public class UserServiceImpl implements UserService {
                            TransactionalProducer producer,
                            RouteMemberRuleMapper routeMemberRuleMapper,
                            RoleMapper roleMapper,
-                           OrganizationUserService organizationUserService) {
+                           OrganizationUserService organizationUserService,
+                           ProjectService projectService) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.devopsFeignClient = devopsFeignClient;
@@ -176,6 +179,7 @@ public class UserServiceImpl implements UserService {
         this.routeMemberRuleMapper = routeMemberRuleMapper;
         this.roleMapper = roleMapper;
         this.organizationUserService = organizationUserService;
+        this.projectService = projectService;
     }
 
     @Override
@@ -1404,5 +1408,11 @@ public class UserServiceImpl implements UserService {
         } else {
             return new WebHookJsonSendDTO.User(userDTO.getLoginName(), userDTO.getRealName());
         }
+    }
+
+    @Override
+    public Boolean checkEnableCreateUser(Long projectId) {
+        ProjectDTO projectDTO = projectService.checkNotExistAndGet(projectId);
+        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
     }
 }

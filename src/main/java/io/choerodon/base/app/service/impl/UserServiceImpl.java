@@ -1,9 +1,37 @@
 package io.choerodon.base.app.service.impl;
 
+import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.User.*;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -32,7 +60,10 @@ import io.choerodon.base.infra.feign.DevopsFeignClient;
 import io.choerodon.base.infra.feign.FileFeignClient;
 import io.choerodon.base.infra.feign.NotifyFeignClient;
 import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.*;
+import io.choerodon.base.infra.utils.ImageUtils;
+import io.choerodon.base.infra.utils.PageUtils;
+import io.choerodon.base.infra.utils.ParamUtils;
+import io.choerodon.base.infra.utils.SagaTopic;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
@@ -47,34 +78,6 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
-import static io.choerodon.base.infra.utils.SagaTopic.User.*;
-
-import javax.annotation.Nullable;
 
 /**
  * @author superlee
@@ -569,6 +572,22 @@ public class UserServiceImpl implements UserService {
             return new ArrayList<>();
         } else {
             return userMapper.listUsersByIds(ids, onlyEnabled);
+        }
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersByIds(Set<Long> ids, Boolean onlyEnabled) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new ArrayList<>();
+        } else {
+            List<UserDTO> users = userMapper.listUsersByIds((Long[]) ids.toArray(), onlyEnabled);
+            List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(ids).getBody();
+            if (userAttrVOS == null) {
+                userAttrVOS = new ArrayList<>();
+            }
+            Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+            // 填充gitlabUserId
+            return users.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
         }
     }
 

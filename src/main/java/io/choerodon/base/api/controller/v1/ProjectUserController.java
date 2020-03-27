@@ -66,11 +66,11 @@ public class ProjectUserController extends BaseController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的项目角色信息以及GitlabUserId）")
-    @GetMapping(value = "/{project_id}/users/list_by_ids")
+    @PostMapping(value = "/{project_id}/users/list_by_ids")
     public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
-            @RequestParam(name = "user_ids") Set<Long> userIds) {
+            @RequestBody Set<Long> userIds) {
         return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 

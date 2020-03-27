@@ -7,11 +7,14 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.api.vo.UserNumberVO;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.api.dto.UserInfoDTO;
 import io.choerodon.base.api.dto.*;
+
 import org.springframework.data.domain.Pageable;
 
 import io.choerodon.base.api.vo.UserVO;
@@ -81,6 +84,15 @@ public interface UserService {
     List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled);
 
     /**
+     * 根据用户id集合查询用户的集合
+     *
+     * @param ids         用户id
+     * @param onlyEnabled 默认为true，只查询启用的用户
+     * @return List<UserDTO> 用户集合
+     */
+    List<UserWithGitlabIdDTO> listUsersByIds(Set<Long> ids, Boolean onlyEnabled);
+
+    /**
      * 根据用户emails集合查询用户的集合
      *
      * @param emails 用户email数组
@@ -131,6 +143,7 @@ public interface UserService {
 
     /**
      * 单独发送webhook
+     *
      * @param code
      * @param sourceId
      * @param webHookJsonSendDTO
@@ -380,6 +393,7 @@ public interface UserService {
 
     /**
      * 查询项目下的项目所有者
+     *
      * @param projectId
      * @return
      */

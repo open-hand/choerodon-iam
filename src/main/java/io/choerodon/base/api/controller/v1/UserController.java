@@ -4,7 +4,9 @@ import java.util.*;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.api.vo.UserNumberVO;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -234,6 +236,17 @@ public class UserController extends BaseController {
     }
 
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据id批量查询带有gitlab用户id的用户信息列表")
+    @PostMapping(value = "/list_by_ids")
+    public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersByIds(
+            @ApiParam(value = "是否只查询启用的用户", required = false)
+            @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled,
+            @ApiParam(value = "用户id集合", required = true)
+            @RequestBody Set<Long> ids) {
+        return new ResponseEntity<>(userService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "根据email批量查询用户信息列表")
     @PostMapping(value = "/emails")
     public ResponseEntity<List<UserDTO>> listUsersByEmails(@RequestBody String[] emails) {
@@ -434,6 +447,7 @@ public class UserController extends BaseController {
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userService.checkIsGitlabOrgOwner(id, projectId));
     }
+
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")

@@ -164,6 +164,27 @@ const TimeLine = observer(() => {
     loadData(optsDs.currentPage + 1);
   }
 
+  /* eslint-disable no-shadow */
+  /* eslint-disable wrap-iife */
+  /* eslint-disable no-loop-func */
+  useEffect(() => {
+    const flow = document.getElementsByClassName('c7n-poverflow');
+    if (flow && flow.length > 0) {
+      for (let i = 0; i < flow.length; i += 1) {
+        new ResizeObserver((entries) => {
+          entries.forEach((entry) => {
+            const pDom = entry.target;
+            const scrollW = Math.ceil(pDom.scrollWidth);
+            const width = Math.ceil(pDom.clientWidth);
+            if (scrollW > width) {
+              optsDs.records[i].set('display', 'block');
+            }
+          });
+        }).observe(flow[i]);
+      }
+    }
+  });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -196,22 +217,19 @@ const TimeLine = observer(() => {
                       <Icon type={iconType[type].icon} className={iconType[type].className} />
                     </div>
                     <span className="c7ncd-timeLine-content-header-title">{iconType[type].typeTxt}</span>
-                    {
-                      content.length > 50 ? (
-                        <Button
-                          className="c7ncd-timeLine-content-header-btn"
-                          shape="circle"
-                          funcType="flat"
-                          icon="expand_more"
-                          type="primary"
-                          size="small"
-                          onClick={handleDropDown}
-                        />
-                      ) : null
-                    }
+                    <Button
+                      className="c7ncd-timeLine-content-header-btn"
+                      shape="circle"
+                      funcType="flat"
+                      style={{ display: item.display }}
+                      icon="expand_more"
+                      type="primary"
+                      size="small"
+                      onClick={handleDropDown}
+                    />
                   </div>
                   <Tooltip placement="top" title={content}>
-                    <p>{content}</p>
+                    <p className="c7n-poverflow">{content}</p>
                   </Tooltip>
                 </div>
                 <div className="c7ncd-timeLine-border">

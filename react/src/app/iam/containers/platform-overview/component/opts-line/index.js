@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import './index.less';
@@ -183,6 +184,27 @@ const OptsLine = observer(() => {
     loadData();
   }, []);
 
+  /* eslint-disable no-shadow */
+  /* eslint-disable wrap-iife */
+  /* eslint-disable no-loop-func */
+  useEffect(() => {
+    const flow = document.getElementsByClassName('c7n-pOverflow');
+    if (flow && flow.length > 0) {
+      for (let i = 0; i < flow.length; i += 1) {
+        new ResizeObserver((entries) => {
+          entries.forEach((entry) => {
+            const pDom = entry.target;
+            const scrollW = Math.ceil(pDom.scrollWidth);
+            const width = Math.ceil(pDom.clientWidth);
+            if (scrollW > width) {
+              optsDs.records[i].set('display', 'block');
+            }
+          });
+        }).observe(flow[i]);
+      }
+    }
+  });
+
   function renderDateLine(date) {
     const dateArr = date && date.split('-');
     const month = renderMonth(dateArr[1]);
@@ -211,22 +233,19 @@ const OptsLine = observer(() => {
                       <Icon type={iconType[type].icon} className={iconType[type].className} />
                     </div>
                     <span className="c7ncd-opts-timeLine-content-header-title">{iconType[type].typeTxt}</span>
-                    {
-                      content.length > 50 ? (
-                        <Button
-                          className="c7ncd-opts-timeLine-content-header-btn"
-                          shape="circle"
-                          funcType="flat"
-                          icon="expand_more"
-                          type="primary"
-                          size="small"
-                          onClick={handleDropDown}
-                        />
-                      ) : null
-                    }
+                    <Button
+                      className="c7ncd-opts-timeLine-content-header-btn"
+                      shape="circle"
+                      funcType="flat"
+                      icon="expand_more"
+                      style={{ display: item.display }}
+                      type="primary"
+                      size="small"
+                      onClick={handleDropDown}
+                    />
                   </div>
                   <Tooltip placement="top" title={content}>
-                    <p>{content}</p>
+                    <p className="c7n-pOverflow">{content}</p>
                   </Tooltip>
                 </div>
                 <div className="c7ncd-opts-timeLine-border">

@@ -1,5 +1,4 @@
-/* eslint-disable no-shadow */
-/* eslint-disable wrap-iife */
+/* eslint-disable react/no-danger */
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -89,6 +88,8 @@ const TimeLine = observer(() => {
       return false;
     }
   }
+  /* eslint-disable no-shadow */
+  /* eslint-disable wrap-iife */
 
   useEffect(() => {
     const flow = document.getElementsByClassName('c7n-pFlow');
@@ -98,8 +99,8 @@ const TimeLine = observer(() => {
           entries.forEach((entry) => {
             const dom = entry.target;
             const pDom = dom.getElementsByTagName('p')[0];
-            const scrollW = pDom.scrollWidth;
-            const width = pDom.clientWidth;
+            const scrollW = Math.ceil(pDom.scrollWidth);
+            const width = Math.ceil(pDom.clientWidth);
             if (scrollW > width) {
               noticeDs.records[i].set('display', 'block');
             }

@@ -108,4 +108,10 @@ public class ProjectUserController extends BaseController {
                                                                   @RequestParam(name = "param", required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByNameWithLimit(projectId, param));
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查是否还能创建用户")
+    @GetMapping("/{project_id}/users/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(userService.checkEnableCreateUser(projectId));
+    }
 }

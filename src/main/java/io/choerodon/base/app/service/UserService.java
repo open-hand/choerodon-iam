@@ -406,4 +406,6 @@ public interface UserService {
     void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin);
 
     WebHookJsonSendDTO.User getWebHookUser(Long userId);
+
+    Boolean checkEnableCreateUser(Long projectId);
 }

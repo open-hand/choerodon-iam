@@ -428,6 +428,8 @@ const pageDetail = {
   'organization.user.button.create-user': '创建用户',
   'organization.user.button.import-user': '导入用户',
   'organization.user.button.assign-roles': '添加组织用户',
+  'organization.user.button.create.disabled': '组织用户数量已达上限，无法创建更多用户',
+  'organization.user.button.invite.disabled': '组织用户数量已达上限，无法邀请更多用户',
 
   // 发送设置
   'organization.sendsetting.title': '组织"{name}"的发送设置',

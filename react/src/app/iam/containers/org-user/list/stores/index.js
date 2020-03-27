@@ -44,7 +44,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       userStore.checkCreate(organizationId);
-    }, []);
+    }, [organizationId]);
     
     const value = {
       ...props,

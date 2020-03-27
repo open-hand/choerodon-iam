@@ -1,4 +1,4 @@
-import React, { createContext, useMemo } from 'react';
+import React, { createContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
@@ -8,6 +8,7 @@ import OrgUserCreateDataSet from './OrgUserCreateDataSet';
 import OrgUserRoleDataSet from './OrgUserRoleDataSet';
 import PasswordPolicyDataSet from '../../../safe/org-safe/store/PasswordPolicyDataSet';
 import OrgAllRoleDataSet from './OrgAllRoleDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -39,7 +40,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const orgUserRoleDataSet = useMemo(() => new DataSet(OrgUserRoleDataSet({ id, intl, intlPrefix, orgRoleDataSet })), [id]);
     const passwordPolicyDataSet = useMemo(() => new DataSet(PasswordPolicyDataSet(id, id, intl, intlPrefix)), [id]);
     const orgAllRoleDataSet = useMemo(() => new DataSet(OrgAllRoleDataSet({ id, intl })), [id]);
+    const userStore = useStore();
 
+    useEffect(() => {
+      userStore.checkCreate(organizationId);
+    }, []);
+    
     const value = {
       ...props,
       orgUserListDataSet,
@@ -65,6 +71,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ],
       organizationId,
       passwordPolicyDataSet,
+      userStore,
     };
     return (
       <Store.Provider value={value}>

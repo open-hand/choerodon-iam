@@ -100,6 +100,7 @@ export default observer((props) => {
         addButton="添加其他角色"
         maxDisable
         allRoleDataSet={allRoleDataSet}
+        orgUserListDataSet={orgUserListDataSet}
       >
         {((itemProps) => {
           const result = allRoleDataSet.find(item => item.get('id') === itemProps.value);
@@ -108,7 +109,7 @@ export default observer((props) => {
               {...itemProps}
               labelLayout="float"
               renderer={renderOption}
-              disabled={result && !result.get('enabled')}
+              disabled={itemProps.disabled || (result && !result.get('enabled'))}
               style={{ width: '100%' }}
             />
           );

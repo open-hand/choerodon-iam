@@ -161,7 +161,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceType.ORGANIZATION})
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
-        checkEnableCreateProject(organizationId);
+        checkEnableCreateProjectOrThrowE(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
@@ -195,6 +195,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return res;
     }
 
+    private void checkEnableCreateProjectOrThrowE(Long organizationId) {
+        if (Boolean.FALSE.equals(checkEnableCreateProject(organizationId))) {
+            throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
+        }
+    }
+
 
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
@@ -208,18 +214,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return projectMapper.selectByPrimaryKey(projectDTO);
     }
 
-    /**
-     * 判断组织是否还能创建项目（指定日期后的创建的组织，最后能创建20个项目）
-     *
-     * @param organizationId
-     */
-    private void checkEnableCreateProject(Long organizationId) {
+
+    public Boolean checkEnableCreateProject(Long organizationId) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countProjectNum(organizationId);
-            if (num >= projectMaxNumber) {
-                throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
-            }
+            return num < projectMaxNumber;
         }
+        return true;
     }
 
     private void insertProjectMapCategory(Long categoryId, Long projectId) {

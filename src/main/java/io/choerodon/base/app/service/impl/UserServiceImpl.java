@@ -580,7 +580,7 @@ public class UserServiceImpl implements UserService {
         if (CollectionUtils.isEmpty(ids)) {
             return new ArrayList<>();
         } else {
-            List<UserDTO> users = userMapper.listUsersByIds((Long[]) ids.toArray(), onlyEnabled);
+            List<UserDTO> users = userMapper.listUsersByIds(ids.toArray(new Long[0]), onlyEnabled);
             List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(ids).getBody();
             if (userAttrVOS == null) {
                 userAttrVOS = new ArrayList<>();

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
-import com.google.gson.JsonObject;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -185,7 +184,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceType.ORGANIZATION})
     public UserDTO createUserWithRoles(Long organizationId, UserDTO userDTO, boolean checkPassword, boolean checkRoles) {
-        checkEnableCreateUser(organizationId, 1);
+        checkEnableCreateUserOrThrowE(organizationId, 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(userDTO, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
@@ -227,7 +226,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     /**
      * 校验组织是否还能新增用户
      */
-    public void checkEnableCreateUser(Long organizationId, int userNumber) {
+    public void checkEnableCreateUserOrThrowE(Long organizationId, int userNumber) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countUserNum(organizationId);
             if (num + userNumber >= userMaxNumber) {
@@ -235,6 +234,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
         }
     }
+
+    @Override
+    public Boolean checkEnableCreateUser(Long organizationId) {
+        if (organizationService.checkOrganizationIsNew(organizationId)) {
+            int num = organizationService.countUserNum(organizationId);
+            return num < userMaxNumber;
+        }
+        return true;
+    }
+
     private UserEventPayload getUserEventPayload(UserDTO user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
@@ -402,7 +411,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public UserDTO createUserWithRoles(UserDTO insertUser, Long organizationId, Long fromUserId) {
-        checkEnableCreateUser(organizationId, 1);
+        checkEnableCreateUserOrThrowE(organizationId, 1);
         List<RoleDTO> roleDTOList = insertUser.getRoles();
         UserDTO resultUser = insertSelective(insertUser);
 //       createUserRoles(resultUser, roleDTOList);

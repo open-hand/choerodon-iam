@@ -780,12 +780,12 @@ public class UserServiceImpl implements UserService {
         // 校验组织人数是否已达上限
         if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
             Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
-            organizationUserService.checkEnableCreateUser(sourceId, userIds.size());
+            organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
         }
         if (ResourceLevel.PROJECT.equals(sourceType)) {
             Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId(), userIds.size());
+            organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
         }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {

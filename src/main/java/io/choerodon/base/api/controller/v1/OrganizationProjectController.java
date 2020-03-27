@@ -163,4 +163,11 @@ public class OrganizationProjectController extends BaseController {
                                                                   @RequestParam(required = false) String name) {
         return ResponseEntity.ok(organizationProjectService.listProjectsWithLimit(organizationId, name));
     }
+
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "检查是否还能创建项目")
+    @GetMapping("/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {
+        return ResponseEntity.ok(organizationProjectService.checkEnableCreateProject(organizationId));
+    }
 }

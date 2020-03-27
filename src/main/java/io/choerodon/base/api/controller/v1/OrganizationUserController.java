@@ -81,12 +81,12 @@ public class OrganizationUserController extends BaseController {
 
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的组织角色信息以及GitlabUserId）")
-    @GetMapping(value = "/users/list_by_ids")
+    @PostMapping(value = "/users/list_by_ids")
     public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
             @ApiParam(value = "组织id", required = true)
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiParam(value = "多个用户id", required = true)
-            @RequestParam(name = "user_ids") Set<Long> userIds) {
+            @RequestBody Set<Long> userIds) {
         return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIdsInOrg(organizationId, userIds), HttpStatus.OK);
     }
 

@@ -32,8 +32,9 @@ export default withRouter(observer((props) => {
     orgRoleDataSet,
     orgAllRoleDataSet,
     passwordPolicyDataSet,
-    userStore: { getCanCreate },
+    userStore,
   } = useContext(Store);
+  const { getCanCreate } = userStore;
   const modalProps = {
     create: {
       okText: '保存',
@@ -121,6 +122,7 @@ export default withRouter(observer((props) => {
   }
   function handleSave() {
     dataSet.query();
+    userStore.checkCreate(organizationId);
   }
   function openModal(type) {
     Modal.open({

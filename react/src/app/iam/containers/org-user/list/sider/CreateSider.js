@@ -7,13 +7,13 @@ import FormSelectEditor from '../../../../components/formSelectEditor';
 import './index.less';
 
 export default observer(() => {
-  const { prefixCls, modal, orgUserListDataSet, orgUserCreateDataSet, organizationId, orgRoleDataSet } = useContext(Store);
+  const { prefixCls, modal, orgUserListDataSet, orgUserCreateDataSet, organizationId, orgRoleDataSet, onOk } = useContext(Store);
   
   async function handleOk() {
     try {
       if (await orgUserCreateDataSet.submit()) {
         orgUserCreateDataSet.reset();
-        orgUserListDataSet.query();
+        onOk();
       } else {
         return false;
       }

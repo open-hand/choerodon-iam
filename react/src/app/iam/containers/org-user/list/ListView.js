@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
 import { Modal as OldModal, Tooltip, Button } from 'choerodon-ui';
-import { Select, SelectBox, Table, TextField, Modal, message, Icon } from 'choerodon-ui/pro';
+import { Select, SelectBox, Table, TextField, Modal, message, Icon, Button as ProButton } from 'choerodon-ui/pro';
 import expandMoreColumn from '../../../components/expandMoreColumn';
 import StatusTag from '../../../components/statusTag';
 import Store from './stores';
@@ -218,13 +218,13 @@ export default withRouter(observer((props) => {
       footer: (okBtn, cancelBtn) => (
         <div>
           {okBtn}
-          <Button
+          <ProButton
             color="primary"
             funcType="raised"
             onClick={linkToLDAP}
           >
             转至LDAP设置
-          </Button>
+          </ProButton>
           {cancelBtn}
         </div>
       ),

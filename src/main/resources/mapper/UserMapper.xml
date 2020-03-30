@@ -1459,7 +1459,7 @@
     </select>
     <select id="listProjectOwnerById" resultType="io.choerodon.base.infra.dto.UserDTO">
          SELECT
-               iu.id,iu.email,iu.real_name,iu.phone
+               iu.id,iu.email,iu.real_name,iu.phone,iu.login_name
          FROM iam_user iu
          JOIN iam_member_role imr ON iu.id =imr.member_id
          JOIN iam_role ir ON ir.id=imr.role_id

@@ -229,7 +229,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public void checkEnableCreateUserOrThrowE(Long organizationId, int userNumber) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countUserNum(organizationId);
-            if (num + userNumber >= userMaxNumber) {
+            if (num + userNumber > userMaxNumber) {
                 throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
             }
         }

@@ -14,6 +14,7 @@ const ContainerBlock = observer((props) => {
     handleChangeDays,
     titleExtra,
     style,
+    titleMarginBottom,
   } = props;
   return (
     <div
@@ -25,7 +26,7 @@ const ContainerBlock = observer((props) => {
       }}
     >
       <div style={{
-        marginBottom: 10,
+        marginBottom: titleMarginBottom || 10,
         display: title ? 'flex' : 'none',
         justifyContent: 'space-between',
       }}
@@ -35,7 +36,7 @@ const ContainerBlock = observer((props) => {
           <div style={{ marginRight: 24 }}>
             {titleExtra}
           </div>
-          { hasDaysPicker && <DaysPicker handleChangeDays={handleChangeDays} /> }
+          {hasDaysPicker && <DaysPicker handleChangeDays={handleChangeDays} />}
         </div>
       </div>
       {children}

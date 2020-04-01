@@ -3,17 +3,20 @@ package io.choerodon.base.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.gson.JsonObject;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.base.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.base.app.service.RoleMemberService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.infra.dto.OrganizationDTO;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
 import io.choerodon.base.infra.mapper.*;
 import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
@@ -165,7 +168,26 @@ public class OrgAdministratorServiceImpl implements OrgAdministratorService {
         Map<String, Object> params = new HashMap<>();
         params.put("organizationName", organizationDTO.getName());
         params.put("roleName", roleDTO.getName());
-        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId);
+        //添加webhook json
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("organizationId", organizationDTO.getId());
+        jsonObject.put("addCount", notifyUserIds.size());
+        List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(userList)) {
+            for (Long notifyUserId : notifyUserIds) {
+                userList.add(userService.getWebHookUser(notifyUserId));
+            }
+        }
+
+        jsonObject.put("userList", JSON.toJSONString(userList));
+        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                SendSettingBaseEnum.ADD_MEMBER.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+                jsonObject,
+                new Date(),
+                userService.getWebHookUser(customUserDetails.getUserId())
+        );
+        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
         return true;
     }
 }

@@ -27,6 +27,7 @@ const FailedStatistics = withRouter(observer((props) => {
     <a className="c7n-overview-sage" onClick={() => handleClickSagaRecord(record)}>{`${value}-${record.get('id')}`}</a>
   );
 
+
   return (
     <div className="c7n-overview-failedStatistics">
       <span className="c7n-overview-failedStatistics-titlespan">失败事务统计</span>
@@ -37,8 +38,8 @@ const FailedStatistics = withRouter(observer((props) => {
       >
 
         <Column name="sagaCode" renderer={renderSagaCode} />
-        <Column name="refType" />
-        <Column name="startTime" />
+        <Column name="refType" style={{ color: 'rgba(0,0,0,.65)' }} />
+        <Column name="startTime" style={{ color: 'rgba(0,0,0,.65)' }} />
       </Table>
     </div>
   );

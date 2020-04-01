@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger */
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -87,6 +88,27 @@ const TimeLine = observer(() => {
       return false;
     }
   }
+  /* eslint-disable no-shadow */
+  /* eslint-disable wrap-iife */
+
+  useEffect(() => {
+    const flow = document.getElementsByClassName('c7n-pFlow');
+    if (flow && flow.length > 0) {
+      for (let i = 0; i < flow.length; i += 1) {
+        new ResizeObserver((entries) => {
+          entries.forEach((entry) => {
+            const dom = entry.target;
+            const pDom = dom.getElementsByTagName('p')[0];
+            const scrollW = Math.ceil(pDom.scrollWidth);
+            const width = Math.ceil(pDom.clientWidth);
+            if (scrollW > width) {
+              noticeDs.records[i].set('display', 'block');
+            }
+          });
+        }).observe(flow[i]);
+      }
+    }
+  });
 
   // 更多公告
   function loadMoreNoticeRecord() {
@@ -125,21 +147,19 @@ const TimeLine = observer(() => {
                       <Icon type="notifications_none" />
                     </div>
                     <span className="c7ncd-notice-timeLine-content-header-title">{title}</span>
-                    {
-                      content.length > 50 ? (
-                        <Button
-                          className="c7ncd-notice-timeLine-content-header-btn"
-                          shape="circle"
-                          funcType="flat"
-                          icon="expand_more"
-                          type="primary"
-                          size="small"
-                          onClick={handleDropDown}
-                        />
-                      ) : null
-                    }
+
+                    <Button
+                      className="c7ncd-notice-timeLine-content-header-btn"
+                      shape="circle"
+                      funcType="flat"
+                      style={{ display: item.display }}
+                      icon="expand_more"
+                      type="primary"
+                      size="small"
+                      onClick={handleDropDown}
+                    />
                   </div>
-                  <div dangerouslySetInnerHTML={{ __html: content }} />
+                  <div dangerouslySetInnerHTML={{ __html: content }} className="c7n-pFlow" />
                 </div>
               </li>
             );

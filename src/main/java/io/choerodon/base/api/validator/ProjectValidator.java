@@ -1,11 +1,13 @@
 package io.choerodon.base.api.validator;
 
+import io.choerodon.base.infra.dto.ProjectCategoryDTO;
 import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.core.exception.CommonException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.base.infra.dto.ProjectCategoryDTO;
-import io.choerodon.core.exception.CommonException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ProjectValidator {
@@ -26,5 +28,14 @@ public class ProjectValidator {
             throw new CommonException("error.project.category.not.existed", category);
         }
         return projectCategoryDTO;
+    }
+    public void validateProjectCategoryCode(String code) {
+        List<String> categoryCodes = new ArrayList<>();
+        categoryCodes.add("AGILE");
+        categoryCodes.add("GENERAL");
+        if (!categoryCodes.contains(code)) {
+            throw new CommonException("error.params.invalid");
+        }
+
     }
 }

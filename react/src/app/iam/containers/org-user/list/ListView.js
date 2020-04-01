@@ -1,9 +1,10 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext } from 'react';
+import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
-import { Modal as OldModal, Tooltip } from 'choerodon-ui';
-import { Select, SelectBox, Table, TextField, Modal, message, Icon, Button } from 'choerodon-ui/pro';
+import { Modal as OldModal, Tooltip, Button } from 'choerodon-ui';
+import { Select, SelectBox, Table, TextField, Modal, message, Icon, Button as ProButton } from 'choerodon-ui/pro';
 import expandMoreColumn from '../../../components/expandMoreColumn';
 import StatusTag from '../../../components/statusTag';
 import Store from './stores';
@@ -19,10 +20,10 @@ const modalStyle = {
 };
 
 const { Column } = Table;
-export default withRouter((props) => {
+export default withRouter(observer((props) => {
   const { intlPrefix,
     permissions, 
-    intl, 
+    intl: { formatMessage },
     AppState,
     orgUserListDataSet: dataSet, 
     organizationId, 
@@ -31,7 +32,9 @@ export default withRouter((props) => {
     orgRoleDataSet,
     orgAllRoleDataSet,
     passwordPolicyDataSet,
+    userStore,
   } = useContext(Store);
+  const { getCanCreate } = userStore;
   const modalProps = {
     create: {
       okText: '保存',
@@ -119,6 +122,7 @@ export default withRouter((props) => {
   }
   function handleSave() {
     dataSet.query();
+    userStore.checkCreate(organizationId);
   }
   function openModal(type) {
     Modal.open({
@@ -216,13 +220,13 @@ export default withRouter((props) => {
       footer: (okBtn, cancelBtn) => (
         <div>
           {okBtn}
-          <Button
+          <ProButton
             color="primary"
             funcType="raised"
             onClick={linkToLDAP}
           >
             转至LDAP设置
-          </Button>
+          </ProButton>
           {cancelBtn}
         </div>
       ),
@@ -309,8 +313,30 @@ export default withRouter((props) => {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Button icon="playlist_add" onClick={handleCreate}><FormattedMessage id={`${intlPrefix}.button.create-user`} /></Button>
-        <Button icon="archive" onClick={handleImportUser}><FormattedMessage id={`${intlPrefix}.button.import-user`} /></Button>
+        <Tooltip
+          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+          placement="bottom"
+        >
+          <Button
+            icon="playlist_add"
+            disabled={!getCanCreate}
+            onClick={handleCreate}
+          >
+            <FormattedMessage id={`${intlPrefix}.button.create-user`} />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+          placement="bottom"
+        >
+          <Button
+            icon="archive"
+            disabled={!getCanCreate}
+            onClick={handleImportUser}
+          >
+            <FormattedMessage id={`${intlPrefix}.button.import-user`} />
+          </Button>
+        </Tooltip>
         <Button icon="person_add" onClick={handleRoleAssignment}>添加组织用户</Button>
         <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
         <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
@@ -330,4 +356,4 @@ export default withRouter((props) => {
       </Content>
     </TabPage>
   );
-});
+}));

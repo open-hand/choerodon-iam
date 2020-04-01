@@ -12,13 +12,18 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.google.gson.JsonObject;
 import io.choerodon.base.api.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.base.app.service.OrganizationUserService;
 import io.choerodon.base.app.service.UserService;
 import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.enums.SendSettingBaseEnum;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,11 +223,12 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         int size = pageable.getPageSize();
         int start = PageUtils.getBegin(page, size);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDTO> result = new Page<>(page, size);
-        int count = memberRoleMapper.selectCountClients(sourceId, resourceType.value(), clientRoleSearchDTO, param);
-        result.setTotal(count);
-        result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, resourceType.value(), clientRoleSearchDTO, param, start, size));
-        return result.toPageInfo();
+        try (Page<ClientDTO> result = new Page<>(page, size)) {
+            int count = memberRoleMapper.selectCountClients(sourceId, resourceType.value(), clientRoleSearchDTO, param);
+            result.setTotal(count);
+            result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, resourceType.value(), clientRoleSearchDTO, param, start, size));
+            return result.toPageInfo();
+        }
     }
 
 
@@ -290,7 +296,23 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
             return;
         }
-        delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value(), syncAll);
+        delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value(),syncAll);
+        //删除用户所有项目角色时发送web hook
+        JSONObject jsonObject = new JSONObject();
+        List<Long> collect = roleAssignmentDeleteDTO.getData().keySet().stream().collect(Collectors.toList());
+        jsonObject.put("projectId", roleAssignmentDeleteDTO.getSourceId());
+        jsonObject.put("user", JSON.toJSONString(userService.getWebHookUser(collect.get(0))));
+        UserDTO userDTO = userMapper.selectByPrimaryKey(collect.get(0));
+
+        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                SendSettingBaseEnum.DELETE_USERROLES.value(),
+                SendSettingBaseEnum.map.get(SendSettingBaseEnum.DELETE_USERROLES.value()),
+                jsonObject,
+                userDTO.getLastUpdateDate(),
+                userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
+        );
+        Map<String, Object> params = new HashMap<>();
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userDTO.getId()), SendSettingBaseEnum.DELETE_USERROLES.value(), params, roleAssignmentDeleteDTO.getSourceId(), webHookJsonSendDTO);
     }
 
     @Override
@@ -512,7 +534,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         });
         //批量添加，导入成功发送消息
         memberRoleDTOS.stream().forEach(memberRoleDTO -> {
-            snedMsg(sourceType, fromUserId, memberRoleDTO, sourceId);
+            snedMsg(sourceType, fromUserId, memberRoleDTO, sourceId, memberRoleDTOS);
         });
 
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
@@ -529,7 +551,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 .stream().map(MemberRoleDTO::getRoleId).collect(Collectors.toList());
     }
 
-    private void snedMsg(String sourceType, Long fromUserId, MemberRoleDTO memberRoleDTO, Long sourceId) {
+    private void snedMsg(String sourceType, Long fromUserId, MemberRoleDTO memberRoleDTO, Long sourceId, List<MemberRoleDTO> memberRoleDTOS) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
         Map<String, Object> params = new HashMap<>();
@@ -542,16 +564,45 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             }
         }
         if (ResourceType.ORGANIZATION.value().equals(sourceType)) {
-            params.put("organizationName", organizationMapper.selectByPrimaryKey(sourceId).getName());
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
+            params.put("organizationName", organizationDTO.getName());
             params.put("roleName", roleDTO.getName());
-            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), BUSINESS_TYPE_CODE, params, sourceId);
+            //webhook json
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("organizationId", organizationDTO.getId());
+            jsonObject.put("addCount", 1);
+            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
+            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingBaseEnum.ADD_MEMBER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+                    jsonObject,
+                    new Date(),
+                    userService.getWebHookUser(fromUserId)
+            );
+            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), BUSINESS_TYPE_CODE, params, sourceId, webHookJsonSendDTO);
         }
         if (ResourceType.PROJECT.value().equals(sourceType)) {
-            params.put("projectName", projectMapper.selectByPrimaryKey(sourceId).getName());
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+            params.put("projectName", projectDTO);
             params.put("roleName", roleDTO.getName());
-            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), PROJECT_ADD_USER, params, sourceId);
-        }
 
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("organizationId", projectDTO.getOrganizationId());
+            jsonObject.put("addCount", 1);
+            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
+            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingBaseEnum.PROJECT_ADDUSER.value(),
+                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.PROJECT_ADDUSER.value()),
+                    jsonObject,
+                    new Date(),
+                    userService.getWebHookUser(fromUserId)
+            );
+            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), PROJECT_ADD_USER, params, sourceId, webHookJsonSendDTO);
+        }
     }
 
     private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads, String code) {
@@ -691,7 +742,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     public void insertAndSendEvent(Long fromUserId, UserDTO userDTO, MemberRoleDTO memberRole, String loginName) {
         RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
-        List<RoleDTO> roles = userDTO.getRoles();
         if (devopsMessage) {
             organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
         }

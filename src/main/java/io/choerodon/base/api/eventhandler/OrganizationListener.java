@@ -20,7 +20,6 @@ import io.choerodon.base.app.service.LdapService;
  */
 @Component
 public class OrganizationListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationListener.class);
     private final ObjectMapper mapper = new ObjectMapper();
 
     private LdapService ldapService;

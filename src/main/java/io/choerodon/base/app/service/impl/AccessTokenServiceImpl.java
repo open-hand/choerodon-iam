@@ -97,17 +97,18 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     private PageInfo<AccessTokenDTO> doPage(Pageable pageable, List<AccessTokenDTO> result) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        Page<AccessTokenDTO> pageResult = new Page<>(page, size);
-        int total = result.size();
-        pageResult.setTotal(total);
-        if (size == 0) {
-            pageResult.addAll(result);
-        } else {
-            int start = PageUtils.getBegin(page, size);
-            int end = page * size > total ? total : page * size;
-            pageResult.addAll(result.subList(start, end));
+        try (Page<AccessTokenDTO> pageResult = new Page<>(page, size)) {
+            int total = result.size();
+            pageResult.setTotal(total);
+            if (size == 0) {
+                pageResult.addAll(result);
+            } else {
+                int start = PageUtils.getBegin(page, size);
+                int end = page * size > total ? total : page * size;
+                pageResult.addAll(result.subList(start, end));
+            }
+            return pageResult.toPageInfo();
         }
-        return pageResult.toPageInfo();
     }
 
     private List<AccessTokenDTO> searchAndOrderBy(String clientName, String currentToken, String loginName, String params) {

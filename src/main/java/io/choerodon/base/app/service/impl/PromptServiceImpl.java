@@ -60,7 +60,7 @@ public class PromptServiceImpl implements PromptService {
         if ((prompt = promptMapper.selectByPrimaryKey(id)) == null) {
             throw new UpdateException("errror.prompt.not.exist");
         }
-        if (prompt.getObjectVersionNumber() != promptDTO.getObjectVersionNumber()) {
+        if (!prompt.getObjectVersionNumber().equals(promptDTO.getObjectVersionNumber())) {
             throw new UpdateException("error.update.dataObject.objectVersionNumber.not.equal");
         }
         if (!(prompt.getPromptCode().equals(promptDTO.getPromptCode()) && prompt.getLang().equals(promptDTO.getLang()))) {

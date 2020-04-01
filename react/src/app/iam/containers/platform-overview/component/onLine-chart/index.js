@@ -37,12 +37,9 @@ const LineChart = observer(() => {
         padding: 13,
         backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
-          fontWeight: 400,
           color: '#FFF',
-          fontSize: '13px',
-          lineHeight: '12px',
         },
-        extraCssText: 'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);width:156px;height:63px;',
+        extraCssText: 'box-shadow:0px 2px 6px 0px rgba(0,0,0,0.12);padding: 15px 17px;',
       },
       xAxis: {
         type: 'category',
@@ -58,11 +55,11 @@ const LineChart = observer(() => {
         smooth: true,
         data: record && renderY(),
         type: 'line',
-        color: ['rgb(168, 185, 237)'],
+        color: ['rgba(104, 135, 232, 0.76)'],
         symbolSize: 5,
         symbol: 'circle',
         areaStyle: {
-          color: '#6887E8C2',
+          color: 'rgba(89, 123, 228, 0.92)',
         },
         itemStyle: {
           emphasis: {
@@ -72,8 +69,8 @@ const LineChart = observer(() => {
         },
       }],
       grid: {
-        top: '31px', // 与容器顶部的距离
-        height: 79,
+        bottom: '10px', // 与容器顶部的距离
+        height: '100%',
         x: 0,
         x2: 0,
         y2: '22px',

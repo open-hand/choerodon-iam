@@ -1,51 +1,21 @@
 package io.choerodon.base.app.service.impl;
 
+import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
+import static io.choerodon.base.infra.utils.SagaTopic.User.*;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.api.dto.*;
-import io.choerodon.base.api.dto.payload.UserEventPayload;
-import io.choerodon.base.api.validator.ResourceLevelValidator;
-import io.choerodon.base.api.validator.RoleValidator;
-import io.choerodon.base.api.validator.UserPasswordValidator;
-import io.choerodon.base.api.validator.UserValidator;
-import io.choerodon.base.api.vo.AssignAdminVO;
-import io.choerodon.base.api.vo.DeleteAdminVO;
-import io.choerodon.base.api.vo.UserNumberVO;
-import io.choerodon.base.api.vo.UserVO;
-import io.choerodon.base.app.service.RoleMemberService;
-import io.choerodon.base.app.service.UserService;
-import io.choerodon.base.infra.annotation.OperateLog;
-import io.choerodon.base.infra.asserts.*;
-import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.enums.MemberType;
-import io.choerodon.base.infra.enums.RoleEnum;
-import io.choerodon.base.infra.feign.FileFeignClient;
-import io.choerodon.base.infra.feign.NotifyFeignClient;
-import io.choerodon.base.infra.mapper.*;
-import io.choerodon.base.infra.utils.ImageUtils;
-import io.choerodon.base.infra.utils.PageUtils;
-import io.choerodon.base.infra.utils.ParamUtils;
-import io.choerodon.base.infra.utils.SagaTopic;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
+import io.choerodon.base.app.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -63,15 +33,52 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
-import static io.choerodon.base.infra.utils.SagaTopic.User.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.api.dto.*;
+import io.choerodon.base.api.dto.payload.UserEventPayload;
+import io.choerodon.base.api.validator.ResourceLevelValidator;
+import io.choerodon.base.api.validator.RoleValidator;
+import io.choerodon.base.api.validator.UserPasswordValidator;
+import io.choerodon.base.api.validator.UserValidator;
+import io.choerodon.base.api.vo.AssignAdminVO;
+import io.choerodon.base.api.vo.DeleteAdminVO;
+import io.choerodon.base.api.vo.UserNumberVO;
+import io.choerodon.base.api.vo.UserVO;
+import io.choerodon.base.app.service.OrganizationUserService;
+import io.choerodon.base.app.service.RoleMemberService;
+import io.choerodon.base.app.service.UserService;
+import io.choerodon.base.infra.annotation.OperateLog;
+import io.choerodon.base.infra.asserts.*;
+import io.choerodon.base.infra.dto.*;
+import io.choerodon.base.infra.dto.devops.UserAttrVO;
+import io.choerodon.base.infra.enums.MemberType;
+import io.choerodon.base.infra.enums.RoleEnum;
+import io.choerodon.base.infra.feign.DevopsFeignClient;
+import io.choerodon.base.infra.feign.FileFeignClient;
+import io.choerodon.base.infra.feign.NotifyFeignClient;
+import io.choerodon.base.infra.mapper.*;
+import io.choerodon.base.infra.utils.ImageUtils;
+import io.choerodon.base.infra.utils.PageUtils;
+import io.choerodon.base.infra.utils.ParamUtils;
+import io.choerodon.base.infra.utils.SagaTopic;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
 
 /**
  * @author superlee
@@ -125,6 +132,10 @@ public class UserServiceImpl implements UserService {
 
     private RoleMapper roleMapper;
 
+    private DevopsFeignClient devopsFeignClient;
+    private OrganizationUserService organizationUserService;
+    private ProjectService projectService;
+
     public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
@@ -133,6 +144,7 @@ public class UserServiceImpl implements UserService {
                            PasswordPolicyManager passwordPolicyManager,
                            MemberRoleMapper memberRoleMapper,
                            NotifyFeignClient notifyFeignClient,
+                           DevopsFeignClient devopsFeignClient,
                            UserMapper userMapper,
                            UserAssertHelper userAssertHelper,
                            OrganizationAssertHelper organizationAssertHelper,
@@ -143,9 +155,12 @@ public class UserServiceImpl implements UserService {
                            RoleMemberService roleMemberService,
                            TransactionalProducer producer,
                            RouteMemberRuleMapper routeMemberRuleMapper,
-                           RoleMapper roleMapper) {
+                           RoleMapper roleMapper,
+                           OrganizationUserService organizationUserService,
+                           ProjectService projectService) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
+        this.devopsFeignClient = devopsFeignClient;
         this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
@@ -163,6 +178,8 @@ public class UserServiceImpl implements UserService {
         this.producer = producer;
         this.routeMemberRuleMapper = routeMemberRuleMapper;
         this.roleMapper = roleMapper;
+        this.organizationUserService = organizationUserService;
+        this.projectService = projectService;
     }
 
     @Override
@@ -194,7 +211,8 @@ public class UserServiceImpl implements UserService {
         return getOwnedOrganizations(userId, includedDisabled, isAdmin);
     }
 
-    private CustomUserDetails checkLoginUser(Long id) {
+    @Override
+    public CustomUserDetails checkLoginUser(Long id) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
@@ -211,25 +229,26 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, resourceType.value(),
-                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            List<UserDTO> users =
-                    userMapper.selectUserWithRolesByOption(
-                            roleAssignmentSearchDTO, sourceId, resourceType.value(), start, size,
-                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users =
-                    userMapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, resourceType.value(), null, null,
-                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, resourceType.value(),
+                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                List<UserDTO> users =
+                        userMapper.selectUserWithRolesByOption(
+                                roleAssignmentSearchDTO, sourceId, resourceType.value(), start, size,
+                                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users =
+                        userMapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, resourceType.value(), null, null,
+                                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -240,10 +259,11 @@ public class UserServiceImpl implements UserService {
     private PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(Pageable pageable, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         if (!doPage) {
-            Page<UserDTO> result = new Page<>();
-            result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
-            result.setTotal(result.size());
-            return result.toPageInfo();
+            try (Page<UserDTO> result = new Page<>()) {
+                result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
+                result.setTotal(result.size());
+                return result.toPageInfo();
+            }
         }
         return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                 level, roleAssignmentSearchDTO, param));
@@ -560,6 +580,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserWithGitlabIdDTO> listUsersByIds(Set<Long> ids, Boolean onlyEnabled) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new ArrayList<>();
+        } else {
+            List<UserDTO> users = userMapper.listUsersByIds(ids.toArray(new Long[0]), onlyEnabled);
+            List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(ids).getBody();
+            if (userAttrVOS == null) {
+                userAttrVOS = new ArrayList<>();
+            }
+            Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+            // 填充gitlabUserId
+            return users.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
+        }
+    }
+
+    @Override
     public List<UserDTO> listUsersByEmails(String[] emails) {
         if (ObjectUtils.isEmpty(emails)) {
             return new ArrayList<>();
@@ -650,22 +686,23 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
-                    roleName, enabled, locked, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
-                    loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
-                    loginName, realName, roleName, enabled, locked, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
+                        roleName, enabled, locked, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
+                        loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
+                        loginName, realName, roleName, enabled, locked, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -674,21 +711,69 @@ public class UserServiceImpl implements UserService {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
-        Page<UserDTO> result = new Page<>(page, size);
-        if (doPage) {
-            int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotal(count);
-            result.addAll(users);
-        } else {
-            List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotal(users.size());
-            result.addAll(users);
+        try (Page<UserDTO> result = new Page<>(page, size)) {
+            if (doPage) {
+                int start = PageUtils.getBegin(page, size);
+                int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                        start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                result.setTotal(count);
+                result.addAll(users);
+            } else {
+                List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                        null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+                result.setTotal(users.size());
+                result.addAll(users);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
+    }
+
+    @Override
+    public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
+        List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
+                null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
+        return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<UserDTO> userDTOS = userMapper.listUserWithRolesOnProjectLevelByIds(projectId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<UserDTO> userDTOS = userMapper.listUserWithRolesOnOrganizationLevelByIds(organizationId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
+    }
+
+    private UserWithGitlabIdDTO toUserWithGitlabIdDTO(UserDTO userDTO, @Nullable Long gitlabUserId) {
+        if (userDTO == null) {
+            return null;
+        }
+        UserWithGitlabIdDTO userWithGitlabIdDTO = new UserWithGitlabIdDTO();
+        BeanUtils.copyProperties(userDTO, userWithGitlabIdDTO);
+        userWithGitlabIdDTO.setGitlabUserId(gitlabUserId);
+        return userWithGitlabIdDTO;
     }
 
     @Override
@@ -696,6 +781,16 @@ public class UserServiceImpl implements UserService {
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceType.SITE, ResourceType.ORGANIZATION})
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
+        // 校验组织人数是否已达上限
+        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+        }
+        if (ResourceLevel.PROJECT.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+            organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
@@ -738,7 +833,8 @@ public class UserServiceImpl implements UserService {
         return projects;
     }
 
-    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
+    @Override
+    public void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
                 p.setCategory(p.getCategories().get(0).getCode());
@@ -872,31 +968,33 @@ public class UserServiceImpl implements UserService {
     public PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(Pageable pageable, Long id, String params) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        Page<OrganizationDTO> result = new Page<>(page, size);
-        int start = PageUtils.getBegin(page, size);
-        int count = memberRoleMapper.selectCountBySourceId(id, "organization");
-        result.setTotal(count);
-        result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
-        return result.toPageInfo();
+        try (Page<OrganizationDTO> result = new Page<>(page, size)) {
+            int start = PageUtils.getBegin(page, size);
+            int count = memberRoleMapper.selectCountBySourceId(id, "organization");
+            result.setTotal(count);
+            result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
+            return result.toPageInfo();
+        }
     }
 
     @Override
     public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(Pageable pageable, Long id, String params) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        Page<ProjectDTO> result = new Page<>(page, size);
-        if (size == 0) {
-            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
-            result.setTotal(projectList.size());
-            result.addAll(projectList);
-        } else {
-            int start = PageUtils.getBegin(page, size);
-            int count = memberRoleMapper.selectCountBySourceId(id, "project");
-            result.setTotal(count);
-            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-            result.addAll(projectList);
+        try (Page<ProjectDTO> result = new Page<>(page, size)) {
+            if (size == 0) {
+                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+                result.setTotal(projectList.size());
+                result.addAll(projectList);
+            } else {
+                int start = PageUtils.getBegin(page, size);
+                int count = memberRoleMapper.selectCountBySourceId(id, "project");
+                result.setTotal(count);
+                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+                result.addAll(projectList);
+            }
+            return result.toPageInfo();
         }
-        return result.toPageInfo();
     }
 
     @Override
@@ -1026,9 +1124,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(Pageable pageable, String param, Long organizationId) {
         if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
-            Page<SimplifiedUserDTO> result = new Page<>(0, 20);
-            result.setTotal(0);
-            return result.toPageInfo();
+            try (Page<SimplifiedUserDTO> result = new Page<>(0, 20)) {
+                result.setTotal(0);
+                return result.toPageInfo();
+            }
         }
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -1089,12 +1188,19 @@ public class UserServiceImpl implements UserService {
     @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
                                      Map<String, Object> params, Long sourceId) {
-        return sendNotice(fromUserId, userIds, code, params, sourceId, false);
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false, null);
     }
 
     @Override
     @Async("notify-executor")
-    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
+                                     Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO) {
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false, webHookJsonSendDTO);
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO) {
         LOGGER.info("ready : send Notice to {} users", userIds.size());
         if (CollectionUtils.isEmpty(userIds)) {
             return new AsyncResult<>("userId is null");
@@ -1124,9 +1230,22 @@ public class UserServiceImpl implements UserService {
             }
         });
         noticeSendDTO.setTargetUsers(users);
+        noticeSendDTO.setWebHookJsonSendDTO(webHookJsonSendDTO);
         LOGGER.info("start : send Notice to {} users", userIds.size());
         notifyFeignClient.postNotice(noticeSendDTO);
         LOGGER.info("end : send Notice to {} users", userIds.size());
+        return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO) {
+        long beginTime = System.currentTimeMillis();
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(code);
+        noticeSendDTO.setSourceId(sourceId);
+        noticeSendDTO.setWebHookJsonSendDTO(webHookJsonSendDTO);
+        notifyFeignClient.postNotice(noticeSendDTO);
         return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 
@@ -1274,5 +1393,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> listProjectOwnerById(Long projectId) {
         return userMapper.listProjectOwnerById(projectId);
+    }
+
+    @Override
+    public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
+        return userMapper.listUsersByNameWithLimit(projectId, param);
+    }
+
+    @Override
+    public WebHookJsonSendDTO.User getWebHookUser(Long userId) {
+        UserDTO userDTO = userMapper.selectByPrimaryKey(userId);
+        if (ObjectUtils.isEmpty(userDTO) || StringUtils.isEmpty(userDTO.getLoginName())) {
+            return new WebHookJsonSendDTO.User("0", "unknown");
+        } else {
+            return new WebHookJsonSendDTO.User(userDTO.getLoginName(), userDTO.getRealName());
+        }
+    }
+
+    @Override
+    public Boolean checkEnableCreateUser(Long projectId) {
+        ProjectDTO projectDTO = projectService.checkNotExistAndGet(projectId);
+        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
     }
 }

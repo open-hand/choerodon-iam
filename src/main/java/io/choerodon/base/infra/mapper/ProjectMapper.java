@@ -49,23 +49,6 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
      */
     List<String> selectProjectNameNoType(@Param("orgId") Long orgId);
 
-    /**
-     * 获取组织下不是项目群的项目
-     *
-     * @param orgId 组织Id
-     * @return 组织下不是项目群的项目列表
-     */
-    List<ProjectDTO> selectProjectsNotGroup(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
-
-    /**
-     * 根据组织Id和项目Id查询当前项目生效的普通项目群信息.
-     *
-     * @param orgId     组织Id
-     * @param projectId 项目Id
-     * @return 普通项目群信息
-     */
-    ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
-
 
     ProjectDTO selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
 
@@ -79,8 +62,6 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
      * @return 列表
      */
     List<ProjectMapCategoryDTO> selectProjectAndCategoryId();
-
-    List<ProjectMapCategoryDTO> selectProjectAndCategoryIdByRelationship();
 
     /**
      * 查询组织下用户的项目列表.

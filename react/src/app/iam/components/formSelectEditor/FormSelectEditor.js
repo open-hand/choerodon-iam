@@ -1,6 +1,6 @@
 import React, { useRef, useContext, useState, useEffect } from 'react';
 import { runInAction } from 'mobx';
-import { Form, DataSet, Button, Icon } from 'choerodon-ui/pro';
+import { Form, DataSet, Button, Icon, Tooltip } from 'choerodon-ui/pro';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import Store from './stores';
@@ -14,7 +14,7 @@ try {
   InviteModal = false;
 }
 
-export default observer(({ name, optionDataSetConfig, optionDataSet, record, children, addButton, maxDisable, canDeleteAll = true, idField, alwaysRequired = false, required = false, allRoleDataSet }) => {
+export default observer(({ name, optionDataSetConfig, optionDataSet, record, children, addButton, maxDisable, canDeleteAll = true, idField, alwaysRequired = false, required = false, allRoleDataSet, orgUserListDataSet }) => {
   const formElement = useRef(null);
 
   async function handleSubmit({ dataSet, data }) {
@@ -108,8 +108,9 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
 
   function checkCanDisabled(recordd, v) {
     if (InviteModal && recordd.get('programOwner')) {
-      const item = allRoleDataSet.find(i => i.get('id') === v);
-      if (item && item.get('code') === 'role/project/default/project-owner') {
+      const { roles } = orgUserListDataSet.toData().find(d => d.id === recordd.get('id'));
+      const item = roles.find(i => i.id === v);
+      if (item && item.origin && item.code === 'role/project/default/project-owner') {
         return true;
       }
     }
@@ -133,6 +134,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
               options: optionDataSet || dsStore.get(index),
               optionsFilter: (optionRecord) => optionsFilter(optionRecord, v),
               textField,
+              disabled: checkCanDisabled(record, v),
               valueField,
               allowClear: false,
               clearButton: false,
@@ -141,13 +143,17 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
               required: (record.get(name).length > 1 ? false : required || record.fields.get(name).get('required')) || alwaysRequired,
             }),
             !canDeleteAll && (record.get(name) || []).length <= 1 ? undefined : (
-              <Button
-                colSpan={1}
-                className="form-select-editor-button"
-                disabled={(!canDeleteAll && (record.get(name) || []).length <= 1) || checkCanDisabled(record, v)}
-                onClick={() => handleDeleteItem(index)}
-                icon="delete"
-              />
+              <Tooltip arrowPointAtCenter placement="top" title={checkCanDisabled(record, v) ? '该用户是项目群管理员，无法移除' : undefined}>
+                <div>
+                  <Button
+                    colSpan={1}
+                    className="form-select-editor-button"
+                    disabled={(!canDeleteAll && (record.get(name) || []).length <= 1) || checkCanDisabled(record, v)}
+                    onClick={() => handleDeleteItem(index)}
+                    icon="delete"
+                  />
+                </div>
+              </Tooltip>
             ),
           ];
         })}

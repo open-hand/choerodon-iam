@@ -657,7 +657,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         }
-        if (Objects.isNull(user)) {
+        if (!Objects.isNull(user)) {
             //禁用成功后还要发送webhook json消息
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("loginName", user.getLoginName());

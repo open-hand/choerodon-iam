@@ -191,7 +191,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         );
         Map<String, Object> params = new HashMap<>();
 
-        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
 

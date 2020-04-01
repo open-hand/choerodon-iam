@@ -611,7 +611,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<MemberRoleDTO> createUserRoles(UserDTO userDTO, List<RoleDTO> roleDTOList, String sourceType, Long sourceId, boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable) {
-        return createUserRoles(userDTO, roleDTOList, sourceType, sourceId, isEdit, allowRoleEmpty, false);
+        return createUserRoles(userDTO, roleDTOList, sourceType, sourceId, isEdit, allowRoleEmpty, false, false);
     }
 
 

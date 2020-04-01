@@ -397,8 +397,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
-                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category)) {
+        if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
+                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
             throw new CommonException("error.project.type");
         }
         // 发送通知消息

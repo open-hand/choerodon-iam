@@ -55,11 +55,11 @@ const LineChart = observer(() => {
         smooth: true,
         data: record && renderY(),
         type: 'line',
-        color: ['rgb(168, 185, 237)'],
+        color: ['rgba(104, 135, 232, 0.76)'],
         symbolSize: 5,
         symbol: 'circle',
         areaStyle: {
-          color: '#6887E8C2',
+          color: 'rgba(89, 123, 228, 0.92)',
         },
         itemStyle: {
           emphasis: {

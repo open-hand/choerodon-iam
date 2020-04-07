@@ -98,7 +98,10 @@ public class OperateLogAspect {
 
     @Around("updateMethodPointcut()")
     public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
-        Long operatorId = DetailsHelper.getUserDetails().getUserId();
+        Long operatorId = 0L;
+        if (Objects.isNull(DetailsHelper.getUserDetails())) {
+            operatorId = DetailsHelper.getUserDetails().getUserId();
+        }
         OperateLogDTO operateLogDTO = new OperateLogDTO();
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         Method method = signature.getMethod();

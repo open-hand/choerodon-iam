@@ -191,7 +191,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         );
         Map<String, Object> params = new HashMap<>();
 
-        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.STOP_USER.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
+        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
         return res;
     }
 
@@ -397,8 +397,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        if (ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
-                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category)) {
+        if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
+                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
             throw new CommonException("error.project.type");
         }
         // 发送通知消息

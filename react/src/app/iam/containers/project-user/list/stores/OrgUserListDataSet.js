@@ -39,6 +39,17 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
       read: {
         url: `/base/v1/projects/${id}/users/search`,
         method: 'get',
+        transformResponse(data) {
+          const newData = JSON.parse(data);
+          newData.list = newData.list.map(l => {
+            l.roles = l.roles.map(r => {
+              r.origin = true;
+              return r;
+            });
+            return l;
+          });
+          return newData;
+        },
       },
       create: {
         url: `/base/v1/projects/${id}/users`,

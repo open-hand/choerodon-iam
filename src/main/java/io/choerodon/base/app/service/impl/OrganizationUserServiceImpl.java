@@ -229,7 +229,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public void checkEnableCreateUserOrThrowE(Long organizationId, int userNumber) {
         if (organizationService.checkOrganizationIsNew(organizationId)) {
             int num = organizationService.countUserNum(organizationId);
-            if (num + userNumber >= userMaxNumber) {
+            if (num + userNumber > userMaxNumber) {
                 throw new CommonException(ERROR_ORGANIZATION_USER_NUM_MAX);
             }
         }
@@ -657,7 +657,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         }
-        if (Objects.isNull(user)) {
+        if (!Objects.isNull(user)) {
             //禁用成功后还要发送webhook json消息
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("loginName", user.getLoginName());

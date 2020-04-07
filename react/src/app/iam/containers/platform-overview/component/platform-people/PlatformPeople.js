@@ -29,7 +29,7 @@ const PlatformPeople = observer(() => {
 
   return (
     <ContainerBlock
-      width="57%"
+      width="58%"
       height="100%"
       title="平台人数统计"
       hasDaysPicker

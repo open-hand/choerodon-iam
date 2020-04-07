@@ -134,7 +134,7 @@ const Charts = observer(() => {
       }}
       style={{
         width: '100%',
-        height: 216,
+        height: 286,
       }}
       lazyUpdate
     />

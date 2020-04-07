@@ -143,7 +143,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
               required: (record.get(name).length > 1 ? false : required || record.fields.get(name).get('required')) || alwaysRequired,
             }),
             !canDeleteAll && (record.get(name) || []).length <= 1 ? undefined : (
-              <Tooltip arrowPointAtCenter placement="top" title={checkCanDisabled(record, v) ? '该用户是项目群管理员，无法移除' : undefined}>
+              <Tooltip arrowPointAtCenter placement="top" title={checkCanDisabled(record, v) ? '该用户是项目群人员，无法移除' : undefined}>
                 <div>
                   <Button
                     colSpan={1}

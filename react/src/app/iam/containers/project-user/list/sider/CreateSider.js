@@ -52,6 +52,9 @@ export default observer((props) => {
             }
           </div>
           <span>{record.get('realName')}</span>
+          {record.get('ldap') && record.get('loginName') ? (
+            <span>({record.get('loginName')})</span>
+          ) : null}
         </div>
       </Tooltip>
 

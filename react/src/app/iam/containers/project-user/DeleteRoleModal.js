@@ -39,9 +39,9 @@ const DeleteRoleModal = ({ deleteRoleRecord, handleCancel, projectId }) => {
       onOk={handleOkDeleteRole}
     >
       <React.Fragment>
-        <p>确认移除用户{deleteRoleRecord && deleteRoleRecord.get('realName')}在项目群内的【项目所有者】角色吗？</p>
-        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value={false}>仅移除该用户在项目群内的【项目所有者】角色</Radio>
-        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value>移除该用户在项目群及其所有子项目下的【项目所有者】角色</Radio>
+        <p>确认移除用户{deleteRoleRecord && deleteRoleRecord.get('realName')}在项目群内的所有角色吗？</p>
+        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value={false}>仅移除该用户在项目群内的所有角色</Radio>
+        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value>移除该用户在项目群内所有角色及其所有子项目下的【项目成员】角色</Radio>
       </React.Fragment>
     </OldModal>
   );

@@ -104,7 +104,7 @@ export default function ListView(props) {
       sourceId: Number(projectId),
       data: { [record.get('id')]: roleIds },
     };
-    if (InviteModal && AppState.menuType.category === 'PROGRAM' && record.get('roles').some(s => s.code === 'role/project/default/project-owner')) {
+    if (InviteModal && AppState.menuType.category === 'PROGRAM') {
       setDeleteRoleRecord(record);
     } else {
       OldModal.confirm({

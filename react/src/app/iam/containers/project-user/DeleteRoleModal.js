@@ -18,7 +18,13 @@ const DeleteRoleModal = ({ deleteRoleRecord, handleCancel, projectId }) => {
   };
 
   const handleOkDeleteRole = async () => {
-    const roleIds = (deleteRoleRecord.get('roles') || []).map(({ id }) => id);
+    const roleIds = (deleteRoleRecord.get('roles') || []).map((item) => {
+      if (typeof item === 'number') {
+        return item;
+      } else {
+        return item.id;
+      }
+    });
     await axios.post(`/base/v1/projects/${projectId}/role_members/delete?sync_all=${deleteRoleAll}`, {
       memberType: 'user',
       view: 'userView',

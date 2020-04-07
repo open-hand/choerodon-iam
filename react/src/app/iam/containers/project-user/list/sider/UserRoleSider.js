@@ -53,7 +53,7 @@ export default observer((props) => {
   };
 
   async function handleOk() {
-    if (AppState.menuType.category === 'PROGRAM' && current.get('roles') && !current.get('roles').length) {
+    if (InviteModal && AppState.menuType.category === 'PROGRAM' && current.get('roles') && !current.get('roles').length) {
       await setDeleteRoleRecord(current);
       return false;
     } else {

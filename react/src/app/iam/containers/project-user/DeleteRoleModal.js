@@ -36,18 +36,21 @@ const DeleteRoleModal = ({ deleteRoleRecord, handleCancel, projectId }) => {
 
   return (
     <OldModal
-      title="移除角色"
-      okText="移除"
+      title="删除用户"
+      okText="删除"
       visible={deleteRoleRecord}
       disableOk={String(deleteRoleAll) === ''}
       onCancel={() => handleSelfCancel(false)}
       destroyOnClose
       onOk={handleOkDeleteRole}
+      closable={false}
+      maskClosable={false}
+      okType="danger"
     >
       <React.Fragment>
-        <p>确认移除用户{deleteRoleRecord && deleteRoleRecord.get('realName')}在项目群内的所有角色吗？</p>
-        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value={false}>仅移除该用户在项目群内的所有角色</Radio>
-        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value>移除该用户在项目群内所有角色及其所有子项目下的【项目成员】角色</Radio>
+        <p>确认删除用户{deleteRoleRecord && deleteRoleRecord.get('realName')}在项目群内的所有角色吗？</p>
+        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value={false}>仅删除该用户在项目群内的所有角色</Radio>
+        <Radio onChange={(value) => handleChangeDeleteRole(value)} name="deleteRole" value>删除该用户在项目群内所有角色及其所有子项目下的【项目成员】角色</Radio>
       </React.Fragment>
     </OldModal>
   );

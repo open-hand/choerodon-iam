@@ -97,133 +97,117 @@ public class OperateLogAspect {
 
 
     @Around("updateMethodPointcut()")
-    public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
-        Long operatorId = 0L;
-        if (!Objects.isNull(DetailsHelper.getUserDetails())) {
-            operatorId = DetailsHelper.getUserDetails().getUserId();
-        }
-        OperateLogDTO operateLogDTO = new OperateLogDTO();
+    public Object interceptor(ProceedingJoinPoint pjp) {
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         Method method = signature.getMethod();
-        String[] parameterNames = signature.getParameterNames();
-        Object[] args = pjp.getArgs();
-        Map<Object, Object> parmMap = new HashMap<>();
-        parmMap = processParameters(parameterNames, args);
-        OperateLog operateLog = method.getAnnotation(OperateLog.class);
-        String type = operateLog.type();
-        String content = operateLog.content();
-        EnumSet<ResourceType> level = EnumSet.noneOf(ResourceType.class);
-        ResourceType[] resourceTypes = operateLog.level();
-        for (int i = 0; i < resourceTypes.length; i++) {
-            level.add(resourceTypes[i]);
-        }
-        List<String> contentList = new ArrayList<>();
-        Long organizationId = null;
-        if (null != operateLog && null != method && null != type) {
-            switch (type) {
-                case UNLOCK_USER:
-                    contentList.add(handleUnlockUserOperateLog(content, operatorId, parmMap));
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case ENABLE_USER:
-                    contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case DISABLE_USER:
-                    contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case DELETE_ORGADMINISTRATOR:
-                    contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case CREATE_ORGADMINISTRATOR:
-                    contentList = handleCreateOrgAdministratorOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case UPDATE_ORGANIZATION:
-                    contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case ENABLE_ORGANIZATION:
-                    contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
-                    break;
-                case DISABLE_ORGANIZATION:
-                    contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
-                    break;
-                case CREATE_PROJECT:
-                    contentList = handleCreateProjectOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationIdByProject(parmMap);
-                    break;
-                case ENABLE_PROJECT:
-                    contentList = handleProjectOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case DISABLE_PROJECT:
-                    contentList = handleProjectOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case ADDADMIN_USERS:
-                    contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
-                    break;
-                case CREATE_USERORG:
-                    contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                    break;
-                case ASSIGN_USERS_ROLES:
-                    if (ResourceType.ORGANIZATION.value().equals((String) parmMap.get("sourceType"))) {
-                        level.remove(ResourceType.SITE);
-                        contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
-                        organizationId = (Long) parmMap.get("sourceId");
-                    }
-                    if (ResourceType.SITE.value().equals((String) parmMap.get("sourceType"))) {
-                        level.remove(ResourceType.ORGANIZATION);
-                        contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
-                    }
-                    break;
-                case SITE_RETRY:
-                    contentList = handleRetryOperateLog(content, operatorId, parmMap);
-                    break;
-                case ORG_RETRY:
-                    contentList = handleRetryOperateLog(content, operatorId, parmMap);
-                    organizationId = (Long) parmMap.get("sourceId");
-                    break;
-                case RESET_USERPASSWORD:
-                    contentList = handleResetUserpasswordOperateLog(content, operatorId, parmMap);
-                    organizationId = getOrganizationId(parmMap);
-                default:
-                    break;
-            }
-        }
-
-
         Object object = null;
-        operateLogDTO.setOperatorId(operatorId);
-        operateLogDTO.setSuccess(true);
-        operateLogDTO.setMethod(method.getName());
-        operateLogDTO.setType(type);
-        operateLogDTO.setSourceId(organizationId);
+        List<String> contentList = new ArrayList<>();
+        EnumSet<ResourceType> level = EnumSet.noneOf(ResourceType.class);
+        OperateLogDTO operateLogDTO = new OperateLogDTO();
         try {
+            Long operatorId = 0L;
+            if (!Objects.isNull(DetailsHelper.getUserDetails())) {
+                operatorId = DetailsHelper.getUserDetails().getUserId();
+            }
+            String[] parameterNames = signature.getParameterNames();
+            Object[] args = pjp.getArgs();
+            Map<Object, Object> parmMap = new HashMap<>();
+            parmMap = processParameters(parameterNames, args);
+            OperateLog operateLog = method.getAnnotation(OperateLog.class);
+            String type = operateLog.type();
+            String content = operateLog.content();
+            ResourceType[] resourceTypes = operateLog.level();
+            for (int i = 0; i < resourceTypes.length; i++) {
+                level.add(resourceTypes[i]);
+            }
+            Long organizationId = null;
+            if (null != operateLog && null != method && null != type) {
+                switch (type) {
+                    case UNLOCK_USER:
+                        contentList.add(handleUnlockUserOperateLog(content, operatorId, parmMap));
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case ENABLE_USER:
+                        contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case DISABLE_USER:
+                        contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case DELETE_ORGADMINISTRATOR:
+                        contentList.add(handleCommonOperateLog(content, operatorId, parmMap));
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case CREATE_ORGADMINISTRATOR:
+                        contentList = handleCreateOrgAdministratorOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case UPDATE_ORGANIZATION:
+                        contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case ENABLE_ORGANIZATION:
+                        contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
+                        break;
+                    case DISABLE_ORGANIZATION:
+                        contentList = handleOrganizationOperateLog(content, operatorId, parmMap);
+                        break;
+                    case CREATE_PROJECT:
+                        contentList = handleCreateProjectOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationIdByProject(parmMap);
+                        break;
+                    case ENABLE_PROJECT:
+                        contentList = handleProjectOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case DISABLE_PROJECT:
+                        contentList = handleProjectOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case ADDADMIN_USERS:
+                        contentList = handleAddAdminUsersOperateLog(content, operatorId, parmMap);
+                        break;
+                    case CREATE_USERORG:
+                        contentList = handleCreateUserOrgOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                        break;
+                    case ASSIGN_USERS_ROLES:
+                        if (ResourceType.ORGANIZATION.value().equals((String) parmMap.get("sourceType"))) {
+                            level.remove(ResourceType.SITE);
+                            contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
+                            organizationId = (Long) parmMap.get("sourceId");
+                        }
+                        if (ResourceType.SITE.value().equals((String) parmMap.get("sourceType"))) {
+                            level.remove(ResourceType.ORGANIZATION);
+                            contentList = handleAssignUsersRolesOnSiteLevelOperateLog(content, operatorId, parmMap);
+                        }
+                        break;
+                    case SITE_RETRY:
+                        contentList = handleRetryOperateLog(content, operatorId, parmMap);
+                        break;
+                    case ORG_RETRY:
+                        contentList = handleRetryOperateLog(content, operatorId, parmMap);
+                        organizationId = (Long) parmMap.get("sourceId");
+                        break;
+                    case RESET_USERPASSWORD:
+                        contentList = handleResetUserpasswordOperateLog(content, operatorId, parmMap);
+                        organizationId = getOrganizationId(parmMap);
+                    default:
+                        break;
+                }
+            }
+
+            operateLogDTO.setOperatorId(operatorId);
+            operateLogDTO.setSuccess(true);
+            operateLogDTO.setMethod(method.getName());
+            operateLogDTO.setType(type);
+            operateLogDTO.setSourceId(organizationId);
+
             object = pjp.proceed();
         } catch (Throwable e) {
-//            operateLogDTO.setSuccess(false);
-//            contentList.forEach(s -> {
-//                operateLogDTO.setContent(s);
-//                Stream.of(level).forEach(v -> {
-//                    if (ResourceType.SITE.value().equals(v.value())) {
-//                        operateLogDTO.setSourceId(0L);
-//                    }
-//                    operateLogDTO.setId(null);
-//                    operateLogDTO.setSourceType(v.value());
-//                    if (operateLogMapper.insert(operateLogDTO) != 1) {
-//                        LOGGER.info("error.insert.operate.failure.log:{}", e.getMessage());
-//                    }
-//                });
-//            });
-            LOGGER.info("erro.target.method");
-            throw e;
+            LOGGER.info("error.log:", e.getMessage());
         }
-
         contentList.forEach(s -> {
             operateLogDTO.setContent(s);
             level.forEach(v -> {

@@ -203,22 +203,7 @@ public class OperateLogAspect {
         try {
             object = pjp.proceed();
         } catch (Throwable e) {
-//            operateLogDTO.setSuccess(false);
-//            contentList.forEach(s -> {
-//                operateLogDTO.setContent(s);
-//                Stream.of(level).forEach(v -> {
-//                    if (ResourceType.SITE.value().equals(v.value())) {
-//                        operateLogDTO.setSourceId(0L);
-//                    }
-//                    operateLogDTO.setId(null);
-//                    operateLogDTO.setSourceType(v.value());
-//                    if (operateLogMapper.insert(operateLogDTO) != 1) {
-//                        LOGGER.info("error.insert.operate.failure.log:{}", e.getMessage());
-//                    }
-//                });
-//            });
-            LOGGER.info("erro.target.method");
-            throw e;
+            LOGGER.info("error.log:{}", e.getMessage());
         }
 
         contentList.forEach(s -> {

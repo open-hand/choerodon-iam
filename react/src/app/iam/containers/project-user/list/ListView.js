@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, Fragment } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
 import { Button, Modal as OldModal } from 'choerodon-ui';
@@ -104,7 +104,7 @@ export default function ListView(props) {
       sourceId: Number(projectId),
       data: { [record.get('id')]: roleIds },
     };
-    if (InviteModal && AppState.menuType.category === 'PROGRAM' && record.get('roles').some(s => s.code === 'role/project/default/project-owner')) {
+    if (InviteModal && AppState.menuType.category === 'PROGRAM') {
       setDeleteRoleRecord(record);
     } else {
       OldModal.confirm({
@@ -129,23 +129,28 @@ export default function ListView(props) {
   }
   // 外部人员
   function renderUserName({ value, record }) {
-    if (record.get('organizationId').toString() !== organizationId) {
-      return (
-        <span>
-          <span onClick={() => handleUserRole(record)} className="link">{value}</span>
-          <div className="project-user-external-user">
-            <span className="project-user-external-user-text">
-              外部人员
-            </span>
-          </div>
+    const label = record.get('organizationId').toString() !== organizationId ? (
+      <div className="project-user-external-user">
+        <span className="project-user-external-user-text">
+          外部人员
         </span>
-      );
-    }
-    return <span onClick={() => handleUserRole(record)} className="link">{value}</span>;
-  }
-
-  function checkCannotDelete(record) {
-    return record.get('programOwner') && record.get('roles').some(r => r.code === 'role/project/default/project-owner');
+      </div>
+    ) : null;
+    // const programLabel = InviteModal && record.get('programOwner') ? (
+    const programLabel = record.get('programOwner') ? (
+      <div className="project-user-external-user">
+        <span className="project-user-external-user-text">
+          项目群人员
+        </span>
+      </div>
+    ) : null;
+    return (
+      <Fragment>
+        <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+        {label}
+        {programLabel}
+      </Fragment>
+    );
   }
 
   function renderAction({ record }) {
@@ -153,7 +158,7 @@ export default function ListView(props) {
       text: '删除',
       action: () => handleDeleteUser(record),
     }];
-    return InviteModal && checkCannotDelete(record) ? '' : <Action data={actionDatas} />;
+    return InviteModal && record.get('programOwner') ? '' : <Action data={actionDatas} />;
   }
 
   function getInitialButton() {

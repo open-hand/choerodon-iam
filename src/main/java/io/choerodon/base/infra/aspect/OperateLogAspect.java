@@ -383,7 +383,8 @@ public class OperateLogAspect {
                 return targeter.getRealName() + "(" + targeter.getEmail() + ")";
             }
         }
-        throw new CommonException("error.query.user");
+        LOGGER.info("error.query.user");
+        return "";
     }
 
     private String getEmailParms(UserDTO userDTO) {

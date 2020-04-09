@@ -90,4 +90,6 @@ public interface OrganizationService {
      * @return
      */
     int countUserNum(Long organizationId);
+
+    List<Long> getoRoganizationByName(String name);
 }

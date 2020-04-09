@@ -430,4 +430,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         example.setOrganizationId(organizationId);
         return userMapper.selectCount(example);
     }
+
+    @Override
+    public List<Long> getoRoganizationByName(String name) {
+        return organizationMapper.getoRoganizationByName(name);
+    }
 }

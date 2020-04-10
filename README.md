@@ -15,7 +15,7 @@
 
   将角色分配给用户时，角色相关标签将发送到 `devops` 进行处理，相应的角色将分配给 gitlab。
 
-  在`base-service` 服务中一共有三个内置角色：
+  在`hzero-iam` 服务中一共有三个内置角色：
 
   - 平台管理员：拥有平台全局布局的所有权限；
 
@@ -145,7 +145,7 @@
     port: 8030
   spring:
     application:
-      name: base-service
+      name: hzero-iam
     cloud:
       config:
         failFast: true
@@ -180,7 +180,7 @@
 - 拉取当前项目到本地
 
   ```sh
-  git clone https://github.com/choerodon/base-service.git
+  git clone https://github.com/choerodon/hzero-iam.git
   ```
 
 - 创建数据库，本地创建 `base_service` 数据库和默认用户，示例如下：

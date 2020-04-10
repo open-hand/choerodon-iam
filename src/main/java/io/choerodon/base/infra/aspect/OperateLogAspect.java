@@ -288,10 +288,10 @@ public class OperateLogAspect {
         if (Objects.isNull(operator)) {
             return contentList;
         }
-        Stream.of(ids).forEach(id -> {
-            String format = String.format(content, getParms(id[0]), getParms(operatorId));
+        for (long id : ids) {
+            String format = String.format(content, getParms(id), getParms(operatorId));
             contentList.add(format);
-        });
+        }
         return contentList;
     }
 

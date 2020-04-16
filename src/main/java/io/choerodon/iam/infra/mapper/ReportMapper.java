@@ -1,6 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.base.infra.dto.ReportDTO;
+import io.choerodon.iam.infra.dto.ReportDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**

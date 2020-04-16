@@ -55,9 +55,9 @@ public class OrganizationAssertHelper extends AssertHelper {
     }
 
 
-    private OrganizationDTO codeNotExisted(String code, String message) {
-        OrganizationDTO dto = new OrganizationDTO();
-        dto.setCode(code);
+    private Tenant codeNotExisted(String code, String message) {
+        Tenant dto = new Tenant();
+        dto.setTenantNum(code);
         return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
     }
 

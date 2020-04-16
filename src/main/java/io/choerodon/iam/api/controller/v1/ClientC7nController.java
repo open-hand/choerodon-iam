@@ -15,10 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.api.vo.ClientVO;
-import io.choerodon.base.app.service.ClientC7nService;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientVO;
+import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -42,33 +42,12 @@ public class ClientC7nController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "创建客户端")
-    @PostMapping
-    public ResponseEntity<Client> create(@PathVariable("organization_id") Long organizationId,
-                                         @RequestBody @Valid Client client) {
-        client.setOrganizationId(organizationId);
-        this.validObject(client);
-        return new ResponseEntity<>(clientService.create(client), HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
     public ResponseEntity<Client> createInfo(@PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(clientC7nService.getDefaultCreateData(organizationId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "修改客户端")
-    @PostMapping(value = "/{client_id}")
-    public ResponseEntity update(@PathVariable("organization_id") Long organizationId,
-                                         @PathVariable("client_id") Long clientId,
-                                         @RequestBody Client client) {
-        client.setId(clientId);
-        client.setOrganizationId(organizationId);
-        clientService.update(client);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除客户端")
@@ -81,12 +60,6 @@ public class ClientC7nController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "通过id查询客户端")
-    @GetMapping(value = "/{client_id}")
-    public ResponseEntity<Client> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
-        return new ResponseEntity<>(clientRepository.detailClient(organizationId, clientId), HttpStatus.OK);
-    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询客户端")

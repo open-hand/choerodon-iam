@@ -1,11 +1,10 @@
 package io.choerodon.iam.infra.asserts;
 
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.UserDTO;
-import io.choerodon.base.infra.mapper.UserMapper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.AlreadyExistedException;
 
 /**
  * 用户断言帮助类
@@ -28,11 +27,11 @@ public class UserAssertHelper extends AssertHelper {
         }
     }
 
-    public UserDTO userNotExisted(Long id) {
+    public User userNotExisted(Long id) {
         return userNotExisted(id, "error.user.not.exist");
     }
 
-    public UserDTO userNotExisted(WhichColumn whichColumn, String value) {
+    public User userNotExisted(WhichColumn whichColumn, String value) {
         switch (whichColumn) {
             case LOGIN_NAME:
                 return loginNameNotExisted(value, "error.user.loginName.not.existed");
@@ -43,7 +42,7 @@ public class UserAssertHelper extends AssertHelper {
         }
     }
 
-    public UserDTO userNotExisted(WhichColumn whichColumn, String value, String message) {
+    public User userNotExisted(WhichColumn whichColumn, String value, String message) {
         switch (whichColumn) {
             case LOGIN_NAME:
                 return loginNameNotExisted(value, message);
@@ -55,28 +54,28 @@ public class UserAssertHelper extends AssertHelper {
 
     }
 
-    private UserDTO emailNotExisted(String email, String message) {
-        UserDTO dto = new UserDTO();
+    private User emailNotExisted(String email, String message) {
+        User dto = new User();
         dto.setEmail(email);
-        UserDTO result = userMapper.selectOne(dto);
+        User result = userMapper.selectOne(dto);
         if (result == null) {
             throw new CommonException(message, email);
         }
         return result;
     }
 
-    private UserDTO loginNameNotExisted(String loginName, String message) {
-        UserDTO dto = new UserDTO();
+    private User loginNameNotExisted(String loginName, String message) {
+        User dto = new User();
         dto.setLoginName(loginName);
-        UserDTO result = userMapper.selectOne(dto);
+        User result = userMapper.selectOne(dto);
         if (result == null) {
             throw new CommonException(message, loginName);
         }
         return result;
     }
 
-    public UserDTO userNotExisted(Long id, String message) {
-        UserDTO dto = userMapper.selectByPrimaryKey(id);
+    public User userNotExisted(Long id, String message) {
+        User dto = userMapper.selectByPrimaryKey(id);
         if (dto == null) {
             throw new CommonException(message, id);
         }
@@ -88,7 +87,7 @@ public class UserAssertHelper extends AssertHelper {
     }
 
     public void loginNameExisted(String loginName, String message) {
-        UserDTO dto = new UserDTO();
+        User dto = new User();
         dto.setLoginName(loginName);
         if (userMapper.selectOne(dto) != null) {
             throw new AlreadyExistedException(message);
@@ -100,7 +99,7 @@ public class UserAssertHelper extends AssertHelper {
     }
 
     public void emailExisted(String email, String message) {
-        UserDTO dto = new UserDTO();
+        User dto = new User();
         dto.setEmail(email);
         if (userMapper.selectOne(dto) != null) {
             throw new AlreadyExistedException(message);

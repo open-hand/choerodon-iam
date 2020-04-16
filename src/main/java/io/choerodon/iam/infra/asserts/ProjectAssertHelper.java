@@ -2,10 +2,10 @@ package io.choerodon.iam.infra.asserts;
 
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.ProjectDTO;
-import io.choerodon.base.infra.mapper.ProjectMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.AlreadyExistedException;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 
 /**
  * 项目断言帮助类

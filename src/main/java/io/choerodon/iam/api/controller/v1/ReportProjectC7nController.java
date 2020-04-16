@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.base.api.dto.ReportDTO;
-import io.choerodon.base.app.service.ReportService;
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.infra.dto.ReportDTO;
+import io.choerodon.iam.app.service.ReportC7nService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author bgzyy
@@ -24,13 +24,13 @@ import io.choerodon.core.iam.InitRoleCode;
 @RequestMapping("/v1/projects/{project_id}/report")
 public class ReportProjectC7nController {
 
-    private ReportService reportService;
+    private ReportC7nService reportService;
 
-    public ReportProjectC7nController(ReportService reportService) {
+    public ReportProjectC7nController(ReportC7nService reportService) {
         this.reportService = reportService;
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_MEMBER)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_MEMBER)
     @ApiOperation(value = "查询报表列表")
     @GetMapping(value = "/list")
     public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId) {

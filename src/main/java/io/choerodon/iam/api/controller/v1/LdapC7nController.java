@@ -24,10 +24,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.app.service.LdapC7nService;
-import io.choerodon.base.infra.dto.LdapAutoDTO;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LdapC7nService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -214,47 +213,47 @@ public class LdapC7nController extends BaseController {
         ldapService.stop(ldap.getId());
         return Results.success();
     }
-
-    /**
-     * 用于创建ldap自动同步
-     *
-     * @param organizationId 组织id
-     * @return
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "创建ldap自动同步")
-    @PostMapping("/ldaps/auto")
-    public ResponseEntity<LdapAutoDTO> createLdapAuto(
-            @ApiParam(value = "组织Id", required = true)
-            @PathVariable("organization_id") Long organizationId,
-            @ApiParam(value = "LdapAutoDTO", required = true)
-            @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
-        return new ResponseEntity<>(ldapService.createLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
-    }
-
-    /**
-     * 用于更新ldap自动同步
-     *
-     * @param organizationId 组织id
-     * @return
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "更新编辑ldap自动同步")
-    @PutMapping("/ldaps/auto")
-    public ResponseEntity<LdapAutoDTO> updateLdapAuto(
-            @ApiParam(value = "组织Id", required = true)
-            @PathVariable("organization_id") Long organizationId,
-            @ApiParam(value = "LdapAutoDTO", required = true)
-            @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
-        return new ResponseEntity<>(ldapService.updateLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "ldap自动同步详情查询")
-    @GetMapping("/ldaps/auto/detail")
-    public ResponseEntity<LdapAutoDTO> updateLdapAutoActive(
-            @ApiParam(value = "组织Id", required = true)
-            @PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(ldapService.queryLdapAutoDTO(organizationId), HttpStatus.OK);
-    }
+//
+//    /**
+//     * 用于创建ldap自动同步
+//     *
+//     * @param organizationId 组织id
+//     * @return
+//     */
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "创建ldap自动同步")
+//    @PostMapping("/ldaps/auto")
+//    public ResponseEntity<LdapAutoDTO> createLdapAuto(
+//            @ApiParam(value = "组织Id", required = true)
+//            @PathVariable("organization_id") Long organizationId,
+//            @ApiParam(value = "LdapAutoDTO", required = true)
+//            @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
+//        return new ResponseEntity<>(ldapService.createLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
+//    }
+//
+//    /**
+//     * 用于更新ldap自动同步
+//     *
+//     * @param organizationId 组织id
+//     * @return
+//     */
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "更新编辑ldap自动同步")
+//    @PutMapping("/ldaps/auto")
+//    public ResponseEntity<LdapAutoDTO> updateLdapAuto(
+//            @ApiParam(value = "组织Id", required = true)
+//            @PathVariable("organization_id") Long organizationId,
+//            @ApiParam(value = "LdapAutoDTO", required = true)
+//            @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
+//        return new ResponseEntity<>(ldapService.updateLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
+//    }
+//
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "ldap自动同步详情查询")
+//    @GetMapping("/ldaps/auto/detail")
+//    public ResponseEntity<LdapAutoDTO> updateLdapAutoActive(
+//            @ApiParam(value = "组织Id", required = true)
+//            @PathVariable("organization_id") Long organizationId) {
+//        return new ResponseEntity<>(ldapService.queryLdapAutoDTO(organizationId), HttpStatus.OK);
+//    }
 }

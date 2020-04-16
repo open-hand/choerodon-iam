@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.UserC7nMapper">
+    <resultMap id="userDTO" type="org.hzero.iam.domain.entity.User" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="locked" column="is_locked"/>
+        <result property="ldap" column="is_ldap"/>
+        <result property="admin" column="is_admin"/>
+        <result property="password" column="hash_password"/>
+    </resultMap>
+
+    <select id="listUsersByIds" resultMap="userDTO">
+        SELECT * FROM iam_user
+        WHERE id IN
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="onlyEnabled == true">
+            AND is_enabled = 1
+        </if>
+    </select>
+
+
+    <select id="listUsersByEmails" resultMap="userDTO">
+        SELECT * FROM iam_user
+        WHERE email IN
+        <foreach item="email" index="index" collection="emails"
+                 open="(" separator="," close=")">
+            #{email}
+        </foreach>
+        AND is_enabled = 1
+    </select>
+
+    <select id="listUsersByLoginNames" resultMap="userDTO">
+        SELECT * FROM iam_user
+        WHERE login_name IN
+        <foreach item="loginName" index="index" collection="loginNames"
+                 open="(" separator="," close=")">
+            #{loginName}
+        </foreach>
+        <if test="onlyEnabled == true">
+            AND is_enabled = 1
+        </if>
+    </select>
+
+    <select id="newUsersByDate" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            iam_user
+        WHERE
+            creation_date BETWEEN #{begin}
+            AND #{end}
+    </select>
+
+    <select id="countPreviousNumberByOrgIdAndDate" resultType="java.lang.Long">
+        select count(1)
+        from iam_user iu
+        where iu.is_enabled = true
+        <if test="organizationId">
+            AND iu.organization_id = #{organizationId}
+        </if>
+        <if test="startTime">
+            AND iu.creation_date <![CDATA[<]]> CONCAT('','${startTime}',' 00:00:00')
+        </if>
+    </select>
+
+    <select id="selectByOrgIdAndDate" resultType="org.hzero.iam.domain.entity.User">
+        select *
+        from iam_user iu
+        where iu.is_enabled = true
+        <if test="organizationId">
+            AND iu.organization_id = #{organizationId}
+        </if>
+        <if test="startTime">
+            AND iu.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime">
+            AND iu.creation_date <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
+        </if>
+    </select>
+
+
+</mapper>

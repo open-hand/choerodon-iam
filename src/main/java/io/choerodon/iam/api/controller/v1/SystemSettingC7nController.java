@@ -10,13 +10,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.base.api.vo.ResetPasswordVO;
-import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.app.service.SystemSettingC7nService;
-import io.choerodon.base.infra.valitador.SysSettingValidator;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ResetPasswordVO;
+import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.infra.valitador.SysSettingValidator;
+import io.choerodon.iam.app.service.SystemSettingC7nService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**

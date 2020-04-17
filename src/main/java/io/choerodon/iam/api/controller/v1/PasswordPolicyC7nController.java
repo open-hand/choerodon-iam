@@ -29,39 +29,4 @@ public class PasswordPolicyC7nController extends BaseController {
         this.passwordPolicyService = passwordPolicyService;
         this.passwordPolicyRepository = passwordPolicyRepository;
     }
-
-    /**
-     * 查询目标组织密码策略
-     *
-     * @return 目标组织密码策略
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询组织的密码策略")
-    @GetMapping
-    public ResponseEntity<PasswordPolicy> queryByOrganizationId(@PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(passwordPolicyRepository.selectTenantPasswordPolicy(organizationId), HttpStatus.OK);
-    }
-
-    /**
-     * 更新当前选择的组织密码策略
-     *
-     * @param passwordPolicy 要更新的密码策略
-     * @return 更新后的密码策略
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "修改组织的密码策略")
-    @PostMapping("/{id}")
-    public ResponseEntity<PasswordPolicy> update(@PathVariable("organization_id") Long organizationId,
-                                                 @PathVariable("id") Long id,
-                                                 @RequestBody @Validated PasswordPolicy passwordPolicy) {
-        passwordPolicy.setOrganizationId(organizationId);
-        this.validObject(passwordPolicy);
-        if (passwordPolicy.getId() == null) {
-            return new ResponseEntity<>(passwordPolicyService.createPasswordPolicy(organizationId, passwordPolicy), HttpStatus.OK);
-        } else {
-            SecurityTokenHelper.validToken(passwordPolicy);
-            return new ResponseEntity<>(passwordPolicyService.updatePasswordPolicy(organizationId, passwordPolicy), HttpStatus.OK);
-        }
-    }
-
 }

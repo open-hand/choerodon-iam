@@ -50,13 +50,13 @@ public class UserC7nController extends BaseController {
         this.passwordPolicyRepository = passwordPolicyRepository;
         this.userRepository = userRepository;
     }
-
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户信息")
-    @GetMapping(value = "/self")
-    public ResponseEntity<UserVO> querySelf() {
-        return new ResponseEntity<>(userRepository.selectSelf(), HttpStatus.OK);
-    }
+//
+//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @ApiOperation(value = "查询当前用户信息")
+//    @GetMapping(value = "/self")
+//    public ResponseEntity<UserVO> querySelf() {
+//        return new ResponseEntity<>(userRepository.selectSelf(), HttpStatus.OK);
+//    }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "根据id查询用户信息")

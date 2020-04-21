@@ -107,7 +107,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
         preConditions(onFail:'MARK_RAN'){
             indexExists(indexName:'UK_IAM_MENU_U1')
         }
-        dropUniqueConstraint(tableName:'iam_menu_b',constraintName:'UK_IAM_MENU_U1')
+        dropUniqueConstraint(tableName:'IAM_MENU_B',constraintName:'UK_IAM_MENU_U1')
     }
 
     changeSet(author: 'superlee', id: '2019-04-24-menu-add-unique-constraint') {

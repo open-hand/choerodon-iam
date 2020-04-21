@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author superlee
  */
 @RestController
-@RequestMapping(value = "/v1/labels")
+@RequestMapping(value = "/choerodon/v1/labels")
 public class LabelC7nController extends BaseController {
 
     private LabelService labelService;
@@ -31,6 +31,7 @@ public class LabelC7nController extends BaseController {
         this.labelService = labelService;
         this.labelC7nService = labelC7nService;
     }
+
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "通过类型查询label")

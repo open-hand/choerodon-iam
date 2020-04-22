@@ -1,6 +1,11 @@
 package io.choerodon.iam.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.domain.AuditDomain;
 
@@ -11,9 +16,15 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @Table(name = "fd_project_user")
 public class ProjectUserDTO extends AuditDomain {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ApiModelProperty("用户id")
     private Long memberId;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("角色id")
+    private Long roleId;
 
     public Long getId() {
         return id;
@@ -37,5 +48,13 @@ public class ProjectUserDTO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
     }
 }

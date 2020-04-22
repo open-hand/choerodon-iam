@@ -4,7 +4,7 @@ import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.base.infra.utils.StringUtil;
+import io.choerodon.iam.infra.utils.StringUtil;
 
 /**
  * @author dinghuang123@gmail.com

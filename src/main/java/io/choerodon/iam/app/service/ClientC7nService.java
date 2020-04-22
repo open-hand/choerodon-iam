@@ -26,22 +26,6 @@ public interface ClientC7nService {
      */
     Client assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
 
-    /**
-     * 创建带类型的客户端
-     * @param organizationId
-     * @param clientVO
-     * @return
-     */
-    Client createClientWithType(Long organizationId, ClientVO clientVO);
-
-    /**
-     * 根据source_id查询客户端信息
-     * @param organizationId
-     * @param sourceId
-     * @return
-     */
-    Client queryClientBySourceId(Long organizationId, Long sourceId);
-
     Client queryByName(Long orgId, String clientName);
 
 }

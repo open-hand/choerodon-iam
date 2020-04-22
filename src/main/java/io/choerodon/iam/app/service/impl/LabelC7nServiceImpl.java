@@ -5,11 +5,12 @@ import java.util.stream.Collectors;
 
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.infra.mapper.LabelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.app.service.LabelC7nService;
-import io.choerodon.base.infra.enums.RoleLabel;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LabelC7nService;
+import io.choerodon.iam.infra.enums.RoleLabel;
 
 /**
  * @author scp
@@ -18,11 +19,8 @@ import io.choerodon.core.iam.ResourceLevel;
  */
 @Service
 public class LabelC7nServiceImpl implements LabelC7nService {
+    @Autowired
     private LabelMapper labelMapper;
-
-    public LabelServiceImpl(LabelMapper labelMapper) {
-        this.labelMapper = labelMapper;
-    }
 
     @Override
     public List<Label> listByOption(Label label) {

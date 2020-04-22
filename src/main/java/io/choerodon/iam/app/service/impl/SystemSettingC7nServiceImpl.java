@@ -7,36 +7,30 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.beans.BeanUtils;
+import org.hzero.boot.file.FileClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.api.dto.payload.SystemSettingEventPayload;
-import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.app.service.SystemSettingC7nService;
-import io.choerodon.base.infra.dto.SysSettingDTO;
-import io.choerodon.base.infra.feign.FileFeignClient;
-import io.choerodon.base.infra.mapper.SysSettingMapper;
-import io.choerodon.base.infra.utils.ImageUtils;
-import io.choerodon.base.infra.utils.MockMultipartFile;
-import io.choerodon.base.infra.utils.SagaTopic;
-import io.choerodon.base.infra.utils.SysSettingUtils;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.app.service.SystemSettingC7nService;
+import io.choerodon.iam.infra.dto.SysSettingDTO;
+import io.choerodon.iam.infra.mapper.SysSettingMapper;
+import io.choerodon.iam.infra.utils.ImageUtils;
+import io.choerodon.iam.infra.utils.MockMultipartFile;
+import io.choerodon.iam.infra.utils.SysSettingUtils;
 
 /**
  * @author zmf
  * @since 2018-10-15
  */
 @Service
-@Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam更改系统设置", inputSchemaClass = SystemSettingEventPayload.class)
 public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
-    private final FileFeignClient fileFeignClient;
+    private final FileClient fileClient;
     private final SagaClient sagaClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
@@ -110,11 +104,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             });
 
         }
-        SysSettingVO dto = SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
-        if (devopsMessage) {
-            triggerSagaFlow(dto);
-        }
-        return dto;
+        return SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
     }
 
     @Override
@@ -142,9 +132,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             });
         }
         SysSettingVO dto = SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
-        if (devopsMessage) {
-            triggerSagaFlow(dto);
-        }
         return dto;
     }
 
@@ -174,9 +161,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             record.setSettingValue(null);
             sysSettingMapper.updateByPrimaryKey(record);
         });
-        if (devopsMessage) {
-            triggerSagaFlow(new SysSettingVO());
-        }
     }
 
     @Override
@@ -187,21 +171,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     @Override
     public Boolean getEnabledStateOfTheCategory() {
         return enableCategory;
-    }
-
-    /**
-     * 触发 saga 流程
-     *
-     * @param dto 系统配置VO
-     */
-    private void triggerSagaFlow(final SysSettingVO dto) {
-        try {
-            SystemSettingEventPayload payload = new SystemSettingEventPayload();
-            BeanUtils.copyProperties(dto, payload);
-            sagaClient.startSaga(SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, new StartInstanceDTO(objectMapper.writeValueAsString(payload)));
-        } catch (Exception e) {
-            throw new CommonException(ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND, e);
-        }
     }
 
     private String uploadFile(MultipartFile file) {

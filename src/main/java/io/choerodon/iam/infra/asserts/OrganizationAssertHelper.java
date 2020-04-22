@@ -6,7 +6,6 @@ import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.AlreadyExistedException;
 
@@ -49,9 +48,11 @@ public class OrganizationAssertHelper extends AssertHelper {
     }
 
     private Tenant emailSuffixNotExisted(String value, String message) {
-        OrganizationDTO dto = new OrganizationDTO();
-        dto.setEmailSuffix(value);
-        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
+        // todo 等待关联表
+//        OrganizationDTO dto = new OrganizationDTO();
+//        dto.setEmailSuffix(value);
+//        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
+        return null;
     }
 
 
@@ -62,8 +63,8 @@ public class OrganizationAssertHelper extends AssertHelper {
     }
 
     public void codeExisted(String code) {
-        OrganizationDTO dto = new OrganizationDTO();
-        dto.setCode(code);
+        Tenant dto = new Tenant();
+        dto.setTenantNum(code);
         if (tenantMapper.selectOne(dto) != null) {
             throw new AlreadyExistedException("error.organization.code.duplicate");
         }

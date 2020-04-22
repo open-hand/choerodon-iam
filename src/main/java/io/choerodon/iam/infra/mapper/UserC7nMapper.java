@@ -57,5 +57,12 @@ public interface UserC7nMapper extends BaseMapper<User> {
     List<User> selectByOrgIdAndDate(@Param("organizationId") Long organizationId,
                                        @Param("startTime") Date startTime,
                                        @Param("endTime") Date endTime);
+
+
+    List<User> selectUsersByLevelAndOptions(@Param("sourceType") String sourceType,
+                                               @Param("sourceId") Long sourceId,
+                                               @Param("userId") Long userId,
+                                               @Param("email") String email,
+                                               @Param("param") String param);
 }
 

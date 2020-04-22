@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.feign.fallback;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
@@ -66,11 +67,11 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
 //        return null;
 //    }
 //
-//    @Override
-//    public ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(Long aLong, List<Long> longs) {
-//        throw new CommonException("error.feign.devops.query.app.server");
-//    }
-//
+    @Override
+    public ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(Long aLong, List<Long> longs) {
+        throw new CommonException("error.feign.devops.query.app.server");
+    }
+
     @Override
     public ResponseEntity<BarLabelRotationItemVO> countByDate(Long projectId, Date startTime, Date endTime) {
         throw new CommonException("error.feign.devops.query.deploy.records");

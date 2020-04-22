@@ -7,9 +7,9 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.base.api.vo.SysSettingVO;
-import io.choerodon.base.infra.dto.SysSettingDTO;
-import io.choerodon.base.infra.enums.SysSettingEnum;
+import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.infra.dto.SysSettingDTO;
+import io.choerodon.iam.infra.enums.SysSettingEnum;
 
 public class SysSettingUtils {
 

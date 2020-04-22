@@ -2,16 +2,6 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ClientVO;
-import io.choerodon.iam.app.service.ClientC7nService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.app.service.ClientService;
@@ -20,9 +10,10 @@ import org.hzero.iam.domain.repository.ClientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -78,21 +69,6 @@ public class ClientC7nController extends BaseController {
                                               @PathVariable("client_id") Long clientId,
                                               @RequestBody List<Long> roleIds) {
         return ResponseEntity.ok(clientC7nService.assignRoles(organizationId, clientId, roleIds));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据类型创建客户端")
-    @PostMapping("/wih_type")
-    public ResponseEntity<Client> createClientWithType(@PathVariable("organization_id") Long organizationId,
-                                                       @RequestBody @Valid ClientVO clientVO) {
-        return new ResponseEntity<>(clientC7nService.createClientWithType(organizationId, clientVO), HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "通过source_id查询客户端")
-    @GetMapping(value = "/source/{source_id}")
-    public ResponseEntity<Client> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId) {
-        return new ResponseEntity<>(clientC7nService.queryClientBySourceId(organizationId, sourceId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

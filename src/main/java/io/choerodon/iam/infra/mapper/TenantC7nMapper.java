@@ -1,34 +1,34 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.base.api.dto.OrgSharesDTO;
-import io.choerodon.base.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.base.api.vo.ProjectOverViewVO;
-import io.choerodon.base.infra.dto.OrganizationDTO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
+
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author wuguokai
  */
-public interface OrganizationMapper extends Mapper<OrganizationDTO> {
+public interface TenantC7nMapper extends BaseMapper<Tenant> {
 
-    List<OrganizationDTO> fulltextSearch(
+    List<TenantVO> fulltextSearch(
             @Param("name") String name,
             @Param("code") String code,
             @Param("ownerRealName") String ownerRealName,
             @Param("enabled") Boolean enabled,
             @Param("params") String params);
 
-    Set<OrganizationDTO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
+    Set<TenantVO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
                                                         @Param("includedDisabled") Boolean includedDisabled);
 
-    Set<OrganizationDTO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
+    Set<TenantVO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
                                                 @Param("includedDisabled") Boolean includedDisabled);
 
-    List<OrganizationDTO> selectOrganizationsWithRoles(
+    List<TenantVO> selectOrganizationsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
             @Param("size") Integer size,
@@ -40,14 +40,14 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
-    List<OrganizationDTO> selectByIds(@Param("ids") Set<Long> ids);
+    List<TenantVO> selectByIds(@Param("ids") Set<Long> ids);
 
     /**
      * 获取所有组织{id,name}
      *
      * @return 组织{id,name}
      */
-    List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
+    List<TenantVO> selectAllOrgIdAndName();
 
     /**
      * 获取 指定id范围 的 组织简要信息
@@ -59,7 +59,7 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
      * @param params  全局模糊搜索查询参数
      * @return 查询结果
      */
-    List<OrgSharesDTO> selectSpecified(@Param("orgIds") Set<Long> orgIds,
+    List<TenantVO> selectSpecified(@Param("orgIds") Set<Long> orgIds,
                                        @Param("name") String name,
                                        @Param("code") String code,
                                        @Param("enabled") Boolean enabled,
@@ -72,7 +72,7 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
      * @param userId 用户Id
      * @return 用户所属组织信息
      */
-    OrganizationDTO selectOwnOrgByUserId(@Param("userId") Long userId);
+    TenantVO selectOwnOrgByUserId(@Param("userId") Long userId);
 
     ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
 

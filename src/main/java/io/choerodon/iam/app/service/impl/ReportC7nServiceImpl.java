@@ -5,9 +5,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.app.service.ReportC7nService;
-import io.choerodon.base.infra.dto.ReportDTO;
-import io.choerodon.base.infra.mapper.ReportMapper;
+import io.choerodon.iam.app.service.ReportC7nService;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ReportDTO;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.ReportMapper;
 
 /**
  * @author scp
@@ -21,7 +23,7 @@ public class ReportC7nServiceImpl implements ReportC7nService {
     private ReportMapper reportMapper;
     private ProjectMapper projectMapper;
 
-    public ReportServiceImpl(ReportMapper reportMapper, ProjectMapper projectMapper) {
+    public ReportC7nServiceImpl(ReportMapper reportMapper, ProjectMapper projectMapper) {
         this.reportMapper = reportMapper;
         this.projectMapper = projectMapper;
     }

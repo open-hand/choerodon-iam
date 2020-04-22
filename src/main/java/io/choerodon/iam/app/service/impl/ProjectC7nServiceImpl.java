@@ -31,6 +31,7 @@ import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -73,13 +74,14 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private ProjectAssertHelper projectAssertHelper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private UserAssertHelper userAssertHelper;
+    private OrganizationAssertHelper organizationAssertHelper;
     private TenantMapper organizationMapper;
     private AgileFeignClient agileFeignClient;
     private TestManagerFeignClient testManagerFeignClient;
-    private OrganizationService organizationService;
 
-    public ProjectServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
+    public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                               SagaClient sagaClient,
+                              OrganizationAssertHelper organizationAssertHelper,
                               UserMapper userMapper,
                               ProjectMapper projectMapper,
                               ProjectAssertHelper projectAssertHelper,
@@ -87,17 +89,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                               UserAssertHelper userAssertHelper,
                               TenantMapper organizationMapper,
                               TestManagerFeignClient testManagerFeignClient,
-                              OrganizationService organizationService,
                               AgileFeignClient agileFeignClient) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.sagaClient = sagaClient;
+        this.organizationAssertHelper = organizationAssertHelper;
         this.userMapper = userMapper;
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
-        this.organizationService = organizationService;
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
     }
@@ -127,10 +128,10 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return dto;
     }
 
-    @Override
-    public Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest,() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), id, userId, email, param));
-    }
+//    @Override
+//    public Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
+//        return PageHelper.doPageAndSort(pageRequest,() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), id, userId, email, param));
+//    }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
@@ -209,7 +210,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public Tenant getOrganizationByProjectId(Long projectId) {
         ProjectDTO projectDTO = checkNotExistAndGet(projectId);
-        return organizationService.checkNotExistAndGet(projectDTO.getOrganizationId());
+        return organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
     }
 
     @Override

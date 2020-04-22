@@ -1,20 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.app.service.MemberRoleC7nService;
 import io.choerodon.iam.infra.asserts.ClientAssertHelper;
-import io.choerodon.iam.infra.enums.ClientTypeEnum;
-import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -57,7 +54,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
-    private OrganizationMapper organizationMapper;
+    private TenantC7nMapper tenantC7nMapper;
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
@@ -87,25 +84,6 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         List<MemberRole> memberRoles = validateRoles(organizationId, clientId, roleIds);
         memberRoleC7nService.createOrUpdateRolesByMemberIdOnOrganizationLevel(true, organizationId, Collections.singletonList(clientId), memberRoles, Constants.MemberType.CLIENT);
         return clientDTO;
-    }
-
-    @Override
-    public Client createClientWithType(Long organizationId, ClientVO clientVO) {
-        // 校验sourceType
-        if (Arrays.stream(ClientTypeEnum.values()).noneMatch(t -> t.value().equals(clientVO.getSourceType()))) {
-            throw new CommonException(SOURCETYPE_INVALID_EXCEPTION);
-        }
-        Client client = modelMapper.map(clientVO, Client.class);
-        client.setOrganizationId(organizationId);
-        return clientService.create(client);
-    }
-
-    @Override
-    public Client queryClientBySourceId(Long organizationId, Long sourceId) {
-        Client record = new Client();
-        record.setOrganizationId(organizationId);
-        record.setSourceId(sourceId);
-        return clientMapper.selectOne(record);
     }
 
     @Override
@@ -206,7 +184,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         });
         //批量添加，导入成功发送消息
         memberRoleDTOS.stream().forEach(memberRoleDTO -> {
-            snedMsg(sourceType, fromUserId, memberRoleDTO, sourceId, memberRoleDTOS);
+            sendMsg(sourceType, fromUserId, memberRoleDTO, sourceId, memberRoleDTOS);
         });
 
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
@@ -236,7 +214,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             throw new CommonException("error.member_role.insert.project.not.exist");
         }
         if (ResourceLevel.ORGANIZATION.value().equals(memberRoleDTO.getSourceType())
-                && organizationMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
+                && tenantC7nMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
             throw new CommonException("error.member_role.insert.organization.not.exist");
         }
         if (memberRoleMapper.selectOne(memberRoleDTO) != null) {
@@ -246,11 +224,69 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             throw new CommonException("error.member_role.create");
         }
         //如果是平台root更新user表
-        if (SITE_ROOT.equals(roleDTO.getCode())) {
-            User userDTO = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
-            userDTO.setAdmin(true);
-            userMapper.updateByPrimaryKey(userDTO);
-        }
+        // todo 平台管理员判断需更改
+//        if (SITE_ROOT.equals(roleDTO.getCode())) {
+//            User userDTO = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
+//            userDTO.setAdmin(true);
+//            userMapper.updateByPrimaryKey(userDTO);
+//        }
         return memberRoleMapper.selectByPrimaryKey(memberRoleDTO.getId());
     }
+
+    private void sendMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Role roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+        Map<String, Object> params = new HashMap<>();
+        // todo 消息发送
+//        if (ResourceLevel.SITE.value().equals(sourceType)) {
+//            // todo 平台管理员判断需更改
+////            if (SITE_ROOT.equals(roleDTO.getCode())) {
+////                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, sourceId);
+////            } else {
+////                params.put("roleName", roleDTO.getName());
+////                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), USER_BUSINESS_TYPE_CODE, params, sourceId);
+////            }
+//        }
+//        if (ResourceType.ORGANIZATION.value().equals(sourceType)) {
+//            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
+//            params.put("organizationName", organizationDTO.getName());
+//            params.put("roleName", roleDTO.getName());
+//            //webhook json
+//            JSONObject jsonObject = new JSONObject();
+//            jsonObject.put("organizationId", organizationDTO.getId());
+//            jsonObject.put("addCount", 1);
+//            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
+//            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+//
+////            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+////                    SendSettingBaseEnum.ADD_MEMBER.value(),
+////                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+////                    jsonObject,
+////                    new Date(),
+////                    userService.getWebHookUser(fromUserId)
+////            );
+////            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), BUSINESS_TYPE_CODE, params, sourceId, webHookJsonSendDTO);
+//        }
+//        if (ResourceType.PROJECT.value().equals(sourceType)) {
+//            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+//            params.put("projectName", projectDTO);
+//            params.put("roleName", roleDTO.getName());
+//
+//            JSONObject jsonObject = new JSONObject();
+//            jsonObject.put("organizationId", projectDTO.getOrganizationId());
+//            jsonObject.put("addCount", 1);
+//            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
+//            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
+//
+////            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+////                    SendSettingBaseEnum.PROJECT_ADDUSER.value(),
+////                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.PROJECT_ADDUSER.value()),
+////                    jsonObject,
+////                    new Date(),
+////                    userService.getWebHookUser(fromUserId)
+////            );
+////            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), PROJECT_ADD_USER, params, sourceId, webHookJsonSendDTO);
+//        }
+    }
+
 }

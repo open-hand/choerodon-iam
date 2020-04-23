@@ -64,5 +64,41 @@ public interface UserC7nMapper extends BaseMapper<User> {
                                                @Param("userId") Long userId,
                                                @Param("email") String email,
                                                @Param("param") String param);
+    /**
+     * 组织层查询用户总数.
+     * 1. 查询属于该组织的用户
+     * 2. 查询member_role表分配了该组织角色的用户
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 组织用户总数
+     */
+    int selectCountUsersOnOrganizationLevel(@Param("sourceType") String sourceType,
+                                            @Param("sourceId") Long sourceId,
+                                            @Param("loginName") String loginName,
+                                            @Param("realName") String realName,
+                                            @Param("roleName") String roleName,
+                                            @Param("enabled") Boolean enabled,
+                                            @Param("locked") Boolean locked,
+                                            @Param("params") String params);
+
+
+    /**
+     * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<User> selectUserWithRolesOnOrganizationLevel(@Param("start") Integer start,
+                                                         @Param("size") Integer size,
+                                                         @Param("sourceType") String sourceType,
+                                                         @Param("sourceId") Long sourceId,
+                                                         @Param("loginName") String loginName,
+                                                         @Param("realName") String realName,
+                                                         @Param("roleName") String roleName,
+                                                         @Param("enabled") Boolean enabled,
+                                                         @Param("locked") Boolean locked,
+                                                         @Param("params") String params);
 }
 

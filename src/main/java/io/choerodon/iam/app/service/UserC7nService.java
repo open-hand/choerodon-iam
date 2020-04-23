@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 
 /**
  * @author scp
@@ -79,5 +81,32 @@ public interface UserC7nService {
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
 
+    /**
+     * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
 
+    /**
+     * 查询组织下用户的项目列表.
+     * 1. admin用户和组织管理员 可查看当前组织所有项目; 普通用户 只能查看分配了权限的启用项目
+     * 2. root用户可进入所有项目; 组织管理员和普通用户需分配权限才能进入项目
+     *
+     * @param organizationId 组织Id
+     * @param userId         用户Id
+     * @param projectDTO     项目DTO
+     * @param params         模糊查询字段
+     * @return 项目列表
+     */
+    List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+
+    /**
+     * 校验用户是否是组织Root用户
+     *
+     * @param organizationId 组织id
+     * @param userId         用户id
+     * @return true表示是
+     */
+    Boolean checkIsOrgRoot(Long organizationId, Long userId);
 }

@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class ConvertUtils {
             return null;
         }
         Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "list");
+        BeanUtils.copyProperties(source, destination, "content");
         if (source.getContent() != null) {
             destination.setContent(source.getContent().stream().map(converter).collect(Collectors.toList()));
         } else {
@@ -79,7 +80,7 @@ public class ConvertUtils {
             return null;
         }
         Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "list");
+        BeanUtils.copyProperties(source, destination, "content");
         if (source.getContent() != null) {
             destination.setContent(source.getContent().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
         }
@@ -96,10 +97,10 @@ public class ConvertUtils {
      */
     public static <S, D> List<D> convertList(List<S> source, Class<D> destinationClass) {
         if (source == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         if (source.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return source.stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList());
     }
@@ -115,10 +116,10 @@ public class ConvertUtils {
      */
     public static <S, D> List<D> convertList(List<S> source, Function<S, D> converter) {
         if (source == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         if (source.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return source.stream().map(converter).collect(Collectors.toList());
     }

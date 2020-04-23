@@ -33,4 +33,11 @@ public class LabelC7nServiceImpl implements LabelC7nService {
         }
         return labelDTOS;
     }
+
+    @Override
+    public Label selectByName(String name) {
+        Label label = new Label();
+        label.setName(name);
+        return labelMapper.selectOne(label);
+    }
 }

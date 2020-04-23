@@ -9,6 +9,8 @@ public enum RoleLabel {
 
     PROJECT_OWNER("project.owner"),
 
+    PROJECT_ROLE("project_role"),
+
     ORGANIZATION_OWNER("organization.owner"),
 
     ORGANIZATION_GITLAB_OWNER("organization.gitlab.owner");

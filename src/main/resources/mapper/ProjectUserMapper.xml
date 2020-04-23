@@ -11,16 +11,16 @@
         <result property="imageUrl" column="image_url"/>
         <result property="locked" column="is_locked"/>
         <result property="organizationId" column="organization_id"/>
-        <result property="organizationName" column="user_org_name"/>
+        <result property="tenantName" column="user_org_name"/>
         <result property="organizationCode" column="user_org_code"/>
         <result property="objectVersionNumber" column="user_version_number"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO"
+        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">
             <id property="id" column="role_id"/>
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>
             <result property="enabled" column="role_is_enabled"/>
-            <result property="organizationId" column="role_org_id"/>
+            <result property="tenantId" column="role_org_id"/>
         </collection>
     </resultMap>
 

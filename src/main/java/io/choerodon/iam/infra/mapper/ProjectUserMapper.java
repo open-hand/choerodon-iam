@@ -39,14 +39,14 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）
      */
     List<UserDTO> selectUserWithRolesOnProjectLevel(@Param("start") Integer start,
-                                                    @Param("size") Integer size,
-                                                    @Param("sourceType") String sourceType,
-                                                    @Param("sourceId") Long sourceId,
-                                                    @Param("loginName") String loginName,
-                                                    @Param("realName") String realName,
-                                                    @Param("roleName") String roleName,
-                                                    @Param("enabled") Boolean enabled,
-                                                    @Param("params") String params);
+                                                 @Param("size") Integer size,
+                                                 @Param("sourceType") String sourceType,
+                                                 @Param("sourceId") Long sourceId,
+                                                 @Param("loginName") String loginName,
+                                                 @Param("realName") String realName,
+                                                 @Param("roleName") String roleName,
+                                                 @Param("enabled") Boolean enabled,
+                                                 @Param("params") String params);
 
     /**
      * 项目层根据用户id查询用户列表（包括用户信息以及所分配的项目角色信息）.

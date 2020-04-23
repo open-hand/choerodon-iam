@@ -342,4 +342,15 @@ public interface UserMapper extends Mapper<UserDTO> {
                                        @Param("endTime") Date endTime);
 
     List<UserDTO> listProjectOwnerById(@Param("projectId") Long projectId);
+
+    /**
+     * 根据项目查询项目成员和传入的敏捷用户
+     * @param projectId
+     * @param userIds
+     * @param param
+     * @return
+     */
+    List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
+                                              @Param("userIds") Set<Long> userIds,
+                                              @Param("param") String param);
 }

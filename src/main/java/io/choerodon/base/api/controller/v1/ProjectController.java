@@ -85,6 +85,20 @@ public class ProjectController extends BaseController {
         return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, Pageable, param), HttpStatus.OK);
     }
 
+
+    @Permission(type = ResourceType.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
+    @PostMapping(value = "/{project_id}/agile_users")
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<UserDTO>> agileUsers(@PathVariable(name = "project_id") Long id,
+                                                        @ApiIgnore
+                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
+                                                        @RequestBody Set<Long> userIds,
+                                                        @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(projectService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+    }
+
+
     /**
      * 项目层更新项目，code和organizationId都不可更改
      */

@@ -1,9 +1,9 @@
 package io.choerodon.iam.infra.asserts;
 
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.RoleDTO;
-import io.choerodon.base.infra.mapper.RoleMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.AlreadyExistedException;
 import io.choerodon.core.exception.ext.NotExistedException;
@@ -26,33 +26,33 @@ public class RoleAssertHelper extends AssertHelper {
     }
 
     public void codeExisted(String code) {
-        RoleDTO dto = new RoleDTO();
+        Role dto = new Role();
         dto.setCode(code);
         if (roleMapper.selectOne(dto) != null) {
             throw new AlreadyExistedException("error.role.code.existed");
         }
     }
 
-    public RoleDTO roleNotExisted(Long id) {
+    public Role roleNotExisted(Long id) {
         return roleNotExisted(id, ERROR_ROLE_NOT_EXIST);
     }
 
-    public RoleDTO roleNotExisted(Long id, String message) {
-        RoleDTO dto = roleMapper.selectByPrimaryKey(id);
+    public Role roleNotExisted(Long id, String message) {
+        Role dto = roleMapper.selectByPrimaryKey(id);
         if (dto == null) {
             throw new CommonException(message, id);
         }
         return dto;
     }
 
-    public RoleDTO roleNotExisted(String code) {
+    public Role roleNotExisted(String code) {
         return roleNotExisted(code, ERROR_ROLE_NOT_EXIST);
     }
 
-    public RoleDTO roleNotExisted(String code, String message) {
-        RoleDTO dto = new RoleDTO();
+    public Role roleNotExisted(String code, String message) {
+        Role dto = new Role();
         dto.setCode(code);
-        RoleDTO result = roleMapper.selectOne(dto);
+        Role result = roleMapper.selectOne(dto);
         if (result == null) {
             throw new NotExistedException(message, code);
         }

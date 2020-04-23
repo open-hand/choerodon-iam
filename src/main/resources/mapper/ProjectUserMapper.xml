@@ -121,4 +121,12 @@
         left join iam_role ir2 on ir2.id = imr2.role_id
         left join hpfm_tenant fo on (t2.organization_id = fo.tenant_id)
     </select>
+
+
+    <select id="listProjectRoleIds" resultType="java.lang.Long">
+        SELECT fpu.ROLE_ID
+        FROM fd_project_user fpu
+        WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
+        AND fpu.MEMBER_ID = #{userId,jdbcType=BIGINT}
+    </select>
 </mapper>

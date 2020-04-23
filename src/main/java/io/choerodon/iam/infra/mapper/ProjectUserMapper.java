@@ -92,4 +92,13 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<UserDTO> listUsersByNameWithLimit(@Param("projectId") Long projectId,
                                            @Param("param") String param);
+
+    /**
+     * 列出用户在项目层的角色id
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return 角色id列表
+     */
+    List<Long> listProjectRoleIds(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }

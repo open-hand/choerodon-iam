@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.app.service.OrganizationRoleService;
+import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -20,10 +20,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/choerodon/v1/organizations/{organization_id}/roles")
 public class OrganizationRoleC7nController {
 
-    private OrganizationRoleService organizationRoleService;
+    private OrganizationRoleC7nService organizationRoleC7nService;
 
-    public OrganizationRoleC7nController(OrganizationRoleService organizationRoleService) {
-        this.organizationRoleService = organizationRoleService;
+    public OrganizationRoleC7nController(OrganizationRoleC7nService organizationRoleC7nService) {
+        this.organizationRoleC7nService = organizationRoleC7nService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -32,7 +32,19 @@ public class OrganizationRoleC7nController {
     public ResponseEntity<Void> create(
             @PathVariable("organization_id") Long organizationId,
             @RequestBody RoleVO roleVO) {
-        organizationRoleService.create(organizationId, roleVO);
+        organizationRoleC7nService.create(organizationId, roleVO);
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "修改角色信息")
+    @PutMapping("/{role_id}")
+    public ResponseEntity<Void> update(
+            @PathVariable("organization_id") Long organizationId,
+            @PathVariable("role_id") Long roleId,
+            @RequestBody RoleVO roleVO) {
+        organizationRoleC7nService.update(organizationId, roleId, roleVO);
+        return ResponseEntity.noContent().build();
+    }
+
 }

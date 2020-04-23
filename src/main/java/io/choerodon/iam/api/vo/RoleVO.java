@@ -19,6 +19,11 @@ public class RoleVO extends Role {
     @ApiModelProperty("角色拥有的菜单id集合")
     private Set<Long> menuIdList;
 
+    @ApiModelProperty("是否更新角色信息/update时必须")
+    private Boolean updateRoleFlag;
+    @ApiModelProperty("是否更新权限/update时必须")
+    private Boolean updatePermissionFlag;
+
     public Set<Long> getMenuIdList() {
         return menuIdList;
     }
@@ -33,5 +38,21 @@ public class RoleVO extends Role {
 
     public void setRoleLevel(String roleLevel) {
         this.roleLevel = roleLevel;
+    }
+
+    public Boolean getUpdateRoleFlag() {
+        return updateRoleFlag;
+    }
+
+    public void setUpdateRoleFlag(Boolean updateRoleFlag) {
+        this.updateRoleFlag = updateRoleFlag;
+    }
+
+    public Boolean getUpdatePermissionFlag() {
+        return updatePermissionFlag;
+    }
+
+    public void setUpdatePermissionFlag(Boolean updatePermissionFlag) {
+        this.updatePermissionFlag = updatePermissionFlag;
     }
 }

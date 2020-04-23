@@ -22,12 +22,6 @@
         <dependency>
             <groupId>org.hzero</groupId>
             <artifactId>hzero-iam-saas</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hzero.starter</groupId>
-                    <artifactId>hzero-starter-dynamic-route</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hzero.starter</groupId>

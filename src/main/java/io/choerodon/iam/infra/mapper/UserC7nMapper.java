@@ -100,5 +100,15 @@ public interface UserC7nMapper extends BaseMapper<User> {
                                                          @Param("enabled") Boolean enabled,
                                                          @Param("locked") Boolean locked,
                                                          @Param("params") String params);
+
+    List<User> selectAdminUserPage(@Param("loginName") String loginName, @Param("realName") String realName, @Param("params") String params);
+
+    /**
+     * 查询所用拥有对应角色的用户
+     * @return
+     */
+    List<Long> selectUserByRoleCode(@Param("roleCode") String roleCode);
+
+
 }
 

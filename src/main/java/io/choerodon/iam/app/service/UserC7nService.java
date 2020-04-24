@@ -6,13 +6,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hzero.iam.domain.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -81,6 +85,7 @@ public interface UserC7nService {
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
 
+<<<<<<< f1f254cce79b94aee21513a86a5eae375f221a35
     /**
      * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
      *
@@ -100,6 +105,27 @@ public interface UserC7nService {
      * @return 项目列表
      */
     List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+    Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
+
+    void addAdminUsers(long[] ids);
+
+    void deleteAdminUser(long id);
+
+
+    Page<TenantVO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest,
+                                                     Long id, String params);
+
+    Page<ProjectDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest,
+                                                    Long id, String params);
+
+
+    /**
+     * 校验用户是否是root用户
+     *
+     * @param id
+     * @return
+     */
+    Boolean checkIsRoot(Long id);
 
     /**
      * 校验用户是否是组织Root用户

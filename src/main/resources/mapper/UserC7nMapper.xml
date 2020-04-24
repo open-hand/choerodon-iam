@@ -113,5 +113,57 @@
         </if>
     </select>
 
+    <select id="selectAdminUserPage" resultMap="userDTO">
+        select iut.id,iut.target_login_name as login_name,iut.real_name,
+        iut.is_enabled,iut.is_locked,iut.is_ldap,iut.is_admin,iut.object_version_number
+        from
+        (
+        select iu.*,
+        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        from iam_user iu
+        ) iut
+        where iut.id IN (
+        SELECT
+        imr.member_id
+        FROM
+        iam_member_role imr
+        INNER JOIN iam_role ir ON (
+        ir.`code` = 'role/site/default/administrator'
+        OR ir. CODE = 'role/organization/default/administrator'
+        )
+        AND imr.role_id = ir.id
+        WHERE
+        imr.member_type = 'user'
+        GROUP BY
+        imr.member_id
+        HAVING
+        COUNT(imr.role_id) = 2
+        )
+        <if test="loginName!= null">
+            AND iut.target_login_name LIKE concat(concat('%', #{loginName}), '%')
+        </if>
+        <if test="realName != null">
+            AND iut.real_name LIKE concat(concat('%', #{realName}), '%')
+        </if>
+        <if test="params != null">
+            AND (
+            iut.target_login_name LIKE concat(concat('%',#{params}),'%') OR
+            iut.real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+        order by iut.id desc
+    </select>
+
+    <select id="selectUserByRoleCode" resultMap="java.lang.Long">
+        SELECT
+            imr.member_id
+        FROM
+            iam_member_role imr
+            INNER JOIN iam_role ir ON ir.`code` = #{roleCode}
+            AND imr.role_id = ir.id
+        WHERE
+            imr.member_type = 'user'
+
+    </select>
 
 </mapper>

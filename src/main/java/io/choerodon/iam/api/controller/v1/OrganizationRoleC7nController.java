@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,14 @@ public class OrganizationRoleC7nController {
             @RequestBody RoleVO roleVO) {
         organizationRoleC7nService.update(organizationId, roleId, roleVO);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询组织下的角色列表")
+    @GetMapping
+    public ResponseEntity<List<RoleVO>> list(
+            @PathVariable("organization_id") Long organizationId) {
+        return ResponseEntity.ok(organizationRoleC7nService.list(organizationId));
     }
 
 }

@@ -106,6 +106,12 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         }
     }
 
+    @Override
+    public List<RoleVO> list(Long organizationId) {
+
+        return null;
+    }
+
     /**
      * 校验是否时预定义角色，预定义角色无法编辑
      * @param roleId

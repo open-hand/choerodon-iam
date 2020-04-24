@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
 import io.choerodon.iam.api.vo.RoleVO;
 
 /**
@@ -25,4 +27,10 @@ public interface OrganizationRoleC7nService {
      */
     void update(Long organizationId, Long roleId, RoleVO roleVO);
 
+    /**
+     * 查询组织下的角色列表
+     * @param organizationId
+     * @return
+     */
+    List<RoleVO> list(Long organizationId);
 }

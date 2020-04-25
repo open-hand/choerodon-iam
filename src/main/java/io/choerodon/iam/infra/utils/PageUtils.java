@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import io.choerodon.core.domain.Page;
 
 /**
  * 根据page, size参数获取数据库start的行
@@ -34,17 +35,17 @@ public class PageUtils {
     /**
      * 装配Page对象
      *
-     * @param all         包含所有内容的列表
+     * @param all      包含所有内容的列表
      * @param Pageable 分页参数
      * @return PageInfo
      */
-    public static <T> PageInfo<T> createPageFromList(List<T> all, Pageable Pageable) {
-        PageInfo<T> result = new PageInfo<>();
+    public static <T> Page<T> createPageFromList(List<T> all, Pageable Pageable) {
+        Page<T> result = new Page<>();
         boolean queryAll = Pageable.getPageNumber() == 0 || Pageable.getPageSize() == 0;
-        result.setPageSize(queryAll ? all.size() : Pageable.getPageSize());
-        result.setPageNum(Pageable.getPageNumber());
-        result.setTotal(all.size());
-        result.setPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (Pageable.getPageSize() * 1.0))));
+        result.setSize(queryAll ? all.size() : Pageable.getPageSize());
+        result.setNumber(Pageable.getPageNumber());
+        result.setTotalElements(all.size());
+        result.setTotalPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (Pageable.getPageSize() * 1.0))));
         int fromIndex = Pageable.getPageSize() * (Pageable.getPageNumber() - 1);
         int size;
         if (all.size() >= fromIndex) {
@@ -54,11 +55,11 @@ public class PageUtils {
                 size = Pageable.getPageSize();
             }
             result.setSize(queryAll ? all.size() : size);
-            result.setList(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
+            result.setContent(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
         } else {
             size = 0;
             result.setSize(queryAll ? all.size() : size);
-            result.setList(new ArrayList<>());
+            result.setContent(new ArrayList<>());
         }
         return result;
     }

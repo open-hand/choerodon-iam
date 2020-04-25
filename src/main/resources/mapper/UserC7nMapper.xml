@@ -10,6 +10,24 @@
         <result property="password" column="hash_password"/>
     </resultMap>
 
+    <resultMap id="projectUserWithRolesMap" type="org.hzero.iam.domain.entity.User">
+        <id property="id" column="id"/>
+        <result property="realName" column="real_name"/>
+        <result property="loginName" column="login_name"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="locked" column="is_locked"/>
+        <result property="email" column="email"/>
+        <result property="ldap" column="is_ldap"/>
+        <result property="creationDate" column="creation_date"/>
+        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
+                    autoMapping="true" notNullColumn="role_id">
+            <id property="id" column="role_id"/>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+        </collection>
+    </resultMap>
+
+
     <select id="listUsersByIds" resultMap="userDTO">
         SELECT * FROM iam_user
         WHERE id IN
@@ -151,6 +169,9 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
+        <if test="userId != null">
+            AND iut.id =#{userId}
+        </if>
         order by iut.id desc
     </select>
 
@@ -166,4 +187,119 @@
 
     </select>
 
+
+    <select id="selectCountUsersOnSiteLevel" resultType="int">
+        select count(1)
+        from
+        (
+        select distinct iut.id
+        from
+        (
+        select iu.*,
+        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        from iam_user iu
+        ) iut
+        <if test="orgName != null">
+            left join fd_organization fo on fo.id = iut.organization_id
+        </if>
+        <if test="roleName != null">
+            left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
+            left join iam_role ir on ir.id = imr.role_id
+        </if>
+        <where>
+            <if test="orgName != null">
+                and fo.name like concat(concat('%',#{orgName}),'%')
+            </if>
+            <if test="roleName != null">
+                and imr.source_id = #{sourceId}
+                and imr.source_type = #{sourceType}
+                and ir.name like concat(concat('%',#{roleName}),'%')
+            </if>
+            <if test="realName != null">
+                and iut.real_name like concat(concat('%',#{realName}),'%')
+            </if>
+            <if test="loginName != null">
+                and iut.target_login_name like concat(concat('%',#{loginName}),'%')
+            </if>
+            <if test="enabled != null">
+                and iut.is_enabled = #{enabled}
+            </if>
+            <if test="locked != null">
+                and iut.is_locked = #{locked}
+            </if>
+            <if test="params != null">
+                and (
+                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.real_name like concat(concat('%',#{params}),'%')
+                )
+            </if>
+        </where>
+        ) t
+    </select>
+
+    <select id="selectUserWithRolesOnSiteLevel" resultMap="userWithRolesMap">
+        select t2.is_ldap,t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,
+        t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,
+        t2.object_version_number as user_version_number,
+        fo2.name as user_org_name,fo2.code as user_org_code, ir2.id as role_id,ir2.code as role_code,
+        ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.organization_id as role_org_id
+        from
+        (
+        select distinct t1.*
+        from
+        (
+        select iut.*
+        from
+        (
+        select iu.*,
+        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        from iam_user iu
+        ) iut
+        <if test="orgName != null">
+            left join fd_organization fo on fo.id = iut.organization_id
+        </if>
+        <if test="roleName != null">
+            left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
+            left join iam_role ir on ir.id = imr.role_id
+        </if>
+        <where>
+            <if test="orgName != null">
+                and fo.name like concat(concat('%',#{orgName}),'%')
+            </if>
+            <if test="roleName != null">
+                and imr.source_id = #{sourceId}
+                and imr.source_type = #{sourceType}
+                and ir.name like concat(concat('%',#{roleName}),'%')
+            </if>
+            <if test="realName != null">
+                and iut.real_name LIKE concat(concat('%',#{realName}),'%')
+            </if>
+            <if test="loginName != null">
+                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+            </if>
+            <if test="enabled != null">
+                and iut.is_enabled = #{enabled}
+            </if>
+            <if test="locked != null">
+                and iut.is_locked = #{locked}
+            </if>
+            <if test="params != null">
+                and (
+                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.real_name like concat(concat('%',#{params}),'%')
+                )
+            </if>
+        </where>
+        ) t1
+        order by t1.is_enabled desc, t1.id desc
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>
+        ) t2
+        left join iam_member_role imr2 on
+        (imr2.member_id = t2.id and imr2.member_type = 'user' and imr2.source_id = #{sourceId} and imr2.source_type =
+        #{sourceType})
+        left join iam_role ir2 on ir2.id = imr2.role_id
+        left join fd_organization fo2 on (t2.organization_id = fo2.id)
+    </select>
 </mapper>

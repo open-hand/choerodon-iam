@@ -213,13 +213,13 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-    @ApiOperation(value = "判断用户是否是组织管理员")
-    @GetMapping(value = "/users/{user_id}/check_is_root")
-    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
-                                                  @PathVariable(name = "user_id") Long userId) {
-        return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+//    @ApiOperation(value = "判断用户是否是组织管理员")
+//    @GetMapping(value = "/users/{user_id}/check_is_root")
+//    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
+//                                                  @PathVariable(name = "user_id") Long userId) {
+//        return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
+//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "检查是否还能创建用户")

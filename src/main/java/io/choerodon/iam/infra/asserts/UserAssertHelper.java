@@ -5,6 +5,7 @@ import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.AlreadyExistedException;
 
 /**
  * 用户断言帮助类
@@ -21,12 +22,6 @@ public class UserAssertHelper extends AssertHelper {
         this.userMapper = userMapper;
     }
 
-    public void notExternalUser(Long originOrgId, Long userOrgId) {
-        if (!originOrgId.equals(userOrgId)) {
-            throw new CommonException("error.user.update.external", originOrgId, userOrgId);
-        }
-    }
-
     public User userNotExisted(Long id) {
         return userNotExisted(id, "error.user.not.exist");
     }
@@ -40,18 +35,6 @@ public class UserAssertHelper extends AssertHelper {
             default:
                 throw new CommonException("error.illegal.whichColumn", whichColumn.value);
         }
-    }
-
-    public User userNotExisted(WhichColumn whichColumn, String value, String message) {
-        switch (whichColumn) {
-            case LOGIN_NAME:
-                return loginNameNotExisted(value, message);
-            case EMAIL:
-                return emailNotExisted(value, message);
-            default:
-                throw new CommonException("error.illegal.whichColumn", whichColumn.value);
-        }
-
     }
 
     private User emailNotExisted(String email, String message) {
@@ -80,22 +63,6 @@ public class UserAssertHelper extends AssertHelper {
             throw new CommonException(message, id);
         }
         return dto;
-    }
-
-    public void loginNameExisted(String loginName) {
-        loginNameExisted(loginName, "error.user.loginName.exist");
-    }
-
-    public void loginNameExisted(String loginName, String message) {
-        User dto = new User();
-        dto.setLoginName(loginName);
-        if (userMapper.selectOne(dto) != null) {
-            throw new AlreadyExistedException(message);
-        }
-    }
-
-    public void emailExisted(String email) {
-        emailExisted(email, "error.user.email.existed");
     }
 
     public void emailExisted(String email, String message) {

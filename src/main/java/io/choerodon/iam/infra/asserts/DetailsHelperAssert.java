@@ -23,22 +23,5 @@ public class DetailsHelperAssert {
         return userDetails;
     }
 
-    public static CustomClientDetails clientDetailNotExisted() {
-        return clientDetailNotExisted("error.client.not.found");
-    }
 
-    public static CustomClientDetails clientDetailNotExisted(String message) {
-        CustomClientDetails client = DetailsHelper.getClientDetails();
-        if (client == null) {
-            throw new CommonException(message);
-        }
-        return client;
-    }
-
-    public static void notCurrentUser(Long userId) {
-        CustomUserDetails userDetails = userDetailNotExisted();
-        if (!userDetails.getUserId().equals(userId)) {
-            throw new CommonException("error.bookMark.notCurrentUser");
-        }
-    }
 }

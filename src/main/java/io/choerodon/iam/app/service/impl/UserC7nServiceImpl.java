@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
-import org.hzero.common.HZeroService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -46,12 +46,10 @@ import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.payload.UserEventPayload;
 import io.choerodon.iam.infra.utils.ImageUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
@@ -85,7 +83,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     private TransactionalProducer producer;
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
-    private FileFeignClient fileFeignClient;
+    private FileClient fileClient;
     @Autowired
     private MemberRoleService memberRoleService;
     @Autowired
@@ -106,6 +104,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserAssertHelper userAssertHelper;
     @Autowired
     private DevopsFeignClient devopsFeignClient;
+    @Autowired
+    private ProjectUserMapper projectUserMapper;
 
 
     @Override
@@ -155,7 +155,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileFeignClient.uploadFile(HZeroService.Iam.NAME, null, file.getOriginalFilename(), 0, null, file).getBody();
+        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
     }
 
     @Override
@@ -163,7 +163,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         checkLoginUser(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
-            return fileFeignClient.uploadFile(HZeroService.Iam.NAME, null, file.getOriginalFilename(), 0, null, file).getBody();
+            return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");
@@ -297,7 +297,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Page<User> pagingQueryAdminUsers(PageRequest pageable, String loginName, String realName, String params) {
-        return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params));
+        return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
     }
 
     /**
@@ -315,7 +315,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<MemberRole> memberRoleList = new ArrayList<>();
 
         for (long id : ids) {
-            List<Long> allAdminUserIds = userC7nMapper.selectAdminUserPage(null, null, null)
+            List<Long> allAdminUserIds = userC7nMapper.selectAdminUserPage(null, null, null, null)
                     .stream().map(User::getId).collect(Collectors.toList());
             if (!allAdminUserIds.contains(id)) {
 
@@ -397,28 +397,82 @@ public class UserC7nServiceImpl implements UserC7nService {
         int size = pageRequest.getSize();
         Page<ProjectDTO> result = new Page<>();
 
-            if (size == 0) {
-                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
-                result.setSize(projectList.size());
-                result.addAll(projectList);
-            } else {
-                int start = PageUtils.getBegin(page, size);
-                int count = memberRoleC7nMapper.selectCountBySourceId(id, "project");
-                result.setSize(count);
-                List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-                result.addAll(projectList);
-            }
-            return result;
+        if (size == 0) {
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+            result.setSize(projectList.size());
+            result.addAll(projectList);
+        } else {
+            int start = PageUtils.getBegin(page, size);
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+            projectUserDTO.setMemberId(id);
+            int count = projectUserMapper.selectCount(projectUserDTO);
+            result.setSize(count);
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+            result.addAll(projectList);
+        }
+        return result;
     }
 
 
     @Override
     public Boolean checkIsRoot(Long id) {
-        UserDTO userDTO = userMapper.selectByPrimaryKey(id);
-        if (userDTO == null) {
-            throw new CommonException(USER_NOT_FOUND_EXCEPTION);
+        List<User> userList = userC7nMapper.selectAdminUserPage(null, null, null, id);
+        if (!CollectionUtils.isEmpty(userList)) {
+            return userList.contains(id);
+        } else {
+            return false;
         }
-        return userDTO.getAdmin();
+    }
+
+    @Override
+    public List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled) {
+        CustomUserDetails customUserDetails = checkLoginUser(userId);
+        boolean isAdmin = false;
+        if (customUserDetails.getAdmin() != null) {
+            isAdmin = customUserDetails.getAdmin();
+        }
+        ProjectDTO project = new ProjectDTO();
+        if (!isAdmin && includedDisabled != null && !includedDisabled) {
+            project.setEnabled(true);
+        }
+        List<ProjectDTO> projects = projectMapper.selectAllProjectsByUserIdOrAdmin(userId, project, isAdmin);
+        projects.forEach(p -> p.setCategory(p.getCategories().get(0).getCode()));
+        return projects;
+    }
+
+
+    @Override
+    public Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
+                                                           String roleName, Boolean enabled, Boolean locked, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        boolean doPage = (size != 0);
+        Page<User> result = new Page<>();
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count = userC7nMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
+                    roleName, enabled, locked, params);
+            List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
+                    loginName, realName, roleName, enabled, locked, params);
+            result.setTotalElements(count);
+            result.addAll(users);
+        } else {
+            List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
+                    loginName, realName, roleName, enabled, locked, params);
+            result.setTotalElements(users.size());
+            result.addAll(users);
+        }
+        return result;
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        return null;
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+        return null;
     }
 
     private Long getRoleByCode(String code) {

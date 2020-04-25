@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/choerodon/v1/organizations/{organization_id}")
 public class LdapC7nController extends BaseController {
-    // todo 等待hzero自动同步功能
+    // todo 等待hzero自动同步功能 删除该类
 //    /**
 //     * 用于创建ldap自动同步
 //     *

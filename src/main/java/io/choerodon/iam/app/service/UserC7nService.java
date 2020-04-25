@@ -85,7 +85,6 @@ public interface UserC7nService {
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
 
-<<<<<<< f1f254cce79b94aee21513a86a5eae375f221a35
     /**
      * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
      *
@@ -105,6 +104,7 @@ public interface UserC7nService {
      * @return 项目列表
      */
     List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 
     void addAdminUsers(long[] ids);
@@ -127,12 +127,24 @@ public interface UserC7nService {
      */
     Boolean checkIsRoot(Long id);
 
+//    /**
+//     * 校验用户是否是组织Root用户
+//     *
+//     * @param organizationId 组织id
+//     * @param userId         用户id
+//     * @return true表示是
+//     */
+//    Boolean checkIsOrgRoot(Long organizationId, Long userId);
+
+    List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled);
+
+
     /**
-     * 校验用户是否是组织Root用户
+     * 全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）.
      *
-     * @param organizationId 组织id
-     * @param userId         用户id
-     * @return true表示是
+     * @return 用户列表（包括用户信息以及所分配的全局角色信息）
      */
-    Boolean checkIsOrgRoot(Long organizationId, Long userId);
+    Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
+                                                    String roleName, Boolean enabled, Boolean locked, String params);
+
 }

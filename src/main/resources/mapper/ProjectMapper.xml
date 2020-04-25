@@ -118,24 +118,10 @@
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date
         FROM fd_project fp
-        INNER JOIN
-        (
-        SELECT DISTINCT source_id FROM iam_member_role
-        WHERE member_id = #{id}
-        AND member_type = 'user'
-        AND source_type = 'project'
-        ORDER BY source_id ASC
-        <if test="start != null and size != null ">
-            LIMIT #{start}, #{size}
-        </if>
-        ) t
-        ON fp.id = t.source_id
-        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
-        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
         LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.source_type = 'project'
-        AND imr.member_type = 'user'
-        AND imr.member_id = #{id}
+        WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR
@@ -162,24 +148,10 @@
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date
         FROM fd_project fp
-        INNER JOIN
-        (
-        SELECT DISTINCT source_id FROM iam_member_role
-        WHERE member_id = #{id}
-        AND member_type = 'user'
-        AND source_type = 'project'
-        ORDER BY source_id ASC
-        <if test="start != null and size != null ">
-            LIMIT #{start}, #{size}
-        </if>
-        ) t
-        ON fp.id = t.source_id
-        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
-        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
         LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.source_type = 'project'
-        AND imr.member_type = 'user'
-        AND imr.member_id = #{id}
+        WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR
@@ -205,34 +177,10 @@
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date
         FROM fd_project fp
-        INNER JOIN
-        (
-        <![CDATA[
-            SELECT *
-            FROM
-            (
-                SELECT TMP_PAGE.*, ROWNUM ROW_ID
-                FROM
-                (
-                    SELECT DISTINCT source_id
-                    FROM iam_member_role
-                    WHERE member_id = #{id}
-                    AND member_type = 'user'
-                    AND source_type = 'project'
-                    ORDER BY source_id ASC
-                ) TMP_PAGE
-                WHERE ROWNUM <= ((#{start} + 1) * #{size})
-            )
-            WHERE ROW_ID > (#{start} * #{size})
-        ]]>
-        ) t
-        ON fp.id = t.source_id
-        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
-        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
         LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.source_type = 'project'
-        AND imr.member_type = 'user'
-        AND imr.member_id = #{id}
+        WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.vo.SysSettingVO;
 import io.choerodon.iam.app.service.SystemSettingC7nService;
@@ -30,10 +28,7 @@ import io.choerodon.iam.infra.utils.SysSettingUtils;
  */
 @Service
 public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
-    private final FileClient fileClient;
-    private final SagaClient sagaClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
+    private FileClient fileClient;
 
 
     private final Boolean enableCategory;
@@ -45,13 +40,11 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private boolean devopsMessage;
 
 
-    public SystemSettingC7nServiceImpl(FileFeignClient fileFeignClient,
-                                       SagaClient sagaClient,
+    public SystemSettingC7nServiceImpl(FileClient fileClient,
                                        @Value("${choerodon.category.enabled:false}")
-                                            Boolean enableCategory,
+                                               Boolean enableCategory,
                                        SysSettingMapper sysSettingMapper) {
-        this.fileFeignClient = fileFeignClient;
-        this.sagaClient = sagaClient;
+        this.fileClient = fileClient;
         this.enableCategory = enableCategory;
         this.sysSettingMapper = sysSettingMapper;
     }
@@ -174,7 +167,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private String uploadFile(MultipartFile file) {
-        return fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
+        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
     }
 
     /**

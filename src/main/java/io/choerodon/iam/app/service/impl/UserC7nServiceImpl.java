@@ -475,6 +475,17 @@ public class UserC7nServiceImpl implements UserC7nService {
         return null;
     }
 
+    @Override
+    public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        // todo
+//        List<Role> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+//        for (Role role:roleDTOList){
+//            if(role.get)
+//        }
+//        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
+        return null;
+    }
+
     private Long getRoleByCode(String code) {
         Role query = new Role();
         query.setCode(code);

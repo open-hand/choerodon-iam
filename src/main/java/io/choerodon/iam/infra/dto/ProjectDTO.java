@@ -59,9 +59,11 @@ public class ProjectDTO extends AuditDomain {
     private String category;
 
     @ApiModelProperty(value = "项目类型")
+    @Transient
     private List<Long> categoryIds;
 
     @ApiModelProperty(value = "项目类型(一对多)")
+    @Transient
     private List<ProjectCategoryDTO> categories;
 
     @Transient

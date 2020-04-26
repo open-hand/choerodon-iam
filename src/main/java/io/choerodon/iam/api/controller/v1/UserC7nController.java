@@ -325,17 +325,17 @@ public class UserC7nController extends BaseController {
 //    public ResponseEntity<ProjectDTO> queryProjectById(
 //            @PathVariable("id") Long id,
 //            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.queryProjectById(id, projectId));
+//        return ResponseEntity.ok(userC7nService.queryProjectById(id, projectId));
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是项目的所有者")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
-//    public ResponseEntity<Boolean> checkIsProjectOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsProjectOwner(id, projectId));
-//    }
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
+    public ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
+    }
 
 //    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
 //    @ApiOperation("校验用户是否是gitlab项目的所有者")

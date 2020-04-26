@@ -11,5 +11,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-public interface MenuC7nMapper extends BaseMapper<Menu> {
+public interface MenuC7nMapper {
 }

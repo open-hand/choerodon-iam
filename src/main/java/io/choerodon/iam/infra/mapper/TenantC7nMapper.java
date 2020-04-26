@@ -13,7 +13,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 /**
  * @author wuguokai
  */
-public interface TenantC7nMapper extends BaseMapper<Tenant> {
+public interface TenantC7nMapper {
 
     List<TenantVO> fulltextSearch(
             @Param("name") String name,
@@ -40,7 +40,7 @@ public interface TenantC7nMapper extends BaseMapper<Tenant> {
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
-    List<TenantVO> selectByIds(@Param("ids") Set<Long> ids);
+    List<TenantVO> selectByTenantIds(@Param("ids") Set<Long> ids);
 
     /**
      * 获取所有组织{id,name}

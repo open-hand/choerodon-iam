@@ -19,7 +19,7 @@
     <resultMap id="projectWithRoleDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO"
+        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">
             <id property="id" column="role_id"/>
             <result property="name" column="role_name"/>
@@ -48,7 +48,7 @@
     <resultMap id="projectWithRoleAndCategoryDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO"
+        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">
             <id property="id" column="role_id"/>
             <result property="name" column="role_name"/>
@@ -120,7 +120,7 @@
         FROM fd_project fp
         INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
         LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
         WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
@@ -150,7 +150,7 @@
         FROM fd_project fp
         INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
         LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
         WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
@@ -179,7 +179,7 @@
         FROM fd_project fp
         INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
         LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
         WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
@@ -193,7 +193,7 @@
         SELECT is_enabled FROM fd_project WHERE id = #{sourceId}
     </select>
 
-    <select id="selectByIds" resultMap="projectDTO">
+    <select id="selectByProjectIds" resultMap="projectDTO">
         select * from fd_project
         where id in
         <foreach item="id" index="index" collection="ids"

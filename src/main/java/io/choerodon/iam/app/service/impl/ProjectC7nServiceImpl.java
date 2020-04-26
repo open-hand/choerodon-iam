@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -40,14 +40,13 @@ import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.payload.ProjectEventPayload;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
  * @date 2020/4/15
  * @description
  */
+@Service
 public class ProjectC7nServiceImpl implements ProjectC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectC7nServiceImpl.class);
 
@@ -198,7 +197,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return projectMapper.selectByIds(ids);
+            return projectMapper.selectByProjectIds(ids);
         }
     }
 

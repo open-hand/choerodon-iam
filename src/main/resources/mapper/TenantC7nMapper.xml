@@ -6,7 +6,7 @@
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="projects" ofType="io.choerodon.base.infra.dto.ProjectDTO" autoMapping="true">
+        <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
             <id column="project_id" property="id"/>
             <result column="project_name" property="name" jdbcType="VARCHAR"/>
             <result column="project_code" property="code" jdbcType="VARCHAR"/>
@@ -49,13 +49,13 @@
         ELSE f.user_count
         END
         AS userCount
-        FROM fd_organization org
+        FROM hpfm_tenant org
         LEFT JOIN
         (
         SELECT
         p.organization_id AS org_id,
         COUNT(p.id) AS project_count
-        FROM fd_organization o
+        FROM hpfm_tenant o
         JOIN fd_project p
         ON o.id = p.organization_id
         GROUP BY p.organization_id
@@ -67,14 +67,14 @@
         FROM iam_member_role imr
         WHERE imr.SOURCE_TYPE='organization'
         GROUP BY imr.source_id
-        ) f ON org.id= f.source_id
+        ) f ON org.tenant_id= f.source_id
         left join iam_user iu on org.user_id = iu.id
         <where>
             <if test="name != null">
-                AND org.name LIKE concat(concat('%',#{name}),'%')
+                AND org.tenant_name LIKE concat(concat('%',#{name}),'%')
             </if>
             <if test="code != null">
-                AND org.code LIKE concat(concat('%',#{code}),'%')
+                AND org.tenant_num LIKE concat(concat('%',#{code}),'%')
             </if>
             <if test="ownerRealName != null">
                 AND iu.real_name LIKE concat(concat('%',#{ownerRealName}),'%')
@@ -84,7 +84,7 @@
             </if>
             <if test="params != null">
                 AND (
-                org.name LIKE concat(concat('%', #{params}), '%') OR
+                org.tenant_name LIKE concat(concat('%', #{params}), '%') OR
                 org.code LIKE concat(concat('%', #{params}), '%')
                 )
             </if>
@@ -96,8 +96,8 @@
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">
         select distinct fo.*
-        from fd_organization fo
-        inner join iam_member_role imr on (fo.id = imr.source_id and imr.source_type = 'organization')
+        from hpfm_tenant fo
+        inner join iam_member_role imr on (fo.tenant_id = imr.source_id and imr.source_type = 'organization')
         inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = 1)
         <where>
             imr.member_id = #{memberId} and imr.member_type='user' and ir.code !=
@@ -109,8 +109,8 @@
     </select>
 
     <select id="selectOrgByUserAndPros" resultMap="OrganizationDTO">
-        SELECT DISTINCT fd_organization.*
-        FROM fd_organization
+        SELECT DISTINCT hpfm_tenant.*
+        FROM hpfm_tenant
         WHERE id
         IN
         (
@@ -124,7 +124,7 @@
         WHERE imr.member_id=#{memberId}
         )
         <if test="!includedDisabled">
-            AND fd_organization.is_enabled = 1
+            AND hpfm_tenant.is_enabled = 1
         </if>
     </select>
 
@@ -139,7 +139,7 @@
         ir.name AS role_name,
         ir.code AS role_code,
         ir.is_enabled AS role_is_enabled
-        FROM fd_organization o
+        FROM hpfm_tenant o
         INNER JOIN
         (
         SELECT DISTINCT source_id FROM iam_member_role
@@ -173,7 +173,7 @@
         ir.name AS role_name,
         ir.code AS role_code,
         ir.is_enabled AS role_is_enabled
-        FROM fd_organization o
+        FROM hpfm_tenant o
         INNER JOIN
         (
         SELECT DISTINCT source_id FROM iam_member_role
@@ -207,7 +207,7 @@
         ir.name AS role_name,
         ir.code AS role_code,
         ir.is_enabled AS role_is_enabled
-        FROM fd_organization o
+        FROM hpfm_tenant o
         INNER JOIN
         (
         <![CDATA[
@@ -244,11 +244,11 @@
     </select>
 
     <select id="organizationEnabled" resultType="java.lang.Boolean">
-        SELECT is_enabled FROM fd_organization WHERE id = #{sourceId}
+        SELECT is_enabled FROM hpfm_tenant WHERE id = #{sourceId}
     </select>
 
-    <select id="selectByIds" resultMap="OrganizationDTO">
-        select * from fd_organization
+    <select id="selectByTenantIds" resultMap="OrganizationDTO">
+        select * from hpfm_tenant
         where id in
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">
@@ -263,16 +263,16 @@
               AND source_type = #{orgName}
     </select>
 
-    <select id="selectAllOrgIdAndName" resultType="io.choerodon.base.api.dto.OrganizationSimplifyDTO">
+    <select id="selectAllOrgIdAndName" resultType="io.choerodon.iam.api.vo.TenantSimplifyVO">
         SELECT
             ID,
             NAME
         FROM
-            fd_organization
+            hpfm_tenant
     </select>
 
 
-    <select id="selectSpecified" resultType="io.choerodon.base.api.dto.OrgSharesDTO">
+    <select id="selectSpecified" resultType="io.choerodon.iam.api.vo.TenantSharesVO">
         SELECT
         fo.id,
         fo. NAME,
@@ -281,8 +281,8 @@
         fo.category AS categoryCode,
         foc. NAME AS categoryName
         FROM
-        fd_organization fo
-        LEFT JOIN fd_organization_category foc ON fo.category = foc. CODE
+        hpfm_tenant fo
+        LEFT JOIN hpfm_tenant_category foc ON fo.category = foc. CODE
         WHERE
         1 = 1
         <if test="name != null">
@@ -308,12 +308,12 @@
 
     <select id="selectOwnOrgByUserId" resultMap="OrganizationDTO">
         SELECT fo.*
-        FROM fd_organization fo
+        FROM hpfm_tenant fo
             left join iam_user iu on fo.id = iu.organization_id
         where iu.id = #{userId}
     </select>
 
-    <select id="projectOverview" resultType="io.choerodon.base.api.vo.ProjectOverViewVO">
+    <select id="projectOverview" resultType="io.choerodon.iam.api.vo.ProjectOverViewVO">
         SELECT
             SUM(CASE WHEN fp.is_enabled=1 THEN 1 ELSE 0 END) AS enableSum,
             SUM(CASE WHEN fp.is_enabled=0 THEN 1 ELSE  0 END) AS stopSum
@@ -324,7 +324,7 @@
 
     <select id="getoRoganizationByName" resultType="java.lang.Long">
         select fo.id
-        from fd_organization fo
+        from hpfm_tenant fo
         WHERE 1=1
         <if test="name != null">
             AND fo.name LIKE concat(concat('%',#{name}),'%')

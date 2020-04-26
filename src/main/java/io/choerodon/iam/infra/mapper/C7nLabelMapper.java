@@ -11,6 +11,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author zmf
  * @since 20-4-22
  */
-public interface C7nLabelMapper extends BaseMapper<Label> {
+public interface C7nLabelMapper  {
     Set<String> selectLabelNamesInRoleIds(List<Long> roleIds);
 }

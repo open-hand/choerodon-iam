@@ -11,6 +11,7 @@ import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.LdapErrorUser;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -74,11 +75,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private UserC7nMapper userC7nMapper;
 
+    private UserRepository userRepository;
+
     public OrganizationUserServiceImpl(OrganizationAssertHelper organizationAssertHelper,
                                        UserAssertHelper userAssertHelper,
                                        UserService userService,
                                        TransactionalProducer producer,
                                        UserC7nMapper userC7nMapper,
+                                       UserRepository userRepository,
                                        C7nLabelMapper c7nLabelMapper,
                                        RoleService roleService) {
         this.organizationAssertHelper = organizationAssertHelper;
@@ -86,6 +90,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userService = userService;
         this.producer = producer;
         this.userC7nMapper = userC7nMapper;
+        this.userRepository = userRepository;
         this.c7nLabelMapper = c7nLabelMapper;
         this.roleService = roleService;
     }
@@ -214,10 +219,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     private User insertSelective(User user) {
-        if (userC7nMapper.insertSelective(user) != 1) {
+        if (userRepository.insertSelective(user) != 1) {
             throw new InsertException("error.user.create");
         }
-        return userC7nMapper.selectByPrimaryKey(user.getId());
+        return userRepository.selectByPrimaryKey(user.getId());
     }
 
     private void generateUserEventPayload(List<UserEventPayload> payloads, User userDTO) {
@@ -317,7 +322,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public User query(Long organizationId, Long id) {
         organizationAssertHelper.notExisted(organizationId);
-        User user = userC7nMapper.selectByPrimaryKey(id);
+        User user = userRepository.selectByPrimaryKey(id);
         user.setPassword(null);
         return user;
     }

@@ -12,7 +12,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @date 2020/4/21
  * @description
  */
-public interface RoleC7nMapper extends BaseMapper<Role> {
+public interface RoleC7nMapper {
 
     List<Role> queryRolesInfoByUser(@Param("sourceType") String sourceType,
                                     @Param("sourceId") Long sourceId,

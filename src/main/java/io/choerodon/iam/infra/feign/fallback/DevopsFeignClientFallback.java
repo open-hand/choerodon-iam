@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
@@ -15,6 +16,7 @@ import io.choerodon.iam.infra.feign.DevopsFeignClient;
 /**
  * @author Eugen
  */
+@Component
 public class DevopsFeignClientFallback implements DevopsFeignClient {
 //    @Override
 //    public ResponseEntity<Boolean> checkGitlabEmail(String email) {

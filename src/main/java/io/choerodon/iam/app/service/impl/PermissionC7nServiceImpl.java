@@ -12,6 +12,7 @@ import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.swagger.PermissionRegistry;
 
 /**
  * @author scp
@@ -23,14 +24,19 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
 
     @Autowired
     private PermissionC7nMapper permissionC7nMapper;
+    @Autowired
+    private PermissionRegistry permissionRegistry;
 
     @Override
     public List<Permission> query(String level, String serviceName, String code) {
-        Permission permission = new Permission();
-        permission.setCode(code);
-        permission.setLevel(level);
-        permission.setServiceName(serviceName);
-        return PageHelper.doSort(new Sort("code,asc"), () -> permissionC7nMapper.select(permission));
+        // todo
+//        Permission permission = new Permission();
+//        permission.setCode(code);
+//        permission.setLevel(level);
+//        permission.setServiceName(serviceName);
+//        return PageHelper.doSort(new Sort("code,asc"), () -> permissionRegistry.select(permission));
+
+        return null;
     }
 
     @Override

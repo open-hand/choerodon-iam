@@ -13,9 +13,11 @@ import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -44,6 +46,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @date 2020/4/21
  * @description
  */
+@Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
     public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
@@ -52,6 +55,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantService tenantService;
     @Autowired
     private TenantC7nMapper tenantC7nMapper;
+    @Autowired
+    private TenantRepository tenantRepository;
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
@@ -82,7 +87,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public List<TenantVO> queryTenantByName(String tenantName) {
         Tenant tenant = new Tenant();
         tenant.setTenantName(tenantName);
-        return ConvertUtils.convertList(tenantC7nMapper.select(tenant), TenantVO.class);
+        return ConvertUtils.convertList(tenantRepository.select(tenant), TenantVO.class);
     }
 
     @Override
@@ -203,7 +208,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public boolean checkOrganizationIsNew(Long organizationId) {
-        Tenant organizationDTO = tenantC7nMapper.selectByPrimaryKey(organizationId);
+        Tenant organizationDTO = tenantRepository.selectByPrimaryKey(organizationId);
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_DOES_NOT_EXIST_EXCEPTION);
         }
@@ -221,13 +226,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         Boolean createCheck = StringUtils.isEmpty(tenantVO.getTenantId());
         Tenant tenant = getTenant(tenantVO);
         if (createCheck) {
-            Boolean existed = tenantC7nMapper.selectOne(tenant) != null;
+            Boolean existed = tenantRepository.selectOne(tenant) != null;
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         } else {
             Long id = tenantVO.getTenantId();
-            Tenant dto = tenantC7nMapper.selectOne(tenant);
+            Tenant dto = tenantRepository.selectOne(tenant);
             Boolean existed = dto != null && !id.equals(dto.getTenantId());
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
@@ -279,15 +284,19 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
 
     private Tenant doUpdate(Tenant tenant) {
-        if (tenantC7nMapper.updateByPrimaryKeySelective(tenant) != 1) {
+        if (tenantRepository.updateByPrimaryKeySelective(tenant) != 1) {
             throw new UpdateException("error.organization.update");
         }
-        return tenantC7nMapper.selectByPrimaryKey(tenant);
+        return tenantRepository.selectByPrimaryKey(tenant);
     }
 
     private Tenant getTenant(TenantVO tenantVO) {
         Tenant tenant = new Tenant();
         BeanUtils.copyProperties(tenantVO, tenant);
         return tenant;
+    }
+
+    public TenantService getTenantService() {
+        return tenantService;
     }
 }

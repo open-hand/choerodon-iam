@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.mybatis.common.BaseMapper;
@@ -13,7 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @date 2020/4/15
  * @description
  */
-public interface UserC7nMapper extends BaseMapper<User> {
+public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listUsersByEmails(@Param("emails") String[] emails);
@@ -151,6 +152,16 @@ public interface UserC7nMapper extends BaseMapper<User> {
                                                  @Param("locked") Boolean locked,
                                                  @Param("params") String params);
 
+
+
+    /**
+     * 查询用户在项目下拥有的角色
+     *
+     * @param id
+     * @param projectId
+     * @return
+     */
+    List<Role> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
 
 }
 

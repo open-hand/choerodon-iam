@@ -9,7 +9,7 @@
         <result property="loginAccess" column="is_login_access" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <select id="selectByRoleId" resultType="PermissionDTO">
+    <select id="selectByRoleId" resultMap="PermissionDTO">
         SELECT ip.*
         FROM iam_role_permission irp
         INNER JOIN iam_permission ip ON irp.permission_code = ip.code

@@ -127,14 +127,6 @@ maven-deploy-snapshot:
   only:
     - master
 
-maven-deploy-release:
-  stage: build
-  script:
-    - mvn clean install -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL}
-  only:
-    - /^hotfix-.*$/
-
-
 release backend:
   stage: release
   script:

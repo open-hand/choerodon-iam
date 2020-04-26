@@ -1,4 +1,4 @@
-package script.db
+package script.db.groovy.hzero_platform
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
     changeSet(author: 'scp', id: '2020-04-16-fd-project-user') {

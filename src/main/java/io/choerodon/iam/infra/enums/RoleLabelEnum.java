@@ -3,13 +3,13 @@ package io.choerodon.iam.infra.enums;
 /**
  * @author superlee
  */
-public enum RoleLabel {
-
-    PROJECT_DEPLOY_ADMIN("project.deploy.admin"),
+public enum RoleLabelEnum {
 
     PROJECT_OWNER("project.owner"),
 
     PROJECT_ROLE("project_role"),
+
+    PROJECT_GITLAB_OWNER("project.gitlab.owner"),
 
     ORGANIZATION_OWNER("organization.owner"),
 
@@ -17,7 +17,7 @@ public enum RoleLabel {
 
     private final String value;
 
-    RoleLabel(String value) {
+    RoleLabelEnum(String value) {
         this.value = value;
     }
 

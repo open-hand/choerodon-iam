@@ -155,6 +155,6 @@ public interface UserC7nService {
      * @param projectId
      * @return true 是
      */
-    Boolean checkIsProjectOwner(Long id, Long projectId);
+    Boolean checkIsGitlabOwner(Long id, Long projectId, String level);
 
 }

@@ -21,7 +21,7 @@ import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.app.service.LabelC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.app.service.RolePermissionC7nService;
-import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLevelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
@@ -66,7 +66,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
 
         //  如果是项目层角色，添加角色标签
         if (RoleLevelEnum.PROJECT.value().equals(roleVO.getRoleLevel())) {
-            Label label = labelC7nService.selectByName(RoleLabel.PROJECT_ROLE.value());
+            Label label = labelC7nService.selectByName(RoleLabelEnum.PROJECT_ROLE.value());
             roleVO.getRoleLabels().add(new org.hzero.iam.domain.entity.RoleLabel().setLabelId(label.getId()));
         }
         // 创建角色

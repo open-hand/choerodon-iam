@@ -49,6 +49,20 @@
         </collection>
     </resultMap>
 
+    <resultMap id="RoleMap" type="io.choerodon.iam.infra.dto.RoleDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="h_parent_role_id" property="parentRoleId"/>
+        <result column="h_inherit_role_id" property="inheritRoleId"/>
+        <collection property="labels" ofType="org.hzero.iam.domain.entity.Label">
+            <id column="name" property="name" />
+            <result column="type" property="type" />
+            <result column="FD_LEVEL" property="createFlag" />
+            <result column="h_inherit_flag" property="fdLevel" />
+        </collection>
+    </resultMap>
+
     <select id="listUsersByIds" resultMap="userDTO">
         SELECT * FROM iam_user
         WHERE id IN
@@ -325,13 +339,18 @@
     </select>
 
 
-    <select id="selectRolesByUidAndProjectId" resultType="org.hzero.iam.domain.entity.Role">
+    <select id="selectRolesByUidAndProjectId" resultMap="RoleMap">
         SELECT
-            ir.*
+            ir.*,
+            il.name,
+            il.type,
+            il.FD_LEVEL
         FROM
             fd_project_user fpu
             INNER JOIN
             iam_role ir ON fpu.role_id = ir.id
+            left JOIN iam_role_label on irl.role_id=ir.id
+            Left JOIN iam_label il on il.id=irl.lable_id
         WHERE
             fpu.member_id = #{id}
             AND

@@ -1,18 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.*;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.PasswordPolicyRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +25,6 @@ import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -328,32 +321,25 @@ public class UserC7nController extends BaseController {
 //        return ResponseEntity.ok(userC7nService.queryProjectById(id, projectId));
 //    }
 //
+
+
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation("校验用户是否是项目的所有者")
-    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
-    public ResponseEntity<Boolean> checkIsProjectOwner(
+    @ApiOperation("校验用户是否是gitlab项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
+    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
-        return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.PROJECT.value()));
     }
 
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是gitlab项目的所有者")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
-//    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsGitlabProjectOwner(id, projectId));
-//    }
-//
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是gitlab组织层owner")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
-//    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsGitlabOrgOwner(id, projectId));
-//    }
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab组织层owner")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
+    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
+    }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")

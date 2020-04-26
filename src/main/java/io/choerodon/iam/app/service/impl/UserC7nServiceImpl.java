@@ -14,10 +14,7 @@ import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
@@ -47,7 +44,9 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.payload.UserEventPayload;
@@ -476,14 +475,21 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Boolean checkIsProjectOwner(Long id, Long projectId) {
-        // todo
-//        List<Role> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-//        for (Role role:roleDTOList){
-//            if(role.get)
-//        }
-//        return CollectionUtils.isEmpty(roleDTOList) ? false : roleDTOList.stream().anyMatch(v -> RoleEnum.PROJECT_OWNER.value().equals(v.getCode()));
-        return null;
+    public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
+        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        if (!CollectionUtils.isEmpty(roleDTOList)) {
+            List<Label> labels = new ArrayList<>();
+            roleDTOList.stream().forEach(t -> {
+                labels.addAll(t.getLabels());
+            });
+            List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
+            if (level.equals(ResourceLevel.PROJECT.value())) {
+                return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
+            } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+                return labelNameLists.contains(RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value());
+            }
+        }
+        return false;
     }
 
     private Long getRoleByCode(String code) {

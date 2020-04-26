@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -161,7 +162,7 @@ public interface UserC7nMapper {
      * @param projectId
      * @return
      */
-    List<Role> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
+    List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
 
 }
 

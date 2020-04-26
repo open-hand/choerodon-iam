@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.LabelC7nService;
-import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 
 /**
  * @author scp
@@ -28,7 +28,7 @@ public class LabelC7nServiceImpl implements LabelC7nService {
         // 组织层过滤organization.gitlab.owner标签
         if (ResourceLevel.ORGANIZATION.value().equals(label.getFdLevel())) {
             labelDTOS = labelDTOS.stream()
-                    .filter(labelDTO -> !RoleLabel.ORGANIZATION_GITLAB_OWNER.value().equals(labelDTO.getName()))
+                    .filter(labelDTO -> !RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value().equals(labelDTO.getName()))
                     .collect(Collectors.toList());
         }
         return labelDTOS;

@@ -275,9 +275,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 //
 //    private Set<String> initMemberRole(ProjectDTO project) {
-//        List<Role> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role", null);
+//        List<Role> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabelEnum.PROJECT_OWNER.value(), "role", null);
 //        if (roles.isEmpty()) {
-//            throw new CommonException("error.role.not.found.by.label", RoleLabel.PROJECT_OWNER.value(), "role");
+//            throw new CommonException("error.role.not.found.by.label", RoleLabelEnum.PROJECT_OWNER.value(), "role");
 //        }
 //        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
 //        if (customUserDetails == null) {

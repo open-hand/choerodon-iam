@@ -43,9 +43,10 @@ public class ProjectUserController extends BaseController {
                                                                                      @RequestParam(required = false) String realName,
                                                                                      @RequestParam(required = false) String roleName,
                                                                                      @RequestParam(required = false) Boolean enabled,
+                                                                                     @RequestParam(required = false) Long userId,
                                                                                      @RequestParam(required = false) String params) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, Pageable, loginName, realName, roleName,
-                enabled, params), HttpStatus.OK);
+                enabled, params, userId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

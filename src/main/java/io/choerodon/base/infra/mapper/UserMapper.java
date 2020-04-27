@@ -219,8 +219,7 @@ public interface UserMapper extends Mapper<UserDTO> {
                                        @Param("realName") String realName,
                                        @Param("roleName") String roleName,
                                        @Param("enabled") Boolean enabled,
-                                       @Param("params") String params,
-                                       @Param("userId") Long userId);
+                                       @Param("params") String params);
 
     /**
      * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
@@ -238,8 +237,7 @@ public interface UserMapper extends Mapper<UserDTO> {
                                                     @Param("realName") String realName,
                                                     @Param("roleName") String roleName,
                                                     @Param("enabled") Boolean enabled,
-                                                    @Param("params") String params,
-                                                    @Param("userId") Long userId);
+                                                    @Param("params") String params);
 
     /**
      * 根据用户名查询启用状态的用户列表.

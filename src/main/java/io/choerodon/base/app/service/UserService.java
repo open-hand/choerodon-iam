@@ -177,7 +177,7 @@ public interface UserService {
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）
      */
     PageInfo<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, Pageable Pageable, String loginName, String realName,
-                                                              String roleName, Boolean enabled, String params, Long userId);
+                                                              String roleName, Boolean enabled, String params);
 
     /**
      * 在全局层/组织层/项目层 批量分配给用户角色.

@@ -670,21 +670,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageInfo<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, Pageable pageable, String loginName, String realName,
-                                                                     String roleName, Boolean enabled, String params, Long userId) {
+                                                                     String roleName, Boolean enabled, String params) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
         boolean doPage = (size != 0);
         Page<UserDTO> result = new Page<>(page, size);
         if (doPage) {
             int start = PageUtils.getBegin(page, size);
-            int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params, userId);
+            int count = userMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params, userId);
+                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotal(count);
             result.addAll(users);
         } else {
             List<UserDTO> users = userMapper.selectUserWithRolesOnProjectLevel(
-                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params, userId);
+                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotal(users.size());
             result.addAll(users);
         }

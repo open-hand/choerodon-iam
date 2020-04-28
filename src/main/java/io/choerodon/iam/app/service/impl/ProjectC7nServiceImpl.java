@@ -238,10 +238,5 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return projectMapper.selectOne(projectDTO) == null;
     }
 
-    @Override
-    public int countProjectNum(Long tenantId) {
-        ProjectDTO example = new ProjectDTO();
-        example.setOrganizationId(tenantId);
-        return projectMapper.selectCount(example);
-    }
+
 }

@@ -63,4 +63,12 @@ public interface TenantC7nService {
      */
     boolean checkOrganizationIsNew(Long organizationId);
 
+
+    /**
+     * 统计组织下的项目数量
+     * @param tenantId
+     * @return
+     */
+    int countProjectNum(Long tenantId);
+
 }

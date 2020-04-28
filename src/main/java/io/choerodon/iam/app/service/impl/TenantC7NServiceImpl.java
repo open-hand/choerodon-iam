@@ -241,6 +241,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return organizationDTO.getCreationDate().after(date);
     }
 
+    @Override
+    public int countProjectNum(Long tenantId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(tenantId);
+        return projectMapper.selectCount(example);
+    }
+
     private void checkCode(TenantVO tenantVO) {
         Boolean createCheck = StringUtils.isEmpty(tenantVO.getTenantId());
         Tenant tenant = getTenant(tenantVO);

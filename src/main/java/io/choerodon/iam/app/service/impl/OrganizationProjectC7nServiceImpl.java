@@ -120,7 +120,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private TransactionalProducer producer;
     private TenantC7nService tenantC7nService;
-    private ProjectC7nService projectC7nService;
 
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
@@ -137,10 +136,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
-                                             ProjectC7nService projectC7nService,
                                              TenantC7nService tenantC7nService) {
         this.sagaClient = sagaClient;
-        this.projectC7nService = projectC7nService;
         this.userService = userService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
@@ -219,7 +216,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     public Boolean checkEnableCreateProject(Long organizationId) {
         if (tenantC7nService.checkOrganizationIsNew(organizationId)) {
-            int num = projectC7nService.countProjectNum(organizationId);
+            int num = tenantC7nService.countProjectNum(organizationId);
             return num < projectMaxNumber;
         }
         return true;

@@ -18,7 +18,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface TenantC7nService {
 
-    void updateOrganization(Long tenantId, TenantVO tenantVO);
+    void updateTenant(Long tenantId, TenantVO tenantVO);
 
     TenantVO queryTenantById(Long tenantId);
 
@@ -28,7 +28,7 @@ public interface TenantC7nService {
 
     Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params);
 
-    Page<TenantVO> getAllOrgs(PageRequest pageable);
+    Page<TenantVO> getAllTenants(PageRequest pageable);
 
     Tenant enableOrganization(Long organizationId, Long userId);
 

@@ -33,11 +33,11 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping(value = "/v1/organizations")
-public class OrganizationC7nController extends BaseController {
+public class TenantC7nController extends BaseController {
 
     private TenantC7nService tenantC7nService;
 
-    public OrganizationC7nController(TenantC7nService tenantC7nService) {
+    public TenantC7nController(TenantC7nService tenantC7nService) {
         this.tenantC7nService = tenantC7nService;
     }
 
@@ -60,7 +60,7 @@ public class OrganizationC7nController extends BaseController {
     @PutMapping(value = "/{tenant_id}")
     public ResponseEntity update(@PathVariable(name = "tenant_id") Long id,
                                  @RequestBody @Valid TenantVO tenantVO) {
-        tenantC7nService.updateOrganization(id, tenantVO);
+        tenantC7nService.updateTenant(id, tenantVO);
         return Results.success();
     }
 
@@ -74,7 +74,7 @@ public class OrganizationC7nController extends BaseController {
     @PutMapping(value = "/{tenant_id}/organization_level")
     public ResponseEntity updateOnOrganizationLevel(@PathVariable(name = "tenant_id") Long id,
                                                     @RequestBody @Valid TenantVO tenantVO) {
-        tenantC7nService.updateOrganization(id, tenantVO);
+        tenantC7nService.updateTenant(id, tenantVO);
         return Results.success();
     }
 
@@ -132,7 +132,7 @@ public class OrganizationC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<TenantVO>> getAllOrgs(@ApiIgnore
                                                      @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return new ResponseEntity<>(tenantC7nService.getAllOrgs(pageRequest), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.getAllTenants(pageRequest), HttpStatus.OK);
     }
 
 //    /**

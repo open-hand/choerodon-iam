@@ -20,7 +20,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -63,22 +65,6 @@ public class ProjectC7nController extends BaseController {
         return new ResponseEntity<>(projectService.queryByIds(ids), HttpStatus.OK);
     }
 
-    // todo 项目用户关系
-//    /**
-//     * 根据projectId和param模糊查询loginName和realName两列
-//     */
-//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "分页模糊查询项目下的用户")
-//    @GetMapping(value = "/{project_id}/users")
-//    @CustomPageRequest
-//    public ResponseEntity<Page<User>> list(@PathVariable(name = "project_id") Long id,
-//                                           @ApiIgnore
-//                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-//                                           @RequestParam(required = false, name = "id") Long userId,
-//                                           @RequestParam(required = false) String email,
-//                                           @RequestParam(required = false) String param) {
-//        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, Pageable, param), HttpStatus.OK);
-//    }
 
     /**
      * 项目层更新项目，code和organizationId都不可更改

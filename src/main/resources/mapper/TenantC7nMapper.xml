@@ -15,10 +15,6 @@
         </collection>
     </resultMap>
 
-    <resultMap id="OrganizationDTO" type="org.hzero.iam.domain.entity.Tenant" autoMapping="true">
-        <id column="id" property="id"/>
-        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-    </resultMap>
 
     <resultMap id="OrganizationWithRoleDTO" type="org.hzero.iam.domain.entity.Tenant" autoMapping="true">
         <id property="id" column="id"/>
@@ -33,9 +29,9 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="OrganizationDTO">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">
         SELECT
-        org.*,iu.login_name as owner_login_name,iu.real_name as owner_real_name,
+        org.*,
         CASE
         WHEN
         t.project_count IS NULL
@@ -57,9 +53,9 @@
         COUNT(p.id) AS project_count
         FROM hpfm_tenant o
         JOIN fd_project p
-        ON o.id = p.organization_id
+        ON o.tenant_id = p.organization_id
         GROUP BY p.organization_id
-        ) t ON org.id = t.org_id
+        ) t ON org.tenant_id = t.org_id
         LEFT JOIN(
         SELECT
         imr.source_id AS source_id,
@@ -68,7 +64,6 @@
         WHERE imr.SOURCE_TYPE='organization'
         GROUP BY imr.source_id
         ) f ON org.tenant_id= f.source_id
-        left join iam_user iu on org.user_id = iu.id
         <where>
             <if test="name != null">
                 AND org.tenant_name LIKE concat(concat('%',#{name}),'%')
@@ -76,16 +71,13 @@
             <if test="code != null">
                 AND org.tenant_num LIKE concat(concat('%',#{code}),'%')
             </if>
-            <if test="ownerRealName != null">
-                AND iu.real_name LIKE concat(concat('%',#{ownerRealName}),'%')
-            </if>
             <if test="enabled != null">
-                AND org.is_enabled = #{enabled}
+                AND org.enabled_flag = #{enabled}
             </if>
             <if test="params != null">
                 AND (
                 org.tenant_name LIKE concat(concat('%', #{params}), '%') OR
-                org.code LIKE concat(concat('%', #{params}), '%')
+                org.tenant_num LIKE concat(concat('%', #{params}), '%')
                 )
             </if>
 
@@ -94,7 +86,7 @@
 
     </select>
 
-    <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">
+    <select id="selectFromMemberRoleByMemberId" resultType="org.hzero.iam.domain.entity.Tenant">
         select distinct fo.*
         from hpfm_tenant fo
         inner join iam_member_role imr on (fo.tenant_id = imr.source_id and imr.source_type = 'organization')
@@ -108,7 +100,7 @@
         </where>
     </select>
 
-    <select id="selectOrgByUserAndPros" resultMap="OrganizationDTO">
+    <select id="selectOrgByUserAndPros" resultType="org.hzero.iam.domain.entity.Tenant">
         SELECT DISTINCT hpfm_tenant.*
         FROM hpfm_tenant
         WHERE id
@@ -247,7 +239,7 @@
         SELECT is_enabled FROM hpfm_tenant WHERE id = #{sourceId}
     </select>
 
-    <select id="selectByTenantIds" resultMap="OrganizationDTO">
+    <select id="selectByTenantIds" resultType="org.hzero.iam.domain.entity.Tenant">
         select * from hpfm_tenant
         where id in
         <foreach item="id" index="index" collection="ids"
@@ -263,7 +255,7 @@
               AND source_type = #{orgName}
     </select>
 
-    <select id="selectAllOrgIdAndName" resultType="io.choerodon.iam.api.vo.TenantSimplifyVO">
+    <select id="selectAllTenants" resultType="io.choerodon.iam.api.vo.TenantSimplifyVO">
         SELECT
             ID,
             NAME
@@ -306,7 +298,7 @@
         </foreach>
     </select>
 
-    <select id="selectOwnOrgByUserId" resultMap="OrganizationDTO">
+    <select id="selectOwnOrgByUserId" resultType="org.hzero.iam.domain.entity.Tenant">
         SELECT fo.*
         FROM hpfm_tenant fo
             left join iam_user iu on fo.id = iu.organization_id

@@ -127,10 +127,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return dto;
     }
 
-//    @Override
-//    public Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
-//        return PageHelper.doPageAndSort(pageRequest,() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), id, userId, email, param));
-//    }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
@@ -240,5 +236,12 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setCode(code);
         return projectMapper.selectOne(projectDTO) == null;
+    }
+
+    @Override
+    public int countProjectNum(Long tenantId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(tenantId);
+        return projectMapper.selectCount(example);
     }
 }

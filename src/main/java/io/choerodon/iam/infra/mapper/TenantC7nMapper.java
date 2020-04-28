@@ -18,7 +18,6 @@ public interface TenantC7nMapper {
     List<TenantVO> fulltextSearch(
             @Param("name") String name,
             @Param("code") String code,
-            @Param("ownerRealName") String ownerRealName,
             @Param("enabled") Boolean enabled,
             @Param("params") String params);
 
@@ -47,7 +46,7 @@ public interface TenantC7nMapper {
      *
      * @return 组织{id,name}
      */
-    List<TenantVO> selectAllOrgIdAndName();
+    List<TenantVO> selectAllTenants();
 
     /**
      * 获取 指定id范围 的 组织简要信息

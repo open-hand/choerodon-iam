@@ -12,8 +12,6 @@ import org.hzero.iam.domain.entity.Permission;
  */
 public interface PermissionC7nService {
 
-    List<Permission> query(String level, String serviceName, String code);
-
     Set<Permission> queryByRoleIds(List<Long> roleIds);
 
 }

@@ -52,4 +52,12 @@ public interface ProjectC7nService {
      * @return
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
+
+
+    /**
+     * 统计组织下的项目数量
+     * @param tenantId
+     * @return
+     */
+    int countProjectNum(Long tenantId);
 }

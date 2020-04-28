@@ -58,6 +58,7 @@ public class UserAssertHelper extends AssertHelper {
     }
 
     public User userNotExisted(Long id, String message) {
+        // todo 改为从redis查询
         User dto = userMapper.selectByPrimaryKey(id);
         if (dto == null) {
             throw new CommonException(message, id);

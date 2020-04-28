@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
@@ -27,6 +28,7 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -72,15 +74,25 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateOrganization(Long tenantId, TenantVO tenantVO) {
-        tenantService.updateTenant(tenantId, getTenant(tenantVO));
-        // todo 处理拆分后的表  hpfm_tenant_config
+    public void updateTenant(Long tenantId, TenantVO tenantVO) {
+        Tenant tenant = getTenant(tenantVO);
+
+        TenantConfigVO configVO = JSON.parseObject(tenantService.queryTenant(tenantVO.getTenantId()).getExtInfo(), TenantConfigVO.class);
+        configVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
+        configVO.setImageUrl(tenantVO.getTenantConfigVO().getImageUrl());
+        configVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
+        tenant.setExtInfo(JSON.toJSONString(configVO));
+
+        tenantService.updateTenant(tenantId, tenant);
     }
 
     @Override
     public TenantVO queryTenantById(Long tenantId) {
-        // todo 处理拆分后的表  hpfm_tenant_config 需要级联查询
-        return ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
+        Tenant tenant = tenantService.queryTenant(tenantId);
+        TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
+        TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
+        tenantVO.setTenantConfigVO(configVO);
+        return tenantVO;
     }
 
     @Override
@@ -107,13 +119,20 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-        // todo 添加xml
-        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
+        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
+        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
+            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
+                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
+                // todo 用户查询
+            }).collect(Collectors.toList());
+            tenantVOS.setContent(list);
+        }
+        return tenantVOS;
     }
 
     @Override
-    public Page<TenantVO> getAllOrgs(PageRequest pageRequest) {
-        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.selectAllOrgIdAndName());
+    public Page<TenantVO> getAllTenants(PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.selectAllTenants());
     }
 
     @Override
@@ -296,7 +315,4 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return tenant;
     }
 
-    public TenantService getTenantService() {
-        return tenantService;
-    }
 }

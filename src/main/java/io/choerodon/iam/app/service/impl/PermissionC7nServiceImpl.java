@@ -27,17 +27,6 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     @Autowired
     private PermissionRegistry permissionRegistry;
 
-    @Override
-    public List<Permission> query(String level, String serviceName, String code) {
-        // todo
-//        Permission permission = new Permission();
-//        permission.setCode(code);
-//        permission.setLevel(level);
-//        permission.setServiceName(serviceName);
-//        return PageHelper.doSort(new Sort("code,asc"), () -> permissionRegistry.select(permission));
-
-        return null;
-    }
 
     @Override
     public Set<Permission> queryByRoleIds(List<Long> roleIds) {

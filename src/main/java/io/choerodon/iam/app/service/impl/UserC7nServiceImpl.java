@@ -7,14 +7,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.common.HZeroService;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,27 +23,38 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.payload.UserEventPayload;
 import io.choerodon.iam.infra.utils.ImageUtils;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.SagaTopic;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -54,10 +66,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    private static final String SITE_ADMIN_ROLE_CODE = "role/site/default/administrator";
+    private static final String ORG_ADMIN_ROLE_CODE = "role/organization/default/administrator";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserC7nServiceImpl.class);
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private RoleMapper roleMapper;
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
@@ -66,7 +82,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     private TransactionalProducer producer;
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
-    private FileFeignClient fileFeignClient;
+    private FileClient fileClient;
+    @Autowired
+    private MemberRoleService memberRoleService;
+    @Autowired
+    private TenantC7nMapper tenantC7nMapper;
+    @Autowired
+    private MessageClient messageClient;
+    @Autowired
+    private MemberRoleC7nMapper memberRoleC7nMapper;
+    @Autowired
+    private ProjectMapper projectMapper;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -77,6 +103,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserAssertHelper userAssertHelper;
     @Autowired
     private DevopsFeignClient devopsFeignClient;
+    @Autowired
+    private ProjectUserMapper projectUserMapper;
 
 
     @Override
@@ -126,7 +154,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileFeignClient.uploadFile(HZeroService.Iam.NAME, null, file.getOriginalFilename(), 0, null, file).getBody();
+        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
     }
 
     @Override
@@ -134,7 +162,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         checkLoginUser(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
-            return fileFeignClient.uploadFile(HZeroService.Iam.NAME, null, file.getOriginalFilename(), 0, null, file).getBody();
+            return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");
@@ -263,6 +291,215 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
 
         return userNumberVO;
+    }
+
+
+    @Override
+    public Page<User> pagingQueryAdminUsers(PageRequest pageable, String loginName, String realName, String params) {
+        return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
+    }
+
+    /**
+     * root用户=拥有租户管理角色+平台管理员角色
+     *
+     * @param ids
+     */
+    @Saga(code = SagaTopic.User.ASSIGN_ADMIN, description = "分配Root权限同步事件", inputSchemaClass = AssignAdminVO.class)
+    @Override
+    @Transactional
+    public void addAdminUsers(long[] ids) {
+        List<Long> adminUserIds = new ArrayList<>();
+        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
+        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
+        List<MemberRole> memberRoleList = new ArrayList<>();
+
+        for (long id : ids) {
+            List<Long> allAdminUserIds = userC7nMapper.selectAdminUserPage(null, null, null, null)
+                    .stream().map(User::getId).collect(Collectors.toList());
+            if (!allAdminUserIds.contains(id)) {
+
+                List<Long> allSiteAdmin = userC7nMapper.selectUserByRoleCode(SITE_ADMIN_ROLE_CODE);
+                if (!allSiteAdmin.contains(id)) {
+                    MemberRole memberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
+                    memberRoleList.add(memberRole);
+                }
+                List<Long> allOrgAdmin = userC7nMapper.selectUserByRoleCode(ORG_ADMIN_ROLE_CODE);
+                if (!allOrgAdmin.contains(id)) {
+                    MemberRole memberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
+                    memberRoleList.add(memberRole);
+                }
+            }
+        }
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
+
+        //添加成功后发送站内信和邮件通知被添加者
+        Long fromUserId = DetailsHelper.getUserDetails().getUserId();
+        if (!adminUserIds.isEmpty()) {
+            // todo
+//            ((UserServiceImpl) AopContext.currentProxy()).sendNotice(fromUserId, adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
+//            messageClient.async().sendMessage();
+        }
+        if (!adminUserIds.isEmpty()) {
+            AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
+            producer.apply(StartSagaBuilder.newBuilder()
+                    .withRefId(adminUserIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
+                    .withRefType("user")
+                    .withSourceId(0L)
+                    .withLevel(ResourceLevel.SITE)
+                    .withSagaCode(SagaTopic.User.ASSIGN_ADMIN)
+                    .withPayloadAndSerialize(assignAdminVO), builder -> {
+            });
+        }
+    }
+
+
+    @Saga(code = SagaTopic.User.DELETE_ADMIN, description = "用户Root权限被删除事件同步", inputSchemaClass = DeleteAdminVO.class)
+    @Override
+    public void deleteAdminUser(long id) {
+        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
+        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
+        MemberRole siteMemberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
+        MemberRole orgMemberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
+        List<MemberRole> memberRoleList = new ArrayList<>();
+        memberRoleList.add(siteMemberRole);
+        memberRoleList.add(orgMemberRole);
+        memberRoleService.batchDeleteMemberRole(0L, memberRoleList);
+
+        producer.apply(StartSagaBuilder.newBuilder()
+                        .withRefId(String.valueOf(id))
+                        .withRefType("user")
+                        .withSourceId(0L)
+                        .withLevel(ResourceLevel.SITE)
+                        .withSagaCode(SagaTopic.User.DELETE_ADMIN)
+                        .withPayloadAndSerialize(new DeleteAdminVO(id)),
+                builder -> {
+                });
+    }
+
+
+    @Override
+    public Page<TenantVO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        Page<TenantVO> result = new Page<>();
+        int start = PageUtils.getBegin(page, size);
+        int count = memberRoleC7nMapper.selectCountBySourceId(id, "organization");
+        result.setSize(count);
+        result.addAll(tenantC7nMapper.selectOrganizationsWithRoles(id, start, size, params));
+        return result;
+    }
+
+
+    @Override
+    public Page<ProjectDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        Page<ProjectDTO> result = new Page<>();
+
+        if (size == 0) {
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+            result.setSize(projectList.size());
+            result.addAll(projectList);
+        } else {
+            int start = PageUtils.getBegin(page, size);
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+            projectUserDTO.setMemberId(id);
+            int count = projectUserMapper.selectCount(projectUserDTO);
+            result.setSize(count);
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+            result.addAll(projectList);
+        }
+        return result;
+    }
+
+
+    @Override
+    public Boolean checkIsRoot(Long id) {
+        List<User> userList = userC7nMapper.selectAdminUserPage(null, null, null, id);
+        if (!CollectionUtils.isEmpty(userList)) {
+            return userList.contains(id);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled) {
+        CustomUserDetails customUserDetails = checkLoginUser(userId);
+        boolean isAdmin = false;
+        if (customUserDetails.getAdmin() != null) {
+            isAdmin = customUserDetails.getAdmin();
+        }
+        ProjectDTO project = new ProjectDTO();
+        if (!isAdmin && includedDisabled != null && !includedDisabled) {
+            project.setEnabled(true);
+        }
+        List<ProjectDTO> projects = projectMapper.selectAllProjectsByUserIdOrAdmin(userId, project, isAdmin);
+        projects.forEach(p -> p.setCategory(p.getCategories().get(0).getCode()));
+        return projects;
+    }
+
+
+    @Override
+    public Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
+                                                           String roleName, Boolean enabled, Boolean locked, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        boolean doPage = (size != 0);
+        Page<User> result = new Page<>();
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count = userC7nMapper.selectCountUsersOnSiteLevel(ResourceLevel.SITE.value(), 0L, orgName, loginName, realName,
+                    roleName, enabled, locked, params);
+            List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
+                    loginName, realName, roleName, enabled, locked, params);
+            result.setTotalElements(count);
+            result.addAll(users);
+        } else {
+            List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
+                    loginName, realName, roleName, enabled, locked, params);
+            result.setTotalElements(users.size());
+            result.addAll(users);
+        }
+        return result;
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        return null;
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+        return null;
+    }
+
+    @Override
+    public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
+        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        if (!CollectionUtils.isEmpty(roleDTOList)) {
+            List<Label> labels = new ArrayList<>();
+            roleDTOList.stream().forEach(t -> {
+                labels.addAll(t.getLabels());
+            });
+            List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
+            if (level.equals(ResourceLevel.PROJECT.value())) {
+                return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
+            } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+                return labelNameLists.contains(RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value());
+            }
+        }
+        return false;
+    }
+
+    private Long getRoleByCode(String code) {
+        Role query = new Role();
+        query.setCode(code);
+        Role role = roleMapper.selectOne(query);
+        if (role == null) {
+            throw new CommonException("error.get.code.role");
+        }
+        return role.getId();
     }
 
     /**

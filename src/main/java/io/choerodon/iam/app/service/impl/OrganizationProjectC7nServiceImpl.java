@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -39,7 +40,10 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
+import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -115,24 +119,24 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private TenantService tenantService;
+    private TenantC7nService tenantC7nService;
 
 
-    public OrganizationProjectServiceImpl(SagaClient sagaClient,
-                                          UserService userService,
-                                          ProjectMapCategoryMapper projectMapCategoryMapper,
-                                          ProjectMapper projectMapper,
-                                          ProjectAssertHelper projectAssertHelper,
-                                          ProjectTypeMapper projectTypeMapper,
-                                          OrganizationAssertHelper organizationAssertHelper,
-                                          UserAssertHelper userAssertHelper,
-                                          RoleMapper roleMapper,
-                                          LabelMapper labelMapper,
-                                          MemberRoleService memberRoleService,
-                                          ProjectValidator projectValidator,
-                                          TransactionalProducer producer,
-                                          DevopsFeignClient devopsFeignClient,
-                                          TenantService tenantService) {
+    public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
+                                             UserService userService,
+                                             ProjectMapCategoryMapper projectMapCategoryMapper,
+                                             ProjectMapper projectMapper,
+                                             ProjectAssertHelper projectAssertHelper,
+                                             ProjectTypeMapper projectTypeMapper,
+                                             OrganizationAssertHelper organizationAssertHelper,
+                                             UserAssertHelper userAssertHelper,
+                                             RoleMapper roleMapper,
+                                             LabelMapper labelMapper,
+                                             MemberRoleService memberRoleService,
+                                             ProjectValidator projectValidator,
+                                             TransactionalProducer producer,
+                                             DevopsFeignClient devopsFeignClient,
+                                             TenantC7nService tenantC7nService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -147,7 +151,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
-        this.tenantService = tenantService;
+        this.tenantC7nService = tenantC7nService;
     }
 
 
@@ -211,11 +215,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
 
     public Boolean checkEnableCreateProject(Long organizationId) {
-        // todo
-//        if (tenantService.checkOrganizationIsNew(organizationId)) {
-//            int num = tenantService.countProjectNum(organizationId);
-//            return num < projectMaxNumber;
-//        }
+        if (tenantC7nService.checkOrganizationIsNew(organizationId)) {
+            int num = tenantC7nService.countProjectNum(organizationId);
+            return num < projectMaxNumber;
+        }
         return true;
     }
 
@@ -251,16 +254,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private ProjectEventPayload generateProjectEventMsg(ProjectDTO projectDTO, Set<String> roleLabels) {
         ProjectEventPayload projectEventMsg = new ProjectEventPayload();
         CustomUserDetails details = DetailsHelper.getUserDetails();
-        Tenant organizationDTO = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
+        Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
         if (details != null && details.getUserId() != 0) {
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(details.getUserId());
         } else {
-            // todo 从hpfm_tenant_config 表获取
-//            Long userId = organizationDTO.getUserId();
-//            User userDTO = userAssertHelper.userNotExisted(userId);
-//            projectEventMsg.setUserId(userId);
-//            projectEventMsg.setUserName(userDTO.getLoginName());
+            TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
+            Long userId = configVO.getUserId();
+            User userDTO = userAssertHelper.userNotExisted(userId);
+            projectEventMsg.setUserId(userId);
+            projectEventMsg.setUserName(userDTO.getLoginName());
         }
         projectEventMsg.setRoleLabels(roleLabels);
         projectEventMsg.setProjectId(projectDTO.getId());
@@ -268,16 +271,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setProjectCategory(projectDTO.getCategory());
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(projectDTO.getImageUrl());
-        projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
-        projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
-        projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
+        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
+        projectEventMsg.setOrganizationName(tenant.getTenantName());
+        projectEventMsg.setOrganizationId(tenant.getTenantId());
         return projectEventMsg;
     }
 //
 //    private Set<String> initMemberRole(ProjectDTO project) {
-//        List<Role> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role", null);
+//        List<Role> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabelEnum.PROJECT_OWNER.value(), "role", null);
 //        if (roles.isEmpty()) {
-//            throw new CommonException("error.role.not.found.by.label", RoleLabel.PROJECT_OWNER.value(), "role");
+//            throw new CommonException("error.role.not.found.by.label", RoleLabelEnum.PROJECT_OWNER.value(), "role");
 //        }
 //        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
 //        if (customUserDetails == null) {

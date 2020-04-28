@@ -45,7 +45,7 @@ Parameter | Description	| Default
 `preJob.preInitDB.datasource.url` | base_service数据库连接地址 | `jdbc:mysql://localhost:3306/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
 `preJob.preInitDB.datasource.username` | base_service数据库用户名 | `choerodon`
 `preJob.preInitDB.datasource.password` | base_service数据库密码 | `password`
-`preJob.preInitDB.datasource.exclusion` | 初始化数据库更新数据的时候忽略的表或列 | `iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name`
+`preJob.preInitDB.datasource.exclusion` | 初始化数据库更新数据的时候忽略的表或列 | `iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,hpfm_tenant.name`
 `metrics.path` | 收集应用的指标数据路径 | `/actuator/prometheus`
 `metrics.group` | 性能指标应用分组 | `spring-boot`
 `logs.parser` | 日志收集格式 | `spring-boot`

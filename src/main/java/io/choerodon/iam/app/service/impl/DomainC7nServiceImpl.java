@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.base.app.service.DomainC7nService;
+import io.choerodon.iam.app.service.DomainC7nService;
 
 /**
  * @author superlee

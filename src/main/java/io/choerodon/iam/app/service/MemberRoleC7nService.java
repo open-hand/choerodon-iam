@@ -9,8 +9,6 @@ import java.util.List;
  * Date: 2020/4/17
  */
 public interface MemberRoleC7nService {
-    List<MemberRole> createOrUpdateRolesByMemberIdOnOrganizationLevel(
-            Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRole> memberRoleDTOList, String memberType);
 
     List<MemberRole> insertOrUpdateRolesOfUserByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType);

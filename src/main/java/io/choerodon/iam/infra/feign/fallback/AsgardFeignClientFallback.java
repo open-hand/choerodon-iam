@@ -6,9 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
-import io.choerodon.base.infra.dto.asgard.*;
-import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 
 /**
  * @author dengyouquan
@@ -25,10 +24,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
         throw new CommonException("error.asgard.quartzTask.disableProject");
     }
 
-    @Override
-    public ResponseEntity<QuartzTask> createOrgTask(long organizationId, ScheduleTaskDTO scheduleTaskDTO) {
-        throw new CommonException("error.asgard.quartzTask.createOrganization");
-    }
+//    @Override
+//    public ResponseEntity<QuartzTask> createOrgTask(long organizationId, ScheduleTaskDTO scheduleTaskDTO) {
+//        throw new CommonException("error.asgard.quartzTask.createOrganization");
+//    }
 
     @Override
     public void deleteOrgTask(long orgId, long id) {
@@ -39,11 +38,11 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     public void enableOrgTask(long orgId, long id, long objectVersionNumber) {
         throw new CommonException("error.asgard.quartzTask.enableOrganization");
     }
-
-    @Override
-    public ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(long orgId, String service) {
-        throw new CommonException("error.asgard.method.query");
-    }
+//
+//    @Override
+//    public ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(long orgId, String service) {
+//        throw new CommonException("error.asgard.method.query");
+//    }
 
     @Override
     public void retry(long id) {
@@ -55,10 +54,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
         throw new CommonException("error.asgard.orgTask.disable");
     }
 
-    @Override
-    public ResponseEntity<ScheduleTaskDetail> getTaskDetail(long orgId, long id) {
-        throw new CommonException("error.asgard.task.detail");
-    }
+//    @Override
+//    public ResponseEntity<ScheduleTaskDetail> getTaskDetail(long orgId, long id) {
+//        throw new CommonException("error.asgard.task.detail");
+//    }
 
     @Override
     public ResponseEntity<SagaTaskInstanceDTO> query(Long id) {

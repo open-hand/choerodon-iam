@@ -4,8 +4,10 @@ import java.sql.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -13,7 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @date 2020/4/15
  * @description
  */
-public interface UserC7nMapper extends BaseMapper<User> {
+public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listUsersByEmails(@Param("emails") String[] emails);
@@ -57,5 +59,110 @@ public interface UserC7nMapper extends BaseMapper<User> {
     List<User> selectByOrgIdAndDate(@Param("organizationId") Long organizationId,
                                        @Param("startTime") Date startTime,
                                        @Param("endTime") Date endTime);
+
+
+    List<User> selectUsersByLevelAndOptions(@Param("sourceType") String sourceType,
+                                               @Param("sourceId") Long sourceId,
+                                               @Param("userId") Long userId,
+                                               @Param("email") String email,
+                                               @Param("param") String param);
+    /**
+     * 组织层查询用户总数.
+     * 1. 查询属于该组织的用户
+     * 2. 查询member_role表分配了该组织角色的用户
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 组织用户总数
+     */
+    int selectCountUsersOnOrganizationLevel(@Param("sourceType") String sourceType,
+                                            @Param("sourceId") Long sourceId,
+                                            @Param("loginName") String loginName,
+                                            @Param("realName") String realName,
+                                            @Param("roleName") String roleName,
+                                            @Param("enabled") Boolean enabled,
+                                            @Param("locked") Boolean locked,
+                                            @Param("params") String params);
+
+
+    /**
+     * 组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）.
+     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 用户列表（包括用户信息以及所分配的组织角色信息）
+     */
+    List<User> selectUserWithRolesOnOrganizationLevel(@Param("start") Integer start,
+                                                         @Param("size") Integer size,
+                                                         @Param("sourceType") String sourceType,
+                                                         @Param("sourceId") Long sourceId,
+                                                         @Param("loginName") String loginName,
+                                                         @Param("realName") String realName,
+                                                         @Param("roleName") String roleName,
+                                                         @Param("enabled") Boolean enabled,
+                                                         @Param("locked") Boolean locked,
+                                                         @Param("params") String params);
+
+    List<User> selectAdminUserPage(@Param("loginName") String loginName,
+                                   @Param("realName") String realName,
+                                   @Param("params") String params,
+                                   @Param("userId") Long userId);
+
+    /**
+     * 查询所用拥有对应角色的用户
+     * @return
+     */
+    List<Long> selectUserByRoleCode(@Param("roleCode") String roleCode);
+
+
+    /**
+     * 全局层查询用户总数.
+     * 1. 查询用户表所有数据
+     * 2. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 平台用户总数
+     */
+    int selectCountUsersOnSiteLevel(@Param("sourceType") String sourceType,
+                                    @Param("sourceId") Long sourceId,
+                                    @Param("orgName") String orgName,
+                                    @Param("loginName") String loginName,
+                                    @Param("realName") String realName,
+                                    @Param("roleName") String roleName,
+                                    @Param("enabled") Boolean enabled,
+                                    @Param("locked") Boolean locked,
+                                    @Param("params") String params);
+
+
+    /**
+     * 全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）.
+     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+     *
+     * @return 用户列表（包括用户信息以及所分配的全局角色信息）
+     */
+    List<User> selectUserWithRolesOnSiteLevel(@Param("start") Integer start,
+                                                 @Param("size") Integer size,
+                                                 @Param("sourceType") String sourceType,
+                                                 @Param("sourceId") Long sourceId,
+                                                 @Param("orgName") String orgName,
+                                                 @Param("loginName") String loginName,
+                                                 @Param("realName") String realName,
+                                                 @Param("roleName") String roleName,
+                                                 @Param("enabled") Boolean enabled,
+                                                 @Param("locked") Boolean locked,
+                                                 @Param("params") String params);
+
+
+
+    /**
+     * 查询用户在项目下拥有的角色
+     *
+     * @param id
+     * @param projectId
+     * @return
+     */
+    List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
+
 }
 

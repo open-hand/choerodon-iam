@@ -6,7 +6,6 @@ import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.infra.dto.OrganizationDTO;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.AlreadyExistedException;
 
@@ -33,43 +32,4 @@ public class OrganizationAssertHelper extends AssertHelper {
         return Optional.ofNullable(tenantMapper.selectByPrimaryKey(id)).orElseThrow(() -> new CommonException(message, id));
     }
 
-    public Tenant organizationNotExisted(WhichColumn whichColumn, String value) {
-        return organizationNotExisted(whichColumn, value, "error.organization.not.exist");
-    }
-
-    public Tenant organizationNotExisted(WhichColumn whichColumn, String value, String message) {
-        switch (whichColumn) {
-            case CODE:
-                return codeNotExisted(value, message);
-            case EMAIL_SUFFIX:
-                return emailSuffixNotExisted(value, message);
-            default:
-                throw new IllegalArgumentException("error.organization.assert.illegal.param");
-        }
-    }
-
-    private Tenant emailSuffixNotExisted(String value, String message) {
-        OrganizationDTO dto = new OrganizationDTO();
-        dto.setEmailSuffix(value);
-        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
-    }
-
-
-    private Tenant codeNotExisted(String code, String message) {
-        Tenant dto = new Tenant();
-        dto.setTenantNum(code);
-        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
-    }
-
-    public void codeExisted(String code) {
-        OrganizationDTO dto = new OrganizationDTO();
-        dto.setCode(code);
-        if (tenantMapper.selectOne(dto) != null) {
-            throw new AlreadyExistedException("error.organization.code.duplicate");
-        }
-    }
-
-    public enum WhichColumn {
-        CODE, EMAIL_SUFFIX
-    }
 }

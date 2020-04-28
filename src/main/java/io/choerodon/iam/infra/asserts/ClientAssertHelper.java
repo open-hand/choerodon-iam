@@ -4,6 +4,8 @@ import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.infra.mapper.ClientMapper;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.exception.ext.NotExistedException;
+
 
 /**
  * 客户端断言帮助类
@@ -18,18 +20,6 @@ public class ClientAssertHelper extends AssertHelper {
 
     public ClientAssertHelper(ClientMapper clientMapper) {
         this.clientMapper = clientMapper;
-    }
-
-    public Client clientNotExisted(Long id) {
-        return clientNotExisted(id, "error.client.not.existed");
-    }
-
-    public Client clientNotExisted(Long id, String message) {
-        Client dto = clientMapper.selectByPrimaryKey(id);
-        if (dto == null) {
-            throw new NotExistedException(message);
-        }
-        return dto;
     }
 
     public Client clientNotExisted(String name) {

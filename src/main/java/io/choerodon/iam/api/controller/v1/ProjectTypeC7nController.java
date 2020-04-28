@@ -4,7 +4,6 @@ import java.util.List;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -16,6 +15,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectTypeC7nService;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -42,11 +42,11 @@ public class ProjectTypeC7nController {
     @GetMapping(value = "/paging_query")
     @CustomPageRequest
     public ResponseEntity<Page<ProjectTypeDTO>> pagingQuery(@ApiIgnore
-                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                             @RequestParam(required = false) String name,
                                                             @RequestParam(required = false) String code,
                                                             @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectTypeService.pagingQuery(Pageable, name, code, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectTypeService.pagingQuery(pageRequest, name, code, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

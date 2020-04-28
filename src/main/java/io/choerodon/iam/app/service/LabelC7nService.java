@@ -11,4 +11,8 @@ import org.hzero.iam.domain.entity.Label;
  */
 public interface LabelC7nService {
     List<Label> listByOption(Label label);
+
+
+
+    Label selectByName(String name);
 }

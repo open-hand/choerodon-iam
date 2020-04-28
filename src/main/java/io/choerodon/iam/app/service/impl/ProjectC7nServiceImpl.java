@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -31,6 +31,7 @@ import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -39,14 +40,13 @@ import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.payload.ProjectEventPayload;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
  * @date 2020/4/15
  * @description
  */
+@Service
 public class ProjectC7nServiceImpl implements ProjectC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectC7nServiceImpl.class);
 
@@ -73,13 +73,14 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private ProjectAssertHelper projectAssertHelper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private UserAssertHelper userAssertHelper;
+    private OrganizationAssertHelper organizationAssertHelper;
     private TenantMapper organizationMapper;
     private AgileFeignClient agileFeignClient;
     private TestManagerFeignClient testManagerFeignClient;
-    private OrganizationService organizationService;
 
-    public ProjectServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
+    public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                               SagaClient sagaClient,
+                              OrganizationAssertHelper organizationAssertHelper,
                               UserMapper userMapper,
                               ProjectMapper projectMapper,
                               ProjectAssertHelper projectAssertHelper,
@@ -87,17 +88,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                               UserAssertHelper userAssertHelper,
                               TenantMapper organizationMapper,
                               TestManagerFeignClient testManagerFeignClient,
-                              OrganizationService organizationService,
                               AgileFeignClient agileFeignClient) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.sagaClient = sagaClient;
+        this.organizationAssertHelper = organizationAssertHelper;
         this.userMapper = userMapper;
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
-        this.organizationService = organizationService;
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
     }
@@ -127,10 +127,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return dto;
     }
 
-    @Override
-    public Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest,() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), id, userId, email, param));
-    }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
@@ -197,7 +193,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return projectMapper.selectByIds(ids);
+            return projectMapper.selectByProjectIds(ids);
         }
     }
 
@@ -209,7 +205,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public Tenant getOrganizationByProjectId(Long projectId) {
         ProjectDTO projectDTO = checkNotExistAndGet(projectId);
-        return organizationService.checkNotExistAndGet(projectDTO.getOrganizationId());
+        return organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
     }
 
     @Override
@@ -241,4 +237,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectDTO.setCode(code);
         return projectMapper.selectOne(projectDTO) == null;
     }
+
+
 }

@@ -29,7 +29,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     Boolean projectEnabled(@Param("sourceId") Long sourceId);
 
-    List<ProjectDTO> selectByIds(@Param("ids") Set<Long> ids);
+    List<ProjectDTO> selectByProjectIds(@Param("ids") Set<Long> ids);
 
     /**
      * 获取组织下指定type的项目名

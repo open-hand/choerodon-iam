@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.feign;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.swagger.annotations.ApiParam;
@@ -95,11 +96,11 @@ public interface DevopsFeignClient {
 //            @ApiParam(value = "查询参数", required = false)
 //            @RequestParam(value = "params", required = false) String params);
 //
-//    @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
-//    ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
-//                                                                 @PathVariable(value = "project_id") Long projectId,
-//                                                                 @RequestParam("longList") List<Long> longList);
-//
+    @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
+    ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
+                                                                 @PathVariable(value = "project_id") Long projectId,
+                                                                 @RequestParam("longList") List<Long> longList);
+
     @GetMapping("/v1/projects/{project_id}/deploy_record/count_by_date")
     ResponseEntity<BarLabelRotationItemVO> countByDate(
             @PathVariable(value = "project_id") Long projectId,

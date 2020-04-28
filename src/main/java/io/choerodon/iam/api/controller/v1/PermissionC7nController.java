@@ -46,14 +46,6 @@ public class PermissionC7nController {
     }
 
 
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("通过层级，服务名，code查询Permission列表")
-    @GetMapping("/permissionList")
-    public ResponseEntity<List<org.hzero.iam.domain.entity.Permission>> query(@RequestParam("level") String level,
-                                                                              @RequestParam(value = "service_name", required = false) String serviceName,
-                                                                              @RequestParam(value = "code", required = false) String code) {
-        return new ResponseEntity<>(permissionC7nService.query(level, serviceName, code), HttpStatus.OK);
-    }
 
     /**
      * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常

@@ -34,7 +34,7 @@ rebel-remote.xml
 /temp
 application-default.yml
 
-init-database.sh
+/init-local-database.sh
 
 choerodon_temp/
 

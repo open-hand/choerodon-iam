@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
-import io.choerodon.base.infra.valitador.SysSettingValidator;
+import io.choerodon.iam.infra.valitador.SysSettingValidator;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**

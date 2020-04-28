@@ -5,11 +5,12 @@ import java.util.stream.Collectors;
 
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.infra.mapper.LabelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.app.service.LabelC7nService;
-import io.choerodon.base.infra.enums.RoleLabel;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LabelC7nService;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 
 /**
  * @author scp
@@ -18,11 +19,8 @@ import io.choerodon.core.iam.ResourceLevel;
  */
 @Service
 public class LabelC7nServiceImpl implements LabelC7nService {
+    @Autowired
     private LabelMapper labelMapper;
-
-    public LabelServiceImpl(LabelMapper labelMapper) {
-        this.labelMapper = labelMapper;
-    }
 
     @Override
     public List<Label> listByOption(Label label) {
@@ -30,9 +28,16 @@ public class LabelC7nServiceImpl implements LabelC7nService {
         // 组织层过滤organization.gitlab.owner标签
         if (ResourceLevel.ORGANIZATION.value().equals(label.getFdLevel())) {
             labelDTOS = labelDTOS.stream()
-                    .filter(labelDTO -> !RoleLabel.ORGANIZATION_GITLAB_OWNER.value().equals(labelDTO.getName()))
+                    .filter(labelDTO -> !RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value().equals(labelDTO.getName()))
                     .collect(Collectors.toList());
         }
         return labelDTOS;
+    }
+
+    @Override
+    public Label selectByName(String name) {
+        Label label = new Label();
+        label.setName(name);
+        return labelMapper.selectOne(label);
     }
 }

@@ -1,31 +1,35 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.*;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.PasswordPolicyRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -37,26 +41,16 @@ public class UserC7nController extends BaseController {
 
     private UserService userService;
     private UserC7nService userC7nService;
-    private UserRepository userRepository;
-
-    private PasswordPolicyRepository passwordPolicyRepository;
+    private PasswordPolicyMapper passwordPolicyMapper;
 
     public UserC7nController(UserService userService,
                              UserC7nService userC7nService,
-                             PasswordPolicyRepository passwordPolicyRepository,
-                             UserRepository userRepository) {
+                             PasswordPolicyMapper passwordPolicyMapper) {
         this.userService = userService;
         this.userC7nService = userC7nService;
-        this.passwordPolicyRepository = passwordPolicyRepository;
-        this.userRepository = userRepository;
+        this.passwordPolicyMapper = passwordPolicyMapper;
     }
-//
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation(value = "查询当前用户信息")
-//    @GetMapping(value = "/self")
-//    public ResponseEntity<UserVO> querySelf() {
-//        return new ResponseEntity<>(userRepository.selectSelf(), HttpStatus.OK);
-//    }
+
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "根据id查询用户信息")
@@ -130,43 +124,15 @@ public class UserC7nController extends BaseController {
     }
 
 
-    // todo 等组织
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-//    @ApiOperation(value = "查询用户所在组织列表")
-//    @GetMapping(value = "/{id}/organizations")
-//    public ResponseEntity<Set<Tenant>> queryOrganizations(@PathVariable Long id,
-//                                                          @RequestParam(required = false, name = "included_disabled")
-//                                                                           boolean includedDisabled) {
-//        return new ResponseEntity<>(userService.queryOrganizations(id, includedDisabled), HttpStatus.OK);
-//    }
-
-    // todo 等项目
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-//    @ApiOperation(value = "查询用户所在项目列表")
-//    @GetMapping(value = "/{id}/projects")
-//    public ResponseEntity<List<ProjectDTO>> queryProjects(@PathVariable Long id,
-//                                                          @RequestParam(required = false, name = "included_disabled")
-//                                                                  boolean includedDisabled) {
-//        return new ResponseEntity<>(userService.queryProjects(id, includedDisabled), HttpStatus.OK);
-//    }
-
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "根据用户名查询用户信息")
-    @GetMapping
-    public ResponseEntity<UserVO> query(@RequestParam(name = "login_name") String loginName) {
-        UserVO userVO = new UserVO();
-        userVO.setLoginName(loginName);
-        return new ResponseEntity<>(userRepository.selectUserDetails(userVO), HttpStatus.OK);
+    @ApiOperation(value = "查询用户所在项目列表")
+    @GetMapping(value = "/{id}/projects")
+    public ResponseEntity<List<ProjectDTO>> queryProjects(@PathVariable Long id,
+                                                          @RequestParam(required = false, name = "included_disabled")
+                                                                  boolean includedDisabled) {
+        return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "修改密码")
-    @PutMapping(value = "/{id}/password")
-    public ResponseEntity selfUpdatePassword(@PathVariable Long id,
-                                             @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
-        userService.updateUserPassword(id, userPasswordDTO.getOrganizationId(), userPasswordDTO.getPassword());
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
@@ -177,39 +143,39 @@ public class UserC7nController extends BaseController {
     }
 
     // todo 改为查询用户 拥有超级管理员角色
-//    /**
-//     * 分页查询所有的admin用户
-//     *
-//     * @return 分页的admin用户
-//     */
-//    @Permission(level = ResourceLevel.SITE)
-//    @ApiOperation(value = "分页模糊查询管理员用户列表")
-//    @GetMapping("/admin")
-//    @CustomPageRequest
-//    public ResponseEntity<PageInfo<UserDTO>> pagingQueryAdminUsers(@ApiIgnore
-//                                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-//                                                                   @RequestParam(required = false) String loginName,
-//                                                                   @RequestParam(required = false) String realName,
-//                                                                   @RequestParam(required = false) String params) {
-//        return new ResponseEntity<>(userService.pagingQueryAdminUsers(Pageable, loginName, realName, params), HttpStatus.OK);
-//    }
 
-//  todo
-//    @Permission(level = ResourceLevel.SITE)
-//    @ApiOperation(value = "批量给用户添加管理员身份")
-//    @PostMapping("/admin")
-//    public ResponseEntity addDefaultUsers(@ModelAttribute("id") long[] ids) {
-//        userService.addAdminUsers(ids);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    /**
+     * 分页查询所有的admin用户
+     *
+     * @return 分页的admin用户
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "分页模糊查询管理员用户列表")
+    @GetMapping("/admin")
+    @CustomPageRequest
+    public ResponseEntity<Page<User>> pagingQueryAdminUsers(@ApiIgnore
+                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                            @RequestParam(required = false) String loginName,
+                                                            @RequestParam(required = false) String realName,
+                                                            @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryAdminUsers(pageRequest, loginName, realName, params), HttpStatus.OK);
+    }
 
-//    @Permission(level = ResourceLevel.SITE)
-//    @ApiOperation(value = "清除用户的管理员身份")
-//    @DeleteMapping("/admin/{id}")
-//    public ResponseEntity deleteDefaultUser(@PathVariable long id) {
-//        userService.deleteAdminUser(id);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "批量给用户添加管理员身份")
+    @PostMapping("/admin")
+    public ResponseEntity addDefaultUsers(@ModelAttribute("id") long[] ids) {
+        userC7nService.addAdminUsers(ids);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "清除用户的管理员身份")
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity deleteDefaultUser(@PathVariable long id) {
+        userC7nService.deleteAdminUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 
     @Permission(permissionWithin = true)
@@ -246,30 +212,29 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.listUsersByLoginNames(loginNames, onlyEnabled), HttpStatus.OK);
     }
 
-    // todo
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("根据id分页获取组织列表和角色")
-//    @GetMapping("/{id}/organization_roles")
-//    @CustomPageRequest
-//    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationAndRolesById(
-//            @ApiIgnore
-//            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-//            @PathVariable(value = "id") Long id,
-//            @RequestParam(value = "params", required = false) String[] params) {
-//        return new ResponseEntity<>(userService.pagingQueryOrganizationsWithRoles(Pageable, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id分页获取组织列表和角色")
+    @GetMapping("/{id}/organization_roles")
+    @CustomPageRequest
+    public ResponseEntity<Page<TenantVO>> pagingQueryOrganizationAndRolesById(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @PathVariable(value = "id") Long id,
+            @RequestParam(value = "params", required = false) String[] params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryOrganizationsWithRoles(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    }
 
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("根据id分页获取项目列表和角色")
-//    @GetMapping("/{id}/project_roles")
-//    @CustomPageRequest
-//    public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectAndRolesById(
-//            @ApiIgnore
-//            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-//            @PathVariable("id") Long id,
-//            @RequestParam(value = "params", required = false) String[] params) {
-//        return new ResponseEntity<>(userService.pagingQueryProjectAndRolesById(Pageable, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id分页获取项目列表和角色")
+    @GetMapping("/{id}/project_roles")
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectAndRolesById(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @PathVariable("id") Long id,
+            @RequestParam(value = "params", required = false) String[] params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    }
 
 //    @Permission(permissionWithin = true)
 //    @ApiOperation("新建用户，并根据角色code分配角色")
@@ -278,13 +243,6 @@ public class UserC7nController extends BaseController {
 //        return new ResponseEntity<>(userService.createUserAndAssignRoles(userWithRoles), HttpStatus.OK);
 //    }
 
-//
-//    @Permission(permissionWithin = true)
-//    @ApiOperation("得到所有用户id")
-//    @GetMapping("/ids")
-//    public ResponseEntity<Long[]> getUserIds() {
-//        return new ResponseEntity<>(userService.listUserIds(), HttpStatus.OK);
-//    }
 
     /**
      * 根据用户邮箱查询对应组织下的密码策略
@@ -295,8 +253,10 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "根据用户邮箱查询对应组织下的密码策略")
     @GetMapping("/password_policies")
     public ResponseEntity<PasswordPolicy> queryByUserEmail(@RequestParam(value = "email", required = false) String email) {
-        Long organizationId = userC7nService.queryOrgIdByEmail(email);
-        return new ResponseEntity<>(passwordPolicyRepository.selectTenantPasswordPolicy(organizationId), HttpStatus.OK);
+        Long tenantId = userC7nService.queryOrgIdByEmail(email);
+        PasswordPolicy params = new PasswordPolicy();
+        params.setOrganizationId(tenantId);
+        return new ResponseEntity<>(passwordPolicyMapper.selectOne(params), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
@@ -307,43 +267,23 @@ public class UserC7nController extends BaseController {
     }
 
 
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("根据id分页获取用户所有角色列表")
-//    @GetMapping("/{id}/roles")
-//    @CustomPageRequest
-//    public ResponseEntity<PageInfo<UserRoleDTO>> pagingQueryRole(@ApiIgnore
-//                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable Pageable,
-//                                                                 @PathVariable("id") Long id,
-//                                                                 @RequestParam(required = false) String name,
-//                                                                 @RequestParam(required = false) String level,
-//                                                                 @RequestParam(required = false) String params) {
-//        return new ResponseEntity<>(userService.pagingQueryRole(Pageable, id, name, level, params), HttpStatus.OK);
-//    }
 
-    // todo ? 是否依然使用
-//    @Permission(level = ResourceLevel.SITE, permissionPublic = true, permissionWithin = true)
-//    @ApiOperation(value = "完善用户信息，修改用户名、密码")
-//    @PutMapping(value = "/{id}/userInfo")
-//    public ResponseEntity<UserInfoDTO> updateUserInfo(@PathVariable Long id,
-//                                                      @RequestBody @Valid UserInfoDTO userInfoDTO) {
-//        return new ResponseEntity<>(userService.updateUserInfo(id, userInfoDTO), HttpStatus.OK);
-//    }
 
-//    @Permission(level = ResourceLevel.SITE)
-//    @ApiOperation(value = "全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）")
-//    @GetMapping(value = "/search")
-//    @CustomPageRequest
-//    public ResponseEntity<Page<User>> pagingQueryUsersWithRolesOnSiteLevel(@ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-//                                                                           @RequestParam(required = false) String organizationName,
-//                                                                           @RequestParam(required = false) String loginName,
-//                                                                           @RequestParam(required = false) String realName,
-//                                                                           @RequestParam(required = false) String roleName,
-//                                                                           @RequestParam(required = false) Boolean enabled,
-//                                                                           @RequestParam(required = false) Boolean locked,
-//                                                                           @RequestParam(required = false) String params) {
-//        return new ResponseEntity<>(userC7nService.pagingQueryUsersWithRolesOnSiteLevel(pageRequest, organizationName, loginName, realName, roleName,
-//                enabled, locked, params), HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）")
+    @GetMapping(value = "/search")
+    @CustomPageRequest
+    public ResponseEntity<Page<User>> pagingQueryUsersWithRolesOnSiteLevel(@ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                           @RequestParam(required = false) String organizationName,
+                                                                           @RequestParam(required = false) String loginName,
+                                                                           @RequestParam(required = false) String realName,
+                                                                           @RequestParam(required = false) String roleName,
+                                                                           @RequestParam(required = false) Boolean enabled,
+                                                                           @RequestParam(required = false) Boolean locked,
+                                                                           @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersWithRolesOnSiteLevel(pageRequest, organizationName, loginName, realName, roleName,
+                enabled, locked, params), HttpStatus.OK);
+    }
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层修改用户")
@@ -364,30 +304,6 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userService.updateUser(userDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层启用用户")
-    @PutMapping(value = "/{id}/enable")
-    public ResponseEntity<User> enableUser(@PathVariable Long id) {
-        userService.unfrozenUser(id, userRepository.selectSimpleUserById(id).getOrganizationId());
-        return Results.success();
-    }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层禁用用户")
-    @PutMapping(value = "/{id}/disable")
-    public ResponseEntity disableUser(@PathVariable Long id) {
-        userService.frozenUser(id, userRepository.selectSimpleUserById(id).getOrganizationId());
-        return Results.success();
-    }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层解锁用户")
-    @PutMapping(value = "/{id}/unlock")
-    public ResponseEntity unlockUser(@PathVariable Long id) {
-        userService.unlockUser(id, userRepository.selectSimpleUserById(id).getOrganizationId());
-        return Results.success();
-    }
-
 //    @Permission(permissionPublic = true)
 //    @ApiOperation(value = "根据用户id查询对应的组织和项目")
 //    @GetMapping("/{id}/organization_project")
@@ -402,35 +318,28 @@ public class UserC7nController extends BaseController {
 //    public ResponseEntity<ProjectDTO> queryProjectById(
 //            @PathVariable("id") Long id,
 //            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.queryProjectById(id, projectId));
+//        return ResponseEntity.ok(userC7nService.queryProjectById(id, projectId));
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是项目的所有者")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
-//    public ResponseEntity<Boolean> checkIsProjectOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsProjectOwner(id, projectId));
-//    }
 
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是gitlab项目的所有者")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
-//    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsGitlabProjectOwner(id, projectId));
-//    }
-//
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-//    @ApiOperation("校验用户是否是gitlab组织层owner")
-//    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
-//    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
-//            @PathVariable("id") Long id,
-//            @PathVariable("project_id") Long projectId) {
-//        return ResponseEntity.ok(userService.checkIsGitlabOrgOwner(id, projectId));
-//    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
+    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.PROJECT.value()));
+    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab组织层owner")
+    @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
+    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
+    }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
@@ -440,11 +349,11 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.countByDate(null, startTime, endTime));
     }
 
-//    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
-//    @ApiOperation("校验用户是否是Root用户")
-//    @GetMapping("/{id}/check_is_root")
-//    public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
-//        return ResponseEntity.ok(userService.checkIsRoot(id));
-//    }
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
+    @ApiOperation("校验用户是否是Root用户")
+    @GetMapping("/{id}/check_is_root")
+    public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userC7nService.checkIsRoot(id));
+    }
 
 }

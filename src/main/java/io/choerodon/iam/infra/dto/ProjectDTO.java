@@ -22,7 +22,7 @@ public class ProjectDTO extends AuditDomain {
 
     private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
-    private static final String PROJECT_NAME_REG = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
+    private static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,9 +59,11 @@ public class ProjectDTO extends AuditDomain {
     private String category;
 
     @ApiModelProperty(value = "项目类型")
+    @Transient
     private List<Long> categoryIds;
 
     @ApiModelProperty(value = "项目类型(一对多)")
+    @Transient
     private List<ProjectCategoryDTO> categories;
 
     @Transient

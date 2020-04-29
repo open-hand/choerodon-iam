@@ -207,6 +207,7 @@ public class OperateLogAspect {
             object = pjp.proceed();
         } catch (Throwable e) {
             LOGGER.info("error.log:{}", e.getMessage());
+            throw new CommonException(e.getMessage());
         }
         contentList.forEach(s -> {
             operateLogDTO.setContent(s);

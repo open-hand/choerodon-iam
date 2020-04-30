@@ -3,8 +3,6 @@ package io.choerodon.base.app.service.impl;
 import static io.choerodon.base.infra.asserts.UserAssertHelper.WhichColumn;
 import static io.choerodon.base.infra.utils.SagaTopic.Project.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import com.google.gson.JsonObject;
+
 import io.choerodon.base.app.service.OrganizationService;
 import io.choerodon.base.infra.annotation.OperateLog;
 import io.choerodon.base.api.vo.BarLabelRotationItemVO;
@@ -50,7 +48,7 @@ import io.choerodon.base.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.base.infra.asserts.ProjectAssertHelper;
 import io.choerodon.base.infra.asserts.UserAssertHelper;
 import io.choerodon.base.infra.dto.*;
-import io.choerodon.base.infra.enums.ProjectCategory;
+import io.choerodon.base.infra.enums.ProjectCategoryEnum;
 import io.choerodon.base.infra.enums.RoleLabel;
 import io.choerodon.base.infra.feign.AsgardFeignClient;
 import io.choerodon.base.infra.mapper.*;
@@ -397,8 +395,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
-                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
+        if (!(ProjectCategoryEnum.contains(category))) {
             throw new CommonException("error.project.type");
         }
         // 发送通知消息
@@ -544,7 +541,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     public List<ProjectDTO> getAgileProjects(Long organizationId, String param) {
         List<ProjectDTO> projectDTOS;
         if (categoryEnable) {
-            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, ProjectCategory.GENERAL.value(), param);
+            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, ProjectCategoryEnum.GENERAL.value(), param);
         } else {
             projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
         }

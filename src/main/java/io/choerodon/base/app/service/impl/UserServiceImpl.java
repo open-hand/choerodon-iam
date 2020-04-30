@@ -782,12 +782,12 @@ public class UserServiceImpl implements UserService {
     public List<MemberRoleDTO> assignUsersRoles(String sourceType, Long sourceId, List<MemberRoleDTO> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
         // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRoleDTO::getMemberId).collect(Collectors.toSet());
             organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
         }
-        if (ResourceLevel.PROJECT.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRoleDTO::getMemberId).collect(Collectors.toSet());
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
             organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
         }

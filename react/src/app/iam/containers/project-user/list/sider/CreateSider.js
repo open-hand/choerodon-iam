@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Spin, SelectBox, Password, Select, Tooltip } from 'choerodon-ui/pro';
+import { Spin, SelectBox, Password, Select, Tooltip, Icon } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import Store from './stores';
 import UserOptionDataSet from './stores/UserOptionDataSet';
@@ -40,7 +40,7 @@ export default observer((props) => {
     e.persist();
     queryUser(e.target.value, optionDataSet);
   }
-  
+
   function getOption({ record }) {
     return (
       <Tooltip placement="left" title={`${record.get('email')}`}>
@@ -52,6 +52,9 @@ export default observer((props) => {
             }
           </div>
           <span>{record.get('realName')}</span>
+          {record.get('ldap') && record.get('loginName') ? (
+            <span>({record.get('loginName')})</span>
+          ) : null}
         </div>
       </Tooltip>
 
@@ -71,7 +74,7 @@ export default observer((props) => {
         dsStore={[dsStore]}
       >
         {[(itemProps) => (
-          <Select 
+          <Select
             {...itemProps}
             labelLayout="float"
             searchable
@@ -79,6 +82,11 @@ export default observer((props) => {
             onInput={(e) => handleFilterChange(e, itemProps.options)}
             style={{ width: '100%' }}
             optionRenderer={getOption}
+            addonAfter={(
+              <Tooltip title="此处需精确输入用户名或登录名来搜索对应的用户">
+                <Icon type="help" className={`${prefixCls}-help-icon`} />
+              </Tooltip>
+            )}
           />
         ), (itemProps) => (
           <Select 

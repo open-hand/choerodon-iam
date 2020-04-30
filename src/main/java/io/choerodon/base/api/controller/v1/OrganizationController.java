@@ -253,4 +253,12 @@ public class OrganizationController extends BaseController {
         return ResponseEntity.ok(organizationService.checkOrganizationIsNew(organizationId));
     }
 
+
+    @Permission(permissionWithin = true)
+    @GetMapping(value = "/list/by_name")
+    public ResponseEntity<List<Long>> getoRoganizationByName(@RequestParam(required = false) String name) {
+        return new ResponseEntity<>(organizationService.getoRoganizationByName(name), HttpStatus.OK);
+    }
+
+
 }

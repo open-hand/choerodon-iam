@@ -8,6 +8,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
   const loginName = intl.formatMessage({ id: 'loginname' });
   const status = intl.formatMessage({ id: `${intlPrefix}.status` });
   const safeStatus = intl.formatMessage({ id: `${intlPrefix}.safe-status` });
+  const source = intl.formatMessage({ id: `${intlPrefix}.source` });
   async function check(value, name, record) {
     const organizationId = record.get('organizationId');
     if (value === record.getPristineValue(name) || !value) return;
@@ -63,6 +64,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
       { name: 'language', type: 'string', label: '语言', defaultValue: 'zh_CN' },
       { name: 'timeZone', type: 'string', label: '时区', defaultValue: 'CTT' },
       { name: 'myRoles', type: 'string', label: '角色' },
+      { name: 'ldap', type: 'boolean', label: source },
     ],
     queryFields: [
       { name: 'realName', type: 'string', label: '用户名' },

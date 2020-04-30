@@ -306,6 +306,11 @@ export default withRouter(observer((props) => {
     }
     return <Action data={actionDatas} />;
   }
+
+  function renderSource({ value }) {
+    return formatMessage({ id: `${intlPrefix}.${value ? 'ldap' : 'notldap'}` });
+  }
+
   return (
     <TabPage
       service={permissions}
@@ -351,6 +356,7 @@ export default withRouter(observer((props) => {
           <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" />
           <Column renderer={rednerEnabled} name="enabled" align="left" />
           <Column minWidth={320} width={320} renderer={expandMoreColumn} className="org-user-roles" name="myRoles" />
+          <Column renderer={renderSource} name="ldap" style={{ color: 'rgba(0, 0, 0, 0.65)' }} align="left" />
           <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} renderer={renderLocked} name="locked" />
         </Table>
       </Content>

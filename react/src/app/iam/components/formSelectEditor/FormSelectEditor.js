@@ -110,7 +110,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
     if (InviteModal && recordd.get('programOwner')) {
       const { roles } = orgUserListDataSet.toData().find(d => d.id === recordd.get('id'));
       const item = roles.find(i => i.id === v);
-      if (item && item.origin && item.code === 'role/project/default/project-owner') {
+      if (item && item.origin && item.code === 'role/project/default/project-member') {
         return true;
       }
     }
@@ -143,7 +143,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
               required: (record.get(name).length > 1 ? false : required || record.fields.get(name).get('required')) || alwaysRequired,
             }),
             !canDeleteAll && (record.get(name) || []).length <= 1 ? undefined : (
-              <Tooltip arrowPointAtCenter placement="top" title={checkCanDisabled(record, v) ? '该用户是项目群管理员，无法移除' : undefined}>
+              <Tooltip arrowPointAtCenter placement="top" title={checkCanDisabled(record, v) ? '该用户是项目群人理员，无法移除' : undefined}>
                 <div>
                   <Button
                     colSpan={1}

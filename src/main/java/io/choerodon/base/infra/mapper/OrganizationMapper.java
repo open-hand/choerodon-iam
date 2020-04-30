@@ -76,4 +76,6 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
     OrganizationDTO selectOwnOrgByUserId(@Param("userId") Long userId);
 
     ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
+
+    List<Long> getoRoganizationByName(@Param("name") String name);
 }

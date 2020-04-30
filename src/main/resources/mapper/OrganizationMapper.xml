@@ -322,4 +322,13 @@
         WHERE fp.organization_id=#{organizationId}
     </select>
 
+    <select id="getoRoganizationByName" resultType="java.lang.Long">
+        select fo.id
+        from fd_organization fo
+        WHERE 1=1
+        <if test="name != null">
+            AND fo.name LIKE concat(concat('%',#{name}),'%')
+        </if>
+    </select>
+
 </mapper>

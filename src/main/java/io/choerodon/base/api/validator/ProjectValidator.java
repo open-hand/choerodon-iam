@@ -1,13 +1,12 @@
 package io.choerodon.base.api.validator;
 
-import io.choerodon.base.infra.dto.ProjectCategoryDTO;
-import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
-import io.choerodon.core.exception.CommonException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.choerodon.base.infra.dto.ProjectCategoryDTO;
+import io.choerodon.base.infra.enums.ProjectCategoryEnum;
+import io.choerodon.base.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.core.exception.CommonException;
 
 @Component
 public class ProjectValidator {
@@ -18,6 +17,7 @@ public class ProjectValidator {
     }
 
     public ProjectCategoryDTO validateProjectCategory(String category) {
+        validateProjectCategoryCode(category);
         if (ObjectUtils.isEmpty(category)) {
             throw new CommonException("error.project.category.empty");
         }
@@ -30,10 +30,7 @@ public class ProjectValidator {
         return projectCategoryDTO;
     }
     public void validateProjectCategoryCode(String code) {
-        List<String> categoryCodes = new ArrayList<>();
-        categoryCodes.add("AGILE");
-        categoryCodes.add("GENERAL");
-        if (!categoryCodes.contains(code)) {
+        if (!ProjectCategoryEnum.contains(code)) {
             throw new CommonException("error.params.invalid");
         }
 

@@ -1,22 +1,25 @@
 package io.choerodon.iam.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.hzero.iam.domain.entity.User;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserInfoDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * @author scp
@@ -42,7 +45,7 @@ public interface UserC7nService {
      *
      * @param ids         用户id数组
      * @param onlyEnabled 默认为true，只查询启用的用户
-     * @return List<UserDTO> 用户集合
+     * @return List<User> 用户集合
      */
     List<User> listUsersByIds(Long[] ids, Boolean onlyEnabled);
 
@@ -51,7 +54,7 @@ public interface UserC7nService {
      *
      * @param ids         用户id
      * @param onlyEnabled 默认为true，只查询启用的用户
-     * @return List<UserDTO> 用户集合
+     * @return List<User> 用户集合
      */
     List<UserWithGitlabIdVO> listUsersByIds(Set<Long> ids, Boolean onlyEnabled);
 
@@ -59,7 +62,7 @@ public interface UserC7nService {
      * 根据用户emails集合查询用户的集合
      *
      * @param emails 用户email数组
-     * @return List<UserDTO> 用户集合
+     * @return List<User> 用户集合
      */
     List<User> listUsersByEmails(String[] emails);
 
@@ -157,4 +160,132 @@ public interface UserC7nService {
      */
     Boolean checkIsGitlabOwner(Long id, Long projectId, String level);
 
+    /**
+     * 异步
+     * 向用户发送通知（包括邮件和站内信）
+     *
+     * @param fromUserId 发送通知的用户
+     * @param userIds    接受通知的目标用户
+     * @param code       业务code
+     * @param params     渲染参数
+     * @param sourceId   触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     */
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
+    // TODO notify-service
+//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
+//
+//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
+//    /**
+//     * 单独发送webhook
+//     *
+//     * @param code
+//     * @param sourceId
+//     * @param webHookJsonSendDTO
+//     * @return
+//     */
+//    Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
+//
+//    Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
+
+    /**
+     * 校验用户是否是组织Root用户
+     *
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    Boolean checkIsOrgRoot(Long organizationId, Long userId);
+
+    // TODO notifyservice
+//    WebHookJsonSendDTO.User getWebHookUser(Long userId);
+
+    /**
+     * 创建用户角色.
+     *
+     * @param userDTO          用户DTO
+     * @param roleList         角色列表
+     * @param sourceType       资源层级
+     * @param sourceId         资源Id
+     * @param isEdit           是否为新建操作: 如果为false,则只插入; 否则既插入也删除
+     * @param allowRoleEmpty   是否允许用户角色为空
+     * @param allowRoleDisable 是否允许用户角色为禁用
+     * @return 用户角色DTO列表
+     */
+    List<MemberRole> createUserRoles(User userDTO, List<Role> roleList, String sourceType, Long sourceId,
+                                     boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable);
+
+    List<MemberRole> createUserRoles(User userDTO, List<Role> roleDTOList, String sourceType, Long sourceId,
+                                     boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable, Boolean syncAll);
+
+
+    /**
+     * 更新用户角色.
+     *
+     * @param userId     用户Id
+     * @param sourceType 资源层级
+     * @param sourceId   资源Id
+     * @param roleList   角色列表
+     * @return 用户DTO
+     */
+    User updateUserRoles(Long userId, String sourceType, Long sourceId, List<Role> roleList);
+
+    User updateUserRoles(Long userId, String sourceType, Long sourceId, List<Role> roleList, Boolean syncAll);
+
+    /**
+     * 在全局层/组织层/项目层 批量分配给用户角色.
+     *
+     * @param sourceType     资源层级
+     * @param sourceId       资源层级
+     * @param memberRoleList 用户角色列表
+     * @return 用户角色DTO列表
+     */
+    List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleList);
+
+    /**
+     * 查询项目下指定角色的用户列表
+     *
+     * @param projectId
+     * @param roleLable
+     * @return
+     */
+    List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable);
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     *
+     * @param projectId
+     * @param param
+     * @return
+     */
+    List<User> listUsersByName(Long projectId, String param);
+
+    /**
+     * 查询项目下的项目所有者
+     *
+     * @param projectId
+     * @return
+     */
+    List<User> listProjectOwnerById(Long projectId);
+
+    /**
+     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds);
+
+    /**
+     * 项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己.
+     *
+     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+     */
+    List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
+
+    Boolean checkEnableCreateUser(Long projectId);
+
+    UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
+
+    void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);
+
+    User updateUserDisabled(Long userId);
 }

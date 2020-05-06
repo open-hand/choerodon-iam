@@ -17,4 +17,7 @@ public interface RoleC7nMapper {
     List<Role> queryRolesInfoByUser(@Param("sourceType") String sourceType,
                                     @Param("sourceId") Long sourceId,
                                     @Param("userId") Long userId);
+
+    List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
+                                             @Param("organizationId") Long organizationId);
 }

@@ -22,4 +22,21 @@
         AND imr.source_type = #{sourceType}
     </select>
 
+    <select id="selectRolesByLabelNameAndType" resultMap="RoleDTO">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        LEFT JOIN iam_label il ON irl.label_id = il.id
+        WHERE il.name = #{name}
+        AND il.type = #{type}
+        <choose>
+            <when test="organizationId != null">
+                AND ir.organization_id = #{organizationId}
+            </when>
+            <otherwise>
+                AND ir.organization_id is null
+            </otherwise>
+        </choose>
+    </select>
+
 </mapper>

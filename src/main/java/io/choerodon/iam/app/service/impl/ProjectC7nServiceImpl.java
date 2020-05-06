@@ -1,25 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.TenantMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -35,11 +16,29 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.feign.AgileFeignClient;
 import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.payload.ProjectEventPayload;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author scp
@@ -79,16 +78,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private TestManagerFeignClient testManagerFeignClient;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
-                              SagaClient sagaClient,
-                              OrganizationAssertHelper organizationAssertHelper,
-                              UserMapper userMapper,
-                              ProjectMapper projectMapper,
-                              ProjectAssertHelper projectAssertHelper,
-                              ProjectMapCategoryMapper projectMapCategoryMapper,
-                              UserAssertHelper userAssertHelper,
-                              TenantMapper organizationMapper,
-                              TestManagerFeignClient testManagerFeignClient,
-                              AgileFeignClient agileFeignClient) {
+                                 SagaClient sagaClient,
+                                 OrganizationAssertHelper organizationAssertHelper,
+                                 UserMapper userMapper,
+                                 ProjectMapper projectMapper,
+                                 ProjectAssertHelper projectAssertHelper,
+                                 ProjectMapCategoryMapper projectMapCategoryMapper,
+                                 UserAssertHelper userAssertHelper,
+                                 TenantMapper organizationMapper,
+                                 TestManagerFeignClient testManagerFeignClient,
+                                 AgileFeignClient agileFeignClient) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.sagaClient = sagaClient;
         this.organizationAssertHelper = organizationAssertHelper;

@@ -11,19 +11,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.TenantService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -40,7 +27,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.TenantC7nService;
@@ -52,16 +38,37 @@ import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
-import io.choerodon.iam.infra.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.TenantService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -251,30 +258,31 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 });
     }
 
+    // TODO 重写tenant逻辑
     private ProjectEventPayload generateProjectEventMsg(ProjectDTO projectDTO, Set<String> roleLabels) {
-        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
-        CustomUserDetails details = DetailsHelper.getUserDetails();
-        Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
-        if (details != null && details.getUserId() != 0) {
-            projectEventMsg.setUserName(details.getUsername());
-            projectEventMsg.setUserId(details.getUserId());
-        } else {
-            TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
-            Long userId = configVO.getUserId();
-            User userDTO = userAssertHelper.userNotExisted(userId);
-            projectEventMsg.setUserId(userId);
-            projectEventMsg.setUserName(userDTO.getLoginName());
-        }
-        projectEventMsg.setRoleLabels(roleLabels);
-        projectEventMsg.setProjectId(projectDTO.getId());
-        projectEventMsg.setProjectCode(projectDTO.getCode());
-        projectEventMsg.setProjectCategory(projectDTO.getCategory());
-        projectEventMsg.setProjectName(projectDTO.getName());
-        projectEventMsg.setImageUrl(projectDTO.getImageUrl());
-        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
-        projectEventMsg.setOrganizationName(tenant.getTenantName());
-        projectEventMsg.setOrganizationId(tenant.getTenantId());
-        return projectEventMsg;
+//        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+//        CustomUserDetails details = DetailsHelper.getUserDetails();
+//        Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
+//        if (details != null && details.getUserId() != 0) {
+//            projectEventMsg.setUserName(details.getUsername());
+//            projectEventMsg.setUserId(details.getUserId());
+//        } else {
+//            TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
+//            Long userId = configVO.getUserId();
+//            User userDTO = userAssertHelper.userNotExisted(userId);
+//            projectEventMsg.setUserId(userId);
+//            projectEventMsg.setUserName(userDTO.getLoginName());
+//        }
+//        projectEventMsg.setRoleLabels(roleLabels);
+//        projectEventMsg.setProjectId(projectDTO.getId());
+//        projectEventMsg.setProjectCode(projectDTO.getCode());
+//        projectEventMsg.setProjectCategory(projectDTO.getCategory());
+//        projectEventMsg.setProjectName(projectDTO.getName());
+//        projectEventMsg.setImageUrl(projectDTO.getImageUrl());
+//        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
+//        projectEventMsg.setOrganizationName(tenant.getTenantName());
+//        projectEventMsg.setOrganizationId(tenant.getTenantId());
+        return new ProjectEventPayload();
     }
 //
 //    private Set<String> initMemberRole(ProjectDTO project) {

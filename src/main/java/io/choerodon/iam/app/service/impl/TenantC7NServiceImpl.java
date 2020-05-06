@@ -1,34 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.collections4.CollectionUtils;
-import org.hzero.iam.app.service.TenantService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -42,6 +19,26 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.iam.app.service.TenantService;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author scp
@@ -72,27 +69,30 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     private DevopsFeignClient devopsFeignClient;
 
+    // TODO 重写tenant逻辑
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateTenant(Long tenantId, TenantVO tenantVO) {
-        Tenant tenant = getTenant(tenantVO);
-
-        TenantConfigVO configVO = JSON.parseObject(tenantService.queryTenant(tenantVO.getTenantId()).getExtInfo(), TenantConfigVO.class);
-        configVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
-        configVO.setImageUrl(tenantVO.getTenantConfigVO().getImageUrl());
-        configVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
-        tenant.setExtInfo(JSON.toJSONString(configVO));
-
-        tenantService.updateTenant(tenantId, tenant);
+//        Tenant tenant = getTenant(tenantVO);
+//
+//        TenantConfigVO configVO = JSON.parseObject(tenantService.queryTenant(tenantVO.getTenantId()).getExtInfo(), TenantConfigVO.class);
+//        configVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
+//        configVO.setImageUrl(tenantVO.getTenantConfigVO().getImageUrl());
+//        configVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
+//        tenant.setExtInfo(JSON.toJSONString(configVO));
+//
+//        tenantService.updateTenant(tenantId, tenant);
     }
 
+    // TODO 重写tenant逻辑
     @Override
     public TenantVO queryTenantById(Long tenantId) {
-        Tenant tenant = tenantService.queryTenant(tenantId);
-        TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
-        TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
-        tenantVO.setTenantConfigVO(configVO);
-        return tenantVO;
+//        Tenant tenant = tenantService.queryTenant(tenantId);
+//        TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
+//        TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
+//        tenantVO.setTenantConfigVO(configVO);
+
+        return new TenantVO();
     }
 
     @Override
@@ -117,22 +117,25 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return dto;
     }
 
+    // TODO 重写tenant逻辑
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
-        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
-            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
-                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
-                // todo 用户查询
-            }).collect(Collectors.toList());
-            tenantVOS.setContent(list);
-        }
-        return tenantVOS;
+//        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
+//        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
+//            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
+//                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
+//                // todo 用户查询
+//            }).collect(Collectors.toList());
+//            tenantVOS.setContent(list);
+//        }
+        return new Page<>();
     }
 
+    // TODO 重写tenant逻辑
     @Override
     public Page<TenantVO> getAllTenants(PageRequest pageRequest) {
-        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.selectAllTenants());
+//        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.selectAllTenants());
+        return new Page<>();
     }
 
     @Override

@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 
+import org.hzero.iam.domain.entity.Role;
+
 import io.choerodon.iam.api.vo.RoleVO;
 
 /**
@@ -33,4 +35,12 @@ public interface OrganizationRoleC7nService {
      * @return
      */
     List<RoleVO> list(Long organizationId);
+
+    /**
+     * 根据标签查询组织下角色
+     * @param tenantId 组织id
+     * @param labelName 标签名
+     * @return
+     */
+    Role getByTenantIdAndLabel(Long tenantId, String labelName);
 }

@@ -111,6 +111,11 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         return null;
     }
 
+    @Override
+    public Role getByTenantIdAndLabel(Long tenantId, String labelName) {
+        return roleC7nMapper.getByTenantIdAndLabel(tenantId, labelName);
+    }
+
     /**
      * 校验是否时预定义角色，预定义角色无法编辑
      *

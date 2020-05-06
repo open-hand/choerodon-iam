@@ -17,4 +17,13 @@ public interface RoleC7nMapper {
     List<Role> queryRolesInfoByUser(@Param("sourceType") String sourceType,
                                     @Param("sourceId") Long sourceId,
                                     @Param("userId") Long userId);
+
+    /**
+     * 根据标签查询组织下角色
+     * @param tenantId 组织id
+     * @param labelName 标签名
+     * @return
+     */
+    Role getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
+                               @Param("labelName")String labelName);
 }

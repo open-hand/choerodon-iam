@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.RoleC7nMapper">
+    <resultMap id="RoleMap" type="org.hzero.iam.domain.entity.Role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="description" property="description"/>
+        <result column="fd_level" property="level"/>
+        <result column="h_tenant_id" property="tenantId"/>
+        <result column="h_inherit_role_id" property="inheritRoleId"/>
+        <result column="h_parent_role_id" property="parentRoleId"/>
+        <result column="h_parent_role_assign_level" property="parentRoleAssignLevel"/>
+        <result column="h_parent_role_assign_level_val" property="parentRoleAssignLevelValue"/>
+        <result column="h_level_path" property="levelPath"/>
+        <result column="h_inherit_level_path" property="inheritLevelPath"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+        <result column="tenant_num" property="tenantNum"/>
+        <result column="created_by_tenant_id" property="createdByTenantId"/>
+        <result column="created_by_tenant_num" property="createdByTenantNum"/>
+        <result column="parent_role_assign_level_code" property="parentRoleAssignLevelCode"/>
+    </resultMap>
     <!--建立boolean映射关系-->
     <resultMap id="RoleDTO" type="org.hzero.iam.domain.entity.Role" autoMapping="true">
         <id column="id" property="id"/>
@@ -20,6 +39,13 @@
         AND imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
+    </select>
+    <select id="getByTenantIdAndLabel" resultMap="RoleMap">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        INNER JOIN iam_label il ON  irl.label_id = il.id
+        WHERE ir.h_tenant_id = #{tenantId} AND il.name = #{labelName}
     </select>
 
 </mapper>

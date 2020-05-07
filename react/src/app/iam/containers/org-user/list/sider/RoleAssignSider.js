@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, SelectBox, Password, Select, Tooltip } from 'choerodon-ui/pro';
+import { Form, SelectBox, Password, Select, Tooltip, Icon } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import Store from './stores';
 import UserOptionDataSet from './stores/UserOptionDataSet';
@@ -81,6 +81,11 @@ export default observer((props) => {
             onInput={(e) => handleFilterChange(e, itemProps.options)}
             style={{ width: '100%' }}
             optionRenderer={getOption}
+            addonAfter={(
+              <Tooltip title="此处需精确输入用户名或登录名来搜索对应的用户">
+                <Icon type="help" className={`${prefixCls}-help-icon`} />
+              </Tooltip>
+            )}
           />
         ), (itemProps) => (
           <Select 

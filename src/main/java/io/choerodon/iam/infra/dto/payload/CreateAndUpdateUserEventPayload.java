@@ -2,7 +2,6 @@ package io.choerodon.iam.infra.dto.payload;
 
 import java.util.List;
 
-import io.choerodon.iam.infra.payload.UserEventPayload;
 
 /**
  * User: Mr.Wang

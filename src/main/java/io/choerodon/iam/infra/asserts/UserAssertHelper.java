@@ -66,6 +66,11 @@ public class UserAssertHelper extends AssertHelper {
         return dto;
     }
 
+
+    public void emailExisted(String email) {
+        emailExisted(email, "error.user.email.existed");
+    }
+
     public void emailExisted(String email, String message) {
         User dto = new User();
         dto.setEmail(email);

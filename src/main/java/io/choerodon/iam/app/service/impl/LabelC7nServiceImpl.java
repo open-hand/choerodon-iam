@@ -1,16 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LabelC7nService;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.infra.mapper.LabelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.LabelC7nService;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author scp

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.app.service.PermissionService;
 import org.springframework.http.HttpStatus;
@@ -12,11 +13,13 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_PERMISSION)
 @RestController
 @RequestMapping("/choerodon/v1/permissions")
 public class PermissionC7nController {

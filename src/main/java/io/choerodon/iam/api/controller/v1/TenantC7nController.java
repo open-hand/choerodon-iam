@@ -31,6 +31,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wuguokai
  * @author superlee
  */
+
 @RestController
 @RequestMapping(value = "/v1/organizations")
 public class TenantC7nController extends BaseController {

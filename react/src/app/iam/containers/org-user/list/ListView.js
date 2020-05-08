@@ -135,6 +135,7 @@ export default withRouter(observer((props) => {
         orgUserCreateDataSet={orgUserCreateDataSet}
         orgUserListDataSet={dataSet}
         onOk={handleSave}
+        userStore={userStore}
       />,
       key: modalKey,
       drawer: true,

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action, Content, axios, Page, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
 import { Form, TextField, Password, Select, EmailField, Modal } from 'choerodon-ui/pro';
@@ -7,7 +7,26 @@ import FormSelectEditor from '../../../../components/formSelectEditor';
 import './index.less';
 
 export default observer(() => {
-  const { prefixCls, modal, orgUserListDataSet, orgUserCreateDataSet, organizationId, orgRoleDataSet, onOk } = useContext(Store);
+  const {
+    prefixCls,
+    modal,
+    orgUserListDataSet,
+    orgUserCreateDataSet,
+    organizationId,
+    orgRoleDataSet,
+    onOk,
+    userStore,
+  } = useContext(Store);
+  const addonAfterObj = useMemo(() => ({
+    addonAfter: userStore.getEmailSuffix || undefined,
+  }), [userStore.getEmailSuffix]);
+
+  useEffect(() => {
+    userStore.loadEmailSuffix(organizationId);
+    return () => {
+      userStore.setEmailSuffix(null);
+    };
+  }, []);
   
   async function handleOk() {
     try {
@@ -32,7 +51,7 @@ export default observer(() => {
       <Form dataSet={orgUserCreateDataSet} className="hidden-password">
         <input type="password" style={{ position: 'absolute', top: '-999px' }} />
         <TextField name="realName" />
-        <EmailField name="email" />
+        <TextField name="email" {...addonAfterObj} />
         <Password name="password" />
       </Form>
       <FormSelectEditor

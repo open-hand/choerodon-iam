@@ -1,14 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
@@ -34,27 +25,72 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
+import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.payload.UserEventPayload;
 import io.choerodon.iam.infra.utils.ImageUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.SagaTopic;
+import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -63,6 +99,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
+
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
+
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -86,6 +125,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private MemberRoleService memberRoleService;
     @Autowired
+    private RoleMemberService roleMemberService;
+    @Autowired
+    private OrganizationUserService organizationUserService;
+    @Autowired
     private TenantC7nMapper tenantC7nMapper;
     @Autowired
     private MessageClient messageClient;
@@ -93,12 +136,24 @@ public class UserC7nServiceImpl implements UserC7nService {
     private MemberRoleC7nMapper memberRoleC7nMapper;
     @Autowired
     private ProjectMapper projectMapper;
+    @Autowired
+    private OrganizationMapper organizationMapper;
+    @Autowired
+    private PasswordPolicyMapper passwordPolicyMapper;
+    @Autowired
+    private PasswordPolicyManager passwordPolicyManager;
+    @Autowired
+    private UserPasswordValidator userPasswordValidator;
+    @Autowired
+    private RoleAssertHelper roleAssertHelper;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
 
     @Autowired
     private OrganizationAssertHelper organizationAssertHelper;
+    @Autowired
+    private ProjectAssertHelper projectAssertHelper;
     @Autowired
     private UserAssertHelper userAssertHelper;
     @Autowired
@@ -471,7 +526,21 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        return null;
+        boolean isAdmin = checkIsRoot(userId);
+        // todo 校验是否是组织管理员
+        boolean isOrgAdmin = true;
+        List<ProjectDTO> projects = new ArrayList<>();
+        // 普通用户只能查到启用的项目
+        if (!isAdmin && !isOrgAdmin) {
+            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+                return projects;
+            } else {
+                projectDTO.setEnabled(true);
+            }
+        }
+        projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        setProjectsInto(projects, isAdmin, isOrgAdmin);
+        return projects;
     }
 
     @Override
@@ -557,5 +626,227 @@ public class UserC7nServiceImpl implements UserC7nService {
         BeanUtils.copyProperties(user, userWithGitlabIdVO);
         userWithGitlabIdVO.setGitlabUserId(gitlabUserId);
         return userWithGitlabIdVO;
+    }
+
+    // TODO 完成sendNotice逻辑
+    @Override
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId) {
+        return null;
+    }
+
+    // TODO 完成这里的逻辑
+    @Override
+    public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
+        return false;
+    }
+
+
+    @Override
+    public User updateUserRoles(Long userId, String sourceType, Long sourceId, List<Role> roleList) {
+        return updateUserRoles(userId, sourceType, sourceId, roleList, false);
+    }
+
+    @Override
+    public User updateUserRoles(Long userId, String sourceType, Long sourceId, List<Role> roleList, Boolean syncAll) {
+        UserValidator.validateUseRoles(roleList, true);
+        User user = userAssertHelper.userNotExisted(userId);
+        validateSourceNotExisted(sourceType, sourceId);
+        createUserRoles(user, roleList, sourceType, sourceId, true, true, true, syncAll);
+        return user;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
+    public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
+        validateSourceNotExisted(sourceType, sourceId);
+        // 校验组织人数是否已达上限
+        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+        }
+        if (ResourceLevel.PROJECT.equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+            organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+        }
+        memberRoleDTOList.forEach(memberRoleDTO -> {
+            if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
+                throw new EmptyParamException("error.memberRole.insert.empty");
+            }
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceType(sourceType);
+            memberRoleDTO.setSourceId(sourceId);
+        });
+        Map<Long, List<MemberRole>> memberRolesMap = memberRoleDTOList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
+        List<MemberRole> result = new ArrayList<>();
+        memberRolesMap.forEach((memberId, memberRoleDTOS) -> result.addAll(roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, sourceId, memberId, memberRoleDTOS, sourceType)));
+        return result;
+    }
+
+    @Override
+    public List<MemberRole> createUserRoles(User userDTO, List<Role> roleList, String sourceType, Long sourceId, boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable) {
+        return createUserRoles(userDTO, roleList, sourceType, sourceId, isEdit, allowRoleEmpty, allowRoleDisable, false);
+    }
+
+    @Override
+    public List<MemberRole> createUserRoles(User user, List<Role> roleDTOList, String sourceType, Long sourceId, boolean isEdit, boolean allowRoleEmpty, boolean allowRoleDisable, Boolean syncAll) {
+        Long userId = user.getId();
+        List<MemberRole> memberRoleS = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(roleDTOList)) {
+            List<Role> resultRoles = new ArrayList<>();
+            for (Role role : roleDTOList) {
+                Role existRole = roleAssertHelper.roleNotExisted(role.getId());
+                RoleValidator.validateRole(sourceType, sourceId, role, allowRoleDisable);
+                resultRoles.add(existRole);
+                MemberRole memberRole = new MemberRole();
+                memberRole.setMemberId(userId);
+                memberRole.setMemberType(ResourceLevel.USER.value());
+                memberRole.setSourceId(sourceId);
+                memberRole.setSourceType(sourceType);
+                memberRole.setRoleId(role.getId());
+                memberRoleS.add(memberRole);
+            }
+            user.setRoles(resultRoles);
+            memberRoleS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, memberRoleS, sourceType, syncAll);
+        } else {
+            // 如果允许用户角色为空 则清空当前用户角色
+            if (allowRoleEmpty) {
+                memberRoleS = roleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, userId, new ArrayList<>(), sourceType, syncAll);
+            }
+        }
+        return memberRoleS;
+    }
+
+
+    private void validateSourceNotExisted(String sourceType, Long sourceId) {
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+            organizationAssertHelper.notExisted(sourceId);
+        }
+        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            projectAssertHelper.projectNotExisted(sourceId);
+        }
+    }
+
+    @Override
+    public List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable) {
+        return null;
+    }
+
+    @Override
+    public List<User> listUsersByName(Long projectId, String param) {
+        return null;
+    }
+
+    @Override
+    public List<User> listProjectOwnerById(Long projectId) {
+        return null;
+    }
+
+    @Override
+    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds) {
+        return null;
+    }
+
+    @Override
+    public List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
+        return null;
+    }
+
+    @Override
+    public Boolean checkEnableCreateUser(Long projectId) {
+        return null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
+        // 更新用户密码
+        UserPasswordDTO passwordDTO = new UserPasswordDTO();
+        passwordDTO.setOriginalPassword(userInfoDTO.getOriginalPassword());
+        passwordDTO.setPassword(userInfoDTO.getPassword());
+        selfUpdatePassword(id, passwordDTO, true, false);
+        // 更新用户名
+        String userName = userInfoDTO.getUserName();
+        if (!StringUtils.isEmpty(userName)) {
+            User user = userMapper.selectByPrimaryKey(id);
+            user.setRealName(userName);
+            updateInfo(user, false);
+        }
+        return userInfoDTO;
+    }
+
+    @Override
+    public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin) {
+        if (checkLogin) {
+            checkLoginUser(userId);
+        }
+        User user = userAssertHelper.userNotExisted(userId);
+        if (user.getLdap()) {
+            throw new CommonException("error.ldap.user.can.not.update.password");
+        }
+        if (!ENCODER.matches(userPasswordDTO.getOriginalPassword(), user.getPassword())) {
+            throw new CommonException("error.password.originalPassword");
+        }
+        //密码策略
+        if (checkPassword) {
+            BaseUser baseUserDTO = new BaseUser();
+            BeanUtils.copyProperties(user, baseUserDTO);
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(user.getOrganizationId());
+            if (organizationDTO != null) {
+                PasswordPolicy example = new PasswordPolicy();
+                example.setOrganizationId(organizationDTO.getId());
+                if (userPasswordDTO.getPassword() != null) {
+                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getId(), baseUserDTO);
+                }
+                // 校验用户密码
+                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getId(), true);
+            }
+        }
+        user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));
+        updateSelective(user);
+        // TODO 用户更新密码逻辑需要考虑如何修改
+//        passwordRecord.updatePassword(user.getId(), user.getPassword());
+
+        // send siteMsg
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("userName", user.getRealName());
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(user.getId());
+        sendNotice(user.getId(), userIds, "modifyPassword", paramsMap, 0L);
+    }
+
+
+    @Override
+    public User updateUserDisabled(Long userId) {
+        User user = userAssertHelper.userNotExisted(userId);
+        user.setEnabled(false);
+        return updateSelective(user);
+    }
+
+    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
+        if (!CollectionUtils.isEmpty(projects)) {
+            projects.forEach(p -> {
+                p.setCategory(p.getCategories().get(0).getCode());
+                // 如果项目为禁用 不可进入
+                if (p.getEnabled() == null || !p.getEnabled()) {
+                    p.setInto(false);
+                    return;
+                }
+                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                    p.setInto(false);
+                }
+
+            });
+        }
+    }
+
+    private User updateSelective(User user) {
+        userAssertHelper.objectVersionNumberNotNull(user.getObjectVersionNumber());
+        if (userMapper.updateByPrimaryKeySelective(user) != 1) {
+            throw new UpdateException("error.user.update");
+        }
+        return userMapper.selectByPrimaryKey(user);
     }
 }

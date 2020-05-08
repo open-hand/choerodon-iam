@@ -1,4 +1,4 @@
-package io.choerodon.iam.infra.payload;
+package io.choerodon.iam.infra.dto.payload;
 
 /**
  * @author flyleft

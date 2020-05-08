@@ -2,7 +2,9 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Menu;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.MenuC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -21,6 +24,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wanghao
  * @since 2020/4/23 17:33
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_MENU)
 @RestController
 @RequestMapping("/choerodon/v1/organizations/{organization_id}/menus")
 public class OrganizationMenuC7nController {

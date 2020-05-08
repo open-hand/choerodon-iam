@@ -1,8 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.app.service.ClientService;
+import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Client;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,12 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 
 /**
  * @author wuguokai
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_CLIENT)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/clients")
 public class ClientC7nController extends BaseController {

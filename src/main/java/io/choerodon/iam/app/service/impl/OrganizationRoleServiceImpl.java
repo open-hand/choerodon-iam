@@ -1,9 +1,14 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.app.service.LabelC7nService;
+import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.app.service.RolePermissionC7nService;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.RoleLevelEnum;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
@@ -15,15 +20,9 @@ import org.hzero.iam.infra.constant.RolePermissionType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.app.service.LabelC7nService;
-import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.app.service.RolePermissionC7nService;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.enums.RoleLevelEnum;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -67,7 +66,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         //  如果是项目层角色，添加角色标签
         if (RoleLevelEnum.PROJECT.value().equals(roleVO.getRoleLevel())) {
             Label label = labelC7nService.selectByName(RoleLabelEnum.PROJECT_ROLE.value());
-            roleVO.getRoleLabels().add(new org.hzero.iam.domain.entity.RoleLabel().setLabelId(label.getId()));
+            roleVO.getRoleLabels().add(label);
         }
         // 创建角色
         CustomUserDetails details = UserUtils.getUserDetails();
@@ -112,8 +111,14 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         return null;
     }
 
+    @Override
+    public Role getByTenantIdAndLabel(Long tenantId, String labelName) {
+        return roleC7nMapper.getByTenantIdAndLabel(tenantId, labelName);
+    }
+
     /**
      * 校验是否时预定义角色，预定义角色无法编辑
+     *
      * @param roleId
      */
     private void checkEnableEdit(Long roleId) {
@@ -125,6 +130,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
 
     /**
      * 分配角色权限
+     *
      * @param roleId
      * @param permissionIds
      */

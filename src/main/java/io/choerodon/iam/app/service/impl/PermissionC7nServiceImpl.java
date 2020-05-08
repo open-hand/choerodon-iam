@@ -1,18 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
+import io.choerodon.swagger.swagger.PermissionRegistry;
 import org.hzero.iam.domain.entity.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.iam.app.service.PermissionC7nService;
-import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.swagger.PermissionRegistry;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author scp

@@ -1,13 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
 
+import io.swagger.annotations.Api;
 import org.hzero.core.base.BaseController;
+import org.hzero.iam.config.SwaggerApiConfig;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author wuguokai
  */
+@Api(tags = SwaggerApiConfig.LDAP)
 @RestController
 @RequestMapping("/choerodon/v1/organizations/{organization_id}")
 public class LdapC7nController extends BaseController {

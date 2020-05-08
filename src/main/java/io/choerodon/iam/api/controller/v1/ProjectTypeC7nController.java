@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import javax.validation.Valid;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
@@ -14,13 +15,15 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectTypeC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_TYPE)
 @RestController
-@RequestMapping("/v1/projects/types")
+@RequestMapping("/choerodon/v1/projects/types")
 public class ProjectTypeC7nController {
 
     private ProjectTypeC7nService projectTypeService;

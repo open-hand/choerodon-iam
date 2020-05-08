@@ -42,7 +42,7 @@ public class LabelC7nController extends BaseController {
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<Label>> listByType(Label label) {
-        return new ResponseEntity<>(labelService.getLabelListByType(label.getType(), label.getFdLevel()), HttpStatus.OK);
+        return new ResponseEntity<>(labelService.getLabelListByType(label.getType()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

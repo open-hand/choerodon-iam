@@ -27,6 +27,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_REPORT = "Choerodon Report";
     public static final String CHOERODON_TENANT = "Choerodon Tenant";
     public static final String CHOERODON_USER = "Choerodon User";
+    public static final String CHOERODON_TENANT_PROJECT = "Choerodon Tenant Project";
 
 
     @Autowired
@@ -44,7 +45,8 @@ public class C7nSwaggerApiConfig {
                 new Tag(CHOERODON_PROJECT_USER, "choerodon项目用户"),
                 new Tag(CHOERODON_REPORT, "choerodon报表"),
                 new Tag(CHOERODON_TENANT, "choerodon组织"),
-                new Tag(CHOERODON_USER, "choerodon用户")
+                new Tag(CHOERODON_USER, "choerodon用户"),
+                new Tag(CHOERODON_TENANT_PROJECT, "choerodon组织项目")
 
         );
     }

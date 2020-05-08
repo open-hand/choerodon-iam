@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.user.UserType;
@@ -26,6 +27,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
@@ -36,6 +38,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}")
 public class OrganizationUserController extends BaseController {

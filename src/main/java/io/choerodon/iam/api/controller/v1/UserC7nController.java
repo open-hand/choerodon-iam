@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.*;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.iam.app.service.UserService;
@@ -24,6 +25,7 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -35,8 +37,9 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_SYSTEM_SETTING)
 @RestController
-@RequestMapping(value = "/v1/users")
+@RequestMapping(value = "/choerodon/v1/users")
 public class UserC7nController extends BaseController {
 
     private UserService userService;

@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 
 /**
  * @author wuguokai
  */
-@Api(tags = SwaggerApiConfig.CLIENT)
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_CLIENT)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/clients")
 public class ClientC7nController extends BaseController {

@@ -26,4 +26,7 @@ public interface RoleC7nMapper {
      */
     Role getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
                                @Param("labelName")String labelName);
+
+    List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
+                                             @Param("organizationId") Long organizationId);
 }

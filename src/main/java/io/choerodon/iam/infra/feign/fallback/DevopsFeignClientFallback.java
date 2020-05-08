@@ -18,10 +18,10 @@ import io.choerodon.iam.infra.feign.DevopsFeignClient;
  */
 @Component
 public class DevopsFeignClientFallback implements DevopsFeignClient {
-//    @Override
-//    public ResponseEntity<Boolean> checkGitlabEmail(String email) {
-//        throw new CommonException("error.feign.devops.check.gitlab.email");
-//    }
+    @Override
+    public ResponseEntity<Boolean> checkGitlabEmail(String email) {
+        throw new CommonException("error.feign.devops.check.gitlab.email");
+    }
 //
 //    @Override
 //    public ResponseEntity<PageInfo<AppServiceUploadPayload>> pageByAppId(Long appId, int page, int size) {

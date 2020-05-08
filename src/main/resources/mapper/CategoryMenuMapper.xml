@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.CategoryMenuMapper">
+    <select id="selectPermissionCodeIdsByCode" resultType="io.choerodon.iam.infra.dto.MenuCodeDTO">
+        SELECT iams.id AS menuCodeId,fcp.menu_code AS menuCode
+        FROM
+        fd_category_menu fcp
+        LEFT JOIN iam_menu_b iams ON iams.code=fcp.menu_code
+        WHERE fcp.category_code = #{code}
+        AND fcp.resource_level=#{resourceLevel}
+        AND iams.type!='menu'
+    </select>
+
+    <select id="selectByCode" resultType="io.choerodon.iam.infra.dto.CategoryMenuDTO">
+        SELECT *
+        FROM
+        fd_category_menu fcp
+        WHERE category_code = #{code}
+    </select>
+
+    <select id="getMenuCodesByOrgId" resultType="java.lang.String">
+        SELECT menu_code
+        FROM
+        fd_category_menu fcp
+        LEFT JOIN fd_organization fo ON fo.category=fcp.category_code
+        WHERE fo.id = #{organizationId}
+        AND fcp.resource_level=#{resourceLevel}
+    </select>
+
+    <select id="selectCodesByIds" resultType="java.lang.String">
+        SELECT iams.code
+        FROM
+        iam_menu_b iams
+        WHERE
+        <if test="menuCodeIds != null">
+            iams.id in
+            <foreach collection="menuCodeIds" index="index" item="item" open="(" separator="," close=")">#{item}
+            </foreach>
+        </if>
+
+    </select>
+</mapper>
+
+

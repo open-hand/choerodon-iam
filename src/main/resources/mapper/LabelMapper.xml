@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.LabelC7nMapper">
+
+    <resultMap id="labelDTO" type="io.choerodon.iam.infra.dto.LabelDTO" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="fdLevel" column="FD_LEVEL"/>
+    </resultMap>
+
+    <select id="selectByRoleId" resultMap="labelDTO">
+        SELECT iam_label.*
+        FROM iam_role_label
+        LEFT JOIN iam_label
+        ON iam_role_label.label_id = iam_label.id
+        AND iam_label.type = 'role'
+        WHERE iam_role_label.role_id = #{roleId}
+    </select>
+
+    <select id="listByOption" resultMap="labelDTO">
+        SELECT * FROM iam_label l
+        WHERE 1=1
+        <if test="label.type != null">
+            AND l.type LIKE concat(concat('%',#{label.type}), '%')
+        </if>
+        <if test="label.name != null">
+            AND l.name LIKE concat(concat('%',#{label.name}), '%')
+        </if>
+        <if test="label.fdLevel != null">
+            AND l.FD_LEVEL LIKE concat(concat('%',#{label.fdLevel}), '%')
+        </if>
+        <if test="label.description != null">
+            AND l.description LIKE concat(concat('%',#{label.description}), '%')
+        </if>
+        <if test="label.gitlabLabel!=null">
+            <choose>
+                <when test="label.gitlabLabel!=null and label.gitlabLabel">
+                    AND l.name LIKE concat(concat('%','gitlab'), '%')
+                </when>
+                <otherwise>
+                    AND l.name not LIKE concat(concat('%','gitlab'), '%')
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <select id="selectLableNameByUserId" resultMap="labelDTO">
+        SELECT il.* FROM iam_user iu
+        JOIN iam_member_role imr ON iu.id= imr.member_id
+        JOIN iam_role_label irl ON imr.role_id=irl.role_id
+        JOIN iam_label il ON il.id= irl.label_id
+        WHERE iu.id= #{userId}
+    </select>
+
+    <select id="selectByUserId" resultMap="labelDTO">
+        SELECT DISTINCT il.*
+        FROM iam_user iu
+        JOIN iam_member_role imr
+        ON iu.id = imr.member_id
+        JOIN iam_role_label irl
+        ON imr.role_id = irl.role_id
+        JOIN iam_label il
+        ON irl.label_id = il.id
+        WHERE imr.member_type = 'user'
+        AND iu.id = #{id}
+    </select>
+
+    <select id="selectLabelNamesInRoleIds" resultType="java.lang.String">
+        SELECT DISTINCT iam_label.name
+        FROM iam_label
+        INNER JOIN iam_role_label ON iam_role_label.label_id = iam_label.id
+        WHERE iam_role_label.role_id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

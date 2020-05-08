@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ResetPasswordVO;
 import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.valitador.SysSettingValidator;
 import io.choerodon.iam.app.service.SystemSettingC7nService;
 import io.choerodon.swagger.annotation.Permission;
@@ -23,6 +25,9 @@ import io.choerodon.swagger.annotation.Permission;
  * @author zmf
  * @since 2018-10-15
  */
+@Api(
+        tags = C7nSwaggerApiConfig.SYSTEM_SETTING
+)
 @RestController
 @RequestMapping(value = "/v1/system/setting")
 public class SystemSettingC7nController extends BaseController {

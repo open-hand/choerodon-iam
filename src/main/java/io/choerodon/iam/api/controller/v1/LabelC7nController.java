@@ -2,8 +2,10 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.app.service.LabelService;
+import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Label;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.LabelC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author superlee
  */
+
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_LABEL)
 @RestController
 @RequestMapping(value = "/choerodon/v1/labels")
 public class LabelC7nController extends BaseController {
@@ -37,7 +42,7 @@ public class LabelC7nController extends BaseController {
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<Label>> listByType(Label label) {
-        return new ResponseEntity<>(labelService.getLabelListByType(label.getType(), label.getFdLevel()), HttpStatus.OK);
+        return new ResponseEntity<>(labelService.getLabelListByType(label.getType()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

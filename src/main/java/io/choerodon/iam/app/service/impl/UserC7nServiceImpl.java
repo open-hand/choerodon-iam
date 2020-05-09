@@ -526,7 +526,21 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        return null;
+        boolean isAdmin = checkIsRoot(userId);
+        // todo 校验是否是组织管理员
+        boolean isOrgAdmin = true;
+        List<ProjectDTO> projects = new ArrayList<>();
+        // 普通用户只能查到启用的项目
+        if (!isAdmin && !isOrgAdmin) {
+            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+                return projects;
+            } else {
+                projectDTO.setEnabled(true);
+            }
+        }
+        projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        setProjectsInto(projects, isAdmin, isOrgAdmin);
+        return projects;
     }
 
     @Override
@@ -808,6 +822,24 @@ public class UserC7nServiceImpl implements UserC7nService {
         User user = userAssertHelper.userNotExisted(userId);
         user.setEnabled(false);
         return updateSelective(user);
+    }
+
+    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
+        if (!CollectionUtils.isEmpty(projects)) {
+            projects.forEach(p -> {
+                p.setCategory(p.getCategories().get(0).getCode());
+                // 如果项目为禁用 不可进入
+                if (p.getEnabled() == null || !p.getEnabled()) {
+                    p.setInto(false);
+                    return;
+                }
+                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                    p.setInto(false);
+                }
+
+            });
+        }
     }
 
     private User updateSelective(User user) {

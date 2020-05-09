@@ -2,13 +2,16 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.iam.config.SwaggerApiConfig;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -18,6 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wanghao
  * @Date 2020/4/22 10:05
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_MENU_ROLE)
 @RestController
 @RequestMapping("/choerodon/v1/organizations/{organization_id}/roles")
 public class OrganizationRoleC7nController {

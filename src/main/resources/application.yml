@@ -160,7 +160,7 @@ hzero:
       field-permission: ${HZERO_START_INIT_FIELD_PERMISSION:true}
   resource:
     # 匹配的资源才会解析JwtToken便于得到UserDetails
-    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*}
+    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/*}
   export:
     enable-async: true
 

@@ -1,9 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -71,16 +68,19 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         CustomUserDetails self = UserUtils.getUserDetails();
         List<Long> roleIds = self.roleMergeIds();
         Long tenantId = self.getTenantId();
+
+        if (labels == null) {
+            labels = new HashSet<>();
+        }
         labels.add(CHOERODON_MENU);
+
+        Set<String> finalLabels = new HashSet<>(labels);
         String finalLang = LanguageHelper.language();
 
         // 查询角色关联的菜单
-        CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuC7nMapper.selectRoleMenus(roleIds, tenantId, projectId, finalLang, labels), SELECT_MENU_POOL);
-
-        // 查询安全组关联的菜单
+        CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuC7nMapper.selectRoleMenus(roleIds, tenantId, projectId, finalLang, finalLabels), SELECT_MENU_POOL);
 
         CompletableFuture<List<Menu>> cf = f1
-
                 // 转换成树形结构
                 .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
                 .exceptionally((e) -> {

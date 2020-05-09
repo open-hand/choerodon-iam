@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.MenuC7nMapper">
+    <resultMap id="MenuMap" type="org.hzero.iam.domain.entity.Menu">
+        <id column="id" property="id"/>
+        <result column="h_inherit_flag" property="inheritFlag"/>
+        <result column="h_create_flag" property="createFlag"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="h_permission_type" property="permissionType"/>
+        <result column="h_controller_type" property="controllerType"/>
+        <result column="h_quick_index" property="quickIndex"/>
+        <result column="fd_level" property="level"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="type" property="type"/>
+        <result column="sort" property="sort"/>
+        <result column="is_default" property="isDefault"/>
+        <result column="icon" property="icon"/>
+        <result column="route" property="route"/>
+        <result column="h_custom_flag" property="customFlag"/>
+        <result column="h_tenant_id" property="tenantId"/>
+        <result column="h_enabled_flag" property="enabledFlag"/>
+        <result column="h_description" property="description"/>
+        <result column="h_level_path" property="levelPath"/>
+        <result column="h_virtual_flag" property="virtualFlag"/>
+        <result column="edit_detail_flag" property="editDetailFlag"/>
+        <result column="new_subnode_flag" property="newSubnodeFlag"/>
+        <result column="ps_leaf_flag" property="psLeafFlag"/>
+        <result column="checked_flag" property="checkedFlag"/>
+        <result column="parent_name" property="parentName"/>
+        <result column="zh_name" property="zhName"/>
+        <result column="en_name" property="enName"/>
+        <result column="level_meaning" property="levelMeaning"/>
+        <result column="type_meaning" property="typeMeaning"/>
+        <result column="shield_flag" property="shieldFlag"/>
+        <result column="sec_grp_acl_id" property="secGrpAclId"/>
+    </resultMap>
+    <!-- 查询角色菜单 -->
+    <select id="selectRoleMenus" resultMap="MenuMap">
+        <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
+
+        select
+        im.id,
+        im.code,
+        (case when imt.name is not null then imt.name else im.name end ) name,
+        im.fd_level,
+        im.parent_id,
+        im.type,
+        im.sort,
+        im.icon,
+        im.h_quick_index,
+        (case when im.route is null then '' else im.route end) route
+        from iam_menu im
+        <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
+            INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{menuLabelDataType} AND hlr.data_id = im.id
+            INNER JOIN iam_label il ON hlr.label_id = il.id AND il.name IN
+            <foreach collection="labels" open="(" separator="," close=")" item="label">
+                #{label}
+            </foreach>
+        </if>
+        <if test="projectId!=null">
+            INNER JOIN (SELECT
+            fcm.MENU_CODE
+            FROM
+            fd_project_map_category fpmc
+            INNER JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
+            INNER JOIN fd_category_menu fcm on fcm.CATEGORY_CODE=fpc.`CODE`
+            WHERE
+            fpmc.PROJECT_ID = #{projectId}) as temp on temp.MENU_CODE = im.code
+        </if>
+        left join iam_menu_tl imt on imt.id = im.id and imt.lang = #{lang}
+        where im.type in ('root', 'dir', 'menu', 'link', 'inner-link', 'window')
+        and im.h_enabled_flag = 1
+        and im.h_virtual_flag = 0
+        and (im.h_tenant_id = 0 or im.h_tenant_id = #{tenantId})
+        <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
+            <bind name="labelsSize" value="labels.size()"/>
+            AND (SELECT COUNT(1)
+            FROM hiam_label_rel hlr
+            INNER JOIN iam_label il ON hlr.label_id = il.id
+            WHERE hlr.data_type = #{menuLabelDataType}
+            AND hlr.data_id = im.id
+            AND il.name IN
+            <foreach collection="labels" open="(" separator="," close=")" item="label">
+                #{label}
+            </foreach>
+            ) = #{labelsSize}
+        </if>
+        and exists (
+        select 1
+        from iam_menu im_ps
+        join iam_role ir on (
+        ir.fd_level = im_ps.fd_level
+        and ir.is_enabled = 1
+        and ir.id in
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+        )
+        left join iam_role_permission irp on (irp.permission_id = im_ps.id and irp.role_id = ir.id and irp.type = 'PS')
+        where im_ps.h_enabled_flag = 1
+        and im_ps.type = 'ps'
+        <!-- 限制层级 -->
+        and im.fd_level = ir.fd_level
+        <!-- 平台管理员&租户管理员不限制权限集，否则限制权限集 -->
+        and (
+        ir.code in ('role/site/default/administrator', 'role/organization/default/administrator')
+        or (irp.h_create_flag = 'Y' or irp.h_inherit_flag = 'Y')
+        )
+        <!-- 权限集限定查询菜单 -->
+        and (im_ps.h_level_path like concat(im.h_level_path, '|%'))
+        )
+    </select>
+
+</mapper>

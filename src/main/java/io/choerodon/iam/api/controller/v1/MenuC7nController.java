@@ -32,11 +32,10 @@ public class MenuC7nController {
 
 
     @ApiOperation(value = "权限分配 - 查询组织下可分配的权限集树")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @GetMapping(value = "/menu")
-    public ResponseEntity<List<Menu>> listNavMenuTree(@RequestParam(required = false) Long roleId,
-                                                      @RequestParam(required = false) Long projectId,
+    public ResponseEntity<List<Menu>> listNavMenuTree(@RequestParam(required = false) Long projectId,
                                                       @RequestParam(required = false) Set<String> labels) {
-        return ResponseEntity.ok(menuC7nService.listNavMenuTree(roleId, labels, projectId));
+        return ResponseEntity.ok(menuC7nService.listNavMenuTree(labels, projectId));
     }
 }

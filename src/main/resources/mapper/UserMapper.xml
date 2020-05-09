@@ -560,6 +560,36 @@
         </if>
     </select>
 
+    <select id="selectAgileUsersByProjectId" resultMap="userDTO">
+        select iu1.*
+        from iam_user iu1
+        join (
+            select iu.id
+            from iam_user iu
+            where iu.id in (
+            select distinct member_id
+            from iam_member_role
+            where source_id = #{projectId}
+            and source_type = 'project'
+            and member_type = 'user'
+            )
+            <if test="userIds != null and userIds.size > 0">
+                or iu.id in
+                <foreach item="id" index="index" collection="userIds"
+                         open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        ) t on iu1.id = t.id
+        where 1=1
+        <if test="param != null">
+            AND (
+            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iu1.real_name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
     <select id="selectAdminUserPage" resultMap="userDTO">
         select iut.id,iut.target_login_name as login_name,iut.real_name,
         iut.is_enabled,iut.is_locked,iut.is_ldap,iut.is_admin,iut.object_version_number

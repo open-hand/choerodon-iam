@@ -1,6 +1,7 @@
 package io.choerodon.base.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -237,6 +238,13 @@ public class ProjectServiceImpl implements ProjectService {
         return projectDTOS.stream()
                 .filter(project -> !project.getId().equals(projectId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PageInfo<UserDTO> agileUsers(Long projectId, Pageable pageable, Set<Long> userIds, String param) {
+        return PageHelper
+                .startPage(pageable.getPageNumber(), pageable.getPageSize())
+                .doSelectPageInfo(() -> userMapper.selectAgileUsersByProjectId(projectId, userIds, param));
     }
 
     @Override

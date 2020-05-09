@@ -51,4 +51,14 @@ public interface ProjectService {
      * @return
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
+
+    /*
+     * 查询项目下的项目成员，以及传入的userId的并集
+     * @param projectId
+     * @param pageable
+     * @param userIds
+     * @param param
+     * @return
+     */
+    PageInfo<UserDTO> agileUsers(Long projectId, Pageable pageable, Set<Long> userIds, String param);
 }

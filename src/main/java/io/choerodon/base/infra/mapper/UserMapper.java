@@ -370,6 +370,7 @@ public interface UserMapper extends Mapper<UserDTO> {
     List<UserDTO> listProjectOwnerById(@Param("projectId") Long projectId);
 
     /**
+<<<<<<< HEAD
      * 按用户名搜索项目下的用户（限制20个）
      * @param projectId
      * @param param
@@ -379,4 +380,14 @@ public interface UserMapper extends Mapper<UserDTO> {
                                            @Param("param")String param);
 
 
+    /*
+     * 根据项目查询项目成员和传入的敏捷用户
+     * @param projectId
+     * @param userIds
+     * @param param
+     * @return
+     */
+    List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
+                                              @Param("userIds") Set<Long> userIds,
+                                              @Param("param") String param);
 }

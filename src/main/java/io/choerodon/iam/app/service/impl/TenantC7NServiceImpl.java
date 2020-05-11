@@ -48,7 +48,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
-    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-05-22";
 
     @Autowired
     private TenantService tenantService;

@@ -71,8 +71,6 @@ env:
     HZERO_CAPTCHA_TEST_DISABLE: false
     # 是否开启拦截，只有开启才会拦截租户的新增和更新
     TENANT_INIT_ASPECT: false
-    # 数据库所有者模式，例如 SqlServer 下的 dbo/guest
-    HZERO_DB_OWNER:
     # 清除过期权限
     HZERO_PERMISSION_CLEAN_PERMISSION: false
     # 资源匹配路径

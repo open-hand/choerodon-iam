@@ -484,6 +484,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 tenantVO.setTenantName(tenantDTO.getTenantName());
                 tenantVO.setInto(true);
                 tenantVOS.add(tenantVO);
+                continue;
             }
             if (isAdmin) {
                 TenantVO tenantVO = new TenantVO();
@@ -491,6 +492,15 @@ public class OrganizationServiceImpl implements OrganizationService {
                 tenantVO.setTenantNum(tenantDTO.getTenantNum());
                 tenantVO.setTenantName(tenantDTO.getTenantName());
                 tenantVO.setInto(true);
+                tenantVOS.add(tenantVO);
+                continue;
+            }
+            else{
+                TenantVO tenantVO = new TenantVO();
+                tenantVO.setTenantId(tenantDTO.getTenantId());
+                tenantVO.setTenantNum(tenantDTO.getTenantNum());
+                tenantVO.setTenantName(tenantDTO.getTenantName());
+                tenantVO.setInto(false);
                 tenantVOS.add(tenantVO);
             }
         }

@@ -35,4 +35,11 @@ public interface MenuC7nMapper {
                                @Param("projectId") Long projectId,
                                @Param("lang") String lang,
                                @Param("labels") Set<String> labels);
+
+
+    /**
+     * 查询个人中心菜单
+     */
+    List<Menu> selectUserMenus(@Param("lang") String lang,
+                               @Param("labels") Set<String> labels);
 }

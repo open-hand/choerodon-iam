@@ -1,7 +1,7 @@
 {
   "name": "@choerodon/base",
   "routeName": "base",
-  "version": "0.22.0",
+  "version": "0.22.0-hzero",
   "description": "",
   "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "files": [

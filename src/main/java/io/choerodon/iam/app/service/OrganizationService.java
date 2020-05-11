@@ -2,10 +2,12 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.infra.dto.OrgSharesDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.User;
 
 import java.util.List;
@@ -95,4 +97,6 @@ public interface OrganizationService {
     int countUserNum(Long organizationId);
 
     List<Long> getoRoganizationByName(String name);
+
+    Set<TenantVO> selectSelfTenants(TenantDTO params);
 }

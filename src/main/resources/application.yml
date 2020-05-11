@@ -160,13 +160,22 @@ hzero:
       field-permission: ${HZERO_START_INIT_FIELD_PERMISSION:true}
   resource:
     # 匹配的资源才会解析JwtToken便于得到UserDetails
-    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*}
+    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/*}
   export:
     enable-async: true
+  audit:
+    operation:
+      enable: false     # 全局开关，默认 false
+      api-audit:
+          enable: true    # API 审计开关，默认 true，如果全局开关关闭，此值无效
+      annotation-audit:
+        enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
 
 logging:
   level:
     org.apache.ibatis: ${LOG_LEVEL:debug}
     io.choerodon: ${LOG_LEVEL:debug}
     org.hzero: ${LOG_LEVEL:debug}
+
+# application.yml
 

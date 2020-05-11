@@ -40,6 +40,7 @@
         <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
 
         select
+        DISTINCT
         im.id,
         im.code,
         (case when imt.name is not null then imt.name else im.name end ) name,
@@ -112,4 +113,48 @@
         )
     </select>
 
+
+    <!-- 查询角色菜单 -->
+    <select id="selectUserMenus" resultMap="MenuMap">
+        <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
+
+        select
+        DISTINCT
+        im.id,
+        im.code,
+        (case when imt.name is not null then imt.name else im.name end ) name,
+        im.fd_level,
+        im.parent_id,
+        im.type,
+        im.sort,
+        im.icon,
+        im.h_quick_index,
+        (case when im.route is null then '' else im.route end) route
+        from iam_menu im
+        <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
+            INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{menuLabelDataType} AND hlr.data_id = im.id
+            INNER JOIN iam_label il ON hlr.label_id = il.id AND il.name IN
+            <foreach collection="labels" open="(" separator="," close=")" item="label">
+                #{label}
+            </foreach>
+        </if>
+        left join iam_menu_tl imt on imt.id = im.id and imt.lang = #{lang}
+        where im.type in ('root', 'dir', 'menu', 'link', 'inner-link', 'window')
+        and im.h_enabled_flag = 1
+        and im.h_virtual_flag = 0
+        <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
+            <bind name="labelsSize" value="labels.size()"/>
+            AND (SELECT COUNT(1)
+            FROM hiam_label_rel hlr
+            INNER JOIN iam_label il ON hlr.label_id = il.id
+            WHERE hlr.data_type = #{menuLabelDataType}
+            AND hlr.data_id = im.id
+            AND il.name IN
+            <foreach collection="labels" open="(" separator="," close=")" item="label">
+                #{label}
+            </foreach>
+            ) = #{labelsSize}
+        </if>
+
+    </select>
 </mapper>

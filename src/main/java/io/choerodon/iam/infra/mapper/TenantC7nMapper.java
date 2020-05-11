@@ -22,10 +22,10 @@ public interface TenantC7nMapper {
             @Param("params") String params);
 
     Set<TenantVO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
-                                                        @Param("includedDisabled") Boolean includedDisabled);
+                                                 @Param("includedDisabled") Boolean includedDisabled);
 
     Set<TenantVO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
-                                                @Param("includedDisabled") Boolean includedDisabled);
+                                         @Param("includedDisabled") Boolean includedDisabled);
 
     List<TenantVO> selectOrganizationsWithRoles(
             @Param("id") Long id,
@@ -59,10 +59,10 @@ public interface TenantC7nMapper {
      * @return 查询结果
      */
     List<TenantVO> selectSpecified(@Param("orgIds") Set<Long> orgIds,
-                                       @Param("name") String name,
-                                       @Param("code") String code,
-                                       @Param("enabled") Boolean enabled,
-                                       @Param("params") String params);
+                                   @Param("name") String name,
+                                   @Param("code") String code,
+                                   @Param("enabled") Boolean enabled,
+                                   @Param("params") String params);
 
 
     /**
@@ -76,4 +76,6 @@ public interface TenantC7nMapper {
     ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
 
     List<Long> getoRoganizationByName(@Param("name") String name);
+
+    Tenant tenantAdminByUserId(@Param("userId") Long userId, @Param("tenantNum") String tenantNum);
 }

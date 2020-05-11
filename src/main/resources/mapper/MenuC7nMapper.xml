@@ -40,6 +40,7 @@
         <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
 
         select
+        DISTINCT
         im.id,
         im.code,
         (case when imt.name is not null then imt.name else im.name end ) name,

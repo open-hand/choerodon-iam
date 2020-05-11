@@ -10,7 +10,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
@@ -23,18 +25,17 @@ import io.choerodon.iam.infra.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.infra.dto.payload.OrganizationPayload;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.mybatis.common.Criteria;
 import org.hzero.mybatis.common.query.Comparison;
@@ -42,6 +43,7 @@ import org.hzero.mybatis.common.query.WhereField;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
@@ -88,6 +90,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private DevopsFeignClient devopsFeignClient;
 
+    private TenantMapper tenantMapper;
+
+    private TenantC7nMapper tenantC7nMapper;
+
 
     public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
@@ -101,7 +107,9 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    RoleMapper roleMapper,
                                    RoleC7nMapper roleC7nMapper,
                                    MemberRoleMapper memberRoleMapper,
-                                   DevopsFeignClient devopsFeignClient) {
+                                   DevopsFeignClient devopsFeignClient,
+                                   TenantMapper tenantMapper,
+                                   TenantC7nMapper tenantC7nMapper) {
         this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
         this.userService = userService;
@@ -115,6 +123,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         this.roleMapper = roleMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.devopsFeignClient = devopsFeignClient;
+        this.tenantMapper = tenantMapper;
+        this.tenantC7nMapper = tenantC7nMapper;
     }
 
     // TODO 等待Tenant更新完成
@@ -189,7 +199,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 //        organizationDTO.setId(organizationId);
 //        //code和创建人不可修改
 //        organizationDTO.setUserId(organization.getUserId());
-//        organizationDTO.setCode(organization.getCode());
+//        organizationDTO.setCode(organizati2on.getCode());
 //        if (ObjectUtils.isEmpty(organizationDTO.getEnabled())) {
 //            organizationDTO.setEnabled(true);
 //        }
@@ -446,5 +456,48 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public List<Long> getoRoganizationByName(String name) {
         return organizationMapper.getoRoganizationByName(name);
+    }
+
+    @Override
+    public Set<TenantVO> selectSelfTenants(TenantDTO params) {
+        CustomUserDetails self = UserUtils.getUserDetails();
+        params.setUserId(self.getUserId());
+        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
+        boolean isAdmin = false;
+        if (customUserDetails.getAdmin() != null) {
+            isAdmin = customUserDetails.getAdmin();
+        }
+        return getOwnedOrganizations(customUserDetails.getUserId(), isAdmin, tenantDTOS);
+    }
+
+    private Set<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
+        Set<TenantVO> tenantVOS = new HashSet<>();
+        if (CollectionUtils.isEmpty(tenantDTOS)) {
+            return Collections.emptySet();
+        }
+        for (TenantDTO tenantDTO : tenantDTOS) {
+            if (isTenantAdmin(userId, tenantDTO.getTenantNum())) {
+                TenantVO tenantVO = new TenantVO();
+                tenantVO.setTenantId(tenantDTO.getTenantId());
+                tenantVO.setTenantNum(tenantDTO.getTenantNum());
+                tenantVO.setTenantName(tenantDTO.getTenantName());
+                tenantVO.setInto(true);
+                tenantVOS.add(tenantVO);
+            }
+            if (isAdmin) {
+                TenantVO tenantVO = new TenantVO();
+                tenantVO.setTenantId(tenantDTO.getTenantId());
+                tenantVO.setTenantNum(tenantDTO.getTenantNum());
+                tenantVO.setTenantName(tenantDTO.getTenantName());
+                tenantVO.setInto(true);
+                tenantVOS.add(tenantVO);
+            }
+        }
+        return tenantVOS;
+    }
+
+    private boolean isTenantAdmin(Long userId, String tenantNum) {
+        return Objects.isNull(tenantC7nMapper.tenantAdminByUserId(userId, tenantNum)) ? false : true;
     }
 }

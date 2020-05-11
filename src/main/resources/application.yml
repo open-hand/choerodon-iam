@@ -100,8 +100,6 @@ hzero:
     permission:
       # 是否启用数据权限屏蔽
       enabled: ${HZERO_ENABLE_DATA_PERMISSION:true}
-      # 数据库所有者模式，例如 SqlServer 下的 dbo/guest
-      db-owner: ${HZERO_DB_OWNER:}
   send-message:
     # 修改密码成功是否发送消息
     send-modify-password-success: ${HZERO_SEND_MESSAGE_SEND_MODIFY_PASSWORD_SUCCESS:true}

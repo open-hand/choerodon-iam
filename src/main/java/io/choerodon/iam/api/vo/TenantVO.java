@@ -36,6 +36,16 @@ public class TenantVO extends Tenant {
 
     private String ownerEmail;
 
+    private Boolean isInto = false;
+
+    public Boolean getInto() {
+        return isInto;
+    }
+
+    public void setInto(Boolean into) {
+        isInto = into;
+    }
+
     public TenantConfigVO getTenantConfigVO() {
         return tenantConfigVO;
     }

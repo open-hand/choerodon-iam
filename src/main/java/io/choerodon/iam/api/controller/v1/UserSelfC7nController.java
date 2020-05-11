@@ -25,7 +25,7 @@ import java.util.Set;
  */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_USER_SELF)
 @RestController
-@RequestMapping(value = "/choerodon/v1/users")
+@RequestMapping(value = "/choerodon/v1")
 public class UserSelfC7nController extends BaseController {
     @Autowired
     private OrganizationService organizationService;

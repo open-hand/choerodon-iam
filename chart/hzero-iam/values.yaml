@@ -5,13 +5,13 @@ preJob:
   # 工具 jar 包镜像库地址
   image: registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.6.7
   preInitDB:
-    # 是否初始化base_service数据库
+    # 是否初始化iam_service数据库
     enabled: true
     datasource:
       # 初始化数据库更新数据的时候忽略的表或列
-      exclusion: iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,hpfm_tenant.name
+      exclusion: ""
       # 本服务数据库相关信息
-      url: jdbc:mysql://localhost:3306/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
+      url: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
       username: username
       password: password
 
@@ -51,6 +51,37 @@ podLabels: {}
 ## 实例运行时的环境变量
 env:
   open:
+    # 是否启用数据权限屏蔽
+    HZERO_ENABLE_DATA_PERMISSION: true
+    # 是否刷新密码策略到缓存
+    HZERO_START_INIT_PASSWORD_POPLICY: false
+    # 是否初始化三方登陆方式到缓存
+    HZERO_START_INIT_OPEN_LOGIN_WAY: false
+    # 是否初始化用户到缓存
+    HZERO_START_INIT_USER: false
+    # 是否初始化缓存LDAP
+    HZERO_START_INIT_LDAP: false
+    # 是否初始化缓存客户端
+    HZERO_START_INIT_CLIENT: false
+    # 是否初始化字段权限
+    HZERO_START_INIT_FIELD_PERMISSION: true
+    # 初始化导入表，第一次启动服务的时候需开启此设置
+    HZERO_IMPORT_INIT_TABLE: false
+    # 测试时禁用验证码功能
+    HZERO_CAPTCHA_TEST_DISABLE: false
+    # 是否开启拦截，只有开启才会拦截租户的新增和更新
+    TENANT_INIT_ASPECT: false
+    # 数据库所有者模式，例如 SqlServer 下的 dbo/guest
+    HZERO_DB_OWNER:
+    # 清除过期权限
+    HZERO_PERMISSION_CLEAN_PERMISSION: false
+    # 资源匹配路径
+    HZERO_RESOURCE_PATTERN: /v1/*,/hzero/*
+    # 不需要刷新权限的服务
+    HZERO_PERMISSION_SKIP_PARSE_SERVICES: register,gateway,oauth,swagger
+    # 是否自动刷新服务权限
+    HZERO_PERMISSION_PARSE_PERMISSION: true
+
     # 本实例服务端口
     SERVER_PORT: 8030
     # 本实例管理端口
@@ -61,6 +92,12 @@ env:
     # 配置中心地址
     SPRING_CLOUD_CONFIG_URI: http://register-server:8000
 
+    # 注册服务地址
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server:8000/eureka/
+
+    # 网关地址
+    CHOERODON_GATEWAY_URL: http://api.example.com
+
     # Redis 主机地址
     SPRING_REDIS_HOST: localhost
     # Redis 端口
@@ -69,26 +106,44 @@ env:
     SPRING_REDIS_DATABASE: 2
 
     # 数据库连接地址
-    SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
+    SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
     # 数据库用户名
     SPRING_DATASOURCE_USERNAME: choerodon
     # 数据库密码
     SPRING_DATASOURCE_PASSWORD: password
+    # 连接池最小空闲连接数
+    SPRING_DATASOURCE_MINIMUM_IDLE: 20
+    # 连接池允许的最大连接数
+    SPRING_DATASOURCE_MAXIMUM_POOL_SIZE: 200
+    # 等待连接池分配连接的最大时长（毫秒）
+    SPRING_DATASOURCE_CONNECTION_TIMEOUT: 30000
 
-    # 注册服务地址
-    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server:8000/eureka/
+    # Hystrix 熔断超时时间
+    HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS: 40000
+    # Ribbon 读取超时时间
+    RIBBON_READ_TIMEOUT: 30000
+    # Ribbon 连接超时时间
+    RIBBON_CONNECT_TIMEOUT: 3000
+    # IO线程数, 它主要执行非阻塞的任务
+    SERVER_UNDERTOW_IO_THREADS: 4
+    # 阻塞任务线程池
+    SERVER_UNDERTOW_WORKER_THREADS: 128
+    # 每块buffer的空间大小，越小空间被利用越充分
+    SERVER_UNDERTOW_BUFFER_SIZE: 1024
+    # 日志级别
+    LOG_LEVEL: info
 
-    # 忽略jwt的url
-    CHOERODON_RESOURCE_JWT_IGNORE: /favicon.ico
+    JAVA_OPTS: >
+      -Xms1024m
+      -Xmx1536m
 
-    # 清理permission表中的旧接口和role_permission表中角色和权限层级不匹配的脏数据
-    CHOERODON_CLEANPERMISSION: false
+    ## Skywalking 配置参数
+    # SKYWALKING_OPTS: >-
+    #   -javaagent:/agent/skywalking-agent.jar
+    #   -Dskywalking.agent.application_code=asgard-service
+    #   -Dskywalking.agent.sample_n_per_3_secs=-1
+    #   -Dskywalking.collector.backend_service=oap.skywalking:11800
 
-    # 网关地址
-    CHOERODON_GATEWAY_URL: http://api.example.com
-
-    #用户默认密码
-    CHOERODON_USER_DEFAULT_PASSWORD: abcd1234
 
 ## Liveness 和 Readiness 探针相关配置
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
@@ -108,7 +163,7 @@ readinessProbe:
 ## 资源请求和限制相关配置
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
-resources: 
+resources:
   limits:
     # cpu: 100m
     memory: 2Gi
@@ -134,13 +189,13 @@ service:
   # 指定 service 的 clusterIP
   clusterIP: ~
   # 端口设置
-  ports: 
+  ports:
     # 服务端口
-    http: 
+    http:
       port: 8030
       nodePort: 30092
     # 管理端口
-    actuator: 
+    actuator:
       port: 8031
       nodePort: 30093
   ## externalIPs 设置
@@ -149,7 +204,7 @@ service:
   annotations: {}
     # prometheus.io/scrape: 'true'
     # prometheus.io/path: '/actuator/prometheus'
-    # prometheus.io/port: '8031'
+  # prometheus.io/port: '8031'
 
 ## 指标收集
 metrics:

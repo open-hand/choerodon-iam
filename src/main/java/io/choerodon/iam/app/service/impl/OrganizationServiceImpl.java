@@ -32,6 +32,8 @@ import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
@@ -43,6 +45,7 @@ import org.hzero.mybatis.common.query.WhereField;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -60,6 +63,8 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
 public class OrganizationServiceImpl implements OrganizationService {
 
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
+    public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
+    public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
     private AsgardFeignClient asgardFeignClient;
@@ -94,6 +99,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private TenantC7nMapper tenantC7nMapper;
 
+    private UserRepository userRepository;
+
 
     public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
@@ -109,7 +116,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    MemberRoleMapper memberRoleMapper,
                                    DevopsFeignClient devopsFeignClient,
                                    TenantMapper tenantMapper,
-                                   TenantC7nMapper tenantC7nMapper) {
+                                   TenantC7nMapper tenantC7nMapper,
+                                   UserRepository userRepository) {
         this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
         this.userService = userService;
@@ -125,6 +133,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         this.devopsFeignClient = devopsFeignClient;
         this.tenantMapper = tenantMapper;
         this.tenantC7nMapper = tenantC7nMapper;
+        this.userRepository = userRepository;
     }
 
     // TODO 等待Tenant更新完成
@@ -459,22 +468,50 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Set<TenantVO> selectSelfTenants(TenantDTO params) {
+    public List<TenantVO> selectSelfTenants(TenantDTO params) {
         CustomUserDetails self = UserUtils.getUserDetails();
         params.setUserId(self.getUserId());
-        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
-        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
-        boolean isAdmin = false;
-        if (customUserDetails.getAdmin() != null) {
-            isAdmin = customUserDetails.getAdmin();
-        }
-        return getOwnedOrganizations(customUserDetails.getUserId(), isAdmin, tenantDTOS);
+        return listOwnedOrganizationByTenant(params);
     }
 
-    private Set<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
-        Set<TenantVO> tenantVOS = new HashSet<>();
+    @Override
+    public List<TenantVO> listOwnedOrganizationByUserId(Long userId) {
+        TenantDTO params = new TenantDTO();
+        params.setUserId(userId);
+        return listOwnedOrganizationByTenant(params);
+    }
+
+    /**
+     * 查询用户可访问的组织，into判断是否可进
+     * @param params
+     * @return
+     */
+    private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
+        Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
+        Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
+        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
+
+        UserVO userVO = new UserVO();
+        userVO.setId(params.getUserId());
+        UserVO userDetails = userRepository.selectUserDetails(userVO);
+        boolean isAdmin = false;
+        if (userDetails.getAdmin() != null) {
+            isAdmin = userDetails.getAdmin();
+        }
+        return getOwnedOrganizations(userDetails.getId(), isAdmin, tenantDTOS);
+    }
+
+    /**
+     * 计算into字段
+     * @param userId
+     * @param isAdmin
+     * @param tenantDTOS
+     * @return
+     */
+    private List<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
+        List<TenantVO> tenantVOS = new ArrayList<>();
         if (CollectionUtils.isEmpty(tenantDTOS)) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
         for (TenantDTO tenantDTO : tenantDTOS) {
             if (isTenantAdmin(userId, tenantDTO.getTenantNum())) {

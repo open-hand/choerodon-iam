@@ -13,7 +13,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     const organizationId = record.get('organizationId');
     if (value === record.getPristineValue(name) || !value) return;
     try {
-      const result = await axios.post(`/base/v1/organizations/${organizationId}/users/check`, JSON.stringify({ organizationId, [name]: value }));
+      const result = await axios.post(`/iam/choerodon/v1/organizations/${organizationId}/users/check`, JSON.stringify({ organizationId, [name]: value }));
       if (result.failed) {
         return intl.formatMessage({ id: result.message });
       }
@@ -38,16 +38,16 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/organizations/${id}/users/search`,
+        url: `/iam/choerodon/v1/organizations/${id}/users/search`,
         method: 'get',
       },
       create: {
-        url: `/base/v1/organizations/${id}/users`,
+        url: `/iam/choerodon/v1/organizations/${id}/users`,
         method: 'post',
         transformRequest: (([data]) => JSON.stringify(data)),
       },
       update: ({ data: editData }) => ({
-        url: `/base/v1/organizations/${id}/users/${editData[0].id}`,
+        url: `/iam/choerodon/v1/organizations/${id}/users/${editData[0].id}`,
         method: 'put',
         transformRequest: (([data]) => JSON.stringify(data)),
       }),

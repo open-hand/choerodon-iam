@@ -3,14 +3,14 @@ export default ({ id = 0 }) => ({
   autoQuery: true,
   transport: {
     read: {
-      url: `/base/v1/organizations/${id}/org_level`,
+      url: `/iam/choerodon/v1/organizations/${id}/org_level`,
       method: 'get',
       transformResponse: ((data, headers) => ({
         list: [JSON.parse(data)],
       })),
     },
     update: {
-      url: `/base/v1/organizations/${id}/organization_level`,
+      url: `/iam/choerodon/v1/organizations/${id}/organization_level`,
       method: 'put',
       transformRequest: (([data], headers) => {
         if (!data.homePage) {

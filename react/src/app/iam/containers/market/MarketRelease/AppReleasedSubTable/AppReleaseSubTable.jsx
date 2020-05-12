@@ -57,15 +57,15 @@ const AppReleaseSubTable = observer((props) => {
   const apiReducer = (action, record) => {
     switch (action) {
       case 'delete':
-        return axios.delete(`base/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}`);
+        return axios.delete(`iam/choerodon/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}`);
       case 'revert':
-        return axios.put(`base/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/revocation`);
+        return axios.put(`iam/choerodon/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/revocation`);
       case 'submit':
-        return axios.get(`base/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/apply`, { params: { organization_id: organizationId } });
+        return axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/apply`, { params: { organization_id: organizationId } });
       case 'retry':
-        return axios.put(`base/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/republish`, null, { params: { organization_id: organizationId } });
+        return axios.put(`iam/choerodon/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/republish`, null, { params: { organization_id: organizationId } });
       case 'refix':
-        return axios.get(`base/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/refix`);
+        return axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/${record.get('mktAppId')}/versions/${record.get('id')}/refix`);
       default:
     }
   };

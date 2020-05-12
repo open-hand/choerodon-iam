@@ -15,10 +15,10 @@ const modalKey = Modal.key();
 const LdapView = observer(() => {
   const {
     orgId,
-    ldapDataSet, 
-    ldapTestDataSet, 
-    ldapLoadClientDataSet, 
-    match, 
+    ldapDataSet,
+    ldapTestDataSet,
+    ldapLoadClientDataSet,
+    match,
     history,
     intl,
   } = useContext(Store);
@@ -83,7 +83,7 @@ const LdapView = observer(() => {
   }
   async function handleDisableLdap() {
     try {
-      await axios.put(`/base/v1/organizations/${orgId}/ldaps/disable`);
+      await axios.put(`/iam/v1/${orgId}/ldaps/disable`);
       await ldapDataSet.query();
     } catch (e) {
       Choerodon.prompt(e);
@@ -103,7 +103,7 @@ const LdapView = observer(() => {
   }
   async function handleEnableLdap() {
     try {
-      const result = await axios.put(`/base/v1/organizations/${orgId}/ldaps/enable`);
+      const result = await axios.put(`/iam/v1/${orgId}/ldaps/enable`);
       if (result.failed) {
         throw result.message;
       }

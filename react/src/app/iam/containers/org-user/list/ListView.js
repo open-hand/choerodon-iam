@@ -22,11 +22,11 @@ const modalStyle = {
 const { Column } = Table;
 export default withRouter(observer((props) => {
   const { intlPrefix,
-    permissions, 
+    permissions,
     intl: { formatMessage },
     AppState,
-    orgUserListDataSet: dataSet, 
-    organizationId, 
+    orgUserListDataSet: dataSet,
+    organizationId,
     orgUserCreateDataSet,
     orgUserRoleDataSet,
     orgRoleDataSet,
@@ -64,7 +64,7 @@ export default withRouter(observer((props) => {
   };
   async function handleDisable(record) {
     try {
-      await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/disable`);
+      await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/disable`);
       const result = await dataSet.query();
       if (result.failed) {
         throw result.message;
@@ -75,7 +75,7 @@ export default withRouter(observer((props) => {
   }
   async function handleEnable(record) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/enable`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/enable`);
       if (result.failed) {
         throw result.message;
       }
@@ -86,7 +86,7 @@ export default withRouter(observer((props) => {
   }
   async function handleUnLock(record) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/unlock`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/unlock`);
       if (result.failed) {
         throw result.message;
       }
@@ -97,7 +97,7 @@ export default withRouter(observer((props) => {
   }
   async function resetPassword(userId) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${userId}/reset`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${userId}/reset`);
       if (!result.failed) {
         await dataSet.query();
       } else {
@@ -166,7 +166,7 @@ export default withRouter(observer((props) => {
     openModal('create');
   }
   function handleRoleAssignment() {
-    openModal('roleAssignment'); 
+    openModal('roleAssignment');
   }
   function handleImportUser() {
     openModal('importUser');
@@ -180,7 +180,7 @@ export default withRouter(observer((props) => {
       title: '删除用户',
       content: `确认删除用户"${record.get('realName')}"在本组织下的全部角色吗?`,
       onOk: async () => {
-        const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.toData().id}/assign_roles`, []);
+        const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.toData().id}/assign_roles`, []);
         if (!result.failed) {
           await orgUserRoleDataSet.reset();
           dataSet.query();

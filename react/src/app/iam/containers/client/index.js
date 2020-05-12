@@ -23,7 +23,7 @@ const Client = observer(() => {
     setEditModal(true);
   }
   async function openCreateRecordModal() {
-    const initData = await axios.get(`/base/v1/organizations/${orgId}/clients/createInfo`);
+    const initData = await axios.get(`/iam/choerodon/v1/organizations/${orgId}/clients/createInfo`);
     initData.accessTokenValidity = 3600;
     initData.refreshTokenValidity = 3600;
     initData.autoApprove = 'default';
@@ -36,7 +36,7 @@ const Client = observer(() => {
   }
   async function openRoleManageModal(record) {
     clientDataSet.current = record;
-    const roleData = await axios.get(`/base/v1/organizations/${orgId}/clients/${record.get('id')}`);
+    const roleData = await axios.get(`/iam/v1/${orgId}/clients/${record.get('id')}`);
     await record.set('roles', roleData.roles.map(({ id }) => id));
     setEditRoleModal(true);
   }
@@ -50,7 +50,7 @@ const Client = observer(() => {
       content: `确认删除客户端"${record.get('name')}"吗？`,
       onOk: async () => {
         try {
-          await axios.delete(`/base/v1/organizations/${orgId}/clients/${record.get('id')}`);
+          await axios.delete(`/iam/choerodon/organizations/${orgId}/clients/${record.get('id')}`);
           await clientDataSet.query();
         } catch (err) {
           message.prompt(err);

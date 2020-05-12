@@ -18,7 +18,7 @@ export default function ListView() {
       content: `确认删除root用户"${record.get('realName')}"吗?`,
       onOk: async () => {
         try {
-          await axios.delete(`/base/v1/users/admin/${record.get('id')}`);
+          await axios.delete(`/iam/choerodon/v1/users/admin/${record.get('id')}`);
           await adminListDataSet.query();
         } catch (e) {
           return false;

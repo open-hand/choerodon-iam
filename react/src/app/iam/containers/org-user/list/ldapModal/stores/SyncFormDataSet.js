@@ -4,16 +4,16 @@ export default ({ orgId }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${orgId}/ldaps/auto/detail`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/auto/detail`,
       method: 'get',
     },
     create: ({ data: [data] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/auto`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/auto`,
       method: 'post',
       data,
     }),
     update: ({ data: [data] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/auto`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/auto`,
       method: 'put',
       data,
     }),

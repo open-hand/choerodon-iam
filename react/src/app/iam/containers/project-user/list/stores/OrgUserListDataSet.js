@@ -12,7 +12,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     const projectId = record.get('projectId');
     if (value === record.getPristineValue(name) || !value) return;
     try {
-      const result = await axios.post(`/base/v1/projects/${projectId}/users/check`, JSON.stringify({ projectId, [name]: value }));
+      const result = await axios.post(`/iam/choerodon/v1/projects/${projectId}/users/check`, JSON.stringify({ projectId, [name]: value }));
       if (result.failed) {
         return intl.formatMessage({ id: result.message });
       }
@@ -37,7 +37,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/projects/${id}/users/search`,
+        url: `/iam/choerodon/v1/projects/${id}/users/search`,
         method: 'get',
         transformResponse(data) {
           const newData = JSON.parse(data);
@@ -52,12 +52,12 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
         },
       },
       create: {
-        url: `/base/v1/projects/${id}/users`,
+        url: `/iam/choerodon/v1/projects/${id}/users`,
         method: 'post',
         transformRequest: (([data]) => JSON.stringify(data)),
       },
       update: ({ data: editData }) => ({
-        url: `/base/v1/projects/${id}/users/${editData[0].id}`,
+        url: `/iam/choerodon/v1/projects/${id}/users/${editData[0].id}`,
         method: 'put',
         transformRequest: (([data]) => JSON.stringify(data)),
       }),

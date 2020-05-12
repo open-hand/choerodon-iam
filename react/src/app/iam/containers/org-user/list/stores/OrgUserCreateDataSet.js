@@ -10,7 +10,7 @@ export default ({ id = 0, intl, orgRoleDataSet, userStore }) => {
       if (!emailReg.test(`${email}${suffix}`)) {
         return '请输入正确的邮箱地址';
       }
-      const result = await axios.post(`/base/v1/organizations/${id}/users/check`, JSON.stringify({ organizationId: id, email: `${email}${suffix}` }));
+      const result = await axios.post(`/iam/choerodon/v1/organizations/${id}/users/check`, JSON.stringify({ organizationId: id, email: `${email}${suffix}` }));
       if (result.failed) {
         return result.message;
       }
@@ -22,7 +22,7 @@ export default ({ id = 0, intl, orgRoleDataSet, userStore }) => {
     selection: false,
     transport: {
       create: {
-        url: `/base/v1/organizations/${id}/users`,
+        url: `/iam/choerodon/v1/organizations/${id}/users`,
         method: 'post',
         transformRequest: (([data]) => {
           data.roles = data.roles.map((v) => ({ id: v }));

@@ -16,16 +16,16 @@ export default function (orgId, optionsDataSet) {
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/organizations/${orgId}/clients`,
+        url: `/iam/v1/${orgId}/clients`,
         method: 'get',
       },
       create: ({ data: [data] }) => ({
-        url: `/base/v1/organizations/${orgId}/clients`,
+        url: `/iam/v1/${orgId}/clients`,
         method: 'post',
         transformRequest: (([v]) => JSON.stringify(v)),
       }),
       update: ({ data: [data] }) => ({
-        url: `/base/v1/organizations/${orgId}/clients/${data.id}`,
+        url: `/iam/v1/${orgId}/clients/${data.id}`,
         method: 'post',
         transformRequest: (([v]) => JSON.stringify(v)),
       }),

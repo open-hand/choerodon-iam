@@ -18,7 +18,7 @@ export default observer((props) => {
     const requestData = current.toJSONData();
     requestData.roles = requestData.roles.filter((v) => v).map((v) => ({ id: v }));
     // if (requestData.roles.length === 0) return false;
-    const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${current.toData().id}/assign_roles`, requestData.roles);
+    const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${current.toData().id}/assign_roles`, requestData.roles);
     if (!result.failed) {
       await orgUserRoleDataSet.reset();
       await onOk();
@@ -63,7 +63,7 @@ export default observer((props) => {
         maxDisable
       >
         {((itemProps) => (
-          <Select 
+          <Select
             {...itemProps}
             labelLayout="float"
             renderer={renderOption}

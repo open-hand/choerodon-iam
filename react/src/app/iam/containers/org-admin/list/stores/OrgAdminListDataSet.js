@@ -9,7 +9,7 @@ export default ({ id = 0, intl, intlPrefix }) => {
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/organizations/${id}/org_administrator`,
+        url: `/iam/choerodon/v1/organizations/${id}/org_administrator`,
         method: 'get',
       },
     },

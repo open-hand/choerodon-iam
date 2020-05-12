@@ -112,7 +112,7 @@ export default function ListView(props) {
         title: '删除用户',
         content: `确认删除用户"${record.get('realName')}"在本项目下的全部角色吗?`,
         onOk: async () => {
-          const result = await axios.post(`/base/v1/projects/${projectId}/role_members/delete`, JSON.stringify(postData));
+          const result = await axios.post(`/iam/choerodon/v1/projects/${projectId}/role_members/delete`, JSON.stringify(postData));
           if (!result.failed) {
             await orgUserRoleDataSet.reset();
             dataSet.query();

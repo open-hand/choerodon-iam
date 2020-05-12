@@ -7,7 +7,7 @@ export default ({ orgId, ProDeployStore }) => ({
     multiple: true,
     lookupAxiosConfig: ({ dataSet, record, params, lookupCode }) => ({
       method: 'get',
-      url: `/base/v1/organizations/${orgId}/projects/with_limit`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/projects/with_limit`,
       transformResponse(data) {
         let parseData;
         const typeOf = Object.prototype.toString;

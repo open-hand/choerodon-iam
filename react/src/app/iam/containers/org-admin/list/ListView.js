@@ -21,7 +21,7 @@ export default function ListView() {
       content: `确认删除组织管理员"${record.get('userName')}"吗？`,
       onOk: async () => {
         try {
-          const result = await axios.delete(`/base/v1/organizations/${organizationId}/org_administrator/${record.get('id')}`);
+          const result = await axios.delete(`/iam/choerodon/v1/organizations/${organizationId}/org_administrator/${record.get('id')}`);
           if (result.failed) {
             throw result.message;
           }

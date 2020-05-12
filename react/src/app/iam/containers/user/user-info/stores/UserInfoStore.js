@@ -27,16 +27,16 @@ class UserInfoStore {
     return this.avatar;
   }
 
-  updateUserInfo = user => axios.put(`/base/v1/users/${user.id}/info`, JSON.stringify(user));
+  updateUserInfo = user => axios.put(`/iam/choerodon/v1/users/${user.id}/info`, JSON.stringify(user));
 
   updatePassword = (id, body) => axios.put(`/base/v1/users/${id}/password`, JSON.stringify(body));
 
   checkEmailAddress = email => (
-    axios.post('/base/v1/users/check', JSON.stringify({ id: this.userInfo.id, email }))
+    axios.post('/iam/choerodon/v1/users/check', JSON.stringify({ id: this.userInfo.id, email }))
   );
 
   checkPhoneExist = phone => (
-    axios.post('/base/v1/users/check', JSON.stringify({ id: this.userInfo.id, phone }))
+    axios.post('/iam/choerodon/v1/users/check', JSON.stringify({ id: this.userInfo.id, phone }))
   );
 
   resetPassword = (userId) => (

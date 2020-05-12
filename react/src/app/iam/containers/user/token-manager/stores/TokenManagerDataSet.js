@@ -48,7 +48,7 @@ export default (currentToken, intl, intlPrefix) => {
     },
     transport: {
       read: ({ data }) => ({
-        url: '/base/v1/token',
+        url: '/iam/choerodon/v1/token',
         method: 'get',
         data: {
           ...data,
@@ -56,7 +56,7 @@ export default (currentToken, intl, intlPrefix) => {
         },
       }),
       destroy: ({ data, params }) => ({
-        url: `/base/v1/token/batch?currentToken=${currentToken}`,
+        url: `/iam/choerodon/v1/token/batch?currentToken=${currentToken}`,
         method: 'delete',
       }),
     },

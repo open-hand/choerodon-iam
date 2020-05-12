@@ -98,5 +98,12 @@ public interface OrganizationService {
 
     List<Long> getoRoganizationByName(String name);
 
-    Set<TenantVO> selectSelfTenants(TenantDTO params);
+    List<TenantVO> selectSelfTenants(TenantDTO params);
+
+    /**
+     * 查询用户组织列表，根据into字段判断是否能够进入
+     * @param userId
+     * @return
+     */
+    List<TenantVO> listOwnedOrganizationByUserId(Long userId);
 }

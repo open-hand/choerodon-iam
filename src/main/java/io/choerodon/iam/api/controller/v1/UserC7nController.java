@@ -24,6 +24,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -45,13 +46,16 @@ public class UserC7nController extends BaseController {
     private UserService userService;
     private UserC7nService userC7nService;
     private PasswordPolicyMapper passwordPolicyMapper;
+    private OrganizationService organizationService;
 
     public UserC7nController(UserService userService,
                              UserC7nService userC7nService,
-                             PasswordPolicyMapper passwordPolicyMapper) {
+                             PasswordPolicyMapper passwordPolicyMapper,
+                             OrganizationService organizationService) {
         this.userService = userService;
         this.userC7nService = userC7nService;
         this.passwordPolicyMapper = passwordPolicyMapper;
+        this.organizationService = organizationService;
     }
 
 
@@ -357,6 +361,13 @@ public class UserC7nController extends BaseController {
     @GetMapping("/{id}/check_is_root")
     public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
         return ResponseEntity.ok(userC7nService.checkIsRoot(id));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation("查询用户组织列表，根据into字段判断是否能够进入")
+    @GetMapping("/{user_id}/organizations")
+    public ResponseEntity<List<TenantVO>> listOwnedOrganizationByUserId(@PathVariable("user_id") Long userId) {
+        return ResponseEntity.ok(organizationService.listOwnedOrganizationByUserId(userId));
     }
 
 }

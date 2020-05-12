@@ -53,5 +53,11 @@ public interface ProjectC7nService {
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
 
-    
+
+    /**
+     * 查询所有项目
+     * @return
+     */
+    List<ProjectDTO> listAllProjects();
+
 }

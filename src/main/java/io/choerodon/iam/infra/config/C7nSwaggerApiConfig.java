@@ -29,6 +29,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_USER = "Choerodon User";
     public static final String CHOERODON_TENANT_PROJECT = "Choerodon Tenant Project";
     public static final String CHOERODON_USER_SELF = "Choerodon User Self";
+    public static final String CHOERODON_DATA_FIX = "Choerodon Data Fix";
 
 
     @Autowired

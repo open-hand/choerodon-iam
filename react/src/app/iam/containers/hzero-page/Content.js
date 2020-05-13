@@ -10,19 +10,19 @@ const HzeroPage = withRouter(((props) => {
   const {
     prefixCls,
     intlPrefix,
-    history,
-    location: { search },
-    pathname,
     intl: { formatMessage },
     pageType,
     onClick,
   } = useHzeroPageStore();
 
   function handleClick() {
-    // history.push({
-    //   pathname,
-    //   search,
-    // });
+    const url = {
+      user: 'user-group-management',
+      role: 'role/list',
+      menu: 'menu',
+    };
+    // eslint-disable-next-line no-underscore-dangle
+    window.open(`${window._env_.HZERO_FRONT || process.env.HZERO_FRONT}/hiam/${url[pageType]}`);
   }
 
   return (

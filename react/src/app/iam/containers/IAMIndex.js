@@ -55,6 +55,8 @@ const orgOverview = asyncRouter(() => import('./org-overview'));
 
 const platformOverview = asyncRouter(() => import('./platform-overview'));
 
+const heroPage = asyncRouter(() => import('./hzero-page'));
+
 @inject('AppState')
 class IAMIndex extends React.Component {
   render() {
@@ -94,6 +96,9 @@ class IAMIndex extends React.Component {
             <Route path={`${match.url}/lookup-config`} component={lookupConfig} />
             <Route path={`${match.url}/lang-config`} component={langConfig} />
             <Route path={`${match.url}/lov-config`} component={lovConfig} />
+            <Route path={`${match.url}/hzero/user`} component={heroPage} />
+            <Route path={`${match.url}/hzero/role`} component={heroPage} />
+            <Route path={`${match.url}/hzero/menu`} component={heroPage} />
             <Route path="*" component={nomatch} />
           </Switch>
           <ModalContainer />

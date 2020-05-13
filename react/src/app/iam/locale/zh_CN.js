@@ -675,12 +675,8 @@ const c7nHzeroPage = {
   'c7n.hzero.page.user.describe': '该页面已替换为HZERO用户管理页面，请点击下方按钮跳转至HZERO框架操作',
   'c7n.hzero.page.role.title': '角色管理',
   'c7n.hzero.page.role.describe': '该页面已替换为HZERO角色管理页面，请点击下方按钮跳转至HZERO框架操作',
-  'c7n.hzero.page.menu-setting.title': '菜单管理',
-  'c7n.hzero.page.menu-setting.describe': '该页面已替换为HZERO菜单管理页面，请点击下方按钮跳转至HZERO框架操作',
-  'c7n.hzero.page.saga.title': '事务管理',
-  'c7n.hzero.page.saga.describe': '该页面已替换为HZERO角色管理页面，请点击下方按钮跳转至HZERO框架操作',
-  'c7n.hzero.page.task.title': '任务管理',
-  'c7n.hzero.page.task.describe': '该页面已替换为HZERO角色管理页面，请点击下方按钮跳转至HZERO框架操作',
+  'c7n.hzero.page.menu.title': '菜单管理',
+  'c7n.hzero.page.menu.describe': '该页面已替换为HZERO菜单管理页面，请点击下方按钮跳转至HZERO框架操作',
 };
 
 /* eslint-disable-next-line */

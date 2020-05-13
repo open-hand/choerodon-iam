@@ -15,7 +15,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')((props) =>
     location: { pathname },
   } = props;
 
-  const pageType = useMemo(() => (pathname.match(/\/base\/(\S*)/))[1] || '', [pathname]);
+  const pageType = useMemo(() => (pathname.match(/\/hzero\/(\S*)/))[1] || '', [pathname]);
 
   const value = {
     ...props,

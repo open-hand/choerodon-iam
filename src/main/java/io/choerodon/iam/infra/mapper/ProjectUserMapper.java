@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -101,4 +102,11 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @return 角色id列表
      */
     List<Long> listProjectRoleIds(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
+    /**
+     * 统计项目下角色分配用户数
+     * @param projectId
+     * @return
+     */
+    List<RoleUserCountVO> countProjectRoleUser(@Param("projectId")Long projectId);
 }

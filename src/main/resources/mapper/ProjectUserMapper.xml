@@ -129,4 +129,9 @@
         WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
         AND fpu.MEMBER_ID = #{userId,jdbcType=BIGINT}
     </select>
+    <select id="countProjectRoleUser" resultType="io.choerodon.iam.api.vo.agile.RoleUserCountVO">
+        SELECT fpu.ROLE_ID, COUNT(*)
+        FROM fd_project_user fpu
+        GROUP BY fpu.ROLE_ID
+    </select>
 </mapper>

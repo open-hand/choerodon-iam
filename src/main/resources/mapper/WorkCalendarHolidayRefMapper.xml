@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.iam.infra.mapper.WorkCalendarHolidayRefMapper">
+
+    <select id="queryWorkCalendarHolidayRelWithNextYearByYear"
+            resultType="io.choerodon.iam.infra.dto.WorkCalendarHolidayRefDTO">
+        select * from iam_work_calendar_holiday_ref where (year = #{year} or year = (#{year}+1)) order by calendar_id
+        asc
+    </select>
+
+</mapper>

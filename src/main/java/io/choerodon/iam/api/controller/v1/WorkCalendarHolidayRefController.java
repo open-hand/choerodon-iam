@@ -38,4 +38,16 @@ public class WorkCalendarHolidayRefController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.WorkCalendarHolidayRefController.queryWorkCalendarHolidayRelByYear"));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
+    @ApiOperation("【敏捷专用】根据年份查询工作日历，包含当年、去年、明年")
+    @GetMapping(value = "/year_include_last_and_next")
+    public ResponseEntity<List<WorkCalendarHolidayRefVO>> queryByYearIncludeLastAndNext(@ApiParam(value = "项目id", required = true)
+                                                                                        @PathVariable(name = "organization_id") Long organizationId,
+                                                                                        @ApiParam(value = "要查询的年份", required = true)
+                                                                                        @RequestParam Integer year) {
+        return Optional.ofNullable(workCalendarHolidayRefService.queryByYearIncludeLastAndNext(year))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.WorkCalendarHolidayRefController.queryByYearIncludeLastAndNext"));
+    }
 }

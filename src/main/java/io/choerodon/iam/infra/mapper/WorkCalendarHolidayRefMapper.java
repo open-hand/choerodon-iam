@@ -19,4 +19,13 @@ public interface WorkCalendarHolidayRefMapper extends BaseMapper<WorkCalendarHol
      * @return WorkCalendarHolidayRefDTO
      */
     List<WorkCalendarHolidayRefDTO> queryWorkCalendarHolidayRelWithNextYearByYear(Integer year);
+
+
+    /**
+     * 根据年份查询工作日历，包含当年、去年、明年
+     *
+     * @param year year
+     * @return WorkCalendarHolidayRefDTO
+     */
+    List<WorkCalendarHolidayRefDTO> queryByYearIncludeLastAndNext(Integer year);
 }

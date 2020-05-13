@@ -621,12 +621,6 @@
         </foreach>
     </select>
 
-    <select id="listUserIds" resultType="java.lang.Long">
-        SELECT id
-        from iam_user
-        where is_enabled = 1
-    </select>
-
     <select id="totalNumberOfUsers" resultType="java.lang.Integer">
         SELECT
         COUNT(*)

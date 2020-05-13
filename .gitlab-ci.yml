@@ -151,6 +151,13 @@ tag release:
   only:
     - tags
 
+maven-deploy-release:
+  stage: build
+  script:
+  - mvn clean install -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
+  only:
+  - master
+
 .auto_devops: &auto_devops |
   http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`
   if [ "$http_status_code" != "200" ]; then

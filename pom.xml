@@ -34,8 +34,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-asgard</artifactId>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-asgard</artifactId>
         </dependency>
 
         <dependency>

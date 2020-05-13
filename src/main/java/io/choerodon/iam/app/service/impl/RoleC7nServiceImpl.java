@@ -43,7 +43,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     public List<io.choerodon.iam.api.vo.agile.RoleVO> listRolesWithUserCountOnProjectLevel(Long projectId, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
         RoleVO param = new RoleVO();
-        param.setName(roleAssignmentSearchDTO.getRoleName());
+        if (roleAssignmentSearchDTO != null) {
+            param.setName(roleAssignmentSearchDTO.getRoleName());
+        }
         List<Role> roles = roleC7nMapper.listRolesByTenantIdAndLableWithOptions(projectDTO.getOrganizationId(), LabelC7nConstants.PROJECT_ROLE, param);
         List<io.choerodon.iam.api.vo.agile.RoleVO> roleVOList = ConvertUtils.convertList(roles, io.choerodon.iam.api.vo.agile.RoleVO.class);
         List<RoleUserCountVO> roleUserCountVOS = projectUserMapper.countProjectRoleUser(projectId);

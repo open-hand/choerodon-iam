@@ -32,6 +32,7 @@ import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.common.utils.UserUtils;
@@ -514,7 +515,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             return Collections.emptyList();
         }
         for (TenantDTO tenantDTO : tenantDTOS) {
-            if (isTenantAdmin(userId, tenantDTO.getTenantNum())) {
+            if (isAdmin || isTenantAdmin(userId, tenantDTO.getTenantId())) {
                 TenantVO tenantVO = new TenantVO();
                 tenantVO.setTenantId(tenantDTO.getTenantId());
                 tenantVO.setTenantNum(tenantDTO.getTenantNum());
@@ -522,17 +523,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 tenantVO.setInto(true);
                 tenantVOS.add(tenantVO);
                 continue;
-            }
-            if (isAdmin) {
-                TenantVO tenantVO = new TenantVO();
-                tenantVO.setTenantId(tenantDTO.getTenantId());
-                tenantVO.setTenantNum(tenantDTO.getTenantNum());
-                tenantVO.setTenantName(tenantDTO.getTenantName());
-                tenantVO.setInto(true);
-                tenantVOS.add(tenantVO);
-                continue;
-            }
-            else{
+            } else{
                 TenantVO tenantVO = new TenantVO();
                 tenantVO.setTenantId(tenantDTO.getTenantId());
                 tenantVO.setTenantNum(tenantDTO.getTenantNum());
@@ -544,7 +535,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         return tenantVOS;
     }
 
-    private boolean isTenantAdmin(Long userId, String tenantNum) {
-        return Objects.isNull(tenantC7nMapper.tenantAdminByUserId(userId, tenantNum)) ? false : true;
+    private boolean isTenantAdmin(Long userId, Long tenantId) {
+        List<Role> orgAdminByUserIdAndTenantId = roleC7nMapper.getOrgAdminByUserIdAndTenantId(userId, tenantId);
+        return !CollectionUtils.isEmpty(orgAdminByUserIdAndTenantId);
     }
 }

@@ -15,6 +15,7 @@ import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
@@ -120,5 +121,20 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         // TODO by zmf
         return null;
 //        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
+//        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+//        if (!doPage) {
+//            try (Page<UserDTO> result = new Page<>()) {
+//                result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
+//                result.setTotal(result.size());
+//                return result.toPageInfo();
+//            }
+//        }
+//        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
+//                level, roleAssignmentSearchDTO, param));
+        return null;
     }
 }

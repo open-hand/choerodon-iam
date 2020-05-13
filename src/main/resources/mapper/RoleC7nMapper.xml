@@ -77,5 +77,16 @@
             </if>
         </where>
     </select>
+    <select id="getOrgAdminByUserIdAndTenantId" resultType="org.hzero.iam.domain.entity.Role">
+        SELECT ir.*
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.source_id = #{tenantId}
+        AND imr.member_id = 1
+        AND hlr.data_type = 'ROLE'
+        AND il.name = 'TENANT_ADMIN' OR ir.`code` = 'role/organization/default/administrator'
+    </select>
 
 </mapper>

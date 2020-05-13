@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -78,4 +79,6 @@ public interface ProjectUserService {
      * @return true表示可以
      */
     Boolean checkEnableCreateUser(Long projectId);
+
+    Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage);
 }

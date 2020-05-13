@@ -109,4 +109,17 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @return
      */
     List<RoleUserCountVO> countProjectRoleUser(@Param("projectId")Long projectId);
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     * @param projectId
+     * @param userId
+     * @param email
+     * @param param
+     * @return
+     */
+    List<UserDTO> selectUsersByOptions(@Param("projectId") Long projectId,
+                                       @Param("userId") Long userId,
+                                       @Param("email") String email,
+                                       @Param("param") String param);
 }

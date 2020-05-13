@@ -132,4 +132,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         // dopage是否分页未判断
         return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.listProjectUsersByRoleIdAndOptions(projectId, roleId, roleAssignmentSearchDTO, param));
     }
+
+    @Override
+    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
+        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param));
+    }
 }

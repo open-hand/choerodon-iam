@@ -24,6 +24,15 @@
         </collection>
     </resultMap>
 
+    <resultMap id="userDTO" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="locked" column="is_locked"/>
+        <result property="ldap" column="is_ldap"/>
+        <result property="admin" column="is_admin"/>
+        <result property="password" column="hash_password"/>
+    </resultMap>
+
 
     <select id="selectCountUsersOnProjectLevel" resultType="int">
         select count(1)
@@ -228,6 +237,8 @@
         FROM fd_project_user fpu
         GROUP BY fpu.ROLE_ID
     </select>
+
+
     <select id="selectUsersByOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_user iu
@@ -252,5 +263,33 @@
     </select>
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
 
+    </select>
+
+    <select id="selectAgileUsersByProjectId" resultMap="userDTO">
+        select iu1.*
+        from iam_user iu1
+        join (
+        select iu.id
+        from iam_user iu
+        where iu.id in (
+        select distinct member_id
+        from fd_project_user
+        where PROJECT_ID = #{projectId}
+        )
+        <if test="userIds != null and userIds.size > 0">
+            or iu.id in
+            <foreach item="id" index="index" collection="userIds"
+                     open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        ) t on iu1.id = t.id
+        where 1=1
+        <if test="param != null">
+            AND (
+            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iu1.real_name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
     </select>
 </mapper>

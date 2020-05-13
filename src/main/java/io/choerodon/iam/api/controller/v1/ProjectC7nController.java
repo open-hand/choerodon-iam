@@ -5,8 +5,6 @@ import java.util.Set;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -21,9 +19,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -115,11 +113,27 @@ public class ProjectC7nController extends BaseController {
         return new ResponseEntity<>(projectService.getProListByName(name), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "查询项目所属组织下所有可用项目（不包含本项目，限制50个)")
     @GetMapping("/{project_id}/except_self/with_limit")
     public ResponseEntity<List<ProjectDTO>> listOrgProjectsWithLimitExceptSelf(@PathVariable(name = "project_id") Long projectId,
                                                                                @RequestParam(required = false) String name) {
         return ResponseEntity.ok(projectService.listOrgProjectsWithLimitExceptSelf(projectId, name));
+    }
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "分页模糊查询项目下的用户")
+    @GetMapping(value = "/{project_id}/users")
+    @CustomPageRequest
+    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long projectId,
+                                                  @ApiIgnore
+                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                  @RequestParam(required = false, name = "id") Long userId,
+                                                  @RequestParam(required = false) String email,
+                                                  @RequestParam(required = false) String param) {
+        return ResponseEntity.ok(projectService.pagingQueryTheUsersOfProject(projectId, userId, email, pageRequest, param));
     }
 }

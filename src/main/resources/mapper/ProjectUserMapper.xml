@@ -228,4 +228,26 @@
         FROM fd_project_user fpu
         GROUP BY fpu.ROLE_ID
     </select>
+    <select id="selectUsersByOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        SELECT iu.*
+        FROM iam_user iu
+        LEFT JOIN fd_project_user fpu ON fpu.MEMBER_ID = iu.id
+        <where>
+            fpu.PROJECT_ID = #{projectId}
+            <if test="userId != null">
+                AND iu.id = #{userId}
+            </if>
+            <if test="email != null">
+                AND iu.email LIKE concat(concat('%',#{email}),'%')
+            </if>
+            <if test="param != null">
+                AND (
+                iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iam_user.real_name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
+
+        </where>
+
+    </select>
 </mapper>

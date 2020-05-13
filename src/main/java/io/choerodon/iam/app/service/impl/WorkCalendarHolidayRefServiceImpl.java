@@ -50,4 +50,9 @@ public class WorkCalendarHolidayRefServiceImpl implements WorkCalendarHolidayRef
         return workCalendarHolidayRefAssembler.toTargetList(DateUtil.stringDateCompare().
                 sortedCopy(workCalendarHolidayRefDTOS), WorkCalendarHolidayRefVO.class);
     }
+
+    @Override
+    public List<WorkCalendarHolidayRefVO> queryByYearIncludeLastAndNext(Integer year) {
+        return formatAndSortToDTO(workCalendarHolidayRefMapper.queryByYearIncludeLastAndNext(year));
+    }
 }

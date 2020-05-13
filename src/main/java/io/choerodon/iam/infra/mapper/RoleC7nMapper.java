@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.vo.RoleVO;
 
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -29,4 +30,15 @@ public interface RoleC7nMapper {
 
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
                                              @Param("organizationId") Long organizationId);
+
+    /**
+     * 查询组织下角色(目前只模糊匹配role.name,调用时有需要自己添加)
+     * @param tenantId 组织id
+     * @param labelName 角色标签name
+     * @param param
+     * @return
+     */
+    List<Role> listRolesByTenantIdAndLableWithOptions(@Param("tenantId") Long tenantId,
+                                                      @Param("labelName") String labelName,
+                                                      @Param("param") RoleVO param);
 }

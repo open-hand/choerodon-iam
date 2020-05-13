@@ -41,4 +41,13 @@ public interface RoleC7nMapper {
     List<Role> listRolesByTenantIdAndLableWithOptions(@Param("tenantId") Long tenantId,
                                                       @Param("labelName") String labelName,
                                                       @Param("param") RoleVO param);
+
+    /**
+     * 查询用户是否拥有组织管理员角色（包括租户超级管理员、租户管理员角色即可）
+     * @param userId
+     * @param tenantId
+     * @return
+     */
+    List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId,
+                                        @Param("tenantId") Long tenantId);
 }

@@ -1,15 +1,13 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserSearchDTO;
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.User;
+
+import io.choerodon.iam.infra.dto.RoleDTO;
 
 /**
  * @author scp

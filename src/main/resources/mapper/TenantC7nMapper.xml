@@ -324,19 +324,5 @@
     </select>
 
 
-    <select id="tenantAdminByUserId"  resultType="org.hzero.iam.domain.entity.Tenant">
-         SELECT
-	        ht.*
-         FROM
-	        iam_member_role imr
-	        JOIN iam_role ir ON imr.role_id = ir.id
-	        JOIN hpfm_tenant ht ON ht.tenant_id = ir.h_tenant_id
-         WHERE
-	        imr.member_id = #{userId}
-	        AND source_type = 'organization'
-        	AND ht.tenant_num = #{tenantNum}
-	        AND ir.CODE = 'role/organization/default/administrator'
-        	OR ir.CODE = 'administrator'
-    </select>
 
 </mapper>

@@ -77,5 +77,4 @@ public interface TenantC7nMapper {
 
     List<Long> getoRoganizationByName(@Param("name") String name);
 
-    Tenant tenantAdminByUserId(@Param("userId") Long userId, @Param("tenantNum") String tenantNum);
 }

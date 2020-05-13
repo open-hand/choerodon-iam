@@ -80,5 +80,14 @@ public interface ProjectUserService {
      */
     Boolean checkEnableCreateUser(Long projectId);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage);
+    /**
+     *
+     * @param pageRequest
+     * @param roleAssignmentSearchDTO
+     * @param roleId
+     * @param projectId
+     * @param doPage
+     * @return
+     */
+    Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage);
 }

@@ -21,6 +21,8 @@ import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -124,17 +126,10 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
-//        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
-//        if (!doPage) {
-//            try (Page<UserDTO> result = new Page<>()) {
-//                result.addAll(userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId, level, roleAssignmentSearchDTO, param));
-//                result.setTotal(result.size());
-//                return result.toPageInfo();
-//            }
-//        }
-//        return PageMethod.startPage(pageable.getPageNumber(), pageable.getPageSize()).doSelectPageInfo(() -> userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-//                level, roleAssignmentSearchDTO, param));
-        return null;
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        // todo mapper未完成
+        // dopage是否分页未判断
+        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.listProjectUsersByRoleIdAndOptions(projectId, roleId, roleAssignmentSearchDTO, param));
     }
 }

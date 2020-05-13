@@ -11,6 +11,10 @@
     <artifactId>hzero-iam</artifactId>
     <version>0.22.0-SNAPSHOT</version>
 
+    <properties>
+        <deploy.classifier/>
+    </properties>
+
     <dependencies>
         <!-- 数据库驱动 -->
         <dependency>
@@ -85,6 +89,16 @@
 
 
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>${deploy.classifier}</classifier>
+                    <mainClass>io.choerodon.iam.IamApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
         <finalName>app</finalName>
     </build>
 

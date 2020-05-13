@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -122,4 +123,6 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                        @Param("userId") Long userId,
                                        @Param("email") String email,
                                        @Param("param") String param);
+
+    List<UserDTO> listProjectUsersByRoleIdAndOptions(Long projectId, Long roleId, RoleAssignmentSearchDTO roleAssignmentSearchDTO, String param);
 }

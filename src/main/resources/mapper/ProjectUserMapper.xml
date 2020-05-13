@@ -250,4 +250,7 @@
         </where>
 
     </select>
+    <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
+
+    </select>
 </mapper>

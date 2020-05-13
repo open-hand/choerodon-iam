@@ -17,7 +17,7 @@ function PermissionInfo(props) {
   const { permissionInfoDataSet, AppState, intlPrefix, history } = context;
   const { MenuStore } = context;
 
-  const renderRoleColumn = ({ value }) => value.map(({ name, enabled }, index) => {
+  const renderRoleColumn = ({ value }) => (value ? value.map(({ name, enabled }, index) => {
     let item = (
       // eslint-disable-next-line react/no-array-index-key
       <span className={classnames('role-wrapper', { 'role-wrapper-enabled': enabled, 'role-wrapper-disabled': !enabled })} key={index}>
@@ -32,7 +32,7 @@ function PermissionInfo(props) {
       );
     }
     return item;
-  });
+  }) : '');
   function getFristPath(subMenu) {
     // let i = 0;
     while (subMenu[0].subMenus) {
@@ -40,7 +40,7 @@ function PermissionInfo(props) {
     }
     return subMenu[0].route;
   }
-  // 缺少项目层 
+  // 缺少项目层
 
   function getRedirectURL({ id, name, level, projName, organizationId }) {
     // console.log(MenuStore);
@@ -60,11 +60,11 @@ function PermissionInfo(props) {
       let path = getFristPath(data[0].subMenus);
       if (record.get('level') === 'organization') {
         path = '/projects';
-      } 
+      }
       history.push(path + getRedirectURL(record.data));
     });
   };
-  
+
   const renderName = ({ value, record }) => {
     const imageUrl = record.get('imageUrl');
     const projName = record.get('projName');
@@ -97,19 +97,16 @@ function PermissionInfo(props) {
       {value}
     </MouseOverWrapper>
   );
-  const renderLevel = ({ value }) => (
-    <MouseOverWrapper text={<FormattedMessage id={value} />} width={0.06}>
+  const renderLevel = ({ value }) => (value ? (
+    <MouseOverWrapper text={value ? <FormattedMessage id={value} /> : ''} width={0.06}>
       <FormattedMessage id={value} />
     </MouseOverWrapper>
-  );
+  ) : '');
   function render() {
     const { intl } = context;
 
     return (
       <Page
-        service={[
-          'base-service.user.pagingQueryRole',
-        ]}
         className="c7n-permission-info"
       >
         <Breadcrumb />

@@ -12,9 +12,9 @@ export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState', 'MenuStore')(
   (props) => {
-    const { AppState: { getUserInfo: { id } }, intl, children } = props;
+    const { AppState: { getUserInfo: { id }, menuType: { orgId } }, intl, children } = props;
     const intlPrefix = 'user.permissioninfo';
-    const permissionInfoDataSet = useMemo(() => new DataSet(PermissionInfoDataSet(id, intl, `${intlPrefix}.table`)), []);
+    const permissionInfoDataSet = useMemo(() => new DataSet(PermissionInfoDataSet(id, intl, `${intlPrefix}.table`, orgId)), []);
     const value = {
       ...props,
       prefixCls: 'user-permissioninfo',

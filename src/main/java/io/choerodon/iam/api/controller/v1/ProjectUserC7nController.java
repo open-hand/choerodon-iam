@@ -109,7 +109,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "查询项目下的用户列表(根据登录名或真实名称搜索)")
     @GetMapping(value = "/{project_id}/users/search_by_name")
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
-                                                      @RequestParam(required = false) String param) {
+                                                         @RequestParam(required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByName(projectId, param));
     }
 
@@ -126,7 +126,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)")
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
     public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestParam(name = "param", required = false) String param) {
+                                                                  @RequestParam(name = "param", required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByNameWithLimit(projectId, param));
     }
 
@@ -137,6 +137,19 @@ public class ProjectUserC7nController extends BaseController {
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
 //        return ResponseEntity.ok(userService.checkEnableCreateUser(projectId));
         return ResponseEntity.ok(Boolean.TRUE);
+    }
+
+    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
+    @PostMapping(value = "/{project_id}/agile_users")
+    @CustomPageRequest
+    public ResponseEntity<Page<UserDTO>> agileUsers(@PathVariable(name = "project_id") Long id,
+                                                    @ApiIgnore
+                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC)
+                                                            PageRequest pageable,
+                                                    @RequestBody Set<Long> userIds,
+                                                    @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
 }

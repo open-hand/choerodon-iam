@@ -125,4 +125,11 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                        @Param("param") String param);
 
     List<UserDTO> listProjectUsersByRoleIdAndOptions(Long projectId, Long roleId, RoleAssignmentSearchDTO roleAssignmentSearchDTO, String param);
+
+    /*
+     * 根据项目查询项目成员和传入的敏捷用户
+     */
+    List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
+                                              @Param("userIds") Set<Long> userIds,
+                                              @Param("param") String param);
 }

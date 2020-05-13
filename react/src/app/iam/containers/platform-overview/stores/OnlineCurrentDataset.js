@@ -5,7 +5,7 @@ export default () => ({
   selection: false,
   transport: {
     read: {
-      url: '/notify/v1/online/current',
+      url: '/hmsg/choerodon/v1/online/current',
       method: 'get',
     },
   },

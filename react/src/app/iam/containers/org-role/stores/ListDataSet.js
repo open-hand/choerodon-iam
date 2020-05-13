@@ -6,7 +6,7 @@ const buildInDs = new DataSet({
   autoQuery: false,
   selection: false,
   fields: [
-    { name: 'key', type: 'strig' },
+    { name: 'key', type: 'string' },
     { name: 'value', type: 'string' },
   ],
   data: [
@@ -19,12 +19,25 @@ const enabledDs = new DataSet({
   autoQuery: false,
   selection: false,
   fields: [
-    { name: 'key', type: 'strig' },
+    { name: 'key', type: 'string' },
     { name: 'value', type: 'string' },
   ],
   data: [
     { key: 'true', value: '启用' },
     { key: 'false', value: '停用' },
+  ],
+});
+
+const levelDs = new DataSet({
+  autoQuery: false,
+  selection: false,
+  fields: [
+    { name: 'key', type: 'string' },
+    { name: 'value', type: 'string' },
+  ],
+  data: [
+    { key: 'project', value: '项目层' },
+    { key: 'organization', value: '组织层' },
   ],
 });
 
@@ -77,6 +90,7 @@ export default ({ level }) => {
 
   return {
     autoQuery: true,
+    selection: false,
     transport: {
       read: ({ params, data }) => ({
         url: '/base/v1/roles/search',
@@ -112,6 +126,7 @@ export default ({ level }) => {
     queryFields: [
       { name: 'name', type: 'string', label: '名称' },
       { name: 'code', type: 'string', label: '编码' },
+      { name: 'level', type: 'string', label: '层级', textField: 'value', valueField: 'key', options: levelDs },
       { name: 'builtIn', type: 'auto', label: '来源', textField: 'value', valueField: 'key', options: buildInDs },
       { name: 'enabled', type: 'auto', label: '状态', textField: 'value', valueField: 'key', options: enabledDs },
     ],

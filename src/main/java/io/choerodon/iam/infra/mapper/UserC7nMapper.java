@@ -300,5 +300,14 @@ public interface UserC7nMapper {
      */
     List<User> listUsersByNameWithLimit(@Param("projectId") Long projectId,
                                         @Param("param") String param);
+
+    /**
+     * 查询用户有管理权限的组织id集合
+     * @param userId
+     * @param orgIds
+     * @return
+     */
+    Set<Long> listManagedOrgIdByUserId(@Param("userId") Long userId,
+                                       @Param("orgIds") Set<Long> orgIds);
 }
 

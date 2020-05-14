@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -9,6 +10,7 @@ import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
@@ -20,6 +22,9 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -68,6 +73,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private AsgardFeignClient asgardFeignClient;
     @Autowired
     private DevopsFeignClient devopsFeignClient;
+    // 注入messageClient
+    @Autowired
+    protected MessageClient messageClient;
 
     // TODO 重写tenant逻辑
     @Override
@@ -276,28 +284,61 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         asgardFeignClient.disableOrg(tenant.getTenantId());
 
         // todo webhook消息发送
-        /*
         // 给组织下所有用户发送通知
-        List<Long> userIds = tenantC7nMapper.listMemberIds(tenant.getTenantId(), "organization");
-        Map<String, Object> params = new HashMap<>();
-        params.put("organizationName", organizationDTO.getTenantName());
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("organizationId", organizationDTO.getTenantId());
-        jsonObject.put("code", organizationDTO.getTenantNum());
-        jsonObject.put("name", organizationDTO.getTenantName());
-        jsonObject.put("enabled", organizationDTO.getEnabledFlag());
-        if (ORG_DISABLE.equals(consumerType)) {
+//
+//        // 准备消息发送的messageSender
+//        MessageSender messageSender=new MessageSender();
+//        // 消息code
+//        messageSender.setMessageCode(MessageCodeConstants.DISABLE_ORGANIZATION);
+//        // 默认为0L,都填0L,可不填写
+//        messageSender.setTenantId(0L);
+//
+//        // 消息参数 消息模板中${projectName}
+//        Map<String,String> argsMap=new HashMap<>();
+//        argsMap.put("projectName","testProject");
+//        argsMap.put("orgCode","testOrganization");
+//        argsMap.put("orgName","测试组织");
+//        messageSender.setArgs(argsMap);
+//
+//        //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+//        Map<String,Object> objectMap=new HashMap<>();
+//        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),1L);
+//        objectMap.put(MessageAdditionalType.PARAM_ENV_ID.getTypeName(),1L);
+//        objectMap.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(),"service");
+//        messageSender.setAdditionalInformation(objectMap);
+//
+//        // 接收者
+//        List<Receiver> receiverList=new ArrayList<>();
+//        Receiver receiver=new Receiver();
+//        receiver.setUserId(1L);
+//        // 发送邮件消息时 必填
+//        receiver.setEmail("xxx.qq.com");
+//        // 发送短信消息 必填
+//        receiver.setPhone("176666");
+//        receiverList.add(receiver);
+//        messageSender.setReceiverAddressList(receiverList);
+//
+//        messageClient.async().sendMessage(messageSender);
+//        List<Long> userIds = tenantC7nMapper.listMemberIds(tenant.getTenantId(), "organization");
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("organizationName", organizationDTO.getTenantName());
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("organizationId", organizationDTO.getTenantId());
+//        jsonObject.put("code", organizationDTO.getTenantNum());
+//        jsonObject.put("name", organizationDTO.getTenantName());
+//        jsonObject.put("enabled", organizationDTO.getEnabledFlag());
+//        if (ORG_DISABLE.equals(consumerType)) {
 //
 //                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
 //                        SendSettingBaseEnum.DISABLE_ORGANIZATION.value(),
 //                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_ORGANIZATION.value()),
-//                        jsonObject,
+//                        jsonObject
 //                        organizationDTO.getCreationDate(),
 //                        userService.getWebHookUser(organizationDTO.getCreatedBy())
 //                );
 //                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId(), webHookJsonSendDTO);
-        } else if (ORG_ENABLE.equals(consumerType)) {
-
+//        } else if (ORG_ENABLE.equals(consumerType)) {
+//
 //                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
 //                        SendSettingBaseEnum.ENABLE_ORGANIZATION.value(),
 //                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_ORGANIZATION.value()),
@@ -306,8 +347,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 //                        userService.getWebHookUser(organizationDTO.getCreatedBy())
 //                );
 //                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId(), webHookJsonSendDTO);
-        }
-        */
+//        }
         return organizationDTO;
     }
 

@@ -21,9 +21,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.OrgAdministratorVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -40,9 +42,12 @@ import io.choerodon.swagger.annotation.Permission;
 public class TenantC7nController extends BaseController {
 
     private TenantC7nService tenantC7nService;
+    private UserC7nService userC7nService;
 
-    public TenantC7nController(TenantC7nService tenantC7nService) {
+    public TenantC7nController(TenantC7nService tenantC7nService,
+                               UserC7nService userC7nService) {
         this.tenantC7nService = tenantC7nService;
+        this.userC7nService = userC7nService;
     }
 
 //    @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")
@@ -185,11 +190,11 @@ public class TenantC7nController extends BaseController {
     @GetMapping(value = "/{tenant_id}/users")
     @CustomPageRequest
     public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@PathVariable(name = "tenant_id") Long id,
-                                                                         @ApiIgnore
-                                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                         @RequestParam(required = false, name = "id") Long userId,
-                                                                         @RequestParam(required = false) String email,
-                                                                         @RequestParam(required = false) String param) {
+                                                                     @ApiIgnore
+                                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @RequestParam(required = false, name = "id") Long userId,
+                                                                     @RequestParam(required = false) String email,
+                                                                     @RequestParam(required = false) String param) {
         return new ResponseEntity<>(tenantC7nService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
     }
 
@@ -198,12 +203,25 @@ public class TenantC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据组织Id列表分页查询组织简要信息")
     public ResponseEntity<Page<Tenant>> pagingSpecified(@SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                                                  @RequestParam(required = false) String name,
-                                                                  @RequestParam(required = false) String code,
-                                                                  @RequestParam(required = false) Boolean enabled,
-                                                                  @RequestParam(required = false) String params,
-                                                                  @RequestBody Set<Long> orgIds) {
+                                                        @RequestParam(required = false) String name,
+                                                        @RequestParam(required = false) String code,
+                                                        @RequestParam(required = false) Boolean enabled,
+                                                        @RequestParam(required = false) String params,
+                                                        @RequestBody Set<Long> orgIds) {
         return new ResponseEntity<>(tenantC7nService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{organization_id}/org_administrator")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @CustomPageRequest
+    @ApiOperation(value = "查询本组织下的所有组织管理者")
+    public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
+                                                                                @ApiIgnore
+                                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
+                                                                                @RequestParam(required = false) String realName,
+                                                                                @RequestParam(required = false) String loginName,
+                                                                                @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryOrgAdministrator(Pageable, organizationId, realName, loginName, params), HttpStatus.OK);
     }
 
 
@@ -229,5 +247,4 @@ public class TenantC7nController extends BaseController {
     public ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "tenant_id") Long organizationId) {
         return ResponseEntity.ok(tenantC7nService.checkOrganizationIsNew(organizationId));
     }
-
 }

@@ -352,6 +352,15 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
+    public ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
+    }
+
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")

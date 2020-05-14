@@ -524,9 +524,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
         if (!CollectionUtils.isEmpty(roleDTOList)) {
             List<Label> labels = new ArrayList<>();
-            roleDTOList.stream().forEach(t -> {
-                labels.addAll(t.getLabels());
-            });
+            roleDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
             if (level.equals(ResourceLevel.PROJECT.value())) {
                 return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
@@ -535,6 +533,37 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
         }
         return false;
+    }
+
+    @Override
+    public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_OWNER.value().equals(v.getCode()));
+    }
+
+    @Override
+    public Page<OrgAdministratorVO> pagingQueryOrgAdministrator(PageRequest pageable, Long organizationId,
+                                                                String realName, String loginName, String params) {
+        Page<UserDTO> userDTOPageInfo = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrgAdministrator(organizationId, realName, loginName, params));
+        List<UserDTO> userDTOList = userDTOPageInfo.getContent();
+        List<OrgAdministratorVO> orgAdministratorVOS = new ArrayList<>();
+        Page<OrgAdministratorVO> pageInfo = new Page<>();
+        BeanUtils.copyProperties(userDTOPageInfo, pageInfo);
+        if (!CollectionUtils.isEmpty(userDTOList)) {
+            userDTOList.forEach(user -> {
+                OrgAdministratorVO orgAdministratorVO = new OrgAdministratorVO();
+                orgAdministratorVO.setEnabled(user.getEnabled());
+                orgAdministratorVO.setLocked(user.getLocked());
+                orgAdministratorVO.setUserName(user.getRealName());
+                orgAdministratorVO.setId(user.getId());
+                orgAdministratorVO.setLoginName(user.getLoginName());
+                orgAdministratorVO.setCreationDate(user.getCreationDate());
+                orgAdministratorVO.setExternalUser(!organizationId.equals(user.getOrganizationId()));
+                orgAdministratorVOS.add(orgAdministratorVO);
+            });
+            pageInfo.setContent(orgAdministratorVOS);
+        }
+        return pageInfo;
     }
 
     private Long getRoleByCode(String code) {

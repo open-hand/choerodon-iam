@@ -824,6 +824,11 @@ public class UserC7nServiceImpl implements UserC7nService {
         return updateSelective(user);
     }
 
+    @Override
+    public UserDTO queryByLoginName(String loginName) {
+        return userC7nMapper.queryUserByLoginName(Objects.requireNonNull(loginName));
+    }
+
     private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {

@@ -5,6 +5,8 @@ import java.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import jdk.management.resource.ResourceType;
+import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.User;
@@ -28,6 +30,7 @@ import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -370,4 +373,10 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(organizationService.listOwnedOrganizationByUserId(userId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "根据用户名查询用户信息")
+    @GetMapping
+    public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
+        return Results.success(userC7nService.queryByLoginName(loginName));
+    }
 }

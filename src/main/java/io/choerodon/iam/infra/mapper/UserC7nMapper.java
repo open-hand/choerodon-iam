@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 /**
  * @author scp
@@ -309,5 +310,7 @@ public interface UserC7nMapper {
      */
     Set<Long> listManagedOrgIdByUserId(@Param("userId") Long userId,
                                        @Param("orgIds") Set<Long> orgIds);
+
+    UserDTO queryUserByLoginName(@Param("loginName") String loginName);
 }
 

@@ -71,4 +71,10 @@ public interface TenantC7nService {
      */
     int countProjectNum(Long tenantId);
 
+    /**
+     * 根据组织id集合查询组织
+     * @param ids id集合
+     * @return 组织信息
+     */
+    List<Tenant> queryTenantsByIds(Set<Long> ids);
 }

@@ -139,18 +139,18 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.getAllTenants(pageRequest), HttpStatus.OK);
     }
 
-//    /**
-//     * 根据id集合查询组织
-//     *
-//     * @param ids id集合，去重
-//     * @return 组织集合
-//     */
-//    @Permission(permissionWithin = true)
-//    @ApiOperation(value = "根据id集合查询组织")
-//    @PostMapping("/ids")
-//    public ResponseEntity<List<OrganizationDTO>> queryByIds(@RequestBody Set<Long> ids) {
-//        return new ResponseEntity<>(tenantC7nService.queryByIds(ids), HttpStatus.OK);
-//    }
+    /**
+     * 根据id集合查询组织
+     *
+     * @param ids id集合，去重
+     * @return 组织集合
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据id集合查询组织")
+    @PostMapping("/ids")
+    public ResponseEntity<List<Tenant>> queryByIds(@RequestBody Set<Long> ids) {
+        return Results.success(tenantC7nService.queryTenantsByIds(ids));
+    }
 
 
     @Permission(level = ResourceLevel.SITE)

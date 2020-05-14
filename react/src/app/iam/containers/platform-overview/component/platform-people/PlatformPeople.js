@@ -13,8 +13,8 @@ const PlatformPeople = observer(() => {
   } = usePlatformPeopleStore();
 
   const initData = (day) => {
-    const startTime = moment().subtract(day, 'days').format('YYYY/MM/DD');
-    const endTime = moment().format('YYYY/MM/DD');
+    const startTime = moment().subtract(day, 'days').format('YYYY-MM-DD HH:mm:ss');
+    const endTime = moment().format('YYYY-MM-DD HH:mm:ss');
     PlatformPeopleStore.initPlatformPeopleChartData(startTime, endTime);
   };
 

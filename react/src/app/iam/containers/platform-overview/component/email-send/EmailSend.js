@@ -13,8 +13,8 @@ const EmailSend = observer(() => {
   } = useEmailSendStore();
 
   const initData = (days) => {
-    const startTime = moment().subtract(days, 'days').format('YYYY/MM/DD');
-    const endTime = moment().format('YYYY/MM/DD');
+    const startTime = moment().subtract(days, 'days').format('YYYY-MM-DD HH:mm:ss');
+    const endTime = moment().format('YYYY-MM-DD HH:mm:ss');
     EmailSendStore.initEmailSendByDate(startTime, endTime);
   };
 

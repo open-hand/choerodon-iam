@@ -3,7 +3,7 @@ export default ({ orgId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${orgId}/ldaps/history?sort=id%2Cdesc`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/history?sort=id%2Cdesc`,
       method: 'get',
     },
   },

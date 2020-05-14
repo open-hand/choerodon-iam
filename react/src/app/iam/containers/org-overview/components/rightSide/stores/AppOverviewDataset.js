@@ -6,7 +6,7 @@ export default ({ organizationId }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${organizationId}/appserver/overview?size=25`,
+      url: `/iam/choerodon/v1/organizations/${organizationId}/appserver/overview?size=25`,
       method: 'get',
     },
   },

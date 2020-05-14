@@ -5,7 +5,7 @@ const sagaDataSet = {
   selection: false,
   transport: {
     read: {
-      url: 'asgard/v1/sagas/instances',
+      url: 'hagd/v1/sagas/instances',
       method: 'get',
     },
   },

@@ -40,7 +40,7 @@ export default function useStore() {
     async initChartData(orgId, projectIds, startTime, endTime) {
       const data = await axios({
         method: 'POST',
-        url: `/base/v1/organizations/${orgId}/projects/deploy_records`,
+        url: `/iam/choerodon/v1/organizations/${orgId}/projects/deploy_records`,
         data: projectIds,
         params: {
           start_time: startTime,

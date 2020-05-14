@@ -34,7 +34,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { type, id, organizationId } }, intl, children, queryUrl, refAppId, publishAppId, modal, status, versionId, name } = props;
     // const appId = 16;
     // const publishAppId = 1;
-    // const url = `/base/v1/projects/${id}/publish_applications/${publishAppId}/new_version`
+    // const url = `/iam/choerodon/v1/projects/${id}/publish_applications/${publishAppId}/new_version`
     const versionDataSet = useMemo(() => new DataSet(VersionDataSet(id, refAppId, queryUrl)), []);
     const selectVersionsDataSet = useMemo(() => new DataSet(SelectVersionsDataSet(id, refAppId)), []);
     const serviceTableDataSet = useMemo(() => new DataSet(ServiceTableDataSet(id, refAppId, selectVersionsDataSet)), []);

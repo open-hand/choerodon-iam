@@ -4,7 +4,7 @@ export default () => ({
   paging: false,
   transport: {
     read: {
-      url: '/base/v1/labels?type=role&level=project&gitlabLabel=true',
+      url: '/iam/choerodon/v1/labels?type=role&level=project&gitlabLabel=true',
       method: 'get',
     },
   },

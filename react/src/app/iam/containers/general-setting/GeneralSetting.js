@@ -16,7 +16,7 @@ const GeneralSetting = observer(() => {
   const [categoryEnabled, setCategoryEnabled] = useState(false);
   const { id: projectId, name: projectName, organizationId } = AppState.currentMenuType;
   const loadEnableCategory = () => {
-    axios.get('/base/v1/system/setting/enable_category')
+    axios.get('/iam/choerodon/v1/system/setting/enable_category')
       .then((response) => {
         setCategoryEnabled(response);
       });
@@ -66,7 +66,7 @@ const GeneralSetting = observer(() => {
       content: formatMessage({ id: 'project.info.disable.content' }, { name: projectName }),
       onOk: async () => {
         try {
-          const result = await axios.put(`/base/v1/organizations/${organizationId}/projects/${projectId}/disable`);
+          const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
           if (result.failed) {
             throw result.message;
           } else {
@@ -201,7 +201,7 @@ const GeneralSetting = observer(() => {
         </div>
         <Edit
           visible={editing}
-          onCancel={handleCancel} 
+          onCancel={handleCancel}
           categoryEnabled={categoryEnabled}
         />
       </Content>

@@ -11,7 +11,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
   async function check(value, name, record) {
     if (value === record.getPristineValue(name)) return;
     try {
-      const result = await axios.post('/base/v1/users/check', JSON.stringify({ [name]: value }));
+      const result = await axios.post('/iam/choerodon/v1/users/check', JSON.stringify({ [name]: value }));
       if (result.failed) {
         return intl.formatMessage({ id: result.message });
       }
@@ -36,11 +36,11 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     selection: false,
     transport: {
       read: {
-        url: '/base/v1/users/search',
+        url: '/iam/choerodon/v1/users/search',
         method: 'get',
       },
       update: ({ data: editData }) => ({
-        url: `/base/v1/users/${editData[0].id}`,
+        url: `/iam/choerodon/v1/users/${editData[0].id}`,
         method: 'put',
         transformRequest: (([data]) => JSON.stringify(data)),
       }),

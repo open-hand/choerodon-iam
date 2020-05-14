@@ -4,7 +4,7 @@ export default ({ level }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/labels?level=${level}&sort=id%2Cdesc`,
+      url: `/iam/choerodon/v1/labels?level=${level}&sort=id%2Cdesc`,
       method: 'get',
       transformResponse(data) {
         const arr = JSON.parse(data);

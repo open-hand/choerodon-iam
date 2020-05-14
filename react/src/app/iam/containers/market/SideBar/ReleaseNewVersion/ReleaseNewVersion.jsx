@@ -101,9 +101,9 @@ const ReleaseNewVersion = observer((props) => {
       } else {
         switch (action) {
           case 'submit':
-            return axios.post(`base/v1/projects/${context.projectId}/publish_applications/${context.publishAppId}/new_version?apply=true&organization_id=${context.organizationId}`, updateObj);
+            return axios.post(`iam/choerodon/v1/projects/${context.projectId}/publish_applications/${context.publishAppId}/new_version?apply=true&organization_id=${context.organizationId}`, updateObj);
           case 'save':
-            return axios.post(`base/v1/projects/${context.projectId}/publish_applications/${context.publishAppId}/new_version?apply=false&organization_id=${context.organizationId}`, updateObj);
+            return axios.post(`iam/choerodon/v1/projects/${context.projectId}/publish_applications/${context.publishAppId}/new_version?apply=false&organization_id=${context.organizationId}`, updateObj);
           default:
             Promise.reject(Error('非预设定 Action'));
         }

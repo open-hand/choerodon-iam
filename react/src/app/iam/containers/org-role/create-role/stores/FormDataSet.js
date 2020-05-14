@@ -25,7 +25,7 @@ export default ({ level, prefix, roleId }) => {
     if (record.status === 'add') {
       try {
         const params = { code: validValue };
-        const res = await axios.post('/base/v1/roles/check', JSON.stringify(params));
+        const res = await axios.post('/iam/choerodon/v1/roles/check', JSON.stringify(params));
         if (res.failed) {
           return '编码已存在。';
         } else {
@@ -54,7 +54,7 @@ export default ({ level, prefix, roleId }) => {
     selection: false,
     transport: {
       read: {
-        url: `base/v1/roles/${roleId}`,
+        url: `iam/choerodon/v1/roles/${roleId}`,
         method: 'get',
       },
       create: ({ data: [data] }) => {
@@ -62,7 +62,7 @@ export default ({ level, prefix, roleId }) => {
         res.code = `${prefix}${data.code}`;
 
         return ({
-          url: 'base/v1/roles',
+          url: 'iam/choerodon/v1/roles',
           method: 'post',
           data: res,
         });
@@ -71,7 +71,7 @@ export default ({ level, prefix, roleId }) => {
         const res = pick(data, ['code', 'name', 'objectVersionNumber', 'level']);
 
         return ({
-          url: `/base/v1/roles/${data.id}`,
+          url: `/iam/choerodon/v1/roles/${data.id}`,
           method: 'put',
           data: res,
         });

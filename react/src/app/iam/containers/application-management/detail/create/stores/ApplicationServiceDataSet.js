@@ -2,13 +2,13 @@
 export default ({ id = 0, intl, intlPrefix, applicationId, type }) => {
   const name = intl.formatMessage({ id: 'name' });
   const description = intl.formatMessage({ id: 'description' });
-  
+
   return {
     autoQuery: true,
     // selection: false,
     transport: {
       read: {
-        url: `/base/v1/projects/${id}/applications/${applicationId}/services/paging/${type}`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${applicationId}/services/paging/${type}`,
         method: 'get',
       },
     },

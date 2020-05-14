@@ -2,7 +2,7 @@ export default () => ({
   selection: false,
   transport: {
     create: ({ data: [data] }) => ({
-      url: '/base/v1/site/users/assign_roles',
+      url: '/iam/choerodon/v1/site/users/assign_roles',
       method: 'post',
       transformRequest: (() => {
         const rawData = data.memberId.map((v, index) => ({

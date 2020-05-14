@@ -3,7 +3,7 @@ export default ({ level }) => ({
   selection: 'single',
   transport: {
     read: {
-      url: `/base/v1/labels?type=role&level=${level}`,
+      url: `/iam/choerodon/v1/labels?type=role&level=${level}`,
       method: 'get',
     },
   },

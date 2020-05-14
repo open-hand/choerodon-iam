@@ -9,7 +9,7 @@ export default function (projectId, appId, selectVersionsDataSet) {
     selection: false,
     transport: {
       read: ({ data: { versionId } }) => ({
-        url: `/base/v1/projects/${projectId}/applications/${appId}/versions/${versionId}/svc_versions`,
+        url: `/iam/choerodon/v1/projects/${projectId}/applications/${appId}/versions/${versionId}/svc_versions`,
         method: 'get',
         data: {},
         // transformResponse: (data) => JSON.parse(data).map((item) => ({ ...item, appServiceMarketVersion: item.appServiceVersionUploadPayloads && item.appServiceVersionUploadPayloads.length ? item.appServiceVersionUploadPayloads[0] : {} })),

@@ -5,7 +5,7 @@ export default ({ id = 0, intl, orgRoleDataSet }) => {
   const loginName = intl.formatMessage({ id: 'loginname' });
   async function checkEmail(email) {
     try {
-      const result = await axios.post(`/base/v1/projects/${id}/users/check`, JSON.stringify({ projectId: id, email }));
+      const result = await axios.post(`/iam/choerodon/v1/projects/${id}/users/check`, JSON.stringify({ projectId: id, email }));
       if (result.failed) {
         return result.message;
       }
@@ -17,7 +17,7 @@ export default ({ id = 0, intl, orgRoleDataSet }) => {
     selection: false,
     transport: {
       create: {
-        url: `/base/v1/projects/${id}/users`,
+        url: `/iam/choerodon/v1/projects/${id}/users`,
         method: 'post',
         transformRequest: (([data]) => {
           data.roles = data.roles.map((v) => ({ id: v }));

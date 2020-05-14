@@ -2,7 +2,7 @@ export default ({ orgId }) => ({
   selection: false,
   transport: {
     read: ({ data: { date } }) => ({
-      url: `/asgard/v1/sagas/organizations/${orgId}/instances/statistics/failure/list?date=${date}`,
+      url: `/hagd/v1/sagas/organizations/${orgId}/instances/statistics/failure/list?date=${date}`,
       method: 'get',
     }),
   },

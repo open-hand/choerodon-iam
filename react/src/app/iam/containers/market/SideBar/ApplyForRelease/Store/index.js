@@ -41,7 +41,7 @@ export const StoreProvider = injectIntl(inject('AppState', 'HeaderStore')(
 
     const dataBuilder = async () => {
       await appOptionDataSet.query();
-      const { contributor, notificationEmail } = await axios.get(`base/v1/projects/${id}/publish_applications/initial_info`, {
+      const { contributor, notificationEmail } = await axios.get(`iam/choerodon/v1/projects/${id}/publish_applications/initial_info`, {
         params: {
           organization_id: organizationId,
         },

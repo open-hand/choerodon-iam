@@ -9,7 +9,7 @@ export default ({ id = 0, intl }) => {
     }
     const applicationId = record.get('applicationId');
     try {
-      const result = await axios.get(`/base/v1/projects/${id}/applications/${applicationId}/versions/check?version=${value}`);
+      const result = await axios.get(`/iam/choerodon/v1/projects/${id}/applications/${applicationId}/versions/check?version=${value}`);
       if (result) {
         return;
       } else {
@@ -24,16 +24,16 @@ export default ({ id = 0, intl }) => {
     selection: false,
     transport: {
       read: ({ data }) => ({
-        url: `/base/v1/projects/${id}/applications/${data.applicationId}/versions/${data.versionId}`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${data.applicationId}/versions/${data.versionId}`,
         method: 'get',
       }),
       create: ({ data: [data] }) => ({
-        url: `/base/v1/projects/${id}/applications/${data.applicationId}/versions`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${data.applicationId}/versions`,
         method: 'post',
         data,
       }),
       update: ({ data: [data] }) => ({
-        url: `/base/v1/projects/${id}/applications/${data.applicationId}/versions/${data.id}`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${data.applicationId}/versions/${data.id}`,
         method: 'put',
         data,
       }),

@@ -30,9 +30,9 @@ const ldapSetting = withRouter(observer((props) => {
         search,
       },
     } = props;
-    history.push(`/base/organization-setting/ldap${search}`);
+    history.push(`/iam/organization-setting/ldap${search}`);
   }
-  
+
   function handleTabChange(value) {
     setTabKey(value);
     if (value === 'record') {
@@ -60,7 +60,7 @@ const ldapSetting = withRouter(observer((props) => {
       modal.update({ okText: '手动同步' });
     }
   }
-  
+
   return (
     <div className={`${prefixCls}-content`}>
       <Tabs

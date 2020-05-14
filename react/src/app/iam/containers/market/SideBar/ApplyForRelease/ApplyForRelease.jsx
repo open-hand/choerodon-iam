@@ -74,7 +74,7 @@ const ApplyForRelease = observer((props) => {
     };
     switch (action) {
       case 'save':
-        return axios.post(`base/v1/projects/${projectId}/publish_applications`, updateObj, {
+        return axios.post(`iam/choerodon/v1/projects/${projectId}/publish_applications`, updateObj, {
           params: {
             apply: false,
             organization_id: organizationId,
@@ -89,7 +89,7 @@ const ApplyForRelease = observer((props) => {
         });
         break;
       case 'submit':
-        return axios.post(`base/v1/projects/${projectId}/publish_applications`, updateObj, {
+        return axios.post(`iam/choerodon/v1/projects/${projectId}/publish_applications`, updateObj, {
           params: {
             apply: true,
             organization_id: organizationId,
@@ -215,7 +215,7 @@ const ApplyForRelease = observer((props) => {
         break;
     }
   };
-  
+
   useEffect(() => {
     modal.update({
       footer: (okBtn, cancelBtn) => btnGroupMap(step, stepDispatch, cancelBtn),

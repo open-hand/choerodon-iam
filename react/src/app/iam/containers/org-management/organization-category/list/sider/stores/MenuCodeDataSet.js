@@ -5,7 +5,7 @@ export default ({ id }) => ({
   dataKey: null,
   transport: {
     read: {
-      url: `/base/v1/categories/org/${id}`,
+      url: `/iam/choerodon/v1/categories/org/${id}`,
       method: 'get',
     },
   },

@@ -83,7 +83,7 @@ const InfoView = observer(() => {
       content: intl.formatMessage({ id: `${intlPrefix}.reset.confirm.content` }),
       onOk: async () => {
         try {
-          await axios.delete('/base/v1/system/setting');
+          await axios.delete('/iam/choerodon/v1/system/setting');
           await window.location.reload(true);
         } catch (e) {
           return false;
@@ -121,14 +121,14 @@ const InfoView = observer(() => {
             <Output name="systemName" colSpan={1} />
 
             <div colSpan={1} rowSpan={3} className="c7n-system-setting-formImg" label="平台LOGO">
-              {favicon ? <img src={favicon} alt="图片" /> 
+              {favicon ? <img src={favicon} alt="图片" />
                 : <div className="c7n-system-setting-formImg-wrapper default-favicon" />}
             </div>
             <Output name="systemTitle" newLine />
             <Output renderer={() => '简体中文'} name="defaultLanguage" newLine />
             <Output renderer={() => (dataSet.current && dataSet.current.getPristineValue('resetGitlabPasswordUrl')) || '无'} name="resetGitlabPasswordUrl" />
             <div colSpan={1} rowSpan={3} className="c7n-system-setting-formImg" label="平台导航栏图形标">
-              {systemLogo ? <img src={systemLogo} alt="图片" /> 
+              {systemLogo ? <img src={systemLogo} alt="图片" />
                 : <div className="c7n-system-setting-formImg-wrapper default-logo" />}
             </div>
             {hasRegister && (
@@ -143,7 +143,7 @@ const InfoView = observer(() => {
         <div className="c7n-system-setting-form">
           <h3>主题色</h3>
           <div className="divider" />
-          <Form 
+          <Form
             pristine
             labelWidth={180}
             dataSet={dataSet}

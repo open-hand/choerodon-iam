@@ -32,7 +32,7 @@ export default function ListView() {
       className: `${prefixCls}-sider`,
       okText: '保存',
     });
-  } 
+  }
   async function handleDelete(record) {
     OldModal.confirm({
       className: 'c7n-iam-confirm-modal',
@@ -40,7 +40,7 @@ export default function ListView() {
       content: `确认删除应用"${record.get('name')}"吗？`,
       onOk: async () => {
         try {
-          const result = await axios.delete(`/base/v1/projects/${projectId}/applications/${record.get('id')}`);
+          const result = await axios.delete(`/iam/choerodon/v1/projects/${projectId}/applications/${record.get('id')}`);
           if (result.failed) {
             throw result.message;
           }
@@ -84,7 +84,7 @@ export default function ListView() {
     return <Action data={actionDatas} />;
   }
   function handleDetail(record) {
-    history.push(`/base/application-management/${record.get('id')}?${window.location.href.split('?').slice(1).join()}`);
+    history.push(`/iam/choerodon/application-management/${record.get('id')}?${window.location.href.split('?').slice(1).join()}`);
   }
   function renderName({ text, record }) {
     return (

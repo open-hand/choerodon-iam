@@ -24,7 +24,7 @@ export default function ListView() {
   }
   async function handleDelete(record) {
     try {
-      const result = await axios.delete(`/base/v1/projects/${projectId}/applications/${applicationId}/services?service_ids=${record.get('id')}`);
+      const result = await axios.delete(`/iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services?service_ids=${record.get('id')}`);
       if (result.failed) {
         throw result.message;
       }

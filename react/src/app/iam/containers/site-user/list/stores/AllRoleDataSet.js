@@ -4,7 +4,7 @@ export default () => ({
   paging: false,
   transport: {
     read: {
-      url: '/base/v1/site/roles?role_name=&only_select_enable=false',
+      url: '/iam/choerodon/v1/site/roles?role_name=&only_select_enable=false',
       method: 'get',
       dataKey: null,
     },

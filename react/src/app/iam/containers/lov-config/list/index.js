@@ -26,7 +26,7 @@ export default observer(() => {
       children: <Sider context={context} />,
     });
     if (!isCreate) {
-      const result = await axios.get(`/base/v1/lov/code?code=${lovDataSet.current.get('code')}`);
+      const result = await axios.get(`/iam/choerodon/v1/lov/code?code=${lovDataSet.current.get('code')}`);
       lovDataSet.children.gridFields.loadData(result.gridFields);
       lovDataSet.children.queryFields.loadData(result.queryFields);
     }
@@ -47,7 +47,7 @@ export default observer(() => {
       children: `确认删除LOV"${record.get('code')}"吗？`,
       onOk: async () => {
         try {
-          const res = await axios.delete(`/base/v1/lov/${record.get('id')}`);
+          const res = await axios.delete(`/iam/choerodon/v1/lov/${record.get('id')}`);
           if (res.failed) {
             throw res.message;
           } else {

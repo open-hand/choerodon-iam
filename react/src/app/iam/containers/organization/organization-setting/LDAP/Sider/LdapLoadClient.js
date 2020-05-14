@@ -77,7 +77,7 @@ const LdapLoadClient = observer(() => {
 
   modal.handleOk(async () => {
     if (!isStop) {
-      const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/sync_users`);
+      const result = await axios.post(`/iam/choerodon/v1/organizations/${orgId}/ldaps/sync_users`);
       if (!result.failed) {
         pollHistory();
         setDelay(3000);
@@ -87,7 +87,7 @@ const LdapLoadClient = observer(() => {
       return false;
     } else {
       clearInterval(intervalId);
-      axios.put(`/base/v1/organizations/${orgId}/ldaps/stop`);
+      axios.put(`/iam/choerodon/v1/organizations/${orgId}/ldaps/stop`);
       return false;
     }
   });

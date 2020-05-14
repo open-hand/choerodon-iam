@@ -14,7 +14,7 @@ export default ({ id = 0 }) => {
     autoQuery: true,
     transport: {
       read: {
-        url: '/base/v1/system/setting',
+        url: '/iam/choerodon/v1/system/setting',
         method: 'get',
         dataKey: null,
         transformResponse: (data) => {
@@ -36,7 +36,7 @@ export default ({ id = 0 }) => {
         },
       },
       update: ({ data }) => ({
-        url: '/base/v1/system/setting/passwordPolicy',
+        url: '/iam/choerodon/v1/system/setting/passwordPolicy',
         method: 'post',
         data: data[0],
       }),

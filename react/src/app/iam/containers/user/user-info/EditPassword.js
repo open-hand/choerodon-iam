@@ -32,7 +32,7 @@ function EditPassword(props) {
 
 
   const loadEnablePwd = () => {
-    axios.get('/base/v1/system/setting/enable_resetPassword')
+    axios.get('/iam/choerodon/v1/system/setting/enable_resetPassword')
       .then((response) => {
         setEnablePwd(response);
       });

@@ -199,7 +199,7 @@ export default withRouter(observer((props) => {
         search,
       },
     } = props;
-    history.push(`/base/organization-setting/ldap${search}`);
+    history.push(`/iam/organization-setting/ldap${search}`);
   }
 
   function handleSyncSetting() {

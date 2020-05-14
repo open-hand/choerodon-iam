@@ -348,7 +348,7 @@ export default class AvatarUploader extends Component {
       multiple: false,
       name: 'file',
       accept: 'image/jpeg, image/png, image/jpg',
-      action: id && `${window._env_.API_HOST}/base/v1/users/${id}/upload_photo`, // eslint-disable-line
+      action: id && `${window._env_.API_HOST}/iam/choerodon/v1/users/${id}/upload_photo`, // eslint-disable-line
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
       },

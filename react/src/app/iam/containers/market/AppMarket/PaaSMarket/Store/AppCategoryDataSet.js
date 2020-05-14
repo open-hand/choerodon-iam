@@ -4,7 +4,7 @@ export default () => ({
   paging: false,
   transport: {
     read: {
-      url: '/base/v1/paas_app_market/category',
+      url: '/iam/choerodon/v1/paas_app_market/category',
       method: 'get',
     },
   },

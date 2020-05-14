@@ -4,11 +4,11 @@ export default ({ orgId, calendarDataSet }) => ({
   paging: false,
   transport: {
     read: () => ({
-      url: `/base/v1/organizations/${orgId}/time_zone_work_calendars`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/time_zone_work_calendars`,
       method: 'get',
     }),
     submit: ({ data: [data] }) => ({
-      url: `/base/v1/organizations/${orgId}/time_zone_work_calendars/${data.timeZoneId}`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/time_zone_work_calendars/${data.timeZoneId}`,
       method: 'put',
       data,
     }),

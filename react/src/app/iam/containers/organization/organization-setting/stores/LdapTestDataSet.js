@@ -13,7 +13,7 @@ function handleRequestData(data) {
 export default ({ orgId }) => ({
   transport: {
     create: ({ dataSet, data: [ldap] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/test_connect`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/test_connect`,
       method: 'post',
       transformRequest: ((data) => handleRequestData(data, dataSet)),
       transformResponse: ((data) => ({
@@ -21,7 +21,7 @@ export default ({ orgId }) => ({
       })),
     }),
     update: ({ dataSet, data: [ldap] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/test_connect`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/test_connect`,
       method: 'post',
       transformRequest: ((data, headers) => handleRequestData(data, dataSet)),
       transformResponse: ((data, headers) => ({

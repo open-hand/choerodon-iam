@@ -12,10 +12,10 @@ export default observer(() => {
   const [syncData, setSyncData] = useState({});
   const [uploading, setUploading] = useState(false);
   const [delay, setDelay] = useState(false);
-  
+
   async function pollHistory() {
     const timestamp = new Date().getTime();
-    const result = await axios.get(`/base/v1/projects/${projectId}/member_role/users/${userId}/upload/history?t=${timestamp}`);
+    const result = await axios.get(`/iam/choerodon/v1/projects/${projectId}/member_role/users/${userId}/upload/history?t=${timestamp}`);
     setSyncData(result);
     if (result.id && !result.endTime) {
       setDelay(3000);
@@ -34,7 +34,7 @@ export default observer(() => {
       name: 'file',
       accept: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       // eslint-disable-next-line no-underscore-dangle
-      action: projectId && `${window._env_.API_HOST || process.env.API_HOST}/base/v1/projects/${projectId}/role_members/batch_import`,
+      action: projectId && `${window._env_.API_HOST || process.env.API_HOST}/iam/choerodon/v1/projects/${projectId}/role_members/batch_import`,
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
       },
@@ -89,7 +89,7 @@ export default observer(() => {
   }
 
   async function handleDownLoad() {
-    axios.get(`/base/v1/projects/${projectId}/role_members/download_templates`, {
+    axios.get(`/iam/choerodon/v1/projects/${projectId}/role_members/download_templates`, {
       responseType: 'arraybuffer',
     }).then((result) => {
       const blob = new Blob([result], {
@@ -138,16 +138,16 @@ export default observer(() => {
       return getInfo();
     }
   }
-  
+
   useInterval(pollHistory, delay);
 
   function renderImportUserRole() {
     return (
       <React.Fragment>
-      
+
         <h3>下载模板</h3>
         <p>您必须使用模版文件，录入团队成员信息</p>
-        
+
         <Button onClick={handleDownLoad} type="primary" funcType="flat" icon="get_app">
           下载模板
           <a style={{ display: 'none' }} label=" " id="c7n-user-download-template" href="a" onClick={(event) => { event.stopPropagation(); }} download="roleAssignment.xlsx" />

@@ -49,7 +49,7 @@ const ListView = () => {
   async function handleEnabled() {
     const record = dataSet.current;
     const enabled = record.get('enabled');
-    const res = await axios.put(`/base/v1/roles/${record.get('id')}/${enabled ? 'disable' : 'enable'}`);
+    const res = await axios.put(`/iam/choerodon/v1/roles/${record.get('id')}/${enabled ? 'disable' : 'enable'}`);
     if (!res.failed) {
       dataSet.query();
     }

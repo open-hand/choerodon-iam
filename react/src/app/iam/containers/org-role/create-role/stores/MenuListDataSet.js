@@ -24,7 +24,7 @@ export default ({ level }) => ({
   expandField: 'expand',
   transport: {
     read: {
-      url: `/base/v1/menus/menu_config?code=choerodon.code.top.${level}`,
+      url: `/iam/choerodon/v1/menus/menu_config?code=choerodon.code.top.${level}`,
       method: 'get',
       transformResponse(data) {
         try {

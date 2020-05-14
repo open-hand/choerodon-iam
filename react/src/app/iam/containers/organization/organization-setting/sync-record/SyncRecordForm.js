@@ -97,7 +97,7 @@ const SyncRecordForm = observer(() => {
       <Breadcrumb custom>
         <Item>{orgName}</Item>
         <Item>
-          <Link to={`/base/organization-setting/ldap${history.location.search}`}>通用</Link>
+          <Link to={`/iam/organization-setting/ldap${history.location.search}`}>通用</Link>
         </Item>
         <Item>同步记录</Item>
       </Breadcrumb>

@@ -32,14 +32,14 @@ export default function CreateView() {
     }
     return true;
   }
-  
+
   modal.handleOk(handleOk);
   modal.handleCancel(() => {
     versionCreateDataSet.reset();
   });
   async function createAndGoToPublish() {
     if (await handleOk(true)) {
-      history.push(`/base/market-publish${history.location.search}`);
+      history.push(`/iam/choerodon/market-publish${history.location.search}`);
     }
   }
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function CreateView() {
 
   // 搜索请求防抖
   const queryAppServiceVersions = _.debounce(async (e, record) => {
-    const res = await axios.get(`/base/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
+    const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
     record.set('allAppServiceVersions', res);
   }, 500);
   function debounceQuery(e, record) {
@@ -81,7 +81,7 @@ export default function CreateView() {
     return (
       <Table dataSet={dataSet}>
         <Column name="name" />
-        <Column 
+        <Column
           editor={(record) => (
             <Select
               style={{ width: '100%', border: 'none' }}
@@ -98,7 +98,7 @@ export default function CreateView() {
       </Table>
     );
   }
-  
+
   function renderService() {
     return (
       <React.Fragment>
@@ -109,7 +109,7 @@ export default function CreateView() {
       </React.Fragment>
     );
   }
-  
+
   return (
     <React.Fragment>
       <div style={{ padding: '0 .2rem' }} className="form-content"> {getForm()} </div>

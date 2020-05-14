@@ -14,7 +14,7 @@ export default observer(({ onCancel, onOk, ds, record, organizationId, optionsDa
   }
   async function handleOk() {
     try {
-      const result = await axios.post(`/base/v1/organizations/${organizationId}/clients/${record.get('id')}/assign_roles`, JSON.stringify(ds.current.toData().roles.filter(v => v)));
+      const result = await axios.post(`/iam/choerodon/v1/organizations/${organizationId}/clients/${record.get('id')}/assign_roles`, JSON.stringify(ds.current.toData().roles.filter(v => v)));
       if (result.failed) {
         throw result.message;
       }

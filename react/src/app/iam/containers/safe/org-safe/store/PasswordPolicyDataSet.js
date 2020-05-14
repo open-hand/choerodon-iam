@@ -44,13 +44,13 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
     dataKey: null,
     transport: {
       read: {
-        url: `/base/v1/organizations/${organizationId}/password_policies`,
+        url: `/iam/choerodon/v1/organizations/${organizationId}/password_policies`,
         method: 'get',
       },
       submit: (record) => {
         if (record.data[0].id) {
           return {
-            url: `/base/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
+            url: `/iam/choerodon/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
             method: 'post',
             transformRequest: (([data]) => {
               Object.keys(data).forEach((key) => {

@@ -27,7 +27,7 @@ export default function (projectId, appId, queryUrl) {
       return '文本内容限制 30 字符，请重新输入';
     }
     try {
-      const res = await axios.get(`/base/v1/projects/${projectId}/applications/${appId}/versions/check?version=${value}`);
+      const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${appId}/versions/check?version=${value}`);
       if (res.failed) {
         return res.message;
       }

@@ -124,7 +124,7 @@ const AppDetail = (props) => {
       ),
       okText: '下载',
       okProps: { disabled: !appDetailDataSet.current.get('enableDownload') },
-      onOk: () => axios.post(`/base/v1/applications/${versionSelected.current || appDownloadVersionDataSet.get(0).get('id')}/download?organization_id=${orgId}`)
+      onOk: () => axios.post(`/iam/choerodon/v1/applications/${versionSelected.current || appDownloadVersionDataSet.get(0).get('id')}/download?organization_id=${orgId}`)
         .then((res) => {
           // console.log(res);
           if (!res.failed) {
@@ -205,7 +205,7 @@ const AppDetail = (props) => {
         </Header>
         <Breadcrumb custom>
           <Item>
-            <Link to={`/base/app-market${history.location.search}`}>应用市场</Link>
+            <Link to={`/iam/app-market${history.location.search}`}>应用市场</Link>
           </Item>
           <Item style={{ color: 'rgba(0, 0, 0, 0.87)' }}>应用详情</Item>
         </Breadcrumb>
@@ -227,7 +227,7 @@ const AppDetail = (props) => {
   };
 
   const turnToMainPage = (categoryId) => {
-    context.history.push(`/base/app-market/category/${categoryId}`);
+    context.history.push(`/iam/app-market/category/${categoryId}`);
   };
 
   const getMoreVersion = () => {
@@ -254,7 +254,7 @@ const AppDetail = (props) => {
       </Header>
       <Breadcrumb custom>
         <Item>
-          <Link to={`/base/app-market${history.location.search}`}>应用市场</Link>
+          <Link to={`/iam/app-market${history.location.search}`}>应用市场</Link>
         </Item>
         <Item>应用详情</Item>
       </Breadcrumb>

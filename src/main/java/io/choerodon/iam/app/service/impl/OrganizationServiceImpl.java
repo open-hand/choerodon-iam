@@ -1,40 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.infra.annotation.OperateLog;
-import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.dto.OrgSharesDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.payload.OrganizationEventPayload;
-import io.choerodon.iam.infra.dto.payload.OrganizationPayload;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
@@ -50,12 +30,32 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.OrganizationService;
+import io.choerodon.iam.infra.annotation.OperateLog;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.OrgSharesDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.payload.OrganizationEventPayload;
+import io.choerodon.iam.infra.dto.payload.OrganizationPayload;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -492,15 +492,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
         List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
 
-        UserVO userVO = new UserVO();
-        userVO.setId(params.getUserId());
-        UserVO userDetails = userRepository.selectUserDetails(userVO);
-        boolean isAdmin = false;
-        if (userDetails.getAdmin() != null) {
-            isAdmin = userDetails.getAdmin();
-        }
-        return getOwnedOrganizations(userDetails.getId(), isAdmin, tenantDTOS);
+        User user = userMapper.selectByPrimaryKey(params.getUserId());
+        return getOwnedOrganizations(user.getId(),Boolean.TRUE.equals(user.getAdmin()) , tenantDTOS);
     }
+
+
 
     /**
      * 计算into字段
@@ -510,33 +506,21 @@ public class OrganizationServiceImpl implements OrganizationService {
      * @return
      */
     private List<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
-        List<TenantVO> tenantVOS = new ArrayList<>();
-        if (CollectionUtils.isEmpty(tenantDTOS)) {
-            return Collections.emptyList();
-        }
-        for (TenantDTO tenantDTO : tenantDTOS) {
-            if (isAdmin || isTenantAdmin(userId, tenantDTO.getTenantId())) {
-                TenantVO tenantVO = new TenantVO();
-                tenantVO.setTenantId(tenantDTO.getTenantId());
-                tenantVO.setTenantNum(tenantDTO.getTenantNum());
-                tenantVO.setTenantName(tenantDTO.getTenantName());
-                tenantVO.setInto(true);
-                tenantVOS.add(tenantVO);
-                continue;
-            } else{
-                TenantVO tenantVO = new TenantVO();
-                tenantVO.setTenantId(tenantDTO.getTenantId());
-                tenantVO.setTenantNum(tenantDTO.getTenantNum());
-                tenantVO.setTenantName(tenantDTO.getTenantName());
-                tenantVO.setInto(false);
-                tenantVOS.add(tenantVO);
-            }
+        List<TenantVO> tenantVOS = ConvertUtils.convertList(tenantDTOS, TenantVO.class);
+
+        if (isAdmin) {
+            tenantVOS.forEach(tenantVO -> tenantVO.setInto(true));
+        } else {
+            Set<Long> orgIds = tenantVOS.stream().map(v -> v.getTenantId()).collect(Collectors.toSet());
+            Set<Long> managedOrgIds = userC7nMapper.listManagedOrgIdByUserId(userId, orgIds);
+            Map<Long, TenantVO> tenantVOMap = tenantVOS.stream().collect(Collectors.toMap(Tenant::getTenantId, v -> v));
+            managedOrgIds.forEach(orgId -> {
+                TenantVO tenantVO = tenantVOMap.get(orgId);
+                if (tenantVO != null) {
+                    tenantVO.setInto(true);
+                }
+            });
         }
         return tenantVOS;
-    }
-
-    private boolean isTenantAdmin(Long userId, Long tenantId) {
-        List<Role> orgAdminByUserIdAndTenantId = roleC7nMapper.getOrgAdminByUserIdAndTenantId(userId, tenantId);
-        return !CollectionUtils.isEmpty(orgAdminByUserIdAndTenantId);
     }
 }

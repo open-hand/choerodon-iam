@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_SYSTEM_SETTING)
 @RestController
-@RequestMapping(value = "/choerodon/v1/system/setting/{organization_id}/{project_id}")
+@RequestMapping(value = "/choerodon/v1/system/setting")
 public class SystemSettingC7nController extends BaseController {
     private final SystemSettingC7nService systemSettingService;
 

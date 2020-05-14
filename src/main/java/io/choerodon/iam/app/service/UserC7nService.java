@@ -5,10 +5,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.UserInfoDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.dto.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -291,4 +288,6 @@ public interface UserC7nService {
     User updateUserDisabled(Long userId);
 
     UserDTO queryByLoginName(String loginName);
+
+    List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 }

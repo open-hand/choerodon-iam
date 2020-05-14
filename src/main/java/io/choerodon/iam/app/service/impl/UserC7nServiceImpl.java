@@ -1,11 +1,25 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
@@ -13,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -42,55 +57,16 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ImageUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.SagaTopic;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -827,6 +803,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public UserDTO queryByLoginName(String loginName) {
         return userC7nMapper.queryUserByLoginName(Objects.requireNonNull(loginName));
+    }
+
+    @Override
+    public List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return ConvertUtils.convertList(userC7nMapper.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO, param), UserDTO.class);
     }
 
     private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {

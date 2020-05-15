@@ -49,7 +49,7 @@
         </collection>
     </resultMap>
 
-    <resultMap id="RoleMap" type="io.choerodon.iam.infra.dto.RoleDTO">
+    <resultMap id="RoleMap" type="io.choerodon.iam.infra.dto.RoleC7nDTO">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="code" property="code"/>

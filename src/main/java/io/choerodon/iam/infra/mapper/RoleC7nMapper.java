@@ -1,12 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-
+import io.choerodon.iam.api.vo.UserRoleVO;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
 
 /**
  * @author scp
@@ -15,25 +14,30 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface RoleC7nMapper {
 
+    List<UserRoleVO> selectRoles(@Param("userId") Long userId, @Param("name") String name, @Param("level") String level, @Param("params") String params);
+
+
     List<Role> queryRolesInfoByUser(@Param("sourceType") String sourceType,
                                     @Param("sourceId") Long sourceId,
                                     @Param("userId") Long userId);
 
     /**
      * 根据标签查询组织下角色
-     * @param tenantId 组织id
+     *
+     * @param tenantId  组织id
      * @param labelName 标签名
      * @return
      */
     Role getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
-                               @Param("labelName")String labelName);
+                               @Param("labelName") String labelName);
 
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
                                              @Param("organizationId") Long organizationId);
 
     /**
      * 查询组织下角色(目前只模糊匹配role.name,调用时有需要自己添加)
-     * @param tenantId 组织id
+     *
+     * @param tenantId  组织id
      * @param labelName 角色标签name
      * @param param
      * @return
@@ -44,10 +48,10 @@ public interface RoleC7nMapper {
 
     /**
      * 查询用户是否拥有组织管理员角色（包括租户超级管理员、租户管理员角色即可）
+     *
      * @param userId
      * @param tenantId
      * @return
      */
-    List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId,
-                                        @Param("tenantId") Long tenantId);
+    List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 }

@@ -45,7 +45,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest PageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
             @RequestParam(required = false) String loginName,
             @ApiParam(value = "用户名")
@@ -56,7 +56,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) Boolean enabled,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, PageRequest, loginName, realName, roleName,
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
 

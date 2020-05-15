@@ -1,40 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -67,6 +33,41 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -137,6 +138,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private ProjectUserMapper projectUserMapper;
 
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public User queryInfo(Long userId) {
@@ -521,10 +524,10 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
-        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        if (!CollectionUtils.isEmpty(roleDTOList)) {
+        List<RoleC7nDTO> roleC7nDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        if (!CollectionUtils.isEmpty(roleC7nDTOList)) {
             List<Label> labels = new ArrayList<>();
-            roleDTOList.forEach(t -> labels.addAll(t.getLabels()));
+            roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
             if (level.equals(ResourceLevel.PROJECT.value())) {
                 return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
@@ -537,7 +540,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
-        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
         return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_OWNER.value().equals(v.getCode()));
     }
 
@@ -864,5 +867,14 @@ public class UserC7nServiceImpl implements UserC7nService {
             throw new UpdateException("error.user.update");
         }
         return userMapper.selectByPrimaryKey(user);
+    }
+
+    @Override
+    public UserVO selectSelf() {
+        UserVO userVO = userRepository.selectSelf();
+        User user = new User();
+        user.setId(userVO.getId());
+        userVO.setObjectVersionNumber(userRepository.selectOne(user).getObjectVersionNumber());
+        return userVO;
     }
 }

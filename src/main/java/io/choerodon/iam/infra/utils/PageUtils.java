@@ -1,13 +1,13 @@
 package io.choerodon.iam.infra.utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import io.choerodon.core.domain.Page;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import io.choerodon.core.domain.Page;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 根据page, size参数获取数据库start的行
@@ -62,5 +62,21 @@ public class PageUtils {
             result.setContent(new ArrayList<>());
         }
         return result;
+    }
+
+    /**
+     * 复制分页参数并重新设置内容
+     *
+     * @param rpage
+     * @param list
+     * @param <T>
+     * @param <R>
+     * @return
+     */
+    public static <T, R> Page<T> copyPropertiesAndResetContent(Page<R> rpage, List<T> list) {
+        Page<T> tPage = new Page<>();
+        BeanUtils.copyProperties(rpage, tPage);
+        tPage.setContent(list);
+        return tPage;
     }
 }

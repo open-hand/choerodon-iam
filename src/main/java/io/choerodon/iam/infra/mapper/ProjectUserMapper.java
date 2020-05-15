@@ -124,7 +124,18 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                        @Param("email") String email,
                                        @Param("param") String param);
 
-    List<UserDTO> listProjectUsersByRoleIdAndOptions(Long projectId, Long roleId, RoleAssignmentSearchDTO roleAssignmentSearchDTO, String param);
+    /**
+     *
+     * @param projectId
+     * @param roleId
+     * @param roleAssignmentSearchDTO
+     * @param param
+     * @return
+     */
+    List<UserDTO> listProjectUsersByRoleIdAndOptions(@Param("projectId")Long projectId,
+                                                     @Param("roleId") Long roleId,
+                                                     @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                     @Param("param") String param);
 
     /*
      * 根据项目查询项目成员和传入的敏捷用户

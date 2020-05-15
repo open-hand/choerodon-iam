@@ -262,7 +262,29 @@
 
     </select>
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
-
+        SELECT iu.*
+        FROM fd_project_user fpu
+        JOIN iam_user iu ON fpu.MEMBER_ID = iu.id
+        <where>
+            fpu.ROLE_ID = #{roleId} AND fpu.PROJECT_ID = #{projectId}
+            <if test="roleAssignmentSearchDTO != null">
+                <if test="roleAssignmentSearchDTO.loginName != null">
+                    AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.realName != null">
+                    AND iu.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.enabled != null">
+                    AND iu.is_enabled = #{roleAssignmentSearchDTO.enabled}
+                </if>
+            </if>
+            <if test="param != null">
+                AND (
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
+        </where>
     </select>
 
     <select id="selectAgileUsersByProjectId" resultMap="userDTO">

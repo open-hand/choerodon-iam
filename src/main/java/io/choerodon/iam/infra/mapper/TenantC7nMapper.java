@@ -8,6 +8,7 @@ import org.hzero.iam.domain.entity.Tenant;
 
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -77,4 +78,5 @@ public interface TenantC7nMapper {
 
     List<Long> getoRoganizationByName(@Param("name") String name);
 
+    List<Tenant> selectByIds(@Param("ids") Set<Long> ids);
 }

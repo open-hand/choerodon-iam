@@ -511,11 +511,9 @@
         INNER JOIN iam_role_label irl ON irl.label_id = il.id
         INNER JOIN iam_role ir ON ir.id = irl.role_id
         AND ir.is_enabled = TRUE
-        AND ir.RESOURCE_LEVEL = 'project'
-        INNER JOIN iam_member_role imr ON imr.member_id = iu.id and imr.role_id=ir.id
+        INNER JOIN fd_project_user imr ON imr.member_id = iu.id and imr.role_id=ir.id
         <where>
-            imr.member_type = 'user' and imr.source_type = 'project'
-            AND imr.source_id = #{projectId}
+            AND imr.PROJECT_ID = #{projectId}
             <if test="roleAssignmentSearchDTO != null">
                 <if test="roleAssignmentSearchDTO.loginName != null">
                     AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
@@ -1079,6 +1077,7 @@
         GROUP BY iu.id
         limit 20
     </select>
+
     <select id="listManagedOrgIdByUserId" resultType="java.lang.Long">
         SELECT imr.source_id
         FROM iam_member_role imr
@@ -1095,6 +1094,11 @@
                 #{orgId}
             </foreach>
         </where>
+    </select>
 
+    <select id="queryUserByLoginName" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        SELECT iu.*
+        FROM iam_user iu
+        WHERE iu.login_name = #{loginName,jdbcType=VARCHAR}
     </select>
 </mapper>

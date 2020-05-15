@@ -323,6 +323,13 @@
         </if>
     </select>
 
-
+    <select id="selectByIds" resultType="org.hzero.iam.domain.entity.Tenant">
+        select * from hpfm_tenant fo
+        where fo.tenant_id in
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
 </mapper>

@@ -1,30 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.constant.MessageCodeConstants;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -37,13 +22,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -257,6 +254,14 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         ProjectDTO example = new ProjectDTO();
         example.setOrganizationId(tenantId);
         return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public List<Tenant> queryTenantsByIds(Set<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        return tenantC7nMapper.selectByIds(ids);
     }
 
     private void checkCode(TenantVO tenantVO) {

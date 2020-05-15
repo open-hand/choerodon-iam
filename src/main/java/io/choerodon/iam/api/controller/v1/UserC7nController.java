@@ -1,10 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.*;
+import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.User;
@@ -28,6 +30,8 @@ import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -348,6 +352,15 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是项目的所有者")
+    @GetMapping("/{id}/projects/{project_id}/check_is_owner")
+    public ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
+    }
+
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")
@@ -370,4 +383,21 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(organizationService.listOwnedOrganizationByUserId(userId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "根据用户名查询用户信息")
+    @GetMapping
+    public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
+        return Results.success(userC7nService.queryByLoginName(loginName));
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "项目层查询所有包含gitlab角色标签的用户")
+    @PostMapping(value = "/projects/{project_id}/gitlab_role/users")
+    public ResponseEntity<List<UserDTO>> listUsersWithGitlabLabel(
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestParam(name = "label_name") String labelName,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName,roleAssignmentSearchDTO), HttpStatus.OK);
+    }
 }

@@ -5,7 +5,7 @@ export default () => ({
   selection: false,
   transport: {
     read: {
-      url: '/iam/choerodon/v1/site/0/operate/log?size=5',
+      url: 'hmnt/choerodon/v1/0/site/audit/operational/logs?size=5',
       method: 'get',
       transformResponse: (data) => {
         const arr = JSON.parse(data);

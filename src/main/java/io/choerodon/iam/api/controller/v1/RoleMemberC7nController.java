@@ -57,9 +57,9 @@ public class RoleMemberC7nController extends BaseController {
         return ResponseEntity.ok(roleC7nService.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO));
     }
 
-    /**
+    /** 项目层分页查询角色下的用户
      * @param roleId
-     * @param sourceId
+     * @param projectId
      * @param roleAssignmentSearchDTO
      * @param doPage                  是否分页，如果为false，则不分页
      * @return
@@ -69,10 +69,10 @@ public class RoleMemberC7nController extends BaseController {
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+            @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
-            @PathVariable(name = "project_id") Long projectId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
         return ResponseEntity.ok(projectUserService.pagingQueryUsersByRoleIdOnProjectLevel(

@@ -22,8 +22,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       prefixCls: 'base-org-admin-list',
       intlPrefix,
       permissions: [
-        'base-service.organization-administrator.createOrgAdministrator',
-        'base-service.organization-administrator.deleteOrgAdministrator',
+        // 'base-service.organization-administrator.createOrgAdministrator',
+        // 'base-service.organization-administrator.deleteOrgAdministrator',
       ],
       organizationId,
     };

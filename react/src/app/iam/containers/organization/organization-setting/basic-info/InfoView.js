@@ -51,11 +51,11 @@ const InfoView = observer(() => {
   return (
     <TabPage
       service={[
-        'base-service.organization.queryOrgLevel',
-        'base-service.organization.updateOnOrganizationLevel',
+        // 'base-service.organization.queryOrgLevel',
+        // 'base-service.organization.updateOnOrganizationLevel',
       ]}
     >
-      
+
       <Header>
         <Permission service={['base-service.organization.updateOnOrganizationLevel']}>
           <Button
@@ -84,7 +84,7 @@ const InfoView = observer(() => {
           <Output name="name" colSpan={1} />
 
           <div colSpan={1} rowSpan={3} className="c7n-organization-formImg" label="组织LOGO">
-            {imageUrl ? <img src={imageUrl} alt="图片" /> 
+            {imageUrl ? <img src={imageUrl} alt="图片" />
               : <div className="c7n-organization-formImg-wrapper">{orgName[0]}</div>}
 
           </div>

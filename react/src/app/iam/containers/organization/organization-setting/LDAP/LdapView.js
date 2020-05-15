@@ -115,13 +115,13 @@ const LdapView = observer(() => {
   return (
     <TabPage
       service={[
-        'base-service.ldap.queryByOrgId',
-        'base-service.ldap.update',
-        'base-service.ldap.disableLdap',
-        'base-service.ldap.enableLdap',
-        'base-service.ldap.testConnect',
-        'base-service.ldap.syncUsers',
-        'base-service.ldap.pagingQueryHistories',
+        // 'base-service.ldap.queryByOrgId',
+        // 'base-service.ldap.update',
+        // 'base-service.ldap.disableLdap',
+        // 'base-service.ldap.enableLdap',
+        // 'base-service.ldap.testConnect',
+        // 'base-service.ldap.syncUsers',
+        // 'base-service.ldap.pagingQueryHistories',
       ]}
     >
       <Header>

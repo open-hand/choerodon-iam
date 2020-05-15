@@ -28,7 +28,7 @@ export default observer(() => {
   return (
     <TabPage>
       <Header>
-        <Permission service={['base-service.password-policy.update']}>
+        <Permission service={[]}>
           <Button color="blue" onClick={openPasswordModal}><Icon type="mode_edit" /> 修改安全策略</Button>
         </Permission>
       </Header>

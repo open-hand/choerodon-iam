@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.RoleDTO;
 
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
@@ -143,4 +144,13 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
     List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
                                               @Param("userIds") Set<Long> userIds,
                                               @Param("param") String param);
+
+    /**
+     * 查询用户在项目下拥有的角色
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                @Param("userId") Long userId);
 }

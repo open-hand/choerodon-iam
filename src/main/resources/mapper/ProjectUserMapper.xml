@@ -315,4 +315,10 @@
             )
         </if>
     </select>
+    <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">
+        SELECT ir.*
+        FROM fd_project_user fpu
+        JOIN iam_role ir ON ir.id = fpu.ROLE_ID
+        WHERE fpu.PROJECT_ID = #{projectId} and fpu.MEMBER_ID = #{userId}
+    </select>
 </mapper>

@@ -5,6 +5,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.iam.api.dto.RoleDTO;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.app.service.ProjectUserService;
@@ -48,7 +48,7 @@ public class RoleMemberC7nController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
@@ -64,7 +64,7 @@ public class RoleMemberC7nController extends BaseController {
      * @param doPage                  是否分页，如果为false，则不分页
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
@@ -79,5 +79,14 @@ public class RoleMemberC7nController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, projectId, doPage));
     }
 
-
+    /**
+     * 查询用户在项目下拥有的角色
+     */
+    @Permission(level = ResourceLevel.PROJECT, permissionLogin = true)
+    @ApiOperation(value = "查询用户在项目下拥有的角色")
+    @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
+    public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
+                                                                           @PathVariable(name = "user_id") Long userId) {
+        return ResponseEntity.ok(projectUserService.listRolesByProjectIdAndUserId(projectId, userId));
+    }
 }

@@ -10,6 +10,7 @@ import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
@@ -305,4 +306,6 @@ public interface UserC7nService {
     UserDTO queryByLoginName(String loginName);
 
     List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    UserVO selectSelf();
 }

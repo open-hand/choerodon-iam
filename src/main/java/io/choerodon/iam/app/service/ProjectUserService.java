@@ -3,6 +3,8 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import org.hzero.iam.api.dto.RoleDTO;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -86,4 +88,8 @@ public interface ProjectUserService {
      * 查询项目下的项目成员，以及传入的userId的并集
      */
     Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
+    /**
+     * 查询用户在项目下拥有的角色
+     */
+    List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId);
 }

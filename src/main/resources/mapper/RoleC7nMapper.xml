@@ -78,10 +78,10 @@
     <select id="listRolesByTenantIdAndLableWithOptions" resultType="org.hzero.iam.domain.entity.Role">
         SELECT ir.*
         FROM iam_role ir
-        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
-        INNER JOIN iam_label il ON irl.label_id = il.id
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
         <where>
-            ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
+            hlr.data_type = 'ROLE' AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
             <!-- 模糊匹配role.name -->
             <if test="param != null and param.name != null">
                 AND ir.name LIKE concat(concat('%', #{param.name}), '%')

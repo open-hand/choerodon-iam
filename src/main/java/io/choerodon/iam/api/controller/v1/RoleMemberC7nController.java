@@ -38,6 +38,7 @@ public class RoleMemberC7nController extends BaseController {
     private RoleC7nService roleC7nService;
     private ProjectUserService projectUserService;
 
+
     public RoleMemberC7nController(RoleC7nService roleC7nService, ProjectUserService projectUserService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
@@ -88,5 +89,23 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
                                                                            @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(projectUserService.listRolesByProjectIdAndUserId(projectId, userId));
+    }
+
+    /**
+     * 在项目层查询用户，用户包含拥有的project层的角色
+     *
+     * @param projectId                项目id
+     * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
+    @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return ResponseEntity.ok(projectUserService.pagingQueryUsersWithRoles(
+                pageRequest, roleAssignmentSearchDTO, projectId));
     }
 }

@@ -92,4 +92,6 @@ public interface ProjectUserService {
      * 查询用户在项目下拥有的角色
      */
     List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId);
+
+    Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId);
 }

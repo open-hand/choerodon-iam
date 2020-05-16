@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -12,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
@@ -146,5 +148,26 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId) {
         return projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId) {
+        Page<UserDTO> userList = PageHelper.doPage(pageRequest, () -> projectUserMapper.listProjectUser(projectId, roleAssignmentSearchDTO));
+        if (userList == null && userList.size() < 1) {
+            return userList;
+        }
+        Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
+        List<ProjectUserVO> projectUserVOS = projectUserMapper.listByProjectIdAndUserIds(projectId, userIds);
+        Map<Long, List<ProjectUserVO>> map = projectUserVOS.stream().collect(Collectors.groupingBy(ProjectUserVO::getMemberId));
+
+
+        userList.forEach(userDTO -> {
+            List<ProjectUserVO> proejctUserList = map.get(userDTO.getId());
+            if (!CollectionUtils.isEmpty(proejctUserList)) {
+                userDTO.setRoles(proejctUserList.stream().map(ProjectUserVO::getRole).collect(Collectors.toList()));
+            }
+        });
+
+        return userList;
     }
 }

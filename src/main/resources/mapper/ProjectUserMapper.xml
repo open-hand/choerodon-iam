@@ -321,4 +321,90 @@
         JOIN iam_role ir ON ir.id = fpu.ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId} and fpu.MEMBER_ID = #{userId}
     </select>
+    <select id="listUserWithRolesOnProjectLevel" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        SELECT
+        FROM fd_project_user fpu
+        JOIN iam_user iu ON iu.id = fpu.MEMBER_ID
+        JOIN iam_role ir ON ir.id = fpu.ROLE_ID
+        <where>
+            fpu.PROJECT_ID = #{projectId}
+            <if test="roleAssignmentSearchDTO != null">
+                <if test="roleAssignmentSearchDTO.loginName != null">
+                    AND iut.target_login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.realName != null">
+                    AND iut.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
+                </if>
+                <if test="param != null">
+                    and (
+                    iut.target_login_name LIKE concat(concat('%',#{param}),'%') OR
+                    iut.real_name LIKE concat(concat('%',#{param}),'%') OR
+                    ir.name LIKE concat(concat('%',#{param}),'%') OR
+                    imr.member_type LIKE concat(concat('%',#{param}),'%')
+                    )
+                </if>
+            </if>
+        </where>
+    </select>
+    <select id="listProjectUser" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        SELECT *
+        FROM (
+            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap, iu.is_admin,
+            CASE
+                WHEN iu.is_ldap = 1 THEN
+                    iu.login_name
+                ELSE
+                    iu.email
+                end as login_name
+            FROM fd_project_user fpu
+            JOIN iam_user iu ON iu.id = fpu.MEMBER_ID
+            WHERE fpu.PROJECT_ID = 1822
+            GROUP BY fpu.MEMBER_ID
+        ) iut
+        <where>
+            <if test="roleAssignmentSearchDTO != null">
+                <if test="roleAssignmentSearchDTO.loginName != null">
+                    AND iut.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.realName != null">
+                    AND iut.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
+                </if>
+                <if test="param != null">
+                    and (
+                    iut.login_name LIKE concat(concat('%',#{param}),'%') OR
+                    iut.real_name LIKE concat(concat('%',#{param}),'%') OR
+                    ir.name LIKE concat(concat('%',#{param}),'%')
+                    )
+                </if>
+            </if>
+        </where>
+
+    </select>
+    <resultMap id="projectUserMap" type="io.choerodon.iam.api.vo.ProjectUserVO">
+        <id column="MEMBER_ID" property="memberId"/>
+        <association property="role" javaType="org.hzero.iam.domain.entity.Role">
+            <id column="id" property="id"/>
+            <result property="name" column="name"/>
+            <result property="code" column="code"/>
+            <result property="description" column="description"/>
+            <result property="isEnabled" column="is_enabled"/>
+            <result property="isBuiltIn" column="is_built_in"/>
+        </association>
+    </resultMap>
+    <select id="listByProjectIdAndUserIds" resultMap="projectUserMap">
+        SELECT fpu.MEMBER_ID, ir.*
+        FROM fd_project_user fpu
+        JOIN iam_role ir ON ir.id = fpu.ROLE_ID
+        WHERE fpu.PROJECT_ID = #{projectId}
+        AND fpu.MEMBER_ID IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator="," index="i">
+            #{userId}
+        </foreach>
+    </select>
 </mapper>

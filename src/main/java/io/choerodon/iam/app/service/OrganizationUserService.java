@@ -1,13 +1,14 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.domain.entity.LdapErrorUser;
+import java.util.List;
+
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
-import java.util.List;
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author superlee
@@ -60,7 +61,7 @@ public interface OrganizationUserService {
 
     User disableUser(Long organizationId, Long userId);
 
-    List<ErrorUserVO> batchCreateUsersOnExcel(List<User> insertUsers, Long fromUserId, Long organizationId);
+    List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 
     Boolean checkEnableCreateUser(Long organizationId);
 

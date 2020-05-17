@@ -54,4 +54,6 @@ public interface RoleC7nMapper {
      * @return
      */
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
+
+    Role selectByCode(@Param("code") String code);
 }

@@ -177,4 +177,10 @@
         </if>
     </select>
 
+    <select id="selectByCode" resultMap="RoleMap">
+        SELECT ir.*
+        FROM iam_role ir
+        WHERE ir.code = #{code,jdbcType=VARCHAR}
+    </select>
+
 </mapper>

@@ -14,7 +14,9 @@ import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +27,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.app.service.ExcelService;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -47,10 +51,18 @@ public class OrganizationUserController extends BaseController {
 
     private UserC7nService userC7nService;
 
+    private ExcelService excelService;
+
+    private UploadHistoryService uploadHistoryService;
+
     public OrganizationUserController(OrganizationUserService organizationUserService,
+                                      UploadHistoryService uploadHistoryService,
+                                      ExcelService excelService,
                                       UserC7nService userC7nService) {
         this.organizationUserService = organizationUserService;
         this.userC7nService = userC7nService;
+        this.excelService = excelService;
+        this.uploadHistoryService = uploadHistoryService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -159,22 +171,18 @@ public class OrganizationUserController extends BaseController {
     @PostMapping("/users/batch_import")
     public ResponseEntity importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
                                                @RequestPart MultipartFile file) {
-        // TODO
-//        excelService.importUsers(id, file);
-//        return new ResponseEntity(HttpStatus.NO_CONTENT);
-        return null;
+        excelService.importUsers(id, file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("下载导入用户的模板文件")
     @GetMapping("/users/download_templates")
     public ResponseEntity<Resource> downloadTemplates(@PathVariable(name = "organization_id") Long id) {
-        // TODO
-//        HttpHeaders headers = excelService.getHttpHeaders();
-//        Resource resource = excelService.getUserTemplates();
-//        //excel2007
-//        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
-        return null;
+        HttpHeaders headers = excelService.getHttpHeaders();
+        Resource resource = excelService.getUserTemplates();
+        //excel2007
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -183,8 +191,7 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<UploadHistoryDTO> latestHistory(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "user_id") Long userId) {
         // TODO
-//        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
-        return null;
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)

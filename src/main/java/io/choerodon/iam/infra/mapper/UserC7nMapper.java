@@ -320,5 +320,10 @@ public interface UserC7nMapper {
                                         @Param("roleAssignmentSearchDTO")
                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                         @Param("param") String param);
+
+
+    Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
+
+    Set<String> matchPhone(@Param("phoneSet") Set<String> phoneSet);
 }
 

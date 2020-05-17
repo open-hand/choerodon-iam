@@ -1,33 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.infra.annotation.OperateLog;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.mapper.C7nLabelMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.IamPageUtils;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.iam.infra.utils.SagaTopic;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.app.service.RoleService;
+import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.LdapErrorUser;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.mapper.UserMapper;
@@ -42,10 +26,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.InsertException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.annotation.OperateLog;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.mapper.C7nLabelMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.IamPageUtils;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 @RefreshScope
@@ -71,6 +75,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private UserService userService;
 
+    private UserC7nService userC7nService;
+
     private TransactionalProducer producer;
 
     private RoleService roleService;
@@ -85,27 +91,33 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RandomInfoGenerator randomInfoGenerator;
 
+    private TenantService tenantService;
+
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     public OrganizationUserServiceImpl(OrganizationAssertHelper organizationAssertHelper,
                                        UserAssertHelper userAssertHelper,
                                        UserService userService,
+                                       UserC7nService userC7nService,
                                        TransactionalProducer producer,
                                        UserMapper userMapper,
                                        UserC7nMapper userC7nMapper,
                                        UserRepository userRepository,
                                        C7nLabelMapper c7nLabelMapper,
+                                       TenantService tenantService,
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService) {
         this.organizationAssertHelper = organizationAssertHelper;
         this.userAssertHelper = userAssertHelper;
         this.userService = userService;
+        this.userC7nService = userC7nService;
         this.producer = producer;
         this.userMapper = userMapper;
         this.userC7nMapper = userC7nMapper;
         this.userRepository = userRepository;
         this.c7nLabelMapper = c7nLabelMapper;
         this.roleService = roleService;
+        this.tenantService = tenantService;
         this.randomInfoGenerator = randomInfoGenerator;
     }
 
@@ -394,7 +406,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public List<ErrorUserVO> batchCreateUsersOnExcel(List<User> insertUsers, Long fromUserId, Long organizationId) {
+    public List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
         List<ErrorUserVO> errorUsers = new ArrayList<>();
         List<UserEventPayload> payloads = new ArrayList<>();
         boolean errorUserFlag = true;
@@ -427,15 +439,15 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         //导入成功过后，通知成员
         users.forEach(e -> {
-            // TODO 导入成功过后，通知成员
-//            Map<String, Object> params = new HashMap<>();
-//            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(e.getOrganizationId());
-//            params.put("organizationName", organizationDTO.getName());
-//            params.put("roleName", e.getRoles().stream().map(v -> v.getName()).collect(Collectors.joining(",")));
-//
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("organizationId", organizationDTO.getId());
-//            jsonObject.put("addCount", insertUsers.size());
+            Map<String, Object> params = new HashMap<>();
+            Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
+            params.put("organizationName", organizationDTO.getTenantName());
+            params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
+            params.put("userList", JSON.toJSONString(insertUsers));
+
+//            Map<String, String> jsonObject = new HashMap<>();
+            params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
+            params.put("addCount", String.valueOf(insertUsers.size()));
 //            List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
 //            if (!CollectionUtils.isEmpty(userList)) {
 //                for (User userDTO : insertUsers) {
@@ -451,7 +463,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 //                    new Date(),
 //                    userService.getWebHookUser(fromUserId)
 //            );
-//            userService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), webHookJsonSendDTO);
+            userC7nService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId());
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());

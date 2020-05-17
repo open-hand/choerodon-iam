@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.infra.mapper.MemberRoleMapper;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -63,7 +63,7 @@ public class ExcelImportUserTask {
 
     private RoleC7nMapper roleMapper;
 
-    private MemberRoleMapper memberRoleMapper;
+    private MemberRoleRepository memberRoleRepository;
 
     private RoleAssertHelper roleAssertHelper;
 
@@ -76,7 +76,7 @@ public class ExcelImportUserTask {
                                UserPasswordValidator userPasswordValidator,
                                UserC7nMapper userC7nMapper,
                                RoleC7nMapper roleMapper,
-                               MemberRoleMapper memberRoleMapper,
+                               MemberRoleRepository memberRoleRepository,
                                RoleAssertHelper roleAssertHelper,
                                RandomInfoGenerator randomInfoGenerator) {
         this.roleMemberService = roleMemberService;
@@ -86,7 +86,7 @@ public class ExcelImportUserTask {
         this.userPasswordValidator = userPasswordValidator;
         this.userC7nMapper = userC7nMapper;
         this.roleMapper = roleMapper;
-        this.memberRoleMapper = memberRoleMapper;
+        this.memberRoleRepository = memberRoleRepository;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
     }
@@ -259,7 +259,7 @@ public class ExcelImportUserTask {
         memberRole.setMemberType("user");
         memberRole.setMemberId(userId);
         memberRole.setRoleId(roleId);
-        if (memberRoleMapper.selectOne(memberRole) != null) {
+        if (memberRoleRepository.selectOne(memberRole) != null) {
             emr.setCause("该用户已经被分配了该角色，sourceId={" + sourceId + "}");
             errorMemberRoles.add(emr);
             return null;

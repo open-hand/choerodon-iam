@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -602,9 +603,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             startDate = startDate.plusDays(1);
         }
 
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
         projectIds.forEach(id -> {
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
-            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, startTime, endTime).getBody();
+            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, simpleDateFormat.format(startTime), simpleDateFormat.format(endTime)).getBody();
             labelRotationItemVO.setName(projectDTO.getName());
             labelRotationItemVO.setId(id);
             barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);

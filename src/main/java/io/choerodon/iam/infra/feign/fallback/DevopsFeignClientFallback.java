@@ -75,7 +75,7 @@ public class DevopsFeignClientFallback implements DevopsFeignClient {
     }
 
     @Override
-    public ResponseEntity<BarLabelRotationItemVO> countByDate(Long projectId, Date startTime, Date endTime) {
+    public ResponseEntity<BarLabelRotationItemVO> countByDate(Long projectId, String startTime, String endTime) {
         throw new CommonException("error.feign.devops.query.deploy.records");
     }
 

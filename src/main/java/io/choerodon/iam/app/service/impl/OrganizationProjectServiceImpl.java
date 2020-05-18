@@ -584,29 +584,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime) {
-        BarLabelRotationVO barLabelRotationVO = new BarLabelRotationVO();
-
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalDate startDate = startTime.toInstant().atZone(zoneId).toLocalDate();
-        LocalDate endDate = endTime.toInstant().atZone(zoneId).toLocalDate();
-        while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
-            String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            barLabelRotationVO.getDateList().add(date);
-            startDate = startDate.plusDays(1);
-        }
-
-        projectIds.forEach(id -> {
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
-            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, startTime, endTime).getBody();
-            labelRotationItemVO.setName(projectDTO.getName());
-            labelRotationItemVO.setId(id);
-            barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
-        });
-        return barLabelRotationVO;
-    }
-
-    @Override
     public List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name) {
         return projectMapper.selectProjectsByOrgIdAndNameWithLimit(organizationId, name, 20);
     }

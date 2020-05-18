@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -135,7 +136,7 @@ public class OrganizationProjectC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<ProjectDTO>> pagingQuery(@PathVariable(name = "organization_id") Long organizationId,
                                                         @ApiIgnore
-                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                         @RequestParam(required = false) String name,
                                                         @RequestParam(required = false) String code,
                                                         @RequestParam(required = false) Boolean enabled,
@@ -149,12 +150,24 @@ public class OrganizationProjectC7nController extends BaseController {
                 HttpStatus.OK);
     }
 
+    /**
+     * 查询组织下项目部署次数
+     * 前端传的时间参数格式应为
+     * yyyy-MM-dd HH:mm:ss
+     *
+     * @param organizationId 组织id
+     * @param projectIds     项目id
+     * @param startTime      开始时间
+     * @param endTime        结束时间
+     */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
     public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
                                                                  @RequestBody Set<Long> projectIds,
+                                                                 @ApiParam(value = "开始时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "start_time") Date startTime,
+                                                                 @ApiParam(value = "结束时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(organizationProjectService.countDeployRecords(projectIds, startTime, endTime));
     }

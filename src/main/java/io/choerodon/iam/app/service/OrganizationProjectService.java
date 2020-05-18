@@ -52,15 +52,6 @@ public interface    OrganizationProjectService {
 
     Page<ProjectDTO> pagingQuery(Long organizationId, PageRequest pageRequest, ProjectDTO projectDTO, String params);
 
-    /**
-     * 统计项目部署次数
-     *
-     * @param projectIds
-     * @param startTime
-     * @param endTime
-     * @return
-     */
-    BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime);
 
     List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name);
 

@@ -23,6 +23,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.OrganizationProjectVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
@@ -315,12 +316,12 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userService.updateUser(userDTO), HttpStatus.OK);
     }
 
-//    @Permission(permissionPublic = true)
-//    @ApiOperation(value = "根据用户id查询对应的组织和项目")
-//    @GetMapping("/{id}/organization_project")
-//    public ResponseEntity<OrganizationProjectDTO> queryOrganizationProjectByUserId(@PathVariable("id") Long id) {
-//        return new ResponseEntity<>(userService.queryOrganizationProjectByUserId(id), HttpStatus.OK);
-//    }
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "根据用户id查询对应的组织和项目")
+    @GetMapping("/{id}/organization_project")
+    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id));
+    }
 
 
 //    @Permission(level = ResourceLevel.SITE, permissionLogin = true)

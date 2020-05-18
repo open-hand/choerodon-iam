@@ -511,7 +511,20 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
+        OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
+        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+                OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setEnabled(true);
+        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
+                .stream().map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
+        return organizationProjectDTO;
+    }
+
+    @Override
     public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        // TODO
         return null;
     }
 

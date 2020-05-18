@@ -51,16 +51,19 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private MenuC7nMapper menuC7nMapper;
     private OrganizationRoleC7nService organizationRoleC7nService;
     private RoleRepository roleRepository;
+    private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               OrganizationRoleC7nService organizationRoleC7nService,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
+                              MenuRepository menuRepository,
                               RoleRepository roleRepository) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.roleRepository = roleRepository;
+        this.menuRepository = menuRepository;
     }
 
     @Override
@@ -81,7 +84,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                 throw new CommonException("error.project.category");
             }
             for (ProjectCategoryDTO t : list) {
-                labels.add(t.getCode());
+                labels.add(t.getLabelCode());
             }
         }
         if (labels.contains(USER_MENU)) {
@@ -98,7 +101,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                     });
             return cf.join();
         } else {
-            return null;
+            return menuRepository.selectRoleMenuTree(null, null, labels);
         }
 
     }

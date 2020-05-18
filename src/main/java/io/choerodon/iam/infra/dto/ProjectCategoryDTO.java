@@ -27,6 +27,16 @@ public class ProjectCategoryDTO extends AuditDomain {
 
     private Boolean builtInFlag;
 
+    private String labelCode;
+
+    public String getLabelCode() {
+        return labelCode;
+    }
+
+    public void setLabelCode(String labelCode) {
+        this.labelCode = labelCode;
+    }
+
     public Long getId() {
         return id;
     }

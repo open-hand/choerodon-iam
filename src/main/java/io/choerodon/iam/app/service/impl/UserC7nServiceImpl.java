@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -34,14 +35,17 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
@@ -141,6 +145,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
 
     @Override
     public User queryInfo(Long userId) {
@@ -878,9 +884,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public UserVO selectSelf() {
         UserVO userVO = userRepository.selectSelf();
-        User user = new User();
-        user.setId(userVO.getId());
-        userVO.setObjectVersionNumber(userRepository.selectOne(user).getObjectVersionNumber());
+        User user = userRepository.selectByPrimaryKey(userVO.getId());
+        userVO.setObjectVersionNumber(user.getObjectVersionNumber());
+        userVO.setAdmin(user.getAdmin());
+        if (!user.getAdmin()) {
+            List<TenantDTO> list = tenantRepository.selectSelfTenants(null);
+            if (CollectionUtils.isEmpty(list)) {
+                throw new CommonException("error.get.user.tenants");
+            }
+            userVO.setRecentAccessTenantList(ConvertUtils.convertList(list, Tenant.class));
+        }
         return userVO;
     }
 }

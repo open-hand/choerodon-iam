@@ -12,7 +12,8 @@
 
     <select id="selectProjectCategoryNames" resultType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
         SELECT pc.code AS code,
-            pc. NAME AS name
+            pc. NAME AS name,
+            pc.LABEL_CODE as labelCode
         FROM
             FD_PROJECT_MAP_CATEGORY pmc
         LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id

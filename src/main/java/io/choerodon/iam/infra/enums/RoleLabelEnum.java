@@ -7,7 +7,7 @@ public enum RoleLabelEnum {
 
     PROJECT_OWNER("project.owner"),
 
-    PROJECT_ROLE("project_role"),
+    PROJECT_ROLE("project.role"),
 
     PROJECT_GITLAB_OWNER("project.gitlab.owner"),
 

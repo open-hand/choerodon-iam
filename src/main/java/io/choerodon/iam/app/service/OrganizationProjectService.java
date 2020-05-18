@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * @author flyleft
  */
-public interface OrganizationProjectService {
+public interface    OrganizationProjectService {
 
     ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO);
 

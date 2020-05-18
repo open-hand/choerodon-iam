@@ -1,7 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 import io.choerodon.iam.api.vo.UserRoleVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
@@ -17,6 +19,7 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -72,9 +76,16 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public Page<RoleC7nDTO> listRole(Long tenantId, Long userId, PageRequest pageRequest) {
+    public Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params) {
+        Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
         List<RoleC7nDTO> roleDTOList = new ArrayList<>();
-        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
+
+        // TODO 分页排序有问题，暂时不使用分页排序功能
+//        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
+        List<UserRoleVO> userRoleVOList = roleC7nMapper.selectRoles(userId, name, level, params);
+        PageInfo pageInfo = new PageInfo(1, 10);
+        Page<UserRoleVO> result = new Page<>(userRoleVOList, pageInfo, userRoleVOList.size());
+
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);

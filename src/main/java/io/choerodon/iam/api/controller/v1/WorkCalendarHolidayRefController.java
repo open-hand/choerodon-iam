@@ -5,7 +5,10 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.WorkCalendarHolidayRefVO;
 import io.choerodon.iam.app.service.WorkCalendarHolidayRefService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,7 @@ import java.util.Optional;
  * @author dinghuang123@gmail.com
  * @since 2018/10/9
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_WORK_CALENDAR_HOLIDAY_REF)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/work_calendar_holiday_refs")
 public class WorkCalendarHolidayRefController {

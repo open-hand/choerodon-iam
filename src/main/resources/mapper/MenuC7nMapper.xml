@@ -40,7 +40,6 @@
         <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
 
         select
-        DISTINCT
         im.id,
         im.code,
         (case when imt.name is not null then imt.name else im.name end ) name,
@@ -58,16 +57,6 @@
             <foreach collection="labels" open="(" separator="," close=")" item="label">
                 #{label}
             </foreach>
-        </if>
-        <if test="projectId!=null">
-            INNER JOIN (SELECT
-            fcm.MENU_CODE
-            FROM
-            fd_project_map_category fpmc
-            INNER JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
-            INNER JOIN fd_category_menu fcm on fcm.CATEGORY_CODE=fpc.`CODE`
-            WHERE
-            fpmc.PROJECT_ID = #{projectId}) as temp on temp.MENU_CODE = im.code
         </if>
         left join iam_menu_tl imt on imt.id = im.id and imt.lang = #{lang}
         where im.type in ('root', 'dir', 'menu', 'link', 'inner-link', 'window')
@@ -87,30 +76,6 @@
             </foreach>
             ) = #{labelsSize}
         </if>
-        and exists (
-        select 1
-        from iam_menu im_ps
-        join iam_role ir on (
-        ir.fd_level = im_ps.fd_level
-        and ir.is_enabled = 1
-        and ir.id in
-        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
-            #{roleId}
-        </foreach>
-        )
-        left join iam_role_permission irp on (irp.permission_id = im_ps.id and irp.role_id = ir.id and irp.type = 'PS')
-        where im_ps.h_enabled_flag = 1
-        and im_ps.type = 'ps'
-        <!-- 限制层级 -->
-        and im.fd_level = ir.fd_level
-        <!-- 平台管理员&租户管理员不限制权限集，否则限制权限集 -->
-        and (
-        ir.code in ('role/site/default/administrator', 'role/organization/default/administrator')
-        or (irp.h_create_flag = 'Y' or irp.h_inherit_flag = 'Y')
-        )
-        <!-- 权限集限定查询菜单 -->
-        and (im_ps.h_level_path like concat(im.h_level_path, '|%'))
-        )
     </select>
 
 

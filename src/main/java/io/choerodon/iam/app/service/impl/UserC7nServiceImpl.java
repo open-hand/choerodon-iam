@@ -425,7 +425,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         int start = PageUtils.getBegin(page, size);
         int count = memberRoleC7nMapper.selectCountBySourceId(id, "organization");
         result.setSize(count);
-        result.addAll(tenantC7nMapper.selectOrganizationsWithRoles(id, start, size, params));
+        result.getContent().addAll(tenantC7nMapper.selectOrganizationsWithRoles(id, start, size, params));
         return result;
     }
 
@@ -439,7 +439,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (size == 0) {
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
             result.setSize(projectList.size());
-            result.addAll(projectList);
+            result.getContent().addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
             ProjectUserDTO projectUserDTO = new ProjectUserDTO();
@@ -447,7 +447,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             int count = projectUserMapper.selectCount(projectUserDTO);
             result.setSize(count);
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-            result.addAll(projectList);
+            result.getContent().addAll(projectList);
         }
         return result;
     }
@@ -494,12 +494,12 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(count);
-            result.addAll(users);
+            result.getContent().addAll(users);
         } else {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(users.size());
-            result.addAll(users);
+            result.getContent().addAll(users);
         }
         return result;
     }

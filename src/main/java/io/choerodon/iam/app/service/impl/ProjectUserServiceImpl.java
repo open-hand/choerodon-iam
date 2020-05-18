@@ -58,12 +58,12 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
                     start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotalElements(count);
-            result.addAll(users);
+            result.getContent().addAll(users);
         } else {
             List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
                     null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotalElements(users.size());
-            result.addAll(users);
+            result.getContent().addAll(users);
         }
         return result;
     }

@@ -583,7 +583,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
         } else {
             Page<ProjectDTO> result = new Page<>();
-            result.addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
+            result.getContent().addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
             result.setSize(result.size());
             return result;
         }

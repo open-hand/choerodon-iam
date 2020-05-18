@@ -20,11 +20,16 @@ import org.hzero.iam.infra.constant.LabelConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 
 /**
  * 〈功能简述〉
@@ -46,12 +51,15 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private MenuC7nMapper menuC7nMapper;
     private OrganizationRoleC7nService organizationRoleC7nService;
     private RoleRepository roleRepository;
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               OrganizationRoleC7nService organizationRoleC7nService,
+                              ProjectMapCategoryMapper projectMapCategoryMapper,
                               RoleRepository roleRepository) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.roleRepository = roleRepository;
     }
 
@@ -66,33 +74,32 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
     @Override
     public List<Menu> listNavMenuTree(Set<String> labels, Long projectId) {
-        CustomUserDetails self = UserUtils.getUserDetails();
-        List<Long> roleIds = self.roleMergeIds();
-        Long tenantId = self.getTenantId();
-
-        if (labels == null) {
+        if (projectId != null) {
             labels = new HashSet<>();
+            List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);
+            if (CollectionUtils.isEmpty(list)) {
+                throw new CommonException("error.project.category");
+            }
+            for (ProjectCategoryDTO t : list) {
+                labels.add(t.getCode());
+            }
         }
-        labels.add(CHOERODON_MENU);
-
-        CompletableFuture<List<Menu>> f1;
-        Set<String> finalLabels = new HashSet<>(labels);
-        String finalLang = LanguageHelper.language();
-
         if (labels.contains(USER_MENU)) {
+            CompletableFuture<List<Menu>> f1;
+            Set<String> finalLabels = new HashSet<>(labels);
+            String finalLang = LanguageHelper.language();
             f1 = CompletableFuture.supplyAsync(() -> menuC7nMapper.selectUserMenus(finalLang, finalLabels), SELECT_MENU_POOL);
+            CompletableFuture<List<Menu>> cf = f1
+                    // 转换成树形结构
+                    .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
+                    .exceptionally((e) -> {
+                        LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
+                        return Collections.emptyList();
+                    });
+            return cf.join();
         } else {
-            // 查询角色关联的菜单
-            f1 = CompletableFuture.supplyAsync(() -> menuC7nMapper.selectRoleMenus(roleIds, tenantId, projectId, finalLang, finalLabels), SELECT_MENU_POOL);
+            return null;
         }
-        CompletableFuture<List<Menu>> cf = f1
-                // 转换成树形结构
-                .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
-                .exceptionally((e) -> {
-                    LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
-                    return Collections.emptyList();
-                });
 
-        return cf.join();
     }
 }

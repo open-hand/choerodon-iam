@@ -11,6 +11,12 @@ import java.util.List;
 public interface WorkCalendarHolidayRefService {
 
     /**
+     * 按年份更新日历
+     *
+     * @param year year
+     */
+    void updateWorkCalendarHolidayRefByYear(Integer year);
+    /**
      * 根据年份查询工作日历
      *
      * @param year year

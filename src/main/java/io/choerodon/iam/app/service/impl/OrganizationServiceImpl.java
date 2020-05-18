@@ -333,7 +333,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return organizationMapper.selectByIds(ids);
+            return organizationMapper.selectByOrgIds(ids);
         }
     }
 

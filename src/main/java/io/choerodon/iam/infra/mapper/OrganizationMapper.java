@@ -1,16 +1,16 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
+
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.infra.dto.OrgSharesDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 import io.choerodon.mybatis.common.BaseMapper;
-
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Tenant;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai
@@ -42,7 +42,7 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDTO> {
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
-    List<OrganizationDTO> selectByIds(@Param("ids") Set<Long> ids);
+    List<OrganizationDTO> selectByOrgIds(@Param("ids") Set<Long> ids);
 
     /**
      * 获取所有组织{id,name}

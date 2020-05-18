@@ -9,6 +9,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_category.groovy') {
             column(name: 'CODE', type: 'VARCHAR(255)', remarks: '') {
                 constraints(nullable: false)
             }
+            column(name: 'LABEL_CODE', type: 'VARCHAR(255)', remarks: '') {
+                constraints(nullable: false)
+            }
             column(name: 'DESCRIPTION', type: 'VARCHAR(255)', remarks: '')
             column(name: 'NAME', type: 'VARCHAR(255)', remarks: '') {
                 constraints(nullable: false)

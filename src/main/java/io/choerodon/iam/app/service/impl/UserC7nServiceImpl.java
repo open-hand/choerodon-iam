@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -330,7 +331,12 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Page<User> pagingQueryAdminUsers(PageRequest pageable, String loginName, String realName, String params) {
-        return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
+        // TODO 分页排序有问题，暂时不使用分页排序功能
+//        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
+        List<User> userList = userC7nMapper.selectAdminUserPage(loginName, realName, params, null);
+        PageInfo pageInfo = new PageInfo(1, 10);
+        Page<User> result = new Page<>(userList, pageInfo, userList.size());
+        return result;
     }
 
     /**

@@ -13,10 +13,7 @@ import org.hzero.core.exception.NotLoginException;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Optional;
@@ -35,11 +32,12 @@ public class RoleC7nController {
     @ApiOperation("角色查询 - 查询当前用户自己的角色")
     @Permission(permissionLogin = true)
     @GetMapping("/{organizationId}/roles/self/roles")
-    public ResponseEntity<Page<RoleC7nDTO>> listSelfRole(@PathVariable("organizationId") Long organizationId,
-                                                         @ApiIgnore
-                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Results.success(roleC7nService.listRole(organizationId,
-                Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId(),
-                pageRequest));
+    public ResponseEntity<Page<RoleC7nDTO>> listSelfRole(@ApiIgnore
+                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                         @PathVariable("organizationId") Long organizationId,
+                                                         @RequestParam(required = false) String name,
+                                                         @RequestParam(required = false) String level,
+                                                         @RequestParam(required = false) String params) {
+        return Results.success(roleC7nService.listRole(pageRequest, organizationId, name, level, params));
     }
 }

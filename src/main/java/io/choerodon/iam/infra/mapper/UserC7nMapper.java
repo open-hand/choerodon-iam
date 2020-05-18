@@ -1,15 +1,15 @@
 package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
 import java.sql.Date;
 import java.util.List;
 import java.util.Set;
+
 
 /**
  * @author scp
@@ -164,7 +164,7 @@ public interface UserC7nMapper {
      * @param projectId
      * @return
      */
-    List<RoleDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
+    List<RoleC7nDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
 
     List<User> listOrgAdministrator(@Param("organizationId") Long organizationId,
                                     @Param("realName") String realName,
@@ -302,5 +302,28 @@ public interface UserC7nMapper {
      */
     List<User> listUsersByNameWithLimit(@Param("projectId") Long projectId,
                                         @Param("param") String param);
+
+    /**
+     * 查询用户有管理权限的组织id集合
+     *
+     * @param userId
+     * @param orgIds
+     * @return
+     */
+    Set<Long> listManagedOrgIdByUserId(@Param("userId") Long userId,
+                                       @Param("orgIds") Set<Long> orgIds);
+
+    UserDTO queryUserByLoginName(@Param("loginName") String loginName);
+
+    List<User> listUsersWithGitlabLabel(@Param("projectId") Long sourceId,
+                                        @Param("labelName") String labelName,
+                                        @Param("roleAssignmentSearchDTO")
+                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                        @Param("param") String param);
+
+
+    Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
+
+    Set<String> matchPhone(@Param("phoneSet") Set<String> phoneSet);
 }
 

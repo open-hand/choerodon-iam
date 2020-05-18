@@ -29,6 +29,17 @@
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
     </resultMap>
 
+    <resultMap id="UserRoleVO" type="io.choerodon.iam.api.vo.UserRoleVO" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="level" column="source_type"/>
+        <result property="isEnabled" column="is_enabled"/>
+        <result property="roleNames" column="roles"/>
+        <result property="projName" column="proj_name"/>
+    </resultMap>
+
     <select id="queryRolesInfoByUser" resultMap="RoleDTO">
         SELECT role.*
         FROM
@@ -44,7 +55,7 @@
         SELECT ir.*
         FROM iam_role ir
         LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
-        INNER JOIN iam_label il ON  irl.label_id = il.id
+        INNER JOIN iam_label il ON irl.label_id = il.id
         WHERE ir.h_tenant_id = #{tenantId} AND il.name = #{labelName}
     </select>
 
@@ -57,12 +68,119 @@
         AND il.type = #{type}
         <choose>
             <when test="organizationId != null">
-                AND ir.organization_id = #{organizationId}
+                AND ir.h_tenant_id = #{organizationId}
             </when>
             <otherwise>
-                AND ir.organization_id is null
+                AND ir.h_tenant_id is null
             </otherwise>
         </choose>
+    </select>
+    <select id="listRolesByTenantIdAndLableWithOptions" resultType="org.hzero.iam.domain.entity.Role">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        <where>
+            hlr.data_type = 'ROLE' AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
+            <!-- 模糊匹配role.name -->
+            <if test="param != null and param.name != null">
+                AND ir.name LIKE concat(concat('%', #{param.name}), '%')
+            </if>
+        </where>
+    </select>
+    <select id="getOrgAdminByUserIdAndTenantId" resultType="org.hzero.iam.domain.entity.Role">
+        SELECT ir.*
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.source_id = #{tenantId}
+        AND imr.member_id = 1
+        AND hlr.data_type = 'ROLE'
+        AND il.name = 'TENANT_ADMIN' OR ir.`code` = 'role/organization/default/administrator'
+    </select>
+
+    <select id="selectRoles" resultMap="UserRoleVO">
+        <if test="level == null or level == 'site'">
+            SELECT
+            0 AS id,
+            'Choerodon' AS name,
+            'Choerodon' AS code,
+            1 AS is_enabled,
+            imr.source_type,
+            GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
+            'site' as image_url,
+            null AS proj_name
+            FROM iam_member_role imr
+            INNER JOIN iam_role ir ON imr.role_id = ir.id
+            WHERE imr.member_type = 'user' AND imr.source_type = 'site' AND imr.member_id = #{userId}
+            <if test="name != null">
+                AND 'Choerodon' LIKE concat(concat('%', #{name}), '%')
+            </if>
+            <if test="params != null">
+                AND 'Choerodon' LIKE concat(concat('%', #{params}), '%')
+            </if>
+            GROUP BY imr.source_type
+        </if>
+        <if test="level == null">
+            UNION
+        </if>
+        <if test="level == null or level == 'organization'">
+            SELECT
+            fo.tenant_id AS id,
+            fo.tenant_name AS name,
+            fo.tenant_num AS code,
+            fo.enabled_flag AS is_enabled,
+            imr.source_type,
+            GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
+            'organization' as image_url,
+            null AS proj_name
+            FROM iam_member_role imr
+            INNER JOIN iam_role ir ON imr.role_id = ir.id
+            INNER JOIN hpfm_tenant fo ON imr.source_id = fo.tenant_id
+            WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
+            fo.enabled_flag = 1
+            <if test="name != null">
+                AND fo.tenant_name LIKE concat(concat('%', #{name}), '%')
+            </if>
+            <if test="params != null">
+                AND fo.tenant_name LIKE concat(concat('%', #{params}), '%')
+            </if>
+            group by fo.tenant_id
+        </if>
+        <if test="level == null">
+            UNION
+        </if>
+        <if test="level == null or level == 'project'">
+            SELECT
+            fp.id,
+            CONCAT(fo.tenant_name, CONCAT(' / ', fp.name)) AS name,
+            fp.code,
+            fp.is_enabled,
+            imr.source_type,
+            GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
+            fp.image_url,
+            fp.name AS proj_name
+            FROM iam_member_role imr
+            INNER JOIN iam_role ir ON imr.role_id = ir.id
+            INNER JOIN fd_project fp ON imr.source_id = fp.id
+            INNER JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
+            WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId} AND
+            fp.is_enabled = 1
+            <if test="name != null">
+                AND fp.name LIKE concat(concat('%', #{name}), '%')
+            </if>
+            <if test="params != null">
+                AND fp.name LIKE concat(concat('%', #{params}), '%')
+            </if>
+            group by fp.id
+        </if>
+    </select>
+
+    <select id="selectByCode" resultMap="RoleMap">
+        SELECT ir.*
+        FROM iam_role ir
+        WHERE ir.code = #{code,jdbcType=VARCHAR}
     </select>
 
 </mapper>

@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.data.domain.Pageable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
@@ -53,5 +53,21 @@ public interface ProjectC7nService {
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
 
-    
+
+    /**
+     * 查询所有项目
+     * @return
+     */
+    List<ProjectDTO> listAllProjects();
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     * @param projectId
+     * @param userId
+     * @param email
+     * @param pageRequest
+     * @param param
+     * @return
+     */
+    Page<UserDTO> pagingQueryTheUsersOfProject(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
 }

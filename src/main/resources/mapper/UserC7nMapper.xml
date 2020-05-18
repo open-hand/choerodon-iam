@@ -49,7 +49,7 @@
         </collection>
     </resultMap>
 
-    <resultMap id="RoleMap" type="io.choerodon.iam.infra.dto.RoleDTO">
+    <resultMap id="RoleMap" type="io.choerodon.iam.infra.dto.RoleC7nDTO">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="code" property="code"/>
@@ -511,11 +511,9 @@
         INNER JOIN iam_role_label irl ON irl.label_id = il.id
         INNER JOIN iam_role ir ON ir.id = irl.role_id
         AND ir.is_enabled = TRUE
-        AND ir.RESOURCE_LEVEL = 'project'
-        INNER JOIN iam_member_role imr ON imr.member_id = iu.id and imr.role_id=ir.id
+        INNER JOIN fd_project_user imr ON imr.member_id = iu.id and imr.role_id=ir.id
         <where>
-            imr.member_type = 'user' and imr.source_type = 'project'
-            AND imr.source_id = #{projectId}
+            AND imr.PROJECT_ID = #{projectId}
             <if test="roleAssignmentSearchDTO != null">
                 <if test="roleAssignmentSearchDTO.loginName != null">
                     AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
@@ -619,12 +617,6 @@
         <foreach item="item" index="index" collection="phoneSet" open="(" separator="," close=")">
             #{item}
         </foreach>
-    </select>
-
-    <select id="listUserIds" resultType="java.lang.Long">
-        SELECT id
-        from iam_user
-        where is_enabled = 1
     </select>
 
     <select id="totalNumberOfUsers" resultType="java.lang.Integer">
@@ -1084,5 +1076,29 @@
         </if>
         GROUP BY iu.id
         limit 20
+    </select>
+
+    <select id="listManagedOrgIdByUserId" resultType="java.lang.Long">
+        SELECT imr.source_id
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        <where>
+            imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId}
+            AND imr.member_id = 1
+            AND hlr.data_type = 'ROLE'
+            AND il.name = 'TENANT_ADMIN'
+            AND imr.source_id in
+            <foreach collection="orgIds" separator="," open="(" close=")" item="orgId" index="i">
+                #{orgId}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="queryUserByLoginName" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        SELECT iu.*
+        FROM iam_user iu
+        WHERE iu.login_name = #{loginName,jdbcType=VARCHAR}
     </select>
 </mapper>

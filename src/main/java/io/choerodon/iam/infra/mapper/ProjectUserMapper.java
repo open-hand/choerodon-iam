@@ -4,8 +4,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.RoleDTO;
 
+import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -101,4 +105,68 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @return 角色id列表
      */
     List<Long> listProjectRoleIds(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
+    /**
+     * 统计项目下角色分配用户数
+     * @param projectId
+     * @return
+     */
+    List<RoleUserCountVO> countProjectRoleUser(@Param("projectId")Long projectId);
+
+    /**
+     * 根据projectId和param模糊查询loginName和realName两列
+     * @param projectId
+     * @param userId
+     * @param email
+     * @param param
+     * @return
+     */
+    List<UserDTO> selectUsersByOptions(@Param("projectId") Long projectId,
+                                       @Param("userId") Long userId,
+                                       @Param("email") String email,
+                                       @Param("param") String param);
+
+    /**
+     *
+     * @param projectId
+     * @param roleId
+     * @param roleAssignmentSearchDTO
+     * @param param
+     * @return
+     */
+    List<UserDTO> listProjectUsersByRoleIdAndOptions(@Param("projectId")Long projectId,
+                                                     @Param("roleId") Long roleId,
+                                                     @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                     @Param("param") String param);
+
+    /*
+     * 根据项目查询项目成员和传入的敏捷用户
+     */
+    List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
+                                              @Param("userIds") Set<Long> userIds,
+                                              @Param("param") String param);
+
+    /**
+     * 查询用户在项目下拥有的角色
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                @Param("userId") Long userId);
+
+    /**
+     * 查询项目下用户列表以及拥有的角色
+     * @param projectId
+     * @param roleAssignmentSearchDTO
+     * @return
+     */
+    List<UserDTO> listUserWithRolesOnProjectLevel(@Param("projectId") Long projectId,
+                                                  @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
+                                  @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    List<ProjectUserVO> listByProjectIdAndUserIds(@Param("projectId")Long projectId,
+                                                  @Param("userIds")Set<Long> userIds);
 }

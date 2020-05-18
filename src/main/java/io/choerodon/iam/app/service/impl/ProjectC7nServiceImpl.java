@@ -1,26 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.AgileProjectInfoVO;
-import io.choerodon.iam.app.service.OrganizationProjectC7nService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.infra.feign.AgileFeignClient;
-import io.choerodon.iam.infra.feign.TestManagerFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -33,12 +20,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.AgileProjectInfoVO;
+import io.choerodon.iam.app.service.OrganizationProjectC7nService;
+import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
+import io.choerodon.iam.infra.feign.AgileFeignClient;
+import io.choerodon.iam.infra.feign.TestManagerFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -76,6 +82,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private TenantMapper organizationMapper;
     private AgileFeignClient agileFeignClient;
     private TestManagerFeignClient testManagerFeignClient;
+    private ProjectUserMapper projectUserMapper;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  SagaClient sagaClient,
@@ -87,7 +94,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  UserAssertHelper userAssertHelper,
                                  TenantMapper organizationMapper,
                                  TestManagerFeignClient testManagerFeignClient,
-                                 AgileFeignClient agileFeignClient) {
+                                 AgileFeignClient agileFeignClient,
+                                 ProjectUserMapper projectUserMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.sagaClient = sagaClient;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -99,6 +107,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.organizationMapper = organizationMapper;
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
+        this.projectUserMapper = projectUserMapper;
     }
 
     @Override
@@ -228,6 +237,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return projectDTOS.stream()
                 .filter(project -> !project.getId().equals(projectId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> listAllProjects() {
+        return projectMapper.selectAll();
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryTheUsersOfProject(Long projectId, Long userId, String email, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptions(projectId, userId, email, param));
     }
 
     @Override

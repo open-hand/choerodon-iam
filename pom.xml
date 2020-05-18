@@ -11,6 +11,10 @@
     <artifactId>hzero-iam</artifactId>
     <version>0.22.0-SNAPSHOT</version>
 
+    <properties>
+        <deploy.classifier/>
+    </properties>
+
     <dependencies>
         <!-- 数据库驱动 -->
         <dependency>
@@ -30,8 +34,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-asgard</artifactId>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-asgard</artifactId>
         </dependency>
 
         <dependency>
@@ -62,6 +66,10 @@
             <groupId>org.hzero.boot</groupId>
             <artifactId>hzero-boot-monitor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hzero.boot</groupId>
+            <artifactId>hzero-boot-message</artifactId>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -85,6 +93,16 @@
 
 
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>${deploy.classifier}</classifier>
+                    <mainClass>io.choerodon.iam.IamApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
         <finalName>app</finalName>
     </build>
 

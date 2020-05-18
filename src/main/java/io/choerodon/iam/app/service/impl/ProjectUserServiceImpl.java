@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -11,15 +13,19 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -120,5 +126,48 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         // TODO by zmf
         return null;
 //        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        if (Boolean.TRUE.equals(doPage)) {
+            return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.listProjectUsersByRoleIdAndOptions(projectId, roleId, roleAssignmentSearchDTO, param));
+        } else {
+            Page<UserDTO> page = new Page<>();
+            page.setContent(projectUserMapper.listProjectUsersByRoleIdAndOptions(projectId, roleId, roleAssignmentSearchDTO, param));
+            return page;
+        }
+    }
+
+    @Override
+    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
+        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param));
+    }
+
+    @Override
+    public List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId) {
+        return projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId) {
+        Page<UserDTO> userList = PageHelper.doPage(pageRequest, () -> projectUserMapper.listProjectUser(projectId, roleAssignmentSearchDTO));
+        if (userList == null && userList.size() < 1) {
+            return userList;
+        }
+        Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
+        List<ProjectUserVO> projectUserVOS = projectUserMapper.listByProjectIdAndUserIds(projectId, userIds);
+        Map<Long, List<ProjectUserVO>> map = projectUserVOS.stream().collect(Collectors.groupingBy(ProjectUserVO::getMemberId));
+
+
+        userList.forEach(userDTO -> {
+            List<ProjectUserVO> proejctUserList = map.get(userDTO.getId());
+            if (!CollectionUtils.isEmpty(proejctUserList)) {
+                userDTO.setRoles(proejctUserList.stream().map(ProjectUserVO::getRole).collect(Collectors.toList()));
+            }
+        });
+
+        return userList;
     }
 }

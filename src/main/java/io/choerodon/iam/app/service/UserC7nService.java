@@ -1,25 +1,26 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UserInfoDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.vo.UserVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.OrgAdministratorVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -160,6 +161,19 @@ public interface UserC7nService {
      */
     Boolean checkIsGitlabOwner(Long id, Long projectId, String level);
 
+
+    /**
+     * 校验用户是否是项目的所有者
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return true 是
+     */
+    Boolean checkIsProjectOwner(Long userId, Long projectId);
+
+    Page<OrgAdministratorVO> pagingQueryOrgAdministrator(PageRequest Pageable, Long organizationId,
+                                                         String realName, String loginName, String params);
+
     /**
      * 异步
      * 向用户发送通知（包括邮件和站内信）
@@ -288,4 +302,10 @@ public interface UserC7nService {
     void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);
 
     User updateUserDisabled(Long userId);
+
+    UserDTO queryByLoginName(String loginName);
+
+    List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    UserVO selectSelf();
 }

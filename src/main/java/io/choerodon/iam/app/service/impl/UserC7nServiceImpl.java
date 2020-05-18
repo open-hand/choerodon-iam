@@ -1,25 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -42,19 +23,13 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ImageUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.SagaTopic;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -66,6 +41,8 @@ import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
@@ -161,6 +138,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private ProjectUserMapper projectUserMapper;
 
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public User queryInfo(Long userId) {
@@ -545,12 +524,10 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
-        List<RoleDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        if (!CollectionUtils.isEmpty(roleDTOList)) {
+        List<RoleC7nDTO> roleC7nDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        if (!CollectionUtils.isEmpty(roleC7nDTOList)) {
             List<Label> labels = new ArrayList<>();
-            roleDTOList.stream().forEach(t -> {
-                labels.addAll(t.getLabels());
-            });
+            roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
             if (level.equals(ResourceLevel.PROJECT.value())) {
                 return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
@@ -559,6 +536,37 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
         }
         return false;
+    }
+
+    @Override
+    public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_OWNER.value().equals(v.getCode()));
+    }
+
+    @Override
+    public Page<OrgAdministratorVO> pagingQueryOrgAdministrator(PageRequest pageable, Long organizationId,
+                                                                String realName, String loginName, String params) {
+        Page<UserDTO> userDTOPageInfo = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrgAdministrator(organizationId, realName, loginName, params));
+        List<UserDTO> userDTOList = userDTOPageInfo.getContent();
+        List<OrgAdministratorVO> orgAdministratorVOS = new ArrayList<>();
+        Page<OrgAdministratorVO> pageInfo = new Page<>();
+        BeanUtils.copyProperties(userDTOPageInfo, pageInfo);
+        if (!CollectionUtils.isEmpty(userDTOList)) {
+            userDTOList.forEach(user -> {
+                OrgAdministratorVO orgAdministratorVO = new OrgAdministratorVO();
+                orgAdministratorVO.setEnabled(user.getEnabled());
+                orgAdministratorVO.setLocked(user.getLocked());
+                orgAdministratorVO.setUserName(user.getRealName());
+                orgAdministratorVO.setId(user.getId());
+                orgAdministratorVO.setLoginName(user.getLoginName());
+                orgAdministratorVO.setCreationDate(user.getCreationDate());
+                orgAdministratorVO.setExternalUser(!organizationId.equals(user.getOrganizationId()));
+                orgAdministratorVOS.add(orgAdministratorVO);
+            });
+            pageInfo.setContent(orgAdministratorVOS);
+        }
+        return pageInfo;
     }
 
     private Long getRoleByCode(String code) {
@@ -824,6 +832,17 @@ public class UserC7nServiceImpl implements UserC7nService {
         return updateSelective(user);
     }
 
+    @Override
+    public UserDTO queryByLoginName(String loginName) {
+        return userC7nMapper.queryUserByLoginName(Objects.requireNonNull(loginName));
+    }
+
+    @Override
+    public List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return ConvertUtils.convertList(userC7nMapper.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO, param), UserDTO.class);
+    }
+
     private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
@@ -848,5 +867,14 @@ public class UserC7nServiceImpl implements UserC7nService {
             throw new UpdateException("error.user.update");
         }
         return userMapper.selectByPrimaryKey(user);
+    }
+
+    @Override
+    public UserVO selectSelf() {
+        UserVO userVO = userRepository.selectSelf();
+        User user = new User();
+        user.setId(userVO.getId());
+        userVO.setObjectVersionNumber(userRepository.selectOne(user).getObjectVersionNumber());
+        return userVO;
     }
 }

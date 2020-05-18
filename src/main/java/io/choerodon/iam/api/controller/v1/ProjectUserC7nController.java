@@ -45,7 +45,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest PageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
             @RequestParam(required = false) String loginName,
             @ApiParam(value = "用户名")
@@ -56,7 +56,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) Boolean enabled,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, PageRequest, loginName, realName, roleName,
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
 
@@ -109,7 +109,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "查询项目下的用户列表(根据登录名或真实名称搜索)")
     @GetMapping(value = "/{project_id}/users/search_by_name")
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
-                                                      @RequestParam(required = false) String param) {
+                                                         @RequestParam(required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByName(projectId, param));
     }
 
@@ -126,7 +126,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)")
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
     public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestParam(name = "param", required = false) String param) {
+                                                                  @RequestParam(name = "param", required = false) String param) {
         return ResponseEntity.ok(userService.listUsersByNameWithLimit(projectId, param));
     }
 
@@ -135,6 +135,21 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
-        return ResponseEntity.ok(userService.checkEnableCreateUser(projectId));
+//        return ResponseEntity.ok(userService.checkEnableCreateUser(projectId));
+        return ResponseEntity.ok(Boolean.TRUE);
     }
+
+    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
+    @PostMapping(value = "/{project_id}/agile_users")
+    @CustomPageRequest
+    public ResponseEntity<Page<UserDTO>> agileUsers(@PathVariable(name = "project_id") Long id,
+                                                    @ApiIgnore
+                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC)
+                                                            PageRequest pageable,
+                                                    @RequestBody Set<Long> userIds,
+                                                    @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+    }
+
 }

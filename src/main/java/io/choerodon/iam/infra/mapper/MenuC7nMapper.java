@@ -23,18 +23,14 @@ public interface MenuC7nMapper {
      * <li>平台管理员/租户管理员角色能够查看所有菜单树</li>
      * <li>其他角色只能查看其分配了菜单权限集的菜单树</li> </lu>
      *
-     * @param roleIds   角色合并的ID集合
-     * @param tenantId  租户ID
-     * @param projectId 项目ID
-     * @param lang      菜单语言
-     * @param labels    标签IDs
+     * @param roleIds  角色合并的ID集合
+     * @param tenantId 租户ID
+     * @param lang     菜单语言
+     * @param labels 标签IDs
      * @return 经过权限检测过后的菜单树
      */
-    List<Menu> selectRoleMenus(@Param("roleIds") List<Long> roleIds,
-                               @Param("tenantId") Long tenantId,
-                               @Param("projectId") Long projectId,
-                               @Param("lang") String lang,
-                               @Param("labels") Set<String> labels);
+    List<Menu> selectRoleMenus(@Param("roleIds") List<Long> roleIds, @Param("tenantId") Long tenantId,
+                               @Param("lang") String lang, @Param("labels") Set<String> labels);
 
 
     /**

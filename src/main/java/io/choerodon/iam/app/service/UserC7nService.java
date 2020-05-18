@@ -15,10 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.OrgAdministratorVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -151,6 +148,7 @@ public interface UserC7nService {
     Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
                                                     String roleName, Boolean enabled, Boolean locked, String params);
 
+    OrganizationProjectVO queryOrganizationProjectByUserId(Long userId);
 
     /**
      * 校验用户是否是项目的所有者

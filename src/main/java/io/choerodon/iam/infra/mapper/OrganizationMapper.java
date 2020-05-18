@@ -5,7 +5,9 @@ import io.choerodon.iam.infra.dto.OrgSharesDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
 
 import java.util.List;
 import java.util.Set;
@@ -22,8 +24,8 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDTO> {
             @Param("enabled") Boolean enabled,
             @Param("params") String params);
 
-    Set<OrganizationDTO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
-                                                        @Param("includedDisabled") Boolean includedDisabled);
+    Set<Tenant> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
+                                               @Param("includedDisabled") Boolean includedDisabled);
 
     Set<OrganizationDTO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
                                                 @Param("includedDisabled") Boolean includedDisabled);

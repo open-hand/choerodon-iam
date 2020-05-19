@@ -17,11 +17,6 @@ public class OrgSharesDTO {
     private String code;
     @ApiModelProperty(value = "是否停用")
     private Boolean enabled;
-    @ApiModelProperty(value = "组织类别Code")
-    private String categoryCode;
-    @ApiModelProperty(value = "组织类别Name")
-    private String categoryName;
-
 
     public Long getId() {
         return id;
@@ -53,21 +48,5 @@ public class OrgSharesDTO {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public String getCategoryCode() {
-        return categoryCode;
-    }
-
-    public void setCategoryCode(String categoryCode) {
-        this.categoryCode = categoryCode;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
     }
 }

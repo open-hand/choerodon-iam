@@ -96,8 +96,6 @@ public interface OrganizationService {
      */
     int countUserNum(Long organizationId);
 
-    List<Long> getoRoganizationByName(String name);
-
     List<TenantVO> selectSelfTenants(TenantDTO params);
 
     /**

@@ -464,11 +464,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<Long> getoRoganizationByName(String name) {
-        return organizationMapper.getoRoganizationByName(name);
-    }
-
-    @Override
     public List<TenantVO> selectSelfTenants(TenantDTO params) {
         CustomUserDetails self = UserUtils.getUserDetails();
         params.setUserId(self.getUserId());

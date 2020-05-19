@@ -27,19 +27,6 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDTO> {
     Set<Tenant> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
                                                @Param("includedDisabled") Boolean includedDisabled);
 
-    Set<OrganizationDTO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
-                                                @Param("includedDisabled") Boolean includedDisabled);
-
-    List<OrganizationDTO> selectOrganizationsWithRoles(
-            @Param("id") Long id,
-            @Param("start") Integer start,
-            @Param("size") Integer size,
-            @Param("params") String params);
-
-    List<Long> listMemberIds(@Param("orgId") Long orgId,
-                             @Param("orgName") String orgName);
-
-
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
     List<OrganizationDTO> selectByOrgIds(@Param("ids") Set<Long> ids);
@@ -77,6 +64,4 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDTO> {
     OrganizationDTO selectOwnOrgByUserId(@Param("userId") Long userId);
 
     ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
-
-    List<Long> getoRoganizationByName(@Param("name") String name);
 }

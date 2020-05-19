@@ -362,6 +362,19 @@ public class OrganizationServiceImpl implements OrganizationService {
         return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectAllOrgIdAndName());
     }
 
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        User example = new User();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
+    }
 
     @Override
     public Page<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest) {

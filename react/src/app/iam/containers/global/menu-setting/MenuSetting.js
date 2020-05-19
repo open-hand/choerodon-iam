@@ -7,7 +7,6 @@ import { Output, Form as ProForm, IconPicker } from 'choerodon-ui/pro';
 import { axios, Content, Header, Page, Permission, stores, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import _ from 'lodash';
-import { RESOURCES_LEVEL } from '@choerodon/master/lib/containers/common/constants';
 import { adjustSort, canDelete, defineLevel, deleteNode, findParent, hasDirChild, isChild, normalizeMenus } from './util';
 import './MenuSetting.scss';
 import '../../../common/ConfirmModal.scss';
@@ -58,11 +57,11 @@ const formItemLayout = {
 
 function findFirstLevel() {
   return ['site', 'organization', 'project', 'user']
-    .find(l => RESOURCES_LEVEL.indexOf(l) !== -1);
+    .find(l => Choerodon.RESOURCES_LEVEL.indexOf(l) !== -1);
 }
 
 function hasLevel(level) {
-  return RESOURCES_LEVEL.indexOf(level) !== -1;
+  return Choerodon.RESOURCES_LEVEL.indexOf(level) !== -1;
 }
 
 @Form.create({})

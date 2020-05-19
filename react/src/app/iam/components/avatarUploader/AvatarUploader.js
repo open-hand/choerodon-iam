@@ -69,7 +69,7 @@ export default class AvatarUploader extends Component {
     const data = new FormData();
     data.append('file', file);
     this.setState({ submitting: true });
-    axios.post(`/file/v1/cut_image?${qs}`, data)
+    axios.post(`/hfle/v1/cut_image?${qs}`, data)
       .then((res) => {
         if (res.failed) {
           Choerodon.prompt(res.message);

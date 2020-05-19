@@ -42,15 +42,16 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
   return {
     autoQuery: true,
     dataKey: null,
+    paging: false,
     transport: {
       read: {
-        url: `/iam/choerodon/v1/organizations/${organizationId}/password_policies`,
+        url: `/iam/v1/${organizationId}/password-policies`,
         method: 'get',
       },
       submit: (record) => {
         if (record.data[0].id) {
           return {
-            url: `/iam/choerodon/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
+            url: `/iam/v1/${organizationId}/password_policies/${record.data[0].id}`,
             method: 'post',
             transformRequest: (([data]) => {
               Object.keys(data).forEach((key) => {

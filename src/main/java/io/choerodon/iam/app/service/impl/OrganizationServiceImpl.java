@@ -333,7 +333,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return organizationMapper.selectByIds(ids);
+            return organizationMapper.selectByOrgIds(ids);
         }
     }
 
@@ -461,11 +461,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         User example = new User();
         example.setOrganizationId(organizationId);
         return userMapper.selectCount(example);
-    }
-
-    @Override
-    public List<Long> getoRoganizationByName(String name) {
-        return organizationMapper.getoRoganizationByName(name);
     }
 
     @Override

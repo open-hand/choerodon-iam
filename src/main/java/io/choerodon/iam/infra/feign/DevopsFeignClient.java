@@ -1,6 +1,5 @@
 package io.choerodon.iam.infra.feign;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +16,7 @@ import io.choerodon.iam.infra.feign.fallback.DevopsFeignClientFallback;
 @FeignClient(value = "devops-service", fallback = DevopsFeignClientFallback.class)
 public interface DevopsFeignClient {
     // todo devops
+
     /**
      * 校验email在gitlab中是否已经使用
      *
@@ -25,7 +25,8 @@ public interface DevopsFeignClient {
      */
     @GetMapping(value = "/gitlab/email/check")
     ResponseEntity<Boolean> checkGitlabEmail(@RequestParam(value = "email") String email);
-//
+
+    //
 //    @PostMapping("/v1/organizations/app_market/page_app_services")
 //    ResponseEntity<PageInfo<AppServiceUploadPayload>> pageByAppId(@RequestParam(value = "app_id") Long appId,
 //                                                                  @RequestParam("page") int page,
@@ -101,11 +102,18 @@ public interface DevopsFeignClient {
                                                                  @PathVariable(value = "project_id") Long projectId,
                                                                  @RequestParam("longList") List<Long> longList);
 
+    /**
+     * 格式 yyyy-MM-dd HH:mm:ss
+     *
+     * @param projectId 项目id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     */
     @GetMapping("/v1/projects/{project_id}/deploy_record/count_by_date")
     ResponseEntity<BarLabelRotationItemVO> countByDate(
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam("startTime") Date startTime,
-            @RequestParam("endTime") Date endTime);
+            @RequestParam("startTime") String startTime,
+            @RequestParam("endTime") String endTime);
 
     @PostMapping("/v1/users/list_by_ids")
     ResponseEntity<List<UserAttrVO>> listByUserIds(

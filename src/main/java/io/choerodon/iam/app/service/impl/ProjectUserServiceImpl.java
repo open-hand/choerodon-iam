@@ -17,12 +17,15 @@ import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -37,13 +40,19 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private ProjectUserMapper projectUserMapper;
     private DevopsFeignClient devopsFeignClient;
     private ProjectC7nService projectC7nService;
+    private ProjectAssertHelper projectAssertHelper;
+    private RoleC7nMapper roleC7nMapper;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
+                                  RoleC7nMapper roleC7nMapper,
+                                  ProjectAssertHelper projectAssertHelper,
                                   ProjectC7nService projectC7nService) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
+        this.roleC7nMapper = roleC7nMapper;
+        this.projectAssertHelper = projectAssertHelper;
     }
 
     @Override
@@ -58,12 +67,12 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
                     start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotalElements(count);
-            result.addAll(users);
+            result.getContent().addAll(users);
         } else {
             List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
                     null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result.setTotalElements(users.size());
-            result.addAll(users);
+            result.getContent().addAll(users);
         }
         return result;
     }
@@ -122,10 +131,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public Boolean checkEnableCreateUser(Long projectId) {
-        ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
-        // TODO by zmf
-        return null;
-//        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
+        return Boolean.TRUE;
     }
 
     @Override
@@ -170,4 +176,12 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
         return userList;
     }
+
+
+    @Override
+    public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
+        return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+    }
+
 }

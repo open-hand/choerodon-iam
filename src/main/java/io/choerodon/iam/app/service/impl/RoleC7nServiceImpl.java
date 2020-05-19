@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 import io.choerodon.iam.api.vo.UserRoleVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
@@ -10,6 +11,7 @@ import io.choerodon.iam.infra.constant.LabelC7nConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -17,6 +19,7 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -72,9 +76,11 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public Page<RoleC7nDTO> listRole(Long tenantId, Long userId, PageRequest pageRequest) {
+    public Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params) {
+        Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
         List<RoleC7nDTO> roleDTOList = new ArrayList<>();
-        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
+
+        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);
@@ -94,5 +100,18 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             roleDTOList.add(roleC7nDTO);
         });
         return PageUtils.copyPropertiesAndResetContent(result, roleDTOList);
+    }
+
+    @Override
+    public Page<RoleDTO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
+        String labelName;
+        if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+            labelName = RoleLabelEnum.TENANT_ROLE.value();
+        } else {
+            labelName = RoleLabelEnum.PROJECT_ROLE.value();
+            level = ResourceLevel.ORGANIZATION.value();
+        }
+        String finalLevel = level;
+        return PageHelper.doPage(pageRequest, () -> roleC7nMapper.fulltextSearch(tenantId, name, code, finalLevel, builtIn, enabled, labelName, params));
     }
 }

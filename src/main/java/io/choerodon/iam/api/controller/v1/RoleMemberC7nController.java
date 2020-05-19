@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -58,7 +59,9 @@ public class RoleMemberC7nController extends BaseController {
         return ResponseEntity.ok(roleC7nService.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO));
     }
 
-    /** 项目层分页查询角色下的用户
+    /**
+     * 项目层分页查询角色下的用户
+     *
      * @param roleId
      * @param projectId
      * @param roleAssignmentSearchDTO
@@ -87,14 +90,14 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "查询用户在项目下拥有的角色")
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
-                                                                           @PathVariable(name = "user_id") Long userId) {
+                                                                          @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(projectUserService.listRolesByProjectIdAndUserId(projectId, userId));
     }
 
     /**
      * 在项目层查询用户，用户包含拥有的project层的角色
      *
-     * @param projectId                项目id
+     * @param projectId               项目id
      * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -108,4 +111,15 @@ public class RoleMemberC7nController extends BaseController {
         return ResponseEntity.ok(projectUserService.pagingQueryUsersWithRoles(
                 pageRequest, roleAssignmentSearchDTO, projectId));
     }
+
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目层查询角色列表")
+    @GetMapping(value = "/projects/{project_id}/roles")
+    public ResponseEntity<List<RoleDTO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                 @RequestParam(name = "role_name") String roleName,
+                                                                 @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
+                                                                         Boolean onlySelectEnable) {
+        return new ResponseEntity<>(projectUserService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
+    }
+
 }

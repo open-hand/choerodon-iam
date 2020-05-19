@@ -128,6 +128,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         int size = pageable.getSize();
         boolean doPage = (size != 0);
         Page<User> result = IamPageUtils.createEmptyPage(page, size);
+        result.setContent(new ArrayList<>());
         if (doPage) {
             int start = IamPageUtils.getBegin(page, size);
             int count = userC7nMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
@@ -135,12 +136,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             List<User> users = userC7nMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
                     organizationId, loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(count);
-            result.addAll(users);
+            result.getContent().addAll(users);
         } else {
             List<User> users = userC7nMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
                     organizationId, loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(users.size());
-            result.addAll(users);
+            result.getContent().addAll(users);
         }
         return result;
     }

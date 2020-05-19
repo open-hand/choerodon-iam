@@ -1,10 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -33,14 +35,17 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
@@ -140,6 +145,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
 
     @Override
     public User queryInfo(Long userId) {
@@ -329,8 +336,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
-    public Page<User> pagingQueryAdminUsers(PageRequest pageable, String loginName, String realName, String params) {
-        return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
+    public Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params) {
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
     }
 
     /**
@@ -419,7 +426,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         int start = PageUtils.getBegin(page, size);
         int count = memberRoleC7nMapper.selectCountBySourceId(id, "organization");
         result.setSize(count);
-        result.addAll(tenantC7nMapper.selectOrganizationsWithRoles(id, start, size, params));
+        result.getContent().addAll(tenantC7nMapper.selectOrganizationsWithRoles(id, start, size, params));
         return result;
     }
 
@@ -433,7 +440,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (size == 0) {
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
             result.setSize(projectList.size());
-            result.addAll(projectList);
+            result.getContent().addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
             ProjectUserDTO projectUserDTO = new ProjectUserDTO();
@@ -441,7 +448,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             int count = projectUserMapper.selectCount(projectUserDTO);
             result.setSize(count);
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-            result.addAll(projectList);
+            result.getContent().addAll(projectList);
         }
         return result;
     }
@@ -488,18 +495,31 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(count);
-            result.addAll(users);
+            result.getContent().addAll(users);
         } else {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
             result.setTotalElements(users.size());
-            result.addAll(users);
+            result.getContent().addAll(users);
         }
         return result;
     }
 
     @Override
+    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
+        OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
+        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+                OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setEnabled(true);
+        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
+                .stream().map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
+        return organizationProjectDTO;
+    }
+
+    @Override
     public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        // TODO
         return null;
     }
 
@@ -529,11 +549,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<Label> labels = new ArrayList<>();
             roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
-            if (level.equals(ResourceLevel.PROJECT.value())) {
-                return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
-            } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
-                return labelNameLists.contains(RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value());
-            }
+            return labelNameLists.contains(RoleLabelEnum.GITLAB_OWNER.value());
         }
         return false;
     }
@@ -541,7 +557,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
         List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_OWNER.value().equals(v.getCode()));
+        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_ADMIN.value().equals(v.getCode()));
     }
 
     @Override
@@ -872,9 +888,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public UserVO selectSelf() {
         UserVO userVO = userRepository.selectSelf();
-        User user = new User();
-        user.setId(userVO.getId());
-        userVO.setObjectVersionNumber(userRepository.selectOne(user).getObjectVersionNumber());
+        User user = userRepository.selectByPrimaryKey(userVO.getId());
+        userVO.setObjectVersionNumber(user.getObjectVersionNumber());
+        userVO.setAdmin(user.getAdmin());
+        if (!user.getAdmin()) {
+            List<TenantDTO> list = tenantRepository.selectSelfTenants(null);
+            if (CollectionUtils.isEmpty(list)) {
+                throw new CommonException("error.get.user.tenants");
+            }
+            userVO.setRecentAccessTenantList(ConvertUtils.convertList(list, Tenant.class));
+        }
         return userVO;
     }
 }

@@ -241,7 +241,14 @@
 
 
     <select id="selectUsersByOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
-        SELECT iu.*
+        SELECT iu.id, iu.login_name, iu.email, iu.organization_id,
+        iu.real_name, iu.phone, iu.INTERNATIONAL_TEL_CODE,
+        iu.image_url, iu.profile_photo, iu.time_zone,
+        iu.last_password_updated_at, iu.last_login_at, iu.is_enabled AS enabled,
+        iu.is_locked AS locked, iu.is_ldap AS ldap, iu.is_admin AS admin, iu.locked_until_at,
+        iu.password_attempt, iu.object_version_number, iu.created_by,
+        iu.creation_date, iu.last_updated_by, iu.last_update_date,
+        iu.user_type
         FROM iam_user iu
         LEFT JOIN fd_project_user fpu ON fpu.MEMBER_ID = iu.id
         <where>
@@ -254,13 +261,12 @@
             </if>
             <if test="param != null">
                 AND (
-                iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iam_user.real_name LIKE concat(concat('%',#{param}),'%')
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
-
         </where>
-
+        group by iu.id
     </select>
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
@@ -407,4 +413,5 @@
             #{userId}
         </foreach>
     </select>
+
 </mapper>

@@ -5,15 +5,50 @@ package io.choerodon.iam.infra.enums;
  */
 public enum RoleLabelEnum {
 
-    PROJECT_OWNER("project.owner"),
+    /**
+     * 项目层角色标签
+     */
+    PROJECT_ROLE("PROJECT_ROLE"),
 
-    PROJECT_ROLE("project_role"),
+    /**
+     * 项目所有者标签
+     */
+    PROJECT_ADMIN("PROJECT_ADMIN"),
 
-    PROJECT_GITLAB_OWNER("project.gitlab.owner"),
+    /**
+     * 项目成员标签
+     */
+    PROJECT_MEMBER("PROJECT_MEMBER"),
 
-    ORGANIZATION_OWNER("organization.owner"),
+    /**
+     * gitlab 项目所有者标签
+     */
+    GITLAB_OWNER("GITLAB_OWNER"),
 
-    ORGANIZATION_GITLAB_OWNER("organization.gitlab.owner");
+    /**
+     * gitlab 项目成员标签
+     */
+    GITLAB_DEVELOPER("GITLAB_DEVELOPER"),
+
+    /**
+     * 组织层角色标签
+     */
+    TENANT_ROLE("TENANT_ROLE"),
+
+    /**
+     * 组织层 成员标签
+     */
+    TENANT_MEMBER("TENANT_MEMBER"),
+
+    /**
+     * 组织层 管理员标签
+     */
+    TENANT_ADMIN("TENANT_ADMIN"),
+
+    /**
+     * 平台层角色标签
+     */
+    SITE_MGR("SITE_MGR");
 
     private final String value;
 

@@ -210,11 +210,13 @@
         FROM
         iam_role ir
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
-        INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
+        INNER JOIN iam_label il on il.id=hlr.label_id
+        <if test="labelName!=null">
+            and il.name=#{labelName}
+        </if>
         WHERE
-        ir.fd_level = #{sourceType}
-        <where>
-            ir.h_tenant_id =#{tenantId}
+        ir.fd_level = #{level}
+         AND  ir.h_tenant_id =#{tenantId}
             <if test="name != null">
                 and ir.name like concat(concat('%',#{name}), '%')
             </if>
@@ -236,7 +238,6 @@
                 ir.code like concat(concat('%',#{params}), '%')
                 )
             </if>
-        </where>
         order by
         ir.is_modified ASC,
         ir.is_enabled DESC,

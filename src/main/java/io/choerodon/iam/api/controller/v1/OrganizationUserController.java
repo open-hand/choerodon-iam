@@ -27,10 +27,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.app.service.ExcelService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.UploadHistoryService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
@@ -55,14 +52,18 @@ public class OrganizationUserController extends BaseController {
 
     private UploadHistoryService uploadHistoryService;
 
+    private OrganizationResourceLimitService organizationResourceLimitService;
+
     public OrganizationUserController(OrganizationUserService organizationUserService,
                                       UploadHistoryService uploadHistoryService,
                                       ExcelService excelService,
-                                      UserC7nService userC7nService) {
+                                      UserC7nService userC7nService,
+                                      OrganizationResourceLimitService organizationResourceLimitService) {
         this.organizationUserService = organizationUserService;
         this.userC7nService = userC7nService;
         this.excelService = excelService;
         this.uploadHistoryService = uploadHistoryService;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -234,6 +235,6 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(Boolean.TRUE);
+        return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
 }

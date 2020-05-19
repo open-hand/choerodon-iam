@@ -17,6 +17,7 @@ import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -148,6 +149,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private TenantRepository tenantRepository;
 
+    @Autowired
+    private OrganizationResourceLimitService organizationResourceLimitService;
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);
@@ -684,6 +687,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
+        // 校验组织人数是否已达上限
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+        }
+        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");

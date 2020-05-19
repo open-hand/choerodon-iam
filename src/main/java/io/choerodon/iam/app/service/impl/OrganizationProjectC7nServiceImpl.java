@@ -9,9 +9,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -25,11 +37,10 @@ import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
-import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -49,27 +60,6 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.TenantService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -92,9 +82,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     @Value("${choerodon.category.enabled:false}")
     private Boolean categoryEnable;
-
-    @Value("${choerodon.organization.resourceLimit.projectMaxNumber:20}")
-    private Integer projectMaxNumber;
 
     private SagaClient sagaClient;
 
@@ -129,6 +116,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private TransactionalProducer producer;
     private TenantC7nService tenantC7nService;
 
+    private OrganizationResourceLimitService organizationResourceLimitService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              UserService userService,
@@ -144,7 +133,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
-                                             TenantC7nService tenantC7nService) {
+                                             TenantC7nService tenantC7nService,
+                                             OrganizationResourceLimitService organizationResourceLimitService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -160,6 +150,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
         this.tenantC7nService = tenantC7nService;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
 
@@ -167,6 +158,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
+        organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);

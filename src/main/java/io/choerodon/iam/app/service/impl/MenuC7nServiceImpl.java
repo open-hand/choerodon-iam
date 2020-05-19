@@ -77,6 +77,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
     @Override
     public List<Menu> listNavMenuTree(Set<String> labels, Long projectId) {
+        if (labels == null && projectId == null) {
+            throw new CommonException("error.menu.params");
+        }
         if (projectId != null) {
             labels = new HashSet<>();
             List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);

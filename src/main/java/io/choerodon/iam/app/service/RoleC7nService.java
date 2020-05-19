@@ -8,6 +8,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Role;
+import org.springframework.data.domain.Pageable;
+
 
 /**
  * 〈功能简述〉
@@ -36,4 +40,8 @@ public interface RoleC7nService {
      * @return
      */
     Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
+
+
+    Page<RoleDTO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String level,
+                               Boolean builtIn, Boolean enabled, String params);
 }

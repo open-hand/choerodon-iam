@@ -15,7 +15,7 @@ import java.util.List;
 public class TimeZoneWorkCalendarDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long timeZoneId;
 
     private String areaCode;

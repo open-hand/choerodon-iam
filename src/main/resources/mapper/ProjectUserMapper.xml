@@ -408,23 +408,4 @@
         </foreach>
     </select>
 
-    <select id="fuzzySearchRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
-        SELECT
-        ir.*
-        FROM
-        iam_role ir
-        inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
-        INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
-        WHERE
-        ir.fd_level = #{sourceType}
-        <if test="sourceType == 'organization' and sourceId != null">
-            AND ir.h_tenant_id =#{sourceId}
-        </if>
-        <if test="roleName != null">
-            AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
-        </if>
-        <if test="onlySelectEnable">
-            AND ir.is_enabled = 1
-        </if>
-    </select>
 </mapper>

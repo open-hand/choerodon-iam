@@ -26,6 +26,7 @@ import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -40,18 +41,18 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private ProjectUserMapper projectUserMapper;
     private DevopsFeignClient devopsFeignClient;
     private ProjectC7nService projectC7nService;
-    private OrganizationAssertHelper organizationAssertHelper;
     private ProjectAssertHelper projectAssertHelper;
+    private RoleC7nMapper roleC7nMapper;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
-                                  OrganizationAssertHelper organizationAssertHelper,
+                                  RoleC7nMapper roleC7nMapper,
                                   ProjectAssertHelper projectAssertHelper,
                                   ProjectC7nService projectC7nService) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
-        this.organizationAssertHelper = organizationAssertHelper;
+        this.roleC7nMapper = roleC7nMapper;
         this.projectAssertHelper = projectAssertHelper;
     }
 
@@ -184,7 +185,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
-        return projectUserMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+        return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
     }
 
 }

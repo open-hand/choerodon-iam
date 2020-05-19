@@ -184,6 +184,6 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "检查是否还能创建项目")
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(organizationProjectService.checkEnableCreateProject(organizationId));
+        return ResponseEntity.ok(Boolean.TRUE);
     }
 }

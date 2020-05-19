@@ -167,7 +167,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
-        checkEnableCreateProjectOrThrowE(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
@@ -202,12 +201,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return res;
     }
 
-    private void checkEnableCreateProjectOrThrowE(Long organizationId) {
-        if (Boolean.FALSE.equals(checkEnableCreateProject(organizationId))) {
-            throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
-        }
-    }
-
 
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
@@ -221,14 +214,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return projectMapper.selectByPrimaryKey(projectDTO);
     }
 
-
-    public Boolean checkEnableCreateProject(Long organizationId) {
-        if (tenantC7nService.checkOrganizationIsNew(organizationId)) {
-            int num = tenantC7nService.countProjectNum(organizationId);
-            return num < projectMaxNumber;
-        }
-        return true;
-    }
 
     private void insertProjectMapCategory(Long categoryId, Long projectId) {
         ProjectMapCategoryDTO example = new ProjectMapCategoryDTO();

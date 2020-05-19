@@ -293,8 +293,6 @@ public interface UserC7nService {
      */
     List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
 
-    Boolean checkEnableCreateUser(Long projectId);
-
     UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
 
     void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);

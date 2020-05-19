@@ -1,15 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.LabelC7nService;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import java.util.List;
+
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.infra.mapper.LabelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import io.choerodon.iam.app.service.LabelC7nService;
 
 /**
  * @author scp
@@ -23,14 +21,7 @@ public class LabelC7nServiceImpl implements LabelC7nService {
 
     @Override
     public List<Label> listByOption(Label label) {
-        List<Label> labelDTOS = labelMapper.select(label);
-        // 组织层过滤organization.gitlab.owner标签
-        if (ResourceLevel.ORGANIZATION.value().equals(label.getFdLevel())) {
-            labelDTOS = labelDTOS.stream()
-                    .filter(labelDTO -> !RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value().equals(labelDTO.getName()))
-                    .collect(Collectors.toList());
-        }
-        return labelDTOS;
+        return labelMapper.select(label);
     }
 
     @Override

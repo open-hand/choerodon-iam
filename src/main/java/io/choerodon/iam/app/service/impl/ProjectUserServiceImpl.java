@@ -17,10 +17,13 @@ import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
@@ -37,13 +40,19 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private ProjectUserMapper projectUserMapper;
     private DevopsFeignClient devopsFeignClient;
     private ProjectC7nService projectC7nService;
+    private OrganizationAssertHelper organizationAssertHelper;
+    private ProjectAssertHelper projectAssertHelper;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
+                                  OrganizationAssertHelper organizationAssertHelper,
+                                  ProjectAssertHelper projectAssertHelper,
                                   ProjectC7nService projectC7nService) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectAssertHelper = projectAssertHelper;
     }
 
     @Override
@@ -170,4 +179,12 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
         return userList;
     }
+
+
+    @Override
+    public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
+        return projectUserMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+    }
+
 }

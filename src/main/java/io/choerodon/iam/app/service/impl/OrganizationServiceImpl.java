@@ -434,36 +434,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public boolean checkOrganizationIsNew(Long organizationId) {
-        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_DOES_NOT_EXIST_EXCEPTION);
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return organizationDTO.getCreationDate().after(date);
-    }
-
-    @Override
-    public int countProjectNum(Long organizationId) {
-        ProjectDTO example = new ProjectDTO();
-        example.setOrganizationId(organizationId);
-        return projectMapper.selectCount(example);
-    }
-
-    @Override
-    public int countUserNum(Long organizationId) {
-        User example = new User();
-        example.setOrganizationId(organizationId);
-        return userMapper.selectCount(example);
-    }
-
-    @Override
     public List<TenantVO> selectSelfTenants(TenantDTO params) {
         CustomUserDetails self = UserUtils.getUserDetails();
         params.setUserId(self.getUserId());

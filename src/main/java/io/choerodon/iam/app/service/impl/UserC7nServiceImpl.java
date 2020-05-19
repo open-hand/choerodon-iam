@@ -684,16 +684,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
-        // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
-            organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
-        }
-        if (ResourceLevel.PROJECT.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
-        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
@@ -774,11 +764,6 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        return null;
-    }
-
-    @Override
-    public Boolean checkEnableCreateUser(Long projectId) {
         return null;
     }
 

@@ -241,10 +241,10 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.appServerOverview(organizationId), HttpStatus.OK);
     }
 
-    @GetMapping("/{tenant_id}/check_is_new")
+    @GetMapping("/{tenant_id}/check_is_register")
     @Permission(permissionWithin = true)
-    @ApiOperation(value = "判断组织是否是新组织")
-    public ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "tenant_id") Long organizationId) {
-        return ResponseEntity.ok(tenantC7nService.checkOrganizationIsNew(organizationId));
+    @ApiOperation(value = "判断组织是否是注册组织")
+    public ResponseEntity<Boolean> checkOrganizationIsRegister(@PathVariable(name = "tenant_id") Long organizationId) {
+        return ResponseEntity.ok(Boolean.FALSE);
     }
 }

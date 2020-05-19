@@ -234,6 +234,6 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(organizationUserService.checkEnableCreateUser(organizationId));
+        return ResponseEntity.ok(Boolean.TRUE);
     }
 }

@@ -74,13 +74,6 @@ public interface ProjectUserService {
      */
     List<UserDTO> listUsersByNameWithLimit(Long projectId, String param);
 
-    /**
-     * 检查是否还能创建用户
-     *
-     * @param projectId 项目id
-     * @return true表示可以
-     */
-    Boolean checkEnableCreateUser(Long projectId);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage);
 

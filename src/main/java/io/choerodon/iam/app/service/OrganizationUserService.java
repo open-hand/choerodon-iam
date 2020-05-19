@@ -63,13 +63,4 @@ public interface OrganizationUserService {
 
     List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 
-    Boolean checkEnableCreateUser(Long organizationId);
-
-    /**
-     * 校验组织是否还能新增用户，不能则抛出异常
-     *
-     * @param organizationId
-     * @param userNumber
-     */
-    void checkEnableCreateUserOrThrowE(Long organizationId, int userNumber);
 }

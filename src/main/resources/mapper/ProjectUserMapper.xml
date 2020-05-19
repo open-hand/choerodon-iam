@@ -261,13 +261,12 @@
             </if>
             <if test="param != null">
                 AND (
-                iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iam_user.real_name LIKE concat(concat('%',#{param}),'%')
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
-
         </where>
-
+        group by iu.id
     </select>
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*

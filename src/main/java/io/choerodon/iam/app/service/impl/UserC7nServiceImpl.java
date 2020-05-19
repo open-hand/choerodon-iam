@@ -554,11 +554,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<Label> labels = new ArrayList<>();
             roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
-            if (level.equals(ResourceLevel.PROJECT.value())) {
-                return labelNameLists.contains(RoleLabelEnum.PROJECT_GITLAB_OWNER.value());
-            } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
-                return labelNameLists.contains(RoleLabelEnum.ORGANIZATION_GITLAB_OWNER.value());
-            }
+            return labelNameLists.contains(RoleLabelEnum.GITLAB_OWNER.value());
         }
         return false;
     }
@@ -566,7 +562,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
         List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_OWNER.value().equals(v.getCode()));
+        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_ADMIN.value().equals(v.getCode()));
     }
 
     @Override

@@ -169,4 +169,11 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
 
     List<ProjectUserVO> listByProjectIdAndUserIds(@Param("projectId")Long projectId,
                                                   @Param("userIds")Set<Long> userIds);
+
+
+    List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,
+                                         @Param("projectId") Long projectId,
+                                         @Param("sourceType") String sourceType,
+                                         @Param("labelName") String labelName,
+                                         @Param("onlySelectEnable") Boolean onlySelectEnable);
 }

@@ -50,8 +50,12 @@ export default (userId, intl, intlPrefix, orgId) => {
 
     transport: {
       read: () => ({
-        url: `/iam/hzero/v1/${orgId}/roles/self/roles`,
+        url: `/iam/choerodon/v1/${orgId}/roles/self/roles`,
         method: 'get',
+        transformResponse: (data) => ({
+          list: JSON.parse(data).content,
+          ...JSON.parse(data),
+        }),
       }),
     },
   };

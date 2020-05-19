@@ -190,7 +190,6 @@ public class OrganizationUserController extends BaseController {
     @GetMapping("/users/{user_id}/upload/history")
     public ResponseEntity<UploadHistoryDTO> latestHistory(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "user_id") Long userId) {
-        // TODO
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 

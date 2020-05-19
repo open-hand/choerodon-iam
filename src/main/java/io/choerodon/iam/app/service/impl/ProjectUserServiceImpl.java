@@ -17,7 +17,6 @@ import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
@@ -132,10 +131,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public Boolean checkEnableCreateUser(Long projectId) {
-        ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
-        // TODO by zmf
-        return null;
-//        return organizationUserService.checkEnableCreateUser(projectDTO.getOrganizationId());
+        return Boolean.TRUE;
     }
 
     @Override

@@ -10,6 +10,10 @@ export default ({ id = 0, intl, intlPrefix }) => {
       read: {
         url: '/iam/choerodon/v1/users/admin',
         method: 'get',
+        transformResponse: (data) => ({
+          list: JSON.parse(data).content,
+          ...JSON.parse(data),
+        }),
       },
     },
     fields: [

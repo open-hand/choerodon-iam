@@ -112,9 +112,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     @Override
     public Page<RoleDTO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
         String labelName;
-        if (level.equals(ResourceLevel.SITE.value())) {
-            labelName = RoleLabelEnum.SITE_MGR.value();
-        } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+        if (level.equals(ResourceLevel.ORGANIZATION.value())) {
             labelName = RoleLabelEnum.TENANT_ROLE.value();
         } else {
             labelName = RoleLabelEnum.PROJECT_ROLE.value();

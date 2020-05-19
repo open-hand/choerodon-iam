@@ -55,14 +55,14 @@ public class RoleC7nController {
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "分页查询角色")
-    @GetMapping(value = "/search")
+    @GetMapping(value = "/roles/search")
     @CustomPageRequest
     public ResponseEntity<Page<RoleDTO>> pagedSearch(@ApiIgnore
                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                      @RequestParam(required = false) String name,
                                                      @RequestParam(required = false) String code,
                                                      @RequestParam(required = false) String level,
-                                                     @RequestParam(required = true) Long tenantId,
+                                                     @RequestParam(value = "tenantId") Long tenantId,
                                                      @RequestParam(required = false) Boolean builtIn,
                                                      @RequestParam(required = false) Boolean enabled,
                                                      @RequestParam(required = false) String params) {

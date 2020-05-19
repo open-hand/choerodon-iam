@@ -336,13 +336,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
-    public Page<User> pagingQueryAdminUsers(PageRequest pageable, String loginName, String realName, String params) {
-        // TODO 分页排序有问题，暂时不使用分页排序功能
-//        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
-        List<User> userList = userC7nMapper.selectAdminUserPage(loginName, realName, params, null);
-        PageInfo pageInfo = new PageInfo(1, 10);
-        Page<User> result = new Page<>(userList, pageInfo, userList.size());
-        return result;
+    public Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params) {
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectAdminUserPage(loginName, realName, params, null));
     }
 
     /**

@@ -1,7 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
@@ -20,7 +19,6 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
@@ -82,12 +80,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
         List<RoleC7nDTO> roleDTOList = new ArrayList<>();
 
-        // TODO 分页排序有问题，暂时不使用分页排序功能
-//        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(1L, "", null, ""));
-        List<UserRoleVO> userRoleVOList = roleC7nMapper.selectRoles(userId, name, level, params);
-        PageInfo pageInfo = new PageInfo(1, 10);
-        Page<UserRoleVO> result = new Page<>(userRoleVOList, pageInfo, userRoleVOList.size());
-
+        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);

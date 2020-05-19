@@ -36,6 +36,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.annotation.OperateLog;
@@ -64,9 +65,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Value("${choerodon.site.default.password:abcd1234}")
     private String siteDefaultPassword;
 
-    @Value("${choerodon.organization.resourceLimit.userMaxNumber:100}")
-    private Integer userMaxNumber;
-
     private final ObjectMapper mapper = new ObjectMapper();
 
     private OrganizationAssertHelper organizationAssertHelper;
@@ -93,6 +91,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private TenantService tenantService;
 
+    private OrganizationResourceLimitService organizationResourceLimitService;
+
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     public OrganizationUserServiceImpl(OrganizationAssertHelper organizationAssertHelper,
@@ -106,7 +106,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        C7nLabelMapper c7nLabelMapper,
                                        TenantService tenantService,
                                        RandomInfoGenerator randomInfoGenerator,
-                                       RoleService roleService) {
+                                       RoleService roleService,
+                                       OrganizationResourceLimitService organizationResourceLimitService) {
         this.organizationAssertHelper = organizationAssertHelper;
         this.userAssertHelper = userAssertHelper;
         this.userService = userService;
@@ -119,6 +120,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.roleService = roleService;
         this.tenantService = tenantService;
         this.randomInfoGenerator = randomInfoGenerator;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
     @Override
@@ -151,6 +153,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
     public User createUserWithRoles(User user) {
+        organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         List<Role> userRoles = user.getRoles();
         User result = userService.createUser(user);
@@ -477,6 +480,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
     public User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles) {
+        organizationResourceLimitService.checkEnableCreateUserOrThrowE(organizationId, 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserValidator.validateCreateUserWithRoles(user, checkRoles);
         organizationAssertHelper.notExisted(organizationId);

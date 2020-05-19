@@ -14,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -31,11 +32,13 @@ import io.choerodon.swagger.annotation.Permission;
 public class ProjectUserC7nController extends BaseController {
 
     private ProjectUserService userService;
+    private OrganizationResourceLimitService organizationResourceLimitService;
 
-    public ProjectUserC7nController(ProjectUserService userService) {
+    public ProjectUserC7nController(ProjectUserService userService,
+                                    OrganizationResourceLimitService organizationResourceLimitService) {
         this.userService = userService;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
-
 
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）")
@@ -135,7 +138,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
-        return ResponseEntity.ok(Boolean.TRUE);
+        return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProjectUser(projectId));
     }
 
     @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)

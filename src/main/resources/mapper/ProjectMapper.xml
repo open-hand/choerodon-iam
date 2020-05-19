@@ -400,10 +400,10 @@
     <select id="selectProjectsByUserId" resultMap="projectDTO">
         select distinct fp.*
         from fd_project fp
-        inner join iam_member_role imr on (fp.id = imr.source_id and imr.source_type = 'project')
-        inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = 1)
+        inner join fd_project_user fpu on (fp.id = fpu.PROJECT_ID)
+        inner join iam_role ir on (ir.id = fpu.role_id and ir.is_enabled = 1)
         <where>
-            imr.member_id = #{userId} and imr.member_type='user'
+            fpu.member_id = #{userId}
             <if test="projectDTO != null">
                 <if test="projectDTO.organizationId != null">
                     AND fp.organization_id = #{projectDTO.organizationId}

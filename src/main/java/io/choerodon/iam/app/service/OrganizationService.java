@@ -59,6 +59,21 @@ public interface OrganizationService {
      * @return 分页结果
      */
     Page<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest);
+    /**
+     * 统计组织下的项目数量
+     *
+     * @param organizationId
+     * @return
+     */
+    int countProjectNum(Long organizationId);
+
+    /**
+     * 统计组织下的用户数量
+     *
+     * @param organizationId
+     * @return
+     */
+    int countUserNum(Long organizationId);
 
     /**
      * 检查组织是否存在

@@ -154,7 +154,7 @@ tag release:
 maven-deploy-snapshot:
   stage: build
   script:
-  - mvn clean install -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
+  - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
   except:
     changes:
     - .eslintrc.json

@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.api.vo.UserRoleVO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
@@ -59,10 +60,20 @@ public interface RoleC7nMapper {
     Role selectByCode(@Param("code") String code);
 
 
-
     List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,
                                          @Param("sourceId") Long sourceId,
                                          @Param("sourceType") String sourceType,
                                          @Param("labelName") String labelName,
                                          @Param("onlySelectEnable") Boolean onlySelectEnable);
+
+
+    List<RoleDTO> fulltextSearch(@Param("tenantId") Long tenantId,
+                                 @Param("name") String name,
+                                 @Param("code") String code,
+                                 @Param("level") String level,
+                                 @Param("builtIn") Boolean builtIn,
+                                 @Param("enabled") Boolean enabled,
+                                 @Param("labelName") String labelName,
+                                 @Param("params") String params);
+
 }

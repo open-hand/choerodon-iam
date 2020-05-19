@@ -12,6 +12,7 @@ import io.choerodon.iam.infra.constant.LabelC7nConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -19,6 +20,7 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
@@ -105,5 +107,20 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             roleDTOList.add(roleC7nDTO);
         });
         return PageUtils.copyPropertiesAndResetContent(result, roleDTOList);
+    }
+
+    @Override
+    public Page<RoleDTO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
+        String labelName;
+        if (level.equals(ResourceLevel.SITE.value())) {
+            labelName = RoleLabelEnum.SITE_MGR.value();
+        } else if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+            labelName = RoleLabelEnum.TENANT_ROLE.value();
+        } else {
+            labelName = RoleLabelEnum.PROJECT_ROLE.value();
+            level = ResourceLevel.ORGANIZATION.value();
+        }
+        String finalLevel = level;
+        return PageHelper.doPage(pageRequest, () -> roleC7nMapper.fulltextSearch(tenantId, name, code, finalLevel, builtIn, enabled, labelName, params));
     }
 }

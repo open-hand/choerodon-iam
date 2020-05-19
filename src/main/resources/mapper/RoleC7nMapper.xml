@@ -202,4 +202,45 @@
         AND ir.is_enabled = 1
     </if>
     </select>
+
+
+    <select id="fulltextSearch" resultMap="RoleDTO">
+        SELECT
+        ir.*
+        FROM
+        iam_role ir
+        inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
+        INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
+        WHERE
+        ir.fd_level = #{sourceType}
+        <where>
+            ir.h_tenant_id =#{tenantId}
+            <if test="name != null">
+                and ir.name like concat(concat('%',#{name}), '%')
+            </if>
+            <if test="code != null">
+                and ir.code like concat(concat('%',#{code}), '%')
+            </if>
+            <if test="level != null">
+                and ir.fd_level LIKE concat(concat('%',#{level}), '%')
+            </if>
+            <if test="enabled != null">
+                and ir.is_enabled = #{enabled}
+            </if>
+            <if test="builtIn != null">
+                and ir.is_built_in = #{builtIn}
+            </if>
+            <if test="params != null">
+                and (
+                ir.name like concat(concat('%',#{params}), '%') OR
+                ir.code like concat(concat('%',#{params}), '%')
+                )
+            </if>
+        </where>
+        order by
+        ir.is_modified ASC,
+        ir.is_enabled DESC,
+        ir.id DESC
+    </select>
+
 </mapper>

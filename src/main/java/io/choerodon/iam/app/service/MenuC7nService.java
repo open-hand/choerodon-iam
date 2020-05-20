@@ -14,7 +14,7 @@ import org.hzero.iam.domain.entity.Menu;
  */
 public interface MenuC7nService {
 
-    List<Menu> listPermissionSetTree(Long organizationId, String menuLevel);
+    List<Menu> listPermissionSetTree(Long tenantId, String menuLevel);
 
     List<Menu> listNavMenuTree(Set<String> labels, Long projectId);
 

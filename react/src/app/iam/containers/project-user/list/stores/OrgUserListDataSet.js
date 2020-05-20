@@ -41,6 +41,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
         method: 'get',
         transformResponse(data) {
           const newData = JSON.parse(data);
+          newData.list = newData.content;
           newData.list = newData.list.map(l => {
             l.roles = l.roles.map(r => {
               r.origin = true;

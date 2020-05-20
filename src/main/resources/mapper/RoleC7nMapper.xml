@@ -21,12 +21,13 @@
         <result column="parent_role_assign_level_code" property="parentRoleAssignLevelCode"/>
     </resultMap>
     <!--建立boolean映射关系-->
-    <resultMap id="RoleDTO" type="org.hzero.iam.domain.entity.Role" autoMapping="true">
+    <resultMap id="RoleDTO" type="io.choerodon.iam.api.vo.RoleVO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
+
     </resultMap>
 
     <resultMap id="UserRoleVO" type="io.choerodon.iam.api.vo.UserRoleVO" autoMapping="true">
@@ -54,9 +55,9 @@
     <select id="getByTenantIdAndLabel" resultMap="RoleMap">
         SELECT ir.*
         FROM iam_role ir
-        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
-        INNER JOIN iam_label il ON irl.label_id = il.id
-        WHERE ir.h_tenant_id = #{tenantId} AND il.name = #{labelName}
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        WHERE ir.h_tenant_id = #{tenantId AND hlr.data_type = 'ROLE' AND il.`name` = #{labelName}
     </select>
 
     <select id="selectRolesByLabelNameAndType" resultMap="RoleDTO">
@@ -211,20 +212,13 @@
         iam_role ir
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
         INNER JOIN iam_label il on il.id=hlr.label_id
-        <if test="labelName!=null">
-            and il.name=#{labelName}
-        </if>
-        WHERE
-        ir.fd_level = #{level}
-         AND  ir.h_tenant_id =#{tenantId}
+        <where>
+            ir.fd_level = #{level} AND  ir.h_tenant_id =#{tenantId}
             <if test="name != null">
                 and ir.name like concat(concat('%',#{name}), '%')
             </if>
             <if test="code != null">
                 and ir.code like concat(concat('%',#{code}), '%')
-            </if>
-            <if test="level != null">
-                and ir.fd_level LIKE concat(concat('%',#{level}), '%')
             </if>
             <if test="enabled != null">
                 and ir.is_enabled = #{enabled}
@@ -232,16 +226,39 @@
             <if test="builtIn != null">
                 and ir.is_built_in = #{builtIn}
             </if>
+            <if test="labelName!=null">
+                and il.name=#{labelName}
+            </if>
             <if test="params != null">
                 and (
                 ir.name like concat(concat('%',#{params}), '%') OR
                 ir.code like concat(concat('%',#{params}), '%')
                 )
             </if>
+        </where>
+        group by ir.id
         order by
         ir.is_modified ASC,
         ir.is_enabled DESC,
         ir.id DESC
+    </select>
+    <select id="getTenantAdminRole" resultType="org.hzero.iam.domain.entity.Role">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ADMIN' AND ir.id not in
+        (SELECT ir.id
+        FROM iam_role ir
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ROLE_TPL')
+    </select>
+    <select id="listRoleLabels" resultType="org.hzero.iam.domain.entity.Label">
+        SELECT il.*
+        FROM hiam_label_rel hlr
+        JOIN iam_label il ON il.id = hlr.label_id
+        WHERE hlr.data_type = 'ROLE' AND hlr.data_id = #{roleId}
     </select>
 
 </mapper>

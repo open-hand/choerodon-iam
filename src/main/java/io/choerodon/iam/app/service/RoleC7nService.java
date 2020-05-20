@@ -42,6 +42,8 @@ public interface RoleC7nService {
     Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
 
 
-    Page<RoleDTO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String level,
+    Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String level,
                                Boolean builtIn, Boolean enabled, String params);
+
+    Role getTenantAdminRole(Long organizationId);
 }

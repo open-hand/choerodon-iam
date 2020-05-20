@@ -5,6 +5,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.app.service.LabelC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.app.service.RolePermissionC7nService;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLevelEnum;
@@ -42,26 +43,28 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private LabelC7nService labelC7nService;
     private RolePermissionC7nService rolePermissionC7nService;
     private RoleC7nMapper roleC7nMapper;
+    private RoleC7nService roleC7nService;
 
 
     public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
                                        RoleService roleService,
                                        LabelC7nService labelC7nService,
                                        RolePermissionC7nService rolePermissionC7nService,
-                                       RoleC7nMapper roleC7nMapper) {
+                                       RoleC7nMapper roleC7nMapper,
+                                       RoleC7nService roleC7nService) {
         this.roleCreateInternalService = roleCreateInternalService;
         this.roleService = roleService;
         this.labelC7nService = labelC7nService;
         this.rolePermissionC7nService = rolePermissionC7nService;
         this.roleC7nMapper = roleC7nMapper;
+        this.roleC7nService = roleC7nService;
     }
 
     @Override
     @Transactional
     public void create(Long organizationId, RoleVO roleVO) {
-        // todo 查询组织管理员,设置parent_id
-        Long orgAdminId = 1L;
-        roleVO.setParentRoleId(orgAdminId);
+        Role tenantAdmin = roleC7nService.getTenantAdminRole(organizationId);
+        roleVO.setParentRoleId(tenantAdmin.getId());
 
         //  如果是项目层角色，添加角色标签
         if (RoleLevelEnum.PROJECT.value().equals(roleVO.getRoleLevel())) {
@@ -105,14 +108,10 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         }
     }
 
-    @Override
-    public List<RoleVO> list(Long organizationId) {
 
-        return null;
-    }
 
     @Override
-    public Role getByTenantIdAndLabel(Long tenantId, String labelName) {
+    public List<Role> getByTenantIdAndLabel(Long tenantId, String labelName) {
         return roleC7nMapper.getByTenantIdAndLabel(tenantId, labelName);
     }
 

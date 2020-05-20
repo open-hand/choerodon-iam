@@ -92,9 +92,18 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
         }
         menuParams.setLabels(labels);
-        List<Menu> menuList = menuMapper.selectMenusByCondition(menuParams);
         // 根据层级查询组织管理员的有权限的菜单列表
-        return menuList;
+        CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuMapper.selectMenusByCondition(menuParams), SELECT_MENU_POOL);
+
+        CompletableFuture<List<Menu>> cf = f1
+                // 转换成树形结构
+                .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
+                .exceptionally((e) -> {
+                    LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
+                    return Collections.emptyList();
+                });
+        return cf.join();
+
     }
 
     @Override

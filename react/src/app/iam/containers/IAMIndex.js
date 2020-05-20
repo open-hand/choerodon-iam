@@ -99,6 +99,9 @@ class IAMIndex extends React.Component {
             <Route path={`${match.url}/hzero/user`} component={heroPage} />
             <Route path={`${match.url}/hzero/role`} component={heroPage} />
             <Route path={`${match.url}/hzero/menu`} component={heroPage} />
+            <Route path={`${match.url}/hzero/instance`} component={heroPage} />
+            <Route path={`${match.url}/hzero/api-test`} component={heroPage} />
+            <Route path={`${match.url}/hzero/api`} component={heroPage} />
             <Route path="*" component={nomatch} />
           </Switch>
           <ModalContainer />

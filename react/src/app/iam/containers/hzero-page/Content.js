@@ -17,12 +17,15 @@ const HzeroPage = withRouter(((props) => {
 
   function handleClick() {
     const url = {
-      user: 'user-group-management',
-      role: 'role/list',
-      menu: 'menu',
+      user: 'hiam/user-group-management',
+      role: 'hiam/role/list',
+      menu: 'hiam/menu',
+      instance: 'hadm/instance',
+      api: 'hadm/api-overview',
+      'api-test': 'hadm/api-test',
     };
     // eslint-disable-next-line no-underscore-dangle
-    window.open(`${window._env_.HZERO_FRONT || process.env.HZERO_FRONT}/hiam/${url[pageType]}`);
+    window.open(`${window._env_.HZERO_FRONT || process.env.HZERO_FRONT}/${url[pageType]}`);
   }
 
   return (

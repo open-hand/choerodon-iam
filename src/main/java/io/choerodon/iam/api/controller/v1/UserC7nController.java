@@ -365,7 +365,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDate(@RequestParam(value = "start_time") Date startTime,
+    public ResponseEntity<UserNumberVO> countByDateInSite(@RequestParam(value = "start_time") Date startTime,
                                                     @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(null, startTime, endTime));
     }

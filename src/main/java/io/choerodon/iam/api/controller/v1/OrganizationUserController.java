@@ -39,7 +39,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
-@Api(tags = C7nSwaggerApiConfig.CHOERODON_USER)
+@Api(tags = C7nSwaggerApiConfig.ORGANIZATION_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}")
 public class OrganizationUserController extends BaseController {
@@ -129,7 +129,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/users/{id}")
-    public ResponseEntity<User> query(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> queryUserInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                       @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.query(organizationId, id), HttpStatus.OK);
     }
@@ -217,7 +217,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDate(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<UserNumberVO> countByDateInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                     @RequestParam(value = "start_time") Date startTime,
                                                     @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));

@@ -1,17 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hzero.iam.api.dto.PermissionSetSearchDTO;
 import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.RolePermission;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +24,10 @@ import io.choerodon.iam.app.service.LabelC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.app.service.RolePermissionC7nService;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
 
 /**
  * 〈功能简述〉
@@ -45,20 +48,25 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private RolePermissionC7nService rolePermissionC7nService;
     private RoleC7nMapper roleC7nMapper;
     private RoleC7nService roleC7nService;
-
+    private RoleMapper roleMapper;
+    private RoleRepository roleRepository;
 
     public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
                                        RoleService roleService,
                                        LabelC7nService labelC7nService,
                                        RolePermissionC7nService rolePermissionC7nService,
                                        RoleC7nMapper roleC7nMapper,
-                                       RoleC7nService roleC7nService) {
+                                       RoleC7nService roleC7nService,
+                                       RoleMapper roleMapper,
+                                       RoleRepository roleRepository) {
         this.roleCreateInternalService = roleCreateInternalService;
         this.roleService = roleService;
         this.labelC7nService = labelC7nService;
         this.rolePermissionC7nService = rolePermissionC7nService;
         this.roleC7nMapper = roleC7nMapper;
         this.roleC7nService = roleC7nService;
+        this.roleMapper = roleMapper;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -118,6 +126,33 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     @Override
     public List<Role> getByTenantIdAndLabel(Long tenantId, String labelName) {
         return roleC7nMapper.getByTenantIdAndLabel(tenantId, labelName);
+    }
+
+    @Override
+    public RoleVO queryById(Long organizationId, Long roleId) {
+        Role role = roleMapper.selectByPrimaryKey(roleId);
+        List<Label> labels = roleC7nMapper.listRoleLabels(role.getId());
+
+        RoleVO roleVO = ConvertUtils.convertObject(role, RoleVO.class);
+        Set<String> labelNames = new HashSet<>();
+        for (Label label : labels) {
+            if (RoleLabelEnum.TENANT_ROLE.value().equals(label.getName())) {
+                labelNames.add(MenuLabelEnum.TENANT_MENU.value());
+            }
+            if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
+                labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
+            }
+            if (RoleLabelEnum.GITLAB_OWNER.value().equals(label.getName())
+                    || RoleLabelEnum.GITLAB_DEVELOPER.value().equals(label.getName())) {
+                roleVO.getRoleLabels().add(label);
+            }
+        }
+        PermissionSetSearchDTO permissionSetSearchDTO = new PermissionSetSearchDTO();
+        permissionSetSearchDTO.setLabels(labelNames);
+        List<Menu> menus = roleRepository.selectRolePermissionSetTree(roleId, permissionSetSearchDTO);
+
+        roleVO.setMenuList(menus);
+        return roleVO;
     }
 
     /**

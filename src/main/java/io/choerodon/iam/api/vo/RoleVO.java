@@ -1,8 +1,10 @@
 package io.choerodon.iam.api.vo;
 
+import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
 
 /**
@@ -24,6 +26,7 @@ public class RoleVO extends Role {
     @ApiModelProperty("是否更新权限/update时必须")
     private Boolean updatePermissionFlag;
 
+    private List<Menu> menuList;
     public Set<Long> getMenuIdList() {
         return menuIdList;
     }
@@ -54,5 +57,13 @@ public class RoleVO extends Role {
 
     public void setUpdatePermissionFlag(Boolean updatePermissionFlag) {
         this.updatePermissionFlag = updatePermissionFlag;
+    }
+
+    public List<Menu> getMenuList() {
+        return menuList;
+    }
+
+    public void setMenuList(List<Menu> menuList) {
+        this.menuList = menuList;
     }
 }

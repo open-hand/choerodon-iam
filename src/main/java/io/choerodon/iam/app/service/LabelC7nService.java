@@ -15,4 +15,11 @@ public interface LabelC7nService {
 
 
     Label selectByName(String name);
+
+    /**
+     * 查询项目层gitlab标签
+     * @return
+     */
+    List<Label> listProjectGitlabLabels();
+
 }

@@ -138,7 +138,7 @@ const GeneralSetting = observer(() => {
                     {formatMessage({ id: `${intlPrefix}.category` })}
                   </div>
                   <div className={`${prefixCls}-section-item-content`}>
-                    {categories.map(c => c.name).join(',')}
+                    {(categories || []).map(c => c.name).join(',')}
                   </div>
                 </div>
                 <div className={`${prefixCls}-section-item`}>

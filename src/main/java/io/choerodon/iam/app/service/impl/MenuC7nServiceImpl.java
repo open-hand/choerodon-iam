@@ -157,4 +157,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         }
 
     }
+
+    @Override
+    public List<Menu> listMenuByLabel(Set<String> labels) {
+        return menuC7nMapper.listMenuByLabel(labels);
+    }
 }

@@ -38,4 +38,6 @@ public interface MenuC7nMapper {
      */
     List<Menu> selectUserMenus(@Param("lang") String lang,
                                @Param("labels") Set<String> labels);
+
+    List<Menu> listMenuByLabel( @Param("labels") Set<String> labels);
 }

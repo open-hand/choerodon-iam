@@ -122,4 +122,15 @@
         </if>
 
     </select>
+    <select id="listMenuByLabel" resultMap="MenuMap">
+        SELECT im.*
+        FROM iam_menu im
+        LEFT JOIN hiam_label_rel hlr ON hlr.data_id = im.id
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        WHERE il.name IN
+        <foreach collection="labels" open="(" separator="," close=")" item="label">
+            #{label}
+        </foreach>
+
+    </select>
 </mapper>

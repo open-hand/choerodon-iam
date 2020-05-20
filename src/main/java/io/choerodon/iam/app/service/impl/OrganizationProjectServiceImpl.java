@@ -159,7 +159,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "createProject", content = "%s创建项目【%s】", level = {ResourceLevel.ORGANIZATION})
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
-        checkEnableCreateProjectOrThrowE(organizationId);
         ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
@@ -195,12 +194,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return res;
     }
 
-    private void checkEnableCreateProjectOrThrowE(Long organizationId) {
-        if (Boolean.FALSE.equals(checkEnableCreateProject(organizationId))) {
-            throw new CommonException(ERROR_ORGANIZATION_PROJECT_NUM_MAX);
-        }
-    }
-
 
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
@@ -214,14 +207,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         return projectMapper.selectByPrimaryKey(projectDTO);
     }
 
-
-    public Boolean checkEnableCreateProject(Long organizationId) {
-        if (organizationService.checkOrganizationIsNew(organizationId)) {
-            int num = organizationService.countProjectNum(organizationId);
-            return num < projectMaxNumber;
-        }
-        return true;
-    }
 
     private void insertProjectMapCategory(Long categoryId, Long projectId) {
         ProjectMapCategoryDTO example = new ProjectMapCategoryDTO();

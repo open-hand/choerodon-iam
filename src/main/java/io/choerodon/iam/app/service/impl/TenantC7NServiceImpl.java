@@ -3,8 +3,6 @@ package io.choerodon.iam.app.service.impl;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,8 +48,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
-    public static final String ORGANIZATION_LIMIT_DATE = "2020-05-22";
-
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -233,28 +229,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return reOverViewVOS;
     }
 
-    @Override
-    public boolean checkOrganizationIsNew(Long organizationId) {
-        Tenant organizationDTO = tenantRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_DOES_NOT_EXIST_EXCEPTION);
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return organizationDTO.getCreationDate().after(date);
-    }
-
-    @Override
-    public int countProjectNum(Long tenantId) {
-        ProjectDTO example = new ProjectDTO();
-        example.setOrganizationId(tenantId);
-        return projectMapper.selectCount(example);
-    }
 
     @Override
     public List<Tenant> queryTenantsByIds(Set<Long> ids) {

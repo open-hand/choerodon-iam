@@ -56,20 +56,6 @@ public interface TenantC7nService {
 
     List<ProjectOverViewVO> appServerOverview(Long organizationId);
 
-    /**
-     * 判读组织是否是新组织
-     * @param organizationId
-     * @return
-     */
-    boolean checkOrganizationIsNew(Long organizationId);
-
-
-    /**
-     * 统计组织下的项目数量
-     * @param tenantId
-     * @return
-     */
-    int countProjectNum(Long tenantId);
 
     /**
      * 根据组织id集合查询组织

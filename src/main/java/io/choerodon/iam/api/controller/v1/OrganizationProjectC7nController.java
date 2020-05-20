@@ -23,6 +23,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
@@ -42,10 +43,14 @@ public class OrganizationProjectC7nController extends BaseController {
 
     private OrganizationProjectC7nService organizationProjectService;
     private ProjectValidator projectValidator;
+    private OrganizationResourceLimitService organizationResourceLimitService;
 
-    public OrganizationProjectC7nController(OrganizationProjectC7nService organizationProjectService, ProjectValidator projectValidator) {
+    public OrganizationProjectC7nController(OrganizationProjectC7nService organizationProjectService,
+                                            ProjectValidator projectValidator,
+                                            OrganizationResourceLimitService organizationResourceLimitService) {
         this.organizationProjectService = organizationProjectService;
         this.projectValidator = projectValidator;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
@@ -184,6 +189,6 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "检查是否还能创建项目")
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(organizationProjectService.checkEnableCreateProject(organizationId));
+        return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProject(organizationId));
     }
 }

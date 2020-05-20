@@ -4,6 +4,7 @@ import io.choerodon.iam.api.vo.UserRoleVO;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
@@ -30,7 +31,7 @@ public interface RoleC7nMapper {
      * @param labelName 标签名
      * @return
      */
-    Role getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
+    List<Role> getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
                                @Param("labelName") String labelName);
 
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
@@ -67,7 +68,7 @@ public interface RoleC7nMapper {
                                          @Param("onlySelectEnable") Boolean onlySelectEnable);
 
 
-    List<RoleDTO> fulltextSearch(@Param("tenantId") Long tenantId,
+    List<io.choerodon.iam.api.vo.RoleVO> fulltextSearch(@Param("tenantId") Long tenantId,
                                  @Param("name") String name,
                                  @Param("code") String code,
                                  @Param("level") String level,
@@ -76,4 +77,7 @@ public interface RoleC7nMapper {
                                  @Param("labelName") String labelName,
                                  @Param("params") String params);
 
+    Role getTenantAdminRole(Long organizationId);
+
+    List<Label> listRoleLabels(@Param("roleId") Long roleId);
 }

@@ -43,7 +43,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
-@Api(tags = C7nSwaggerApiConfig.CHOERODON_SYSTEM_SETTING)
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/users")
 public class UserC7nController extends BaseController {
@@ -149,7 +149,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@RequestBody User user) {
+    public ResponseEntity checkUserInfo(@RequestBody User user) {
         userC7nService.check(user);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -365,7 +365,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDate(@RequestParam(value = "start_time") Date startTime,
+    public ResponseEntity<UserNumberVO> countByDateInSite(@RequestParam(value = "start_time") Date startTime,
                                                     @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(null, startTime, endTime));
     }

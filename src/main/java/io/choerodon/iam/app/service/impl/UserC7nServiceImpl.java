@@ -17,6 +17,7 @@ import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -148,6 +149,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private TenantRepository tenantRepository;
 
+    @Autowired
+    private OrganizationResourceLimitService organizationResourceLimitService;
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);
@@ -658,10 +661,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         return null;
     }
 
-    // TODO 完成这里的逻辑
     @Override
     public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
-        return false;
+        return userC7nMapper.isOrgAdministrator(organizationId, userId);
     }
 
 
@@ -685,14 +687,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
         // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
-            organizationUserService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
         }
-        if (ResourceLevel.PROJECT.equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(memberRoleDTO -> memberRoleDTO.getMemberId()).collect(Collectors.toSet());
+        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationUserService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
         }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
@@ -774,11 +776,6 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        return null;
-    }
-
-    @Override
-    public Boolean checkEnableCreateUser(Long projectId) {
         return null;
     }
 

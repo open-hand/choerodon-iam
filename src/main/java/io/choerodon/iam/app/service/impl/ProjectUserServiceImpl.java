@@ -129,10 +129,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         return projectUserMapper.listUsersByNameWithLimit(projectId, param);
     }
 
-    @Override
-    public Boolean checkEnableCreateUser(Long projectId) {
-        return Boolean.TRUE;
-    }
 
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage) {

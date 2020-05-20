@@ -59,27 +59,6 @@ public interface OrganizationService {
      * @return 分页结果
      */
     Page<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest);
-
-    /**
-     * 检查组织是否存在
-     *
-     * @param orgId
-     * @return 存在返回组织信息，不存在抛出not.exist exception
-     */
-    OrganizationDTO checkNotExistAndGet(Long orgId);
-
-    ProjectOverViewVO projectOverview(Long organizationId);
-
-    List<ProjectOverViewVO> appServerOverview(Long organizationId);
-
-    /**
-     * 判读组织是否是新组织
-     *
-     * @param organizationId
-     * @return
-     */
-    boolean checkOrganizationIsNew(Long organizationId);
-
     /**
      * 统计组织下的项目数量
      *
@@ -95,6 +74,19 @@ public interface OrganizationService {
      * @return
      */
     int countUserNum(Long organizationId);
+
+    /**
+     * 检查组织是否存在
+     *
+     * @param orgId
+     * @return 存在返回组织信息，不存在抛出not.exist exception
+     */
+    OrganizationDTO checkNotExistAndGet(Long orgId);
+
+    ProjectOverViewVO projectOverview(Long organizationId);
+
+    List<ProjectOverViewVO> appServerOverview(Long organizationId);
+
 
     List<TenantVO> selectSelfTenants(TenantDTO params);
 

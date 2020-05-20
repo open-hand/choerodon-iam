@@ -27,10 +27,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.app.service.ExcelService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.UploadHistoryService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
@@ -42,7 +39,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
-@Api(tags = C7nSwaggerApiConfig.CHOERODON_USER)
+@Api(tags = C7nSwaggerApiConfig.ORGANIZATION_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}")
 public class OrganizationUserController extends BaseController {
@@ -55,14 +52,18 @@ public class OrganizationUserController extends BaseController {
 
     private UploadHistoryService uploadHistoryService;
 
+    private OrganizationResourceLimitService organizationResourceLimitService;
+
     public OrganizationUserController(OrganizationUserService organizationUserService,
                                       UploadHistoryService uploadHistoryService,
                                       ExcelService excelService,
-                                      UserC7nService userC7nService) {
+                                      UserC7nService userC7nService,
+                                      OrganizationResourceLimitService organizationResourceLimitService) {
         this.organizationUserService = organizationUserService;
         this.userC7nService = userC7nService;
         this.excelService = excelService;
         this.uploadHistoryService = uploadHistoryService;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -128,7 +129,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/users/{id}")
-    public ResponseEntity<User> query(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> queryUserInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                       @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.query(organizationId, id), HttpStatus.OK);
     }
@@ -216,24 +217,24 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDate(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<UserNumberVO> countByDateInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                     @RequestParam(value = "start_time") Date startTime,
                                                     @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));
     }
 
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-//    @ApiOperation(value = "判断用户是否是组织管理员")
-//    @GetMapping(value = "/users/{user_id}/check_is_root")
-//    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
-//                                                  @PathVariable(name = "user_id") Long userId) {
-//        return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "判断用户是否是组织管理员")
+    @GetMapping(value = "/users/{user_id}/check_is_root")
+    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
+                                                  @PathVariable(name = "user_id") Long userId) {
+        return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
+    }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(organizationUserService.checkEnableCreateUser(organizationId));
+        return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
 }

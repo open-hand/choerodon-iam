@@ -54,11 +54,4 @@ public interface    OrganizationProjectService {
 
 
     List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name);
-
-    /**
-     * 判断组织是否还能创建项目（指定日期后的创建的组织，最后能创建20个项目）
-     *
-     * @param organizationId
-     */
-    Boolean checkEnableCreateProject(Long organizationId);
 }

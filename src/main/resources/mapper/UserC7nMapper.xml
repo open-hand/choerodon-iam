@@ -996,7 +996,9 @@
         select count(imr.id)
         from iam_member_role imr
         left join iam_role ir on imr.role_id = ir.id
-        where ir.code = 'role/organization/default/administrator'
+        left join iam_role_label irl ON ir.id = irl.role_id
+        left join iam_label il ON irl.label_id = il.id
+        where il.name = 'TENANT_ADMIN'
         and imr.source_type = 'organization' and imr.member_type = 'user'
         and imr.source_id = #{organizationId} and imr.member_id = #{userId}
     </select>

@@ -362,6 +362,19 @@ public class OrganizationServiceImpl implements OrganizationService {
         return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectAllOrgIdAndName());
     }
 
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        User example = new User();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
+    }
 
     @Override
     public Page<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest) {
@@ -431,36 +444,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         projectOverViewVO1.setAppServerSum(sum);
         reOverViewVOS.add(projectOverViewVO1);
         return reOverViewVOS;
-    }
-
-    @Override
-    public boolean checkOrganizationIsNew(Long organizationId) {
-        OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_DOES_NOT_EXIST_EXCEPTION);
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = sdf.parse(ORGANIZATION_LIMIT_DATE);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return organizationDTO.getCreationDate().after(date);
-    }
-
-    @Override
-    public int countProjectNum(Long organizationId) {
-        ProjectDTO example = new ProjectDTO();
-        example.setOrganizationId(organizationId);
-        return projectMapper.selectCount(example);
-    }
-
-    @Override
-    public int countUserNum(Long organizationId) {
-        User example = new User();
-        example.setOrganizationId(organizationId);
-        return userMapper.selectCount(example);
     }
 
     @Override

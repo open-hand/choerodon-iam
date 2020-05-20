@@ -114,7 +114,7 @@ const ListView = () => {
           <Column name="name" width={200} />
           <Column renderer={renderAction} width={50} />
           <Column name="code" />
-          <Column name="level" renderer={renderLevel} width={150} />
+          <Column name="roleLevel" renderer={renderLevel} width={150} />
           <Column name="builtIn" renderer={renderBuildIn} width={150} align="left" />
           <Column name="enabled" renderer={renderEnabled} width={150} align="left" />
         </Table>

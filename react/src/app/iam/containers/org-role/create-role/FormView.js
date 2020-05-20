@@ -45,22 +45,6 @@ const ListView = () => {
     modal.handleOk(handleOkRole);
   }, [handleOkRole]);
 
-  function expandAll(flag) {
-    menuDs.forEach((eachRecord) => {
-      if (eachRecord.children && eachRecord.children.length) {
-        eachRecord.isExpanded = flag;
-      }
-    });
-  }
-
-  function handleCloseAll() {
-    expandAll(false);
-  }
-
-  function handleExpandAll() {
-    expandAll(true);
-  }
-
   function renderCode({ value }) {
     if (isModify) {
       return value;

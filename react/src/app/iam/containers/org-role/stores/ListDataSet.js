@@ -102,7 +102,6 @@ export default ({ level, organizationId }) => {
         },
         data: {
           ...data,
-          level,
           builtIn: data.builtIn === 'true'
             ? true
             : data.builtIn === 'false'
@@ -119,7 +118,7 @@ export default ({ level, organizationId }) => {
     fields: [
       { name: 'name', type: 'string', label: '名称', required: true, validator: nameValidator },
       { name: 'code', type: 'string', label: '编码', required: true, validator: codeValidator },
-      { name: 'level', type: 'string', label: '层级' },
+      { name: 'roleLevel', type: 'string', label: '层级' },
       { name: 'builtIn', type: 'boolean', label: '来源' },
       { name: 'enabled', type: 'boolean', label: '状态' },
       { name: 'labels', type: 'auto', textField: 'name', valueField: 'id' },
@@ -127,7 +126,7 @@ export default ({ level, organizationId }) => {
     queryFields: [
       { name: 'name', type: 'string', label: '名称' },
       { name: 'code', type: 'string', label: '编码' },
-      { name: 'level', type: 'string', label: '层级', textField: 'value', valueField: 'key', options: levelDs },
+      { name: 'roleLevel', type: 'string', label: '层级', textField: 'value', valueField: 'key', options: levelDs },
       { name: 'builtIn', type: 'auto', label: '来源', textField: 'value', valueField: 'key', options: buildInDs },
       { name: 'enabled', type: 'auto', label: '状态', textField: 'value', valueField: 'key', options: enabledDs },
     ],

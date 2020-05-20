@@ -21,7 +21,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   } = props;
 
   const prefix = useMemo(() => `role/${level}/default/`, [level]);
-  const menuDs = useMemo(() => new DataSet(MenuListDataSet({ level })), [level]);
+  const menuDs = useMemo(() => new DataSet(MenuListDataSet({ level, organizationId })), [level, organizationId]);
   const formDs = useMemo(() => new DataSet(FormDataSet({ level, prefix, roleId })), [level, roleId]);
 
   useEffect(() => {

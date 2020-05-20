@@ -207,7 +207,6 @@
         <if test="userId != null">
             AND iut.id =#{userId}
         </if>
-        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">

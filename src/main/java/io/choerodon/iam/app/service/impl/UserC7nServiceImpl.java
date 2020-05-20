@@ -661,10 +661,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         return null;
     }
 
-    // TODO 完成这里的逻辑
     @Override
     public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
-        return false;
+        return userC7nMapper.isOrgAdministrator(organizationId, userId);
     }
 
 

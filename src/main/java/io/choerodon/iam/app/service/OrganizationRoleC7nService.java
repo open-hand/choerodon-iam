@@ -29,12 +29,6 @@ public interface OrganizationRoleC7nService {
      */
     void update(Long organizationId, Long roleId, RoleVO roleVO);
 
-    /**
-     * 查询组织下的角色列表
-     * @param organizationId
-     * @return
-     */
-    List<RoleVO> list(Long organizationId);
 
     /**
      * 根据标签查询组织下角色
@@ -42,5 +36,5 @@ public interface OrganizationRoleC7nService {
      * @param labelName 标签名
      * @return
      */
-    Role getByTenantIdAndLabel(Long tenantId, String labelName);
+    List<Role> getByTenantIdAndLabel(Long tenantId, String labelName);
 }

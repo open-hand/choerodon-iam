@@ -53,12 +53,4 @@ public class OrganizationRoleC7nController {
         return ResponseEntity.noContent().build();
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询组织下的角色列表")
-    @GetMapping
-    public ResponseEntity<List<RoleVO>> list(
-            @PathVariable("organization_id") Long organizationId) {
-        return ResponseEntity.ok(organizationRoleC7nService.list(organizationId));
-    }
-
 }

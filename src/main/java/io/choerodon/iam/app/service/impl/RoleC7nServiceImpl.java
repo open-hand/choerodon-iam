@@ -1,5 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.hzero.core.exception.NotLoginException;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -19,18 +34,6 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.core.exception.NotLoginException;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -103,15 +106,38 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public Page<RoleDTO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
-        String labelName;
-        if (level.equals(ResourceLevel.ORGANIZATION.value())) {
+    public Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
+        String labelName = null;
+
+        if (ResourceLevel.ORGANIZATION.value().equals(level)) {
             labelName = RoleLabelEnum.TENANT_ROLE.value();
-        } else {
-            labelName = RoleLabelEnum.PROJECT_ROLE.value();
-            level = ResourceLevel.ORGANIZATION.value();
         }
-        String finalLevel = level;
-        return PageHelper.doPage(pageRequest, () -> roleC7nMapper.fulltextSearch(tenantId, name, code, finalLevel, builtIn, enabled, labelName, params));
+        if (ResourceLevel.PROJECT.value().equals(level)) {
+            labelName = RoleLabelEnum.PROJECT_ROLE.value();
+        }
+        String finalLabelName = labelName;
+        Page<io.choerodon.iam.api.vo.RoleVO> page = PageHelper.doPage(pageRequest, () -> roleC7nMapper.fulltextSearch(tenantId, name, code, ResourceLevel.ORGANIZATION.value(), builtIn, enabled, finalLabelName, params));
+
+        if (!CollectionUtils.isEmpty(page.getContent())) {
+            page.getContent().stream().forEach(roleVO -> {
+                List<Label> labels = roleC7nMapper.listRoleLabels(roleVO.getId());
+                if (!CollectionUtils.isEmpty(labels)) {
+                    labels.forEach(label -> {
+                        if (RoleLabelEnum.TENANT_ROLE.value().equals(label.getName())) {
+                            roleVO.setRoleLevel(ResourceLevel.ORGANIZATION.value());
+                        }
+                        if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
+                            roleVO.setRoleLevel(ResourceLevel.PROJECT.value());
+                        }
+                    });
+                }
+            });
+        }
+        return page;
+    }
+
+    @Override
+    public Role getTenantAdminRole(Long organizationId) {
+        return roleC7nMapper.getTenantAdminRole(organizationId);
     }
 }

@@ -57,7 +57,7 @@ public class RoleC7nController {
     @ApiOperation(value = "分页查询角色")
     @GetMapping(value = "/roles/search")
     @CustomPageRequest
-    public ResponseEntity<Page<RoleDTO>> pagedSearch(@ApiIgnore
+    public ResponseEntity<Page<io.choerodon.iam.api.vo.RoleVO>> pagedSearch(@ApiIgnore
                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                      @RequestParam(required = false) String name,
                                                      @RequestParam(required = false) String code,

@@ -123,7 +123,17 @@
 
     </select>
     <select id="listMenuByLabel" resultMap="MenuMap">
-        SELECT im.*
+        SELECT
+        im.id,
+        im.code,
+        im.name,
+        im.parent_id,
+        im.type,
+        im.sort,
+        im.h_permission_type,
+        im.h_controller_type,
+        im.h_level_path,
+        im.fd_level
         FROM iam_menu im
         LEFT JOIN hiam_label_rel hlr ON hlr.data_id = im.id
         LEFT JOIN iam_label il ON il.id = hlr.label_id
@@ -132,5 +142,23 @@
             #{label}
         </foreach>
 
+    </select>
+    <select id="listPermissionSetByParentIds" resultMap="MenuMap">
+        SELECT
+        im.id,
+        im.code,
+        im.name,
+        im.parent_id,
+        im.type,
+        im.sort,
+        im.h_permission_type,
+        im.h_controller_type,
+        im.h_level_path,
+        im.fd_level
+        FROM iam_menu im
+        WHERE im.type = 'ps' AND im.parent_id IN
+        <foreach collection="ids" item="id" index="i" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 </mapper>

@@ -40,4 +40,6 @@ public interface MenuC7nMapper {
                                @Param("labels") Set<String> labels);
 
     List<Menu> listMenuByLabel( @Param("labels") Set<String> labels);
+
+    List<Menu> listPermissionSetByParentIds(@Param("ids") Set<Long> ids);
 }

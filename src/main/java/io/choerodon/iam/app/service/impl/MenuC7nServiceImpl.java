@@ -8,12 +8,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.hzero.core.helper.LanguageHelper;
-import org.hzero.iam.api.dto.MenuSearchDTO;
 import org.hzero.iam.domain.entity.Menu;
-import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
@@ -79,11 +78,11 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     @Override
     public List<Menu> listPermissionSetTree(Long tenantId, String menuLevel) {
         // 查询组织下的组织管理员账户
-        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
-        MenuSearchDTO menuParams = new MenuSearchDTO();
-        menuParams.setTenantId(tenantId);
-        menuParams.setupOrganizationQueryLevel();
-        menuParams.setRoleId(tenantAdminRole.getId());
+//        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
+//        MenuSearchDTO menuParams = new MenuSearchDTO();
+//        menuParams.setTenantId(tenantId);
+//        menuParams.setupOrganizationQueryLevel();
+//        menuParams.setRoleId(tenantAdminRole.getId());
         Set<String> labels = new HashSet<>();
         if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.TENANT_MENU.value());
@@ -91,18 +90,14 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
         }
-        menuParams.setLabels(labels);
-        // 根据层级查询组织管理员的有权限的菜单列表
-        CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuMapper.selectMenusByCondition(menuParams), SELECT_MENU_POOL);
+//        menuParams.setLabels(labels);
 
-        CompletableFuture<List<Menu>> cf = f1
-                // 转换成树形结构
-                .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
-                .exceptionally((e) -> {
-                    LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
-                    return Collections.emptyList();
-                });
-        return cf.join();
+        List<Menu> menus = menuC7nMapper.listMenuByLabel(labels);
+        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        menus.addAll(permissionSetList);
+
+        return HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE);
 
     }
 

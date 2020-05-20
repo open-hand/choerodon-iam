@@ -5,7 +5,6 @@ import java.util.List;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.app.service.LabelService;
-import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Label;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +51,13 @@ public class LabelC7nController extends BaseController {
                                                        Label label) {
         label.setFdLevel(ResourceLevel.ORGANIZATION.value());
         return new ResponseEntity<>(labelC7nService.listByOption(label), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询项目层角色gitlab标签")
+    @GetMapping("/project_gitlab_labels")
+    public ResponseEntity<List<Label>> listProjectGitlabLabels() {
+        return ResponseEntity.ok(labelC7nService.listProjectGitlabLabels());
     }
 
 }

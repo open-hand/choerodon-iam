@@ -37,4 +37,6 @@ public interface OrganizationRoleC7nService {
      * @return
      */
     List<Role> getByTenantIdAndLabel(Long tenantId, String labelName);
+
+    RoleVO queryById(Long organizationId, Long roleId);
 }

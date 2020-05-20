@@ -43,7 +43,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * @author superlee
  */
-@Api(tags = C7nSwaggerApiConfig.CHOERODON_SYSTEM_SETTING)
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/users")
 public class UserC7nController extends BaseController {

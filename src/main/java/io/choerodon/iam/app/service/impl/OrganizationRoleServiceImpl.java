@@ -79,6 +79,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         CustomUserDetails details = UserUtils.getUserDetails();
         User adminUser = new User();
         adminUser.setId(details.getUserId());
+        roleVO.setTenantId(organizationId);
         Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
 
         // 分配权限集

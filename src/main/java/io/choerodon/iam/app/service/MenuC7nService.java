@@ -18,4 +18,5 @@ public interface MenuC7nService {
 
     List<Menu> listNavMenuTree(Set<String> labels, Long projectId);
 
+    List<Menu> listMenuByLabel(Set<String> labels);
 }

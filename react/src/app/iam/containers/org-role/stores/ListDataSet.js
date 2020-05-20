@@ -41,7 +41,7 @@ const levelDs = new DataSet({
   ],
 });
 
-export default ({ level }) => {
+export default ({ level, organizationId }) => {
   const codeValidator = async (value, name, record) => {
     const validValue = `role/${level}/custom/${value}`;
     if (record.status !== 'add') {
@@ -98,6 +98,7 @@ export default ({ level }) => {
         params: {
           ...params,
           sort: 'id,desc',
+          tenantId: organizationId,
         },
         data: {
           ...data,

@@ -14,7 +14,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { type, id, organizationId } }, intl, children } = props;
     const intlPrefix = 'organization.role.list';
     const [level, setLevel] = useState('organization');
-    const listDataSet = useMemo(() => new DataSet(ListDataSet({ level })), [id, level]);
+    const listDataSet = useMemo(() => new DataSet(ListDataSet({ level, organizationId })), [id, level]);
     const labelTipDataSet = useMemo(() => new DataSet(LabelTipDataSet({ level })), [id, level]);
     const value = {
       ...props,

@@ -32,8 +32,8 @@ export default function useStore() {
     },
 
     initData(orgId, projectIds) {
-      const startTime = moment().subtract(this.chosenDay, 'days').format('YYYY/MM/DD');
-      const endTime = moment().format('YYYY/MM/DD');
+      const startTime = moment().subtract(this.chosenDay, 'days').format('YYYY-MM-DD HH:mm:ss');
+      const endTime = moment().format('YYYY-MM-DD HH:mm:ss');
       this.initChartData(orgId, projectIds, startTime, endTime);
     },
 

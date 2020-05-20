@@ -11,23 +11,27 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.hzero.core.helper.LanguageHelper;
+import org.hzero.iam.api.dto.MenuSearchDTO;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.MenuMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 
@@ -54,28 +58,43 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private RoleC7nService roleC7nService;
+    private MenuMapper menuMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               OrganizationRoleC7nService organizationRoleC7nService,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               MenuRepository menuRepository,
                               RoleRepository roleRepository,
-                              RoleC7nService roleC7nService) {
+                              RoleC7nService roleC7nService,
+                              MenuMapper menuMapper) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.roleRepository = roleRepository;
         this.menuRepository = menuRepository;
         this.roleC7nService = roleC7nService;
+        this.menuMapper = menuMapper;
     }
 
     @Override
-    public List<Menu> listPermissionSetTree(Long organizationId, String menuLevel) {
+    public List<Menu> listPermissionSetTree(Long tenantId, String menuLevel) {
         // 查询组织下的组织管理员账户
-        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
-
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
+        MenuSearchDTO menuParams = new MenuSearchDTO();
+        menuParams.setTenantId(tenantId);
+        menuParams.setupOrganizationQueryLevel();
+        menuParams.setRoleId(tenantAdminRole.getId());
+        Set<String> labels = new HashSet<>();
+        if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
+            labels.add(MenuLabelEnum.TENANT_MENU.value());
+        }
+        if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
+            labels.add(MenuLabelEnum.GENERAL_MENU.value());
+        }
+        menuParams.setLabels(labels);
+        List<Menu> menuList = menuMapper.selectMenusByCondition(menuParams);
         // 根据层级查询组织管理员的有权限的菜单列表
-        return roleRepository.selectRolePermissionSetTree(tenantAdminRole.getId(), null);
+        return menuList;
     }
 
     @Override

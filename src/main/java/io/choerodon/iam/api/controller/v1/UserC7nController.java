@@ -399,12 +399,4 @@ public class UserC7nController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);
     }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层查询启用状态的用户列表")
-    @GetMapping(value = "/site/enableUsers")
-    public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName) {
-        return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.SITE.value(), 0L, userName), HttpStatus.OK);
-    }
 }

@@ -9,4 +9,30 @@
             #{deletePermissionId}
         </foreach>
     </delete>
+    <resultMap id="rolePermissionMap" type="org.hzero.iam.domain.entity.RolePermission">
+        <id property="id" column="id"/>
+        <result property="roleId" column="role_id"/>
+        <result property="permissionSetId" column="permission_id"/>
+        <result property="type" column="type"/>
+        <result property="type" column="type"/>
+    </resultMap>
+    <select id="listRolePermissionByRoleIdAndLabels" resultMap="rolePermissionMap">
+        SELECT irp.*
+        FROM iam_role_permission irp
+        JOIN iam_menu im ON im.id = irp.permission_id AND im.type = 'ps'
+        <if test="labelNames != null and labelNames.size > 0">
+            JOIN hiam_label_rel hlr ON hlr.data_id = im.id AND hlr.data_type = 'MENU'
+            JOIN iam_label il ON il.id = hlr.label_id
+        </if>
+        <where>
+            irp.role_id = #{roleId} AND irp.type = 'PS'
+
+            <if test="labelNames != null and labelNames.size > 0">
+                AND il.name IN
+                <foreach collection="labelNames" open="(" separator="," close=")" item="label">
+                    #{label}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

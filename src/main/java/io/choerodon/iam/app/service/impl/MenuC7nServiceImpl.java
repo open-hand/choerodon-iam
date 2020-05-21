@@ -18,6 +18,7 @@ import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -92,13 +93,15 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
         }
 //        menuParams.setLabels(labels);
+        SecurityTokenHelper.close();
+        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labels, null);
+        SecurityTokenHelper.clear();
 
-        List<Menu> menus = menuC7nMapper.listMenuByLabel(labels);
-        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
-        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
-        menus.addAll(permissionSetList);
+//        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+//        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+//        menus.addAll(permissionSetList);
 
-        return HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE);
+        return menus;
 
     }
 

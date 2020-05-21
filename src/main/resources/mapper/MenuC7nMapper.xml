@@ -161,14 +161,14 @@
             #{id}
         </foreach>
     </select>
-    <select id="listUserInfoMenuOnlyTypeMenu" resultType="org.hzero.iam.domain.entity.Menu">
+    <select id="listUserInfoMenuOnlyTypeMenu" resultMap="MenuMap">
         select im.*
         from iam_menu im
         left join hiam_label_rel hlr on im.id = hlr.data_id
         left join iam_label il on il.id = hlr.label_id
         where il.name = 'USER_MENU' AND hlr.data_type = 'MENU' and im.type = 'menu'
     </select>
-    <select id="listMenuByLabelAndType" resultType="org.hzero.iam.domain.entity.Menu">
+    <select id="listMenuByLabelAndType" resultMap="MenuMap">
         SELECT
         im.id,
         im.code,

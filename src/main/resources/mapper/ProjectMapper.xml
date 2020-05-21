@@ -25,7 +25,7 @@
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>
             <result property="enabled" column="role_is_enabled"/>
-            <result property="organizationId" column="role_org_id"/>
+            <result property="tenantId" column="role_org_id"/>
             <result property="objectVersionNumber" column="role_version_number"/>
             <result property="createdBy" column="role_created_by"/>
             <result property="creationDate" column="role_creation_date"/>
@@ -54,7 +54,7 @@
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>
             <result property="enabled" column="role_is_enabled"/>
-            <result property="organizationId" column="role_org_id"/>
+            <result property="tenantId" column="role_org_id"/>
             <result property="objectVersionNumber" column="role_version_number"/>
             <result property="createdBy" column="role_created_by"/>
             <result property="creationDate" column="role_creation_date"/>
@@ -81,11 +81,9 @@
         SELECT DISTINCT
         member_id
         FROM
-        iam_member_role
+        fd_project_user fpu
         WHERE
-        source_id = #{projectId}
-        AND source_type = 'project'
-        AND member_type = 'user'
+        fpu.PROJECT_ID = #{projectId}
         ) t ON iam_user.id = t.member_id
     </select>
 
@@ -100,86 +98,26 @@
         </if>
     </select>
 
-    <select id="selectProjectsWithRoles" databaseId="mysql" resultMap="projectWithRoleDTO">
-        SELECT
-        fp.id,
-        fp.name,
-        fp.code,
-        fp.organization_id,
-        fo.name as organization_name,
-        fo.code as organization_code,
-        fp.is_enabled,
-        ir.id AS role_id,
-        ir.name AS role_name,
-        ir.code AS role_code,
-        ir.is_enabled AS role_is_enabled,
-        ir.organization_id as role_org_id,
-        ir.object_version_number as role_version_number,
-        ir.created_by as role_created_by,
-        ir.creation_date as role_creation_date
-        FROM fd_project fp
-        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
-        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
-        WHERE fpu.member_id = #{id}
-        <if test="params != null">
-            AND (
-            fp.name LIKE concat(concat('%', #{params}), '%') OR
-            fp.code LIKE concat(concat('%', #{params}), '%')
-            )
-        </if>
-    </select>
-
-    <!-- 根据dataiamId找指定的sql，既不是mysql也不是oracle走这条sql，默认是使用mysql的sql -->
     <select id="selectProjectsWithRoles" resultMap="projectWithRoleDTO">
         SELECT
         fp.id,
         fp.name,
         fp.code,
         fp.organization_id,
-        fo.name AS organization_name,
+        fo.tenant_name AS organization_name,
         fp.is_enabled,
         ir.id AS role_id,
         ir.name AS role_name,
         ir.code AS role_code,
         ir.is_enabled AS role_is_enabled,
-        ir.organization_id as role_org_id,
+        ir.h_tenant_id as role_org_id,
         ir.object_version_number as role_version_number,
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date
         FROM fd_project fp
         INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
         LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
-        WHERE fpu.member_id = #{id}
-        <if test="params != null">
-            AND (
-            fp.name LIKE concat(concat('%', #{params}), '%') OR
-            fp.code LIKE concat(concat('%', #{params}), '%')
-            )
-        </if>
-    </select>
-
-    <select id="selectProjectsWithRoles" databaseId="oracle" resultMap="projectWithRoleDTO">
-        SELECT
-        fp.id,
-        fp.name,
-        fp.code,
-        fp.organization_id,
-        fo.name AS organization_name,
-        fp.is_enabled,
-        ir.id AS role_id,
-        ir.name AS role_name,
-        ir.code AS role_code,
-        ir.is_enabled AS role_is_enabled,
-        ir.organization_id as role_org_id,
-        ir.object_version_number as role_version_number,
-        ir.created_by as role_created_by,
-        ir.creation_date as role_creation_date
-        FROM fd_project fp
-        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
-        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
-        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.id
+        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
         WHERE fpu.member_id = #{id}
         <if test="params != null">
             AND (
@@ -301,12 +239,12 @@
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
-                INNER JOIN iam_member_role imr ON imr.source_id = fp.id
-                INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id AND imr.source_type = 'project')
+                INNER JOIN fd_project_user imr ON imr.PROJECT_ID = fp.id
+                INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
             <otherwise>
-                LEFT JOIN iam_member_role imr ON (imr.source_id = fp.id and imr.member_id = #{userId})
-                LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id AND imr.source_type = 'project')
+                LEFT JOIN fd_project_user imr ON (imr.PROJECT_ID = fp.id and imr.member_id = #{userId})
+                LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
         </choose>
         <where>
@@ -353,8 +291,7 @@
         inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
         or fpc.code='PROGRAM'))
         <if test="!isAdmin">
-            inner join iam_member_role imr ON (imr.source_id = fp.id and imr.source_type = 'project'
-            and imr.member_type='user')
+            inner join fd_project_user imr ON imr.PROJECT_ID = fp.id
             inner join iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
         </if>
         <where>

@@ -348,13 +348,8 @@
             fd_project_user fpu
             INNER JOIN
             iam_role ir ON fpu.role_id = ir.id
-            left JOIN iam_role_label on irl.role_id=ir.id
-            Left JOIN iam_label il on il.id=irl.lable_id
-        ir.*
-        FROM
-        fd_project_user fpu
-        INNER JOIN
-        iam_role ir ON fpu.role_id = ir.id
+            left JOIN iam_role_label irl on irl.role_id=ir.id
+            Left JOIN iam_label il on il.id=irl.label_id
         WHERE
         fpu.member_id = #{id}
         AND

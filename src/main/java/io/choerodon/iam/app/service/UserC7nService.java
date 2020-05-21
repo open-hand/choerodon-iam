@@ -1,11 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -13,11 +12,11 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * @author scp
@@ -314,4 +313,11 @@ public interface UserC7nService {
      * @return 启用状态的用户列表
      */
     List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName);
+
+    /**
+     * 给用户分配组织管理员角色
+     * @param userIds
+     * @param organizationId
+     */
+    void createOrgAdministrator(List<Long> userIds, Long organizationId);
 }

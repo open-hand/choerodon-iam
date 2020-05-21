@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import org.hzero.iam.api.dto.PermissionSetSearchDTO;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
@@ -16,6 +15,7 @@ import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.iam.infra.mapper.LabelRelMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,6 @@ import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -53,6 +52,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private RoleRepository roleRepository;
     private MenuC7nService menuC7nService;
     private MenuC7nMapper menuC7nMapper;
+    private LabelRelMapper labelRelMapper;
 
     public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
                                        RoleService roleService,
@@ -63,7 +63,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                                        RoleMapper roleMapper,
                                        RoleRepository roleRepository,
                                        MenuC7nService menuC7nService,
-                                       MenuC7nMapper menuC7nMapper) {
+                                       MenuC7nMapper menuC7nMapper,
+                                       LabelRelMapper labelRelMapper) {
         this.roleCreateInternalService = roleCreateInternalService;
         this.roleService = roleService;
         this.labelC7nService = labelC7nService;
@@ -74,6 +75,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         this.roleRepository = roleRepository;
         this.menuC7nService = menuC7nService;
         this.menuC7nMapper = menuC7nMapper;
+        this.labelRelMapper = labelRelMapper;
     }
 
     @Override
@@ -173,24 +175,43 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 roleVO.getRoleLabels().add(label);
             }
         }
-        List<Menu> menus = menuC7nService.listMenuByLabel(labelNames);
-        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
-        List<Menu> psList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        List<Menu> menus = menuC7nService.listMenuByLabelAndType(labelNames, null);
+
+
         List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
-        Set<Long> psIds = rolePermissions.stream().map(ps -> ps.getPermissionSetId()).collect(Collectors.toSet());
-        psList.forEach(ps -> {
+        Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
+        menus.stream().filter(menu -> "ps".equals(menu.getType())).forEach(ps -> {
             if (psIds.contains(ps.getId())) {
                 ps.setCheckedFlag("Y");
             } else {
                 ps.setCheckedFlag("N");
             }
         });
-//        PermissionSetSearchDTO permissionSetSearchDTO = new PermissionSetSearchDTO();
-//        permissionSetSearchDTO.setLabels(labelNames);
-//        List<Menu> menus = roleRepository.selectRolePermissionSetTree(roleId, permissionSetSearchDTO);
-        menus.addAll(psList);
         roleVO.setMenuList(HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE));
         return roleVO;
+    }
+
+    private void fixPsMenuRel() {
+//        List<Menu> menus = menuC7nService.listMenuByLabel(labelNames);
+//        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+//        List<Menu> psList = menuC7nMapper.listPermissionSetByParentIds(ids);
+//        psList.forEach(ps -> {
+//            LabelRel labelRel = new LabelRel();
+//            labelRel.setDataType("MENU");
+//            labelRel.setDataId(ps.getParentId());
+//            List<LabelRel> labelRelList = labelRelMapper.select(labelRel);
+//            labelRelList.forEach(labelRel1 -> {
+//                LabelRel pslabelRel = new LabelRel();
+//                pslabelRel.setDataType("MENU");
+//                pslabelRel.setDataId(ps.getId());
+//                pslabelRel.setLabelId(labelRel1.getLabelId());
+//                pslabelRel.setAssignType("A");
+//                if (labelRelMapper.selectOne(pslabelRel) == null) {
+//                    labelRelMapper.insertSelective(pslabelRel);
+//                }
+//
+//            });
+//        });
     }
 
     /**

@@ -43,4 +43,5 @@ public interface MenuC7nMapper {
 
     List<Menu> listUserInfoMenuOnlyTypeMenu();
 
+    List<Menu> listMenuByLabelAndType(@Param("labelNames") Set<String> labelNames, @Param("type") String type);
 }

@@ -304,4 +304,14 @@ public interface UserC7nService {
     List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     UserVO selectSelf();
+
+    /**
+     * 在全局层/组织层/项目层 根据用户名查询启用状态的用户列表.
+     *
+     * @param sourceType 资源层级
+     * @param sourceId   资源Id
+     * @param userName   用户名
+     * @return 启用状态的用户列表
+     */
+    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName);
 }

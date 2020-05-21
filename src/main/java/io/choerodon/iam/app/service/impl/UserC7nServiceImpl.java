@@ -1,12 +1,48 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -36,44 +72,6 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -896,5 +894,11 @@ public class UserC7nServiceImpl implements UserC7nService {
             userVO.setRecentAccessTenantList(ConvertUtils.convertList(list, Tenant.class));
         }
         return userVO;
+    }
+
+    @Override
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName) {
+        validateSourceNotExisted(sourceType, sourceId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName);
     }
 }

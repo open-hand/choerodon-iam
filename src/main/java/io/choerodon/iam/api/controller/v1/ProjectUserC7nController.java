@@ -6,6 +6,7 @@ import java.util.Set;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
@@ -33,11 +35,14 @@ public class ProjectUserC7nController extends BaseController {
 
     private ProjectUserService userService;
     private OrganizationResourceLimitService organizationResourceLimitService;
+    private UserC7nService userC7nService;
 
     public ProjectUserC7nController(ProjectUserService userService,
+                                    UserC7nService userC7nService,
                                     OrganizationResourceLimitService organizationResourceLimitService) {
         this.userService = userService;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.userC7nService = userC7nService;
     }
 
     @Permission(level = ResourceLevel.PROJECT)
@@ -154,4 +159,12 @@ public class ProjectUserC7nController extends BaseController {
         return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层查询启用状态的用户列表")
+    @GetMapping(value = "/projects/{project_id}/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                              @RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.PROJECT.value(), projectId, userName), HttpStatus.OK);
+    }
 }

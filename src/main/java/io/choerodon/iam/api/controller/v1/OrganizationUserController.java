@@ -237,13 +237,4 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "组织层查询启用状态的用户列表")
-    @GetMapping(value = "/organizations/{organization_id}/enableUsers")
-    public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-                                                                   @RequestParam(name = "user_name") String userName) {
-        return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.ORGANIZATION.value(), organizationId, userName), HttpStatus.OK);
-    }
 }

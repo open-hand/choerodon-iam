@@ -21,6 +21,10 @@ public enum MenuLabelEnum {
      */
     USER_MENU("USER_MENU"),
     /**
+     * 知识库菜单标签
+     */
+    KNOWLEDGE_MENU("KNOWLEDGE_MENU"),
+    /**
      * 项目层全流程项目标签
      */
     GENERAL_MENU("GENERAL_MENU");

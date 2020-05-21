@@ -1,10 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import org.hzero.iam.api.dto.PermissionSetSearchDTO;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
@@ -20,14 +23,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.app.service.LabelC7nService;
-import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.app.service.RolePermissionC7nService;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -50,6 +50,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private RoleC7nService roleC7nService;
     private RoleMapper roleMapper;
     private RoleRepository roleRepository;
+    private MenuC7nService menuC7nService;
+    private MenuC7nMapper menuC7nMapper;
 
     public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
                                        RoleService roleService,
@@ -58,7 +60,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                                        RoleC7nMapper roleC7nMapper,
                                        RoleC7nService roleC7nService,
                                        RoleMapper roleMapper,
-                                       RoleRepository roleRepository) {
+                                       RoleRepository roleRepository,
+                                       MenuC7nService menuC7nService,
+                                       MenuC7nMapper menuC7nMapper) {
         this.roleCreateInternalService = roleCreateInternalService;
         this.roleService = roleService;
         this.labelC7nService = labelC7nService;
@@ -67,6 +71,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         this.roleC7nService = roleC7nService;
         this.roleMapper = roleMapper;
         this.roleRepository = roleRepository;
+        this.menuC7nService = menuC7nService;
+        this.menuC7nMapper = menuC7nMapper;
     }
 
     @Override
@@ -91,7 +97,22 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
 
         // 分配权限集
+        // 默认分配个人信息权限集
+
+        Set<Long> psIds = listUserInfoPsIds();
+
+        roleVO.getMenuIdList().addAll(psIds);
         assignRolePermission(role.getId(), roleVO.getMenuIdList());
+    }
+
+    private Set<Long> listUserInfoPsIds() {
+        // 查询个人信息权限集
+        // 查询个人信息菜单
+        List<Menu> menus = menuC7nService.listUserInfoMenuOnlyTypeMenu();
+        Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());
+        List<Menu> menuList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        return menuList.stream().map(Menu::getId).collect(Collectors.toSet());
+
     }
 
     @Override
@@ -103,12 +124,14 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         checkEnableEdit(roleId);
 
         if (Boolean.TRUE.equals(roleVO.getUpdateRoleFlag())) {
-            roleService.updateRole(roleVO);
+            roleMapper.updateByPrimaryKeySelective(roleVO);
         }
 
         if (Boolean.TRUE.equals(roleVO.getUpdatePermissionFlag())) {
             List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
             Set<Long> permissionIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
+            Set<Long> psIds = listUserInfoPsIds();
+            permissionIds.addAll(psIds);
             // 要新增的权限
             Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
             // 要删除的权限
@@ -134,6 +157,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         List<Label> labels = roleC7nMapper.listRoleLabels(role.getId());
 
         RoleVO roleVO = ConvertUtils.convertObject(role, RoleVO.class);
+        roleVO.setRoleLabels(new ArrayList<>());
         Set<String> labelNames = new HashSet<>();
         for (Label label : labels) {
             if (RoleLabelEnum.TENANT_ROLE.value().equals(label.getName())) {

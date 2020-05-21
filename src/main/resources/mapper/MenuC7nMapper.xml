@@ -168,4 +168,31 @@
         left join iam_label il on il.id = hlr.label_id
         where il.name = 'USER_MENU' AND hlr.data_type = 'MENU' and im.type = 'menu'
     </select>
+    <select id="listMenuByLabelAndType" resultType="org.hzero.iam.domain.entity.Menu">
+        SELECT
+        im.id,
+        im.code,
+        im.name,
+        im.parent_id,
+        im.type,
+        im.sort,
+        im.h_permission_type,
+        im.h_controller_type,
+        im.h_level_path,
+        im.fd_level
+        FROM iam_menu im
+        LEFT JOIN hiam_label_rel hlr ON hlr.data_id = im.id
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        <where>
+            <if test="type != null">
+                and im.type = #{type}
+            </if>
+            <if test="labelNames != null and labelNames.size > 0">
+                and il.name IN
+                <foreach collection="labelNames" open="(" separator="," close=")" item="label">
+                    #{label}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -164,4 +164,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
         return menuC7nMapper.listUserInfoMenuOnlyTypeMenu();
     }
+
+    @Override
+    public List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type) {
+
+        return menuC7nMapper.listMenuByLabelAndType(labelNames, type);
+    }
 }

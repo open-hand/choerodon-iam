@@ -17,6 +17,7 @@ import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.LabelRelMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -175,8 +176,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 roleVO.getRoleLabels().add(label);
             }
         }
+        SecurityTokenHelper.close();
         List<Menu> menus = menuC7nService.listMenuByLabelAndType(labelNames, null);
-
+        SecurityTokenHelper.clear();
 
         List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
         Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());

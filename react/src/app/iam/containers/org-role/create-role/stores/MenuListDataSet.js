@@ -1,4 +1,7 @@
 function getNode(node, res, name = 'subMenus') {
+  if (node.checkedFlag === 'Y') {
+    node.isChecked = true;
+  }
   res.push(node);
   if (node[name]) {
     node[name].forEach((n) => {

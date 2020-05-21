@@ -2,7 +2,8 @@ import React, { Fragment, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Choerodon } from '@choerodon/boot';
 import { Icon, message } from 'choerodon-ui';
-import { Table, Form, TextField, Button, Select } from 'choerodon-ui/pro';
+import pick from 'lodash/pick';
+import { Table, Form, TextField, Select } from 'choerodon-ui/pro';
 import { useCreateRoleStore } from './stores';
 import LoadingBar from '../../../components/loadingBar';
 
@@ -12,12 +13,14 @@ const { Column } = Table;
 
 const ListView = () => {
   const {
+    AppState: { currentMenuType: { organizationId } },
     menuDs,
     formDs,
     modal,
     refresh,
     prefixCls,
     level,
+    roleStore,
   } = useCreateRoleStore();
   
   const record = useMemo(() => formDs.current, [formDs.current]);
@@ -29,8 +32,29 @@ const ListView = () => {
       message.error('至少包含一个权限。');
       return false;
     }
+    if (await record.validate() === false) {
+      return false;
+    }
     try {
-      if (await formDs.submit() !== false) {
+      const data = record.toData();
+      const res = pick(data, ['code', 'name', 'roleLevel']);
+      res.roleLabels = level === 'project' ? [data.roleLabels] : [];
+      res.menuIdList = [];
+      menuDs.forEach((eachRecord) => {
+        if (eachRecord.get('isChecked') && eachRecord.get('type') === 'ps') {
+          res.menuIdList.push(eachRecord.get('id'));
+        }
+      });
+      let result;
+      if (isModify) {
+        res.objectVersionNumber = record.get('objectVersionNumber');
+        res.updateRoleFlag = record.dirty;
+        res.updatePermissionFlag = menuDs.dirty;
+        result = await roleStore.editRole(organizationId, res, record.get('id'));
+      } else {
+        result = await roleStore.createRole(organizationId, res);
+      }
+      if (result) {
         refresh();
       } else {
         return false;

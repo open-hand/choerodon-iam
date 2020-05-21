@@ -7,6 +7,7 @@ import map from 'lodash/map';
 import MenuListDataSet from './MenuListDataSet';
 import FormDataSet from './FormDataSet';
 import LabelDataSet from './LabelDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -23,18 +24,34 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     roleId,
   } = props;
 
+  const roleStore = useStore();
   const roleLabelsDs = useMemo(() => new DataSet(LabelDataSet()), []);
-  const menuDs = useMemo(() => new DataSet(MenuListDataSet({ level, organizationId })), [level, organizationId]);
+  const menuDs = useMemo(() => new DataSet(MenuListDataSet({ level, organizationId, roleId })), [level, organizationId]);
   const formDs = useMemo(() => new DataSet(FormDataSet({ level, roleId, roleLabelsDs, organizationId, menuDs })), [level, roleId, organizationId]);
 
   async function loadData() {
-    await axios.all([menuDs.query(), formDs.query()]);
-    const menuList = map(formDs.current.get('menuIdList') || [], 'id');
-    menuDs.forEach((record) => {
-      if (menuList.includes(record.get('id'))) {
-        record.init('isChecked', true);
+    function getNode(node, res, name = 'subMenus') {
+      if (node.checkedFlag === 'Y') {
+        node.isChecked = true;
       }
-    });
+      res.push(node);
+      if (node[name]) {
+        node[name].forEach((n) => {
+          getNode(n, res, name);
+        });
+      }
+    }
+
+    function getNodesByTree(tree, res, name = 'subMenus') {
+      tree.forEach((node) => {
+        getNode(node, res, name);
+      });
+    }
+
+    const menuArray = [];
+    await formDs.query();
+    getNodesByTree(formDs.current.get('menuList'), menuArray, 'subMenus');
+    menuDs.loadData(menuArray);
   }
 
   useEffect(() => {
@@ -53,6 +70,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     ...props,
     formDs,
     menuDs,
+    roleStore,
     prefixCls: 'base-org-role-create',
   };
 

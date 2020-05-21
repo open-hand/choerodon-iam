@@ -1,4 +1,3 @@
-import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 
 function handleLoad({ dataSet }) {
@@ -43,16 +42,6 @@ export default ({ level, roleId, roleLabelsDs, organizationId, menuDs }) => {
     return true;
   };
 
-  function formatData({ res, data }) {
-    res.roleLabels = level === 'project' ? [data.roleLabels] : [];
-    res.menuIdList = [];
-    menuDs.forEach((eachRecord) => {
-      if (eachRecord.get('isChecked') && eachRecord.get('type') === 'ps') {
-        res.menuIdList.push(eachRecord.get('id'));
-      }
-    });
-  }
-
   return {
     autoQuery: false,
     autoCreate: false,
@@ -63,26 +52,6 @@ export default ({ level, roleId, roleLabelsDs, organizationId, menuDs }) => {
       read: {
         url: `/iam/choerodon/v1/organizations/${organizationId}/roles/${roleId}`,
         method: 'get',
-      },
-      create: ({ data: [data] }) => {
-        const res = pick(data, ['name', 'code', 'roleLevel']);
-        formatData({ res, data });
-
-        return ({
-          url: `iam/choerodon/v1/organizations/${organizationId}/roles`,
-          method: 'post',
-          data: res,
-        });
-      },
-      update: ({ data: [data] }) => {
-        const res = pick(data, ['code', 'name', 'objectVersionNumber', 'roleLevel']);
-        formatData({ res, data });
-
-        return ({
-          url: `iam/choerodon/v1/organizations/${organizationId}/${data.id}`,
-          method: 'put',
-          data: res,
-        });
       },
     },
     fields: [

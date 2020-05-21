@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Choerodon } from '@choerodon/boot';
 import { Icon, message } from 'choerodon-ui';
 import pick from 'lodash/pick';
+import isEqual from 'lodash/isEqual';
 import { Table, Form, TextField, Select } from 'choerodon-ui/pro';
 import { useCreateRoleStore } from './stores';
 import LoadingBar from '../../../components/loadingBar';
@@ -49,7 +50,7 @@ const ListView = () => {
       if (isModify) {
         res.objectVersionNumber = record.get('objectVersionNumber');
         res.updateRoleFlag = record.dirty;
-        res.updatePermissionFlag = menuDs.dirty;
+        res.updatePermissionFlag = !isEqual(record.get('menuIdList'), res.menuIdList);
         result = await roleStore.editRole(organizationId, res, record.get('id'));
       } else {
         result = await roleStore.createRole(organizationId, res);

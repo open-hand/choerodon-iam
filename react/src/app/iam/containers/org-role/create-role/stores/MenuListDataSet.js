@@ -14,7 +14,7 @@ function getNodesByTree(tree, res, name = 'subMenus') {
 }
 
 export default ({ level, organizationId }) => ({
-  autoQuery: true,
+  autoQuery: false,
   selection: false,
   paging: false,
   idField: 'id',
@@ -23,7 +23,7 @@ export default ({ level, organizationId }) => ({
   expandField: 'expand',
   transport: {
     read: {
-      url: `iam/choerodon/v1/organizations/${organizationId}/menus/organization/permission-set-tree?tenant_id=${organizationId}&menu_level=${level}`,
+      url: `iam/choerodon/v1/organizations/${organizationId}/menus/${level}/permission-set-tree?tenant_id=${organizationId}`,
       method: 'get',
       transformResponse(data) {
         try {

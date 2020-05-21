@@ -3,7 +3,6 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import ListDataSet from './ListDataSet';
-import LabelTipDataSet from './LabelTipDataSet';
 
 const Store = createContext();
 
@@ -15,11 +14,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const intlPrefix = 'organization.role.list';
     const [level, setLevel] = useState('organization');
     const listDataSet = useMemo(() => new DataSet(ListDataSet({ level, organizationId })), [id, level]);
-    const labelTipDataSet = useMemo(() => new DataSet(LabelTipDataSet({ level })), [id, level]);
     const value = {
       ...props,
       listDataSet,
-      labelTipDataSet,
       prefixCls: 'base-org-role-list',
       intlPrefix,
       permissions: [],

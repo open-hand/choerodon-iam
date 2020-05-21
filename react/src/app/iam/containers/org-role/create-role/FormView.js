@@ -15,7 +15,6 @@ const ListView = () => {
     menuDs,
     formDs,
     modal,
-    prefix,
     refresh,
     prefixCls,
     level,
@@ -25,7 +24,8 @@ const ListView = () => {
   const isModify = useMemo(() => formDs.current && formDs.current.status !== 'add', [formDs.current]);
 
   const handleOkRole = useCallback(async () => {
-    if (!menuDs.isSelected.length) {
+    const selectedRecords = menuDs.filter((eachRecord) => eachRecord.get('isChecked'));
+    if (!selectedRecords.length) {
       message.error('至少包含一个权限。');
       return false;
     }
@@ -39,19 +39,11 @@ const ListView = () => {
       Choerodon.handleResponseError(e);
       return false;
     }
-  }, [menuDs.isSelected]);
+  }, [menuDs.selected]);
 
   useEffect(() => {
     modal.handleOk(handleOkRole);
   }, [handleOkRole]);
-
-  function renderCode({ value }) {
-    if (isModify) {
-      return value;
-    }
-    if (!value) return undefined;
-    return `${prefix}${value}`;
-  }
 
   function renderName({ record: tableRecord }) {
     const { icon, name } = tableRecord.toData();
@@ -66,6 +58,14 @@ const ListView = () => {
     );
   }
 
+  function renderType({ value, record: tableRecord }) {
+    const permissionType = {
+      api: 'API',
+      button: '按钮',
+    };
+    return tableRecord.get('type') === 'ps' ? permissionType[value] || '' : '';
+  }
+
   if (!record) {
     return <LoadingBar />;
   }
@@ -78,9 +78,9 @@ const ListView = () => {
         columns={2}
         className="c7n-role-msg-form"
       >
-        <TextField name="code" disabled={isModify} renderer={renderCode} />
-        <TextField name="name" disabled={isModify} />
-        {level === 'project' && <Select name="gitlabLabel" />}
+        <TextField name="code" disabled={isModify} />
+        <TextField name="name" />
+        {level === 'project' && <Select name="roleLabels" />}
       </Form>
       <div className={`${prefixCls}-menu`}>
         <span className={`${prefixCls}-menu-text`}>菜单分配</span>
@@ -98,7 +98,7 @@ const ListView = () => {
       >
         <Column name="isChecked" editor width={50} />
         <Column name="name" renderer={renderName} width={400} />
-        <Column name="route" />
+        <Column name="permissionType" renderer={renderType} />
       </Table>
     </div>
   );

@@ -1,9 +1,9 @@
-export default ({ level }) => ({
-  autoQuery: true,
+export default () => ({
+  autoQuery: false,
   selection: 'single',
   transport: {
     read: {
-      url: `/iam/choerodon/v1/labels?type=role&level=${level}`,
+      url: '/iam/choerodon/v1/labels/project_gitlab_labels',
       method: 'get',
     },
   },

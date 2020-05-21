@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action, Content, Header, axios, Breadcrumb, Page } from '@choerodon/boot';
+import { Action, Content, Header, axios, Breadcrumb, Page, Permission, Choerodon } from '@choerodon/boot';
 import { Button, Tag } from 'choerodon-ui';
 import { Table, Modal } from 'choerodon-ui/pro';
 import Store from './stores';
@@ -19,17 +19,13 @@ const ListView = () => {
   const context = useContext(Store);
   const {
     intl: { formatMessage },
+    AppState: { currentMenuType: { organizationId } },
     listDataSet: dataSet,
     prefixCls,
   } = context;
 
-  function handleCancel() {
-    const { current } = dataSet;
-    if (current.status === 'add') {
-      dataSet.remove(current);
-    } else {
-      current.reset();
-    }
+  function refresh() {
+    dataSet.query();
   }
 
   function openModal(type, level) {
@@ -39,32 +35,44 @@ const ListView = () => {
       drawer: true,
       title: type === 'add' ? '创建角色' : '修改角色',
       children: (
-        <FormView level={level} roleId={type === 'edit' ? record.get('id') : null} />
+        <FormView
+          level={level}
+          roleId={type === 'edit' ? record.get('id') : null}
+          refresh={refresh}
+        />
       ),
       style: modalStyle,
-      onCancel: handleCancel,
     });
   }
 
   async function handleEnabled() {
     const record = dataSet.current;
     const enabled = record.get('enabled');
-    const res = await axios.put(`/iam/choerodon/v1/roles/${record.get('id')}/${enabled ? 'disable' : 'enable'}`);
-    if (!res.failed) {
+    const postData = record.toData();
+    try {
+      await axios.put(`/iam/hzero/v1/${organizationId}/roles/${enabled ? 'disable' : 'enable'}`, JSON.stringify(postData));
       dataSet.query();
+    } catch (e) {
+      Choerodon.handleResponseError(e);
     }
   }
 
-  function handleDelete() {
-    const record = dataSet.current;
-    const modalProps = {
-      title: '删除角色',
-      children: '确定删除该角色吗？',
-      okText: formatMessage({ id: 'delete' }),
-      okProps: { color: 'red' },
-      cancelProps: { color: 'dark' },
-    };
-    dataSet.delete(record, modalProps);
+  function renderName({ value, record: tableRecord }) {
+    if (tableRecord.get('builtIn')) {
+      return <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>;
+    }
+    return (
+      <Permission
+        defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+      >
+        <span
+          onClick={() => openModal('edit', tableRecord.get('roleLevel'))}
+          className="link"
+        >
+          {value}
+        </span>
+      </Permission>
+    );
   }
 
   function renderAction({ record }) {
@@ -73,18 +81,8 @@ const ListView = () => {
     const actionDatas = [
       {
         service: [],
-        text: '修改',
-        action: () => openModal('edit', record.get('level')),
-      },
-      {
-        service: [],
         text: enabled ? '停用' : '启用',
         action: handleEnabled,
-      },
-      {
-        service: [],
-        text: '删除',
-        action: handleDelete,
       },
     ];
     return !builtIn && <Action data={actionDatas} />;
@@ -111,11 +109,11 @@ const ListView = () => {
       <Breadcrumb />
       <Content className={`${prefixCls}`}>
         <Table dataSet={dataSet}>
-          <Column name="name" width={200} />
+          <Column name="name" width={200} renderer={renderName} />
           <Column renderer={renderAction} width={50} />
-          <Column name="code" />
-          <Column name="roleLevel" renderer={renderLevel} width={150} />
-          <Column name="builtIn" renderer={renderBuildIn} width={150} align="left" />
+          <Column name="code" style={{ color: 'rgba(0, 0, 0, 0.65)' }} />
+          <Column name="roleLevel" renderer={renderLevel} width={150} style={{ color: 'rgba(0, 0, 0, 0.65)' }} />
+          <Column name="builtIn" renderer={renderBuildIn} width={150} align="left" style={{ color: 'rgba(0, 0, 0, 0.65)' }} />
           <Column name="enabled" renderer={renderEnabled} width={150} align="left" />
         </Table>
       </Content>

@@ -1,12 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Menu;
 
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -42,4 +40,7 @@ public interface MenuC7nMapper {
     List<Menu> listMenuByLabel( @Param("labels") Set<String> labels);
 
     List<Menu> listPermissionSetByParentIds(@Param("ids") Set<Long> ids);
+
+    List<Menu> listUserInfoMenuOnlyTypeMenu();
+
 }

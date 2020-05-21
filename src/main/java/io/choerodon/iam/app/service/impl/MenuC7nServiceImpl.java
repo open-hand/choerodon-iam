@@ -20,6 +20,7 @@ import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,7 +29,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
@@ -56,22 +56,22 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private RoleRepository roleRepository;
     private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private RoleC7nService roleC7nService;
+//    private RoleC7nService roleC7nService;
     private MenuMapper menuMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
-                              OrganizationRoleC7nService organizationRoleC7nService,
+                              @Lazy OrganizationRoleC7nService organizationRoleC7nService,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               MenuRepository menuRepository,
                               RoleRepository roleRepository,
-                              RoleC7nService roleC7nService,
+//                              RoleC7nService roleC7nService,
                               MenuMapper menuMapper) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.roleRepository = roleRepository;
         this.menuRepository = menuRepository;
-        this.roleC7nService = roleC7nService;
+//        this.roleC7nService = roleC7nService;
         this.menuMapper = menuMapper;
     }
 
@@ -86,6 +86,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         Set<String> labels = new HashSet<>();
         if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.TENANT_MENU.value());
+            labels.add(MenuLabelEnum.KNOWLEDGE_MENU.value());
         }
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
@@ -156,5 +157,11 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     @Override
     public List<Menu> listMenuByLabel(Set<String> labels) {
         return menuC7nMapper.listMenuByLabel(labels);
+    }
+
+    @Override
+    public List<Menu> listUserInfoMenuOnlyTypeMenu() {
+
+        return menuC7nMapper.listUserInfoMenuOnlyTypeMenu();
     }
 }

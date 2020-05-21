@@ -9,6 +9,7 @@ export default ({ organizationId }) => ({
       method: 'get',
       transformResponse: (data) => {
         const arr = JSON.parse(data);
+        arr.list = arr.content;
         arr.list = arr.list.map((item) => {
           item.display = 'none';
           return item;

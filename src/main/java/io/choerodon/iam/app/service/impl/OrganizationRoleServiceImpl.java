@@ -189,6 +189,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 ps.setCheckedFlag("N");
             }
         });
+        roleVO.setMenuIdList(psIds);
         roleVO.setMenuList(HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE));
         return roleVO;
     }

@@ -130,7 +130,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/users/{id}")
     public ResponseEntity<User> queryUserInOrganization(@PathVariable(name = "organization_id") Long organizationId,
-                                      @PathVariable Long id) {
+                                                        @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.query(organizationId, id), HttpStatus.OK);
     }
 
@@ -218,8 +218,8 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
     public ResponseEntity<UserNumberVO> countByDateInOrganization(@PathVariable(name = "organization_id") Long organizationId,
-                                                    @RequestParam(value = "start_time") Date startTime,
-                                                    @RequestParam(value = "end_time") Date endTime) {
+                                                                  @RequestParam(value = "start_time") Date startTime,
+                                                                  @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));
     }
 
@@ -236,5 +236,14 @@ public class OrganizationUserController extends BaseController {
     @GetMapping("/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询启用状态的用户列表")
+    @GetMapping(value = "/organizations/{organization_id}/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                   @RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.ORGANIZATION.value(), organizationId, userName), HttpStatus.OK);
     }
 }

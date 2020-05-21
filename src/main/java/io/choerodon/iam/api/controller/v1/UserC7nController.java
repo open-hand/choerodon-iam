@@ -279,8 +279,6 @@ public class UserC7nController extends BaseController {
     }
 
 
-
-
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）")
     @GetMapping(value = "/search")
@@ -341,7 +339,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
-        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.PROJECT.value()));
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.PROJECT.value()));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -350,7 +348,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
-        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.ORGANIZATION.value()));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -366,7 +364,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")
     public ResponseEntity<UserNumberVO> countByDateInSite(@RequestParam(value = "start_time") Date startTime,
-                                                    @RequestParam(value = "end_time") Date endTime) {
+                                                          @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(null, startTime, endTime));
     }
 
@@ -399,6 +397,14 @@ public class UserC7nController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @RequestParam(name = "label_name") String labelName,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName,roleAssignmentSearchDTO), HttpStatus.OK);
+        return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询启用状态的用户列表")
+    @GetMapping(value = "/site/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.SITE.value(), 0L, userName), HttpStatus.OK);
     }
 }

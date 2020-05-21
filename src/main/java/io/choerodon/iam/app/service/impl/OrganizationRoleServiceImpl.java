@@ -180,7 +180,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         List<Menu> menus = menuC7nService.listMenuByLabelAndType(labelNames, null);
         SecurityTokenHelper.clear();
 
-        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
+        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,labelNames);
         Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
         menus.stream().filter(menu -> "ps".equals(menu.getType())).forEach(ps -> {
             if (psIds.contains(ps.getId())) {
@@ -190,7 +190,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             }
         });
         roleVO.setMenuIdList(psIds);
-        roleVO.setMenuList(HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE));
+        roleVO.setMenuList(menus);
         return roleVO;
     }
 

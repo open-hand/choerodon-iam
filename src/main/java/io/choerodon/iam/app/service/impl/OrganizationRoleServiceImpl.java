@@ -13,6 +13,7 @@ import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
+import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.RoleMapper;
@@ -162,6 +163,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         for (Label label : labels) {
             if (RoleLabelEnum.TENANT_ROLE.value().equals(label.getName())) {
                 labelNames.add(MenuLabelEnum.TENANT_MENU.value());
+                labelNames.add(MenuLabelEnum.KNOWLEDGE_MENU.value());
             }
             if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
                 labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
@@ -171,11 +173,23 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 roleVO.getRoleLabels().add(label);
             }
         }
-        PermissionSetSearchDTO permissionSetSearchDTO = new PermissionSetSearchDTO();
-        permissionSetSearchDTO.setLabels(labelNames);
-        List<Menu> menus = roleRepository.selectRolePermissionSetTree(roleId, permissionSetSearchDTO);
-
-        roleVO.setMenuList(menus);
+        List<Menu> menus = menuC7nService.listMenuByLabel(labelNames);
+        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+        List<Menu> psList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
+        Set<Long> psIds = rolePermissions.stream().map(ps -> ps.getPermissionSetId()).collect(Collectors.toSet());
+        psList.forEach(ps -> {
+            if (psIds.contains(ps.getId())) {
+                ps.setCheckedFlag("Y");
+            } else {
+                ps.setCheckedFlag("N");
+            }
+        });
+//        PermissionSetSearchDTO permissionSetSearchDTO = new PermissionSetSearchDTO();
+//        permissionSetSearchDTO.setLabels(labelNames);
+//        List<Menu> menus = roleRepository.selectRolePermissionSetTree(roleId, permissionSetSearchDTO);
+        menus.addAll(psList);
+        roleVO.setMenuList(HiamMenuUtils.formatMenuListToTree(menus, Boolean.TRUE));
         return roleVO;
     }
 

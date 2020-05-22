@@ -2,8 +2,7 @@ import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import { axios } from '@choerodon/boot';
-import map from 'lodash/map';
+import forEach from 'lodash/forEach';
 import MenuListDataSet from './MenuListDataSet';
 import FormDataSet from './FormDataSet';
 import LabelDataSet from './LabelDataSet';
@@ -30,28 +29,13 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const formDs = useMemo(() => new DataSet(FormDataSet({ level, roleId, roleLabelsDs, organizationId, menuDs })), [level, roleId, organizationId]);
 
   async function loadData() {
-    function getNode(node, res, name = 'subMenus') {
-      if (node.checkedFlag === 'Y') {
-        node.isChecked = true;
-      }
-      res.push(node);
-      if (node[name]) {
-        node[name].forEach((n) => {
-          getNode(n, res, name);
-        });
-      }
-    }
-
-    function getNodesByTree(tree, res, name = 'subMenus') {
-      tree.forEach((node) => {
-        getNode(node, res, name);
-      });
-    }
-
-    const menuArray = [];
     await formDs.query();
-    getNodesByTree(formDs.current.get('menuList'), menuArray, 'subMenus');
-    menuDs.loadData(menuArray);
+    forEach(formDs.current.get('menuList'), item => {
+      if (item.checkedFlag === 'Y') {
+        item.isChecked = true;
+      }
+    });
+    menuDs.loadData(formDs.current.get('menuList'));
   }
 
   useEffect(() => {

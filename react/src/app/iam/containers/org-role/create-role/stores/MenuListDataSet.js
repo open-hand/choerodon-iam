@@ -1,21 +1,3 @@
-function getNode(node, res, name = 'subMenus') {
-  if (node.checkedFlag === 'Y') {
-    node.isChecked = true;
-  }
-  res.push(node);
-  if (node[name]) {
-    node[name].forEach((n) => {
-      getNode(n, res, name);
-    });
-  }
-}
-
-function getNodesByTree(tree, res, name = 'subMenus') {
-  tree.forEach((node) => {
-    getNode(node, res, name);
-  });
-}
-
 export default ({ level, organizationId }) => ({
   autoQuery: false,
   selection: false,
@@ -28,21 +10,6 @@ export default ({ level, organizationId }) => ({
     read: {
       url: `iam/choerodon/v1/organizations/${organizationId}/menus/${level}/permission-set-tree?tenant_id=${organizationId}`,
       method: 'get',
-      transformResponse(data) {
-        try {
-          if (data && data.failed) {
-            return data;
-          }
-          const arr = JSON.parse(data);
-          const roleArray = [];
-          getNodesByTree(arr, roleArray, 'subMenus');
-          return {
-            list: roleArray,
-          };
-        } catch (e) {
-          return data;
-        }
-      },
     },
   },
   fields: [

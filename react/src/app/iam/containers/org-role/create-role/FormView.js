@@ -50,7 +50,7 @@ const ListView = () => {
       if (isModify) {
         res.objectVersionNumber = record.get('objectVersionNumber');
         res.updateRoleFlag = record.dirty;
-        res.updatePermissionFlag = !isEqual(record.get('menuIdList'), res.menuIdList);
+        res.updatePermissionFlag = !isEqual((record.get('menuIdList') || []).slice(), res.menuIdList);
         result = await roleStore.editRole(organizationId, res, record.get('id'));
       } else {
         result = await roleStore.createRole(organizationId, res);

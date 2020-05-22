@@ -57,7 +57,7 @@
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
-        WHERE ir.h_tenant_id = #{tenantId AND hlr.data_type = 'ROLE' AND il.`name` = #{labelName}
+        WHERE ir.h_tenant_id = #{tenantId} AND hlr.data_type = 'ROLE' AND il.`name` = #{labelName}
     </select>
 
     <select id="selectRolesByLabelNameAndType" resultMap="RoleDTO">
@@ -261,4 +261,22 @@
         WHERE hlr.data_type = 'ROLE' AND hlr.data_id = #{roleId}
     </select>
 
+    <select id="listRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
+        SELECT
+            ir.*
+        FROM
+            iam_role ir
+            INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
+            INNER JOIN iam_label il ON il.id = hlr.label_id
+            AND il. NAME = 'TENANT_ROLE'
+        WHERE
+            ir.fd_level = 'organization'
+            AND ir.h_tenant_id = #{tenantId}
+        <if test="name != null">
+            and ir.name like concat(concat('%',#{name}), '%')
+        </if>
+        <if test="enabled != null">
+            and ir.is_enabled = #{enabled}
+        </if>
+    </select>
 </mapper>

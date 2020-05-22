@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -38,11 +40,15 @@ public class RoleMemberC7nController extends BaseController {
 
     private RoleC7nService roleC7nService;
     private ProjectUserService projectUserService;
+    private UserC7nService userC7nService;
 
 
-    public RoleMemberC7nController(RoleC7nService roleC7nService, ProjectUserService projectUserService) {
+    public RoleMemberC7nController(RoleC7nService roleC7nService,
+                                   UserC7nService userC7nService,
+                                   ProjectUserService projectUserService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
+        this.userC7nService = userC7nService;
     }
 
     /**
@@ -122,4 +128,40 @@ public class RoleMemberC7nController extends BaseController {
         return new ResponseEntity<>(projectUserService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询启用状态的用户列表")
+    @GetMapping(value = "/organizations/{organization_id}/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                   @RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.ORGANIZATION.value(), organizationId, userName), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层查询启用状态的用户列表")
+    @GetMapping(value = "/projects/{project_id}/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                              @RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.PROJECT.value(), projectId, userName), HttpStatus.OK);
+    }
+
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询启用状态的用户列表")
+    @GetMapping(value = "/site/enableUsers")
+    public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName) {
+        return new ResponseEntity<>(userC7nService.listEnableUsersByName
+                (ResourceLevel.SITE.value(), 0L, userName), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表")
+    @GetMapping(value = "/organizations/{organization_id}/roles")
+    public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                      @RequestParam(name = "role_name") String roleName,
+                                                                      @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
+                                                                              Boolean onlySelectEnable) {
+        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
+    }
 }

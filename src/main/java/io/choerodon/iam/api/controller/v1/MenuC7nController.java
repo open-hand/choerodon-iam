@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
@@ -37,5 +38,12 @@ public class MenuC7nController {
     public ResponseEntity<List<Menu>> listNavMenuTree(@RequestParam(required = false) Long projectId,
                                                       @RequestParam(required = false) Set<String> labels) {
         return ResponseEntity.ok(menuC7nService.listNavMenuTree(labels, projectId));
+    }
+
+    @ApiOperation(value = "根据标签查询菜单")
+    @Permission(permissionLogin = true)
+    @GetMapping(value = "/menus/flat")
+    public ResponseEntity<List<Menu>> listMenuByLabel(@RequestParam(required = false) Set<String> labels) {
+        return ResponseEntity.ok(menuC7nService.listMenuByLabel(labels));
     }
 }

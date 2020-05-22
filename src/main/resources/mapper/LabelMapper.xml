@@ -73,5 +73,13 @@
             #{item}
         </foreach>
     </select>
+    <select id="listByNames" resultType="org.hzero.iam.domain.entity.Label">
+        SELECT *
+        FROM iam_label il
+        WHERE il.name IN
+        <foreach collection="names" item="name" index="i" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
 
 </mapper>

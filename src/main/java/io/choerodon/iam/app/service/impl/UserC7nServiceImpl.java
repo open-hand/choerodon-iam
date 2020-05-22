@@ -1,12 +1,10 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -17,10 +15,7 @@ import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -28,6 +23,7 @@ import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
@@ -36,7 +32,6 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
@@ -49,6 +44,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
@@ -73,6 +69,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
 import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
@@ -148,6 +145,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserRepository userRepository;
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private RoleC7nService roleC7nService;
+    @Autowired
+    private MemberRoleMapper memberRoleMapper;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -896,5 +897,88 @@ public class UserC7nServiceImpl implements UserC7nService {
             userVO.setRecentAccessTenantList(ConvertUtils.convertList(list, Tenant.class));
         }
         return userVO;
+    }
+
+    @Override
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName) {
+        validateSourceNotExisted(sourceType, sourceId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName);
+    }
+
+    @Override
+    @Transactional
+    @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
+    public void createOrgAdministrator(List<Long> userIds, Long organizationId) {
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
+
+        Set<Long> notifyUserIds = new HashSet<>();
+        Map<Long, List<MemberRole>> listMap = new HashMap<>();
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+        userIds.forEach(id -> {
+            MemberRole memberRoleDTO = new MemberRole();
+            memberRoleDTO.setRoleId(tenantAdminRole.getId());
+            memberRoleDTO.setMemberId(id);
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceId(organizationId);
+            memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+
+            // 如果用户已被分配组织管理员角色 直接跳过
+            if (!CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
+                return;
+            }
+            if (memberRoleMapper.insert(memberRoleDTO) != 1) {
+                throw new CommonException("error.memberRole.create");
+            }
+
+            labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(id);
+            userMemberEventPayload.setResourceId(organizationId);
+            userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+            userMemberEventPayload.setRoleLabels(labelNames);
+            userMemberEventPayloads.add(userMemberEventPayload);
+
+            notifyUserIds.add(id);
+        });
+
+        // 发送saga同步角色
+        producer.apply(StartSagaBuilder.newBuilder()
+                        .withRefId(String.valueOf(DetailsHelper.getUserDetails().getUserId()))
+                        .withRefType("user")
+                        .withSourceId(organizationId)
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withSagaCode(MEMBER_ROLE_UPDATE)
+                        .withPayloadAndSerialize(userMemberEventPayloads),
+                builder -> {});
+//
+//        listMap.forEach((userId, memberRoleDTOS) -> {
+//            //添加组织管理员的角色后,用户需要有gitlab下三个组的owner权限
+//            roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, organizationId, userId, memberRoleDTOS, ResourceLevel.ORGANIZATION.value());
+//        });
+        //添加组织管理员发送消息通知被添加者,异步发送消息
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("organizationName", organizationDTO.getName());
+//        params.put("roleName", tenantAdminRole.getName());
+//        //添加webhook json
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("organizationId", organizationDTO.getId());
+//        jsonObject.put("addCount", notifyUserIds.size());
+//        List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+//        if (!CollectionUtils.isEmpty(userList)) {
+//            for (Long notifyUserId : notifyUserIds) {
+//                userList.add(userService.getWebHookUser(notifyUserId));
+//            }
+//        }
+//
+//        jsonObject.put("userList", JSON.toJSONString(userList));
+//        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+//                SendSettingBaseEnum.ADD_MEMBER.value(),
+//                SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+//                jsonObject,
+//                new Date(),
+//                userService.getWebHookUser(customUserDetails.getUserId())
+//        );
+//        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
     }
 }

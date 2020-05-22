@@ -27,4 +27,6 @@ public interface RolePermissionC7nService {
      * @param deletePermissionIds
      */
     void batchDelete(Long roleId, Set<Long> deletePermissionIds);
+
+    List<RolePermission> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames);
 }

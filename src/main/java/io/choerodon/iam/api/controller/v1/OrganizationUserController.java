@@ -1,9 +1,18 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,19 +31,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -130,7 +129,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/users/{id}")
     public ResponseEntity<User> queryUserInOrganization(@PathVariable(name = "organization_id") Long organizationId,
-                                      @PathVariable Long id) {
+                                                        @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.query(organizationId, id), HttpStatus.OK);
     }
 
@@ -218,8 +217,8 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
     public ResponseEntity<UserNumberVO> countByDateInOrganization(@PathVariable(name = "organization_id") Long organizationId,
-                                                    @RequestParam(value = "start_time") Date startTime,
-                                                    @RequestParam(value = "end_time") Date endTime) {
+                                                                  @RequestParam(value = "start_time") Date startTime,
+                                                                  @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));
     }
 
@@ -237,4 +236,15 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
+
+    @PostMapping("/org_administrator")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "添加组织管理员角色")
+    public ResponseEntity<Void> createOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestParam(name = "id") List<Long> userIds) {
+        userC7nService.createOrgAdministrator(userIds, organizationId);
+        return ResponseEntity.noContent().build();
+
+    }
+
 }

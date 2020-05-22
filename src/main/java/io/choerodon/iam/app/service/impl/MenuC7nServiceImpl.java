@@ -8,19 +8,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.hzero.core.helper.LanguageHelper;
-import org.hzero.iam.api.dto.MenuSearchDTO;
 import org.hzero.iam.domain.entity.Menu;
-import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -29,7 +30,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
@@ -57,52 +57,51 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private RoleRepository roleRepository;
     private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private RoleC7nService roleC7nService;
+//    private RoleC7nService roleC7nService;
     private MenuMapper menuMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
-                              OrganizationRoleC7nService organizationRoleC7nService,
+                              @Lazy OrganizationRoleC7nService organizationRoleC7nService,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               MenuRepository menuRepository,
                               RoleRepository roleRepository,
-                              RoleC7nService roleC7nService,
+//                              RoleC7nService roleC7nService,
                               MenuMapper menuMapper) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.roleRepository = roleRepository;
         this.menuRepository = menuRepository;
-        this.roleC7nService = roleC7nService;
+//        this.roleC7nService = roleC7nService;
         this.menuMapper = menuMapper;
     }
 
     @Override
     public List<Menu> listPermissionSetTree(Long tenantId, String menuLevel) {
         // 查询组织下的组织管理员账户
-        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
-        MenuSearchDTO menuParams = new MenuSearchDTO();
-        menuParams.setTenantId(tenantId);
-        menuParams.setupOrganizationQueryLevel();
-        menuParams.setRoleId(tenantAdminRole.getId());
+//        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
+//        MenuSearchDTO menuParams = new MenuSearchDTO();
+//        menuParams.setTenantId(tenantId);
+//        menuParams.setupOrganizationQueryLevel();
+//        menuParams.setRoleId(tenantAdminRole.getId());
         Set<String> labels = new HashSet<>();
         if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.TENANT_MENU.value());
+            labels.add(MenuLabelEnum.KNOWLEDGE_MENU.value());
         }
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
         }
-        menuParams.setLabels(labels);
-        // 根据层级查询组织管理员的有权限的菜单列表
-        CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuMapper.selectMenusByCondition(menuParams), SELECT_MENU_POOL);
+//        menuParams.setLabels(labels);
+        SecurityTokenHelper.close();
+        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labels, null);
+        SecurityTokenHelper.clear();
 
-        CompletableFuture<List<Menu>> cf = f1
-                // 转换成树形结构
-                .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
-                .exceptionally((e) -> {
-                    LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
-                    return Collections.emptyList();
-                });
-        return cf.join();
+//        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+//        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+//        menus.addAll(permissionSetList);
+
+        return menus;
 
     }
 
@@ -156,5 +155,22 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             return cf.join();
         }
 
+    }
+
+    @Override
+    public List<Menu> listMenuByLabel(Set<String> labels) {
+        return menuC7nMapper.listMenuByLabel(labels);
+    }
+
+    @Override
+    public List<Menu> listUserInfoMenuOnlyTypeMenu() {
+
+        return menuC7nMapper.listUserInfoMenuOnlyTypeMenu();
+    }
+
+    @Override
+    public List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type) {
+
+        return menuC7nMapper.listMenuByLabelAndType(labelNames, type);
     }
 }

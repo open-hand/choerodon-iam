@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.RolePermission;
 
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉
@@ -23,4 +23,6 @@ public interface RolePermissionC7nMapper {
     void batchDelete(@Param("roleId") Long roleId,
                      @Param("deletePermissionIds") Set<Long> deletePermissionIds);
 
+    List<RolePermission> listRolePermissionByRoleIdAndLabels(@Param("roleId") Long roleId,
+                                                             @Param("labelNames") Set<String> labelNames);
 }

@@ -1,13 +1,11 @@
 package io.choerodon.iam.infra.feign.fallback;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dengyouquan
@@ -54,10 +52,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
         throw new CommonException("error.asgard.orgTask.disable");
     }
 
-//    @Override
-//    public ResponseEntity<ScheduleTaskDetail> getTaskDetail(long orgId, long id) {
-//        throw new CommonException("error.asgard.task.detail");
-//    }
+    @Override
+    public ResponseEntity<ScheduleTaskDetail> getTaskDetail(long orgId, long id) {
+        throw new CommonException("error.asgard.get.taskDetail");
+    }
 
     @Override
     public ResponseEntity<SagaTaskInstanceDTO> query(Long id) {

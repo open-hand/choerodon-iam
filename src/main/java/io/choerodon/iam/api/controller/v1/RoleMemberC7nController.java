@@ -1,20 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -29,6 +14,20 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 
 /**
@@ -176,6 +175,13 @@ public class RoleMemberC7nController extends BaseController {
                                                                 @RequestParam(value = "organization_id") Long organizationId,
                                                                 @RequestParam(value = "param", required = false) String param) {
         return new ResponseEntity<>(userC7nService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
+    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层批量分配用户角色")
+    @PostMapping(value = "/organizations/{organization_id}/users/assign_roles")
+    public ResponseEntity<List<MemberRole>> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                                @RequestBody List<MemberRole> memberRoleDTOS) {
+        return new ResponseEntity<>(userC7nService.assignUsersRoles(ResourceLevel.ORGANIZATION.value(), organizationId, memberRoleDTOS), HttpStatus.OK);
     }
 
 }

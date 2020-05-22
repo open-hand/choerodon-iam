@@ -59,7 +59,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
     private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String PROJECT_ADD_USER = "projectAddUser";
-    private OrganizationMapper organizationMapper;
+    private TenantMapper tenantMapper;
     private ProjectMapper projectMapper;
 
     private MemberRoleMapper memberRoleMapper;
@@ -92,7 +92,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private UserMapper userMapper;
 
 
-    public RoleMemberServiceImpl(OrganizationMapper organizationMapper,
+    public RoleMemberServiceImpl(TenantMapper tenantMapper,
                                  ProjectMapper projectMapper,
                                  MemberRoleMapper memberRoleMapper,
                                  MemberRoleC7nMapper memberRoleC7nMapper,
@@ -106,7 +106,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  OrganizationUserService organizationUserService,
                                  UserService userService,
                                  UserMapper userMapper) {
-        this.organizationMapper = organizationMapper;
+        this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
@@ -247,7 +247,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             throw new CommonException("error.member_role.insert.project.not.exist");
         }
         if (ResourceLevel.ORGANIZATION.value().equals(memberRoleDTO.getSourceType())
-                && organizationMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
+                && tenantMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
             throw new CommonException("error.member_role.insert.organization.not.exist");
         }
         if (memberRoleMapper.selectOne(memberRoleDTO) != null) {

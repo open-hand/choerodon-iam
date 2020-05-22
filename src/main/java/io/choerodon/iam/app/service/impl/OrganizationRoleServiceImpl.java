@@ -1,18 +1,19 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
-import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.LabelRelMapper;
@@ -20,15 +21,13 @@ import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -127,25 +126,30 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         // 预定义角色无法修改
         checkEnableEdit(roleId);
 
-        if (Boolean.TRUE.equals(roleVO.getUpdateRoleFlag())) {
-            roleMapper.updateByPrimaryKeySelective(roleVO);
-        }
 
-        if (Boolean.TRUE.equals(roleVO.getUpdatePermissionFlag())) {
-            List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
-            Set<Long> permissionIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-            Set<Long> psIds = listUserInfoPsIds();
-            permissionIds.addAll(psIds);
-            // 要新增的权限
-            Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
-            // 要删除的权限
-            Set<Long> deletePermissionIds = permissionIds.stream().filter(permissionId -> !roleVO.getMenuIdList().contains(permissionId)).collect(Collectors.toSet());
+        // 修改角色
+        roleMapper.updateByPrimaryKeySelective(roleVO);
 
+        // 更新角色权限
+        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
+        Set<Long> permissionIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
+        Set<Long> psIds = listUserInfoPsIds();
+        permissionIds.addAll(psIds);
+        // 要新增的权限
+        Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
+        // 要删除的权限
+        Set<Long> deletePermissionIds = permissionIds.stream().filter(permissionId -> !roleVO.getMenuIdList().contains(permissionId)).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(deletePermissionIds)) {
             // 删除权限
             rolePermissionC7nService.batchDelete(roleId, deletePermissionIds);
+        }
+        if (!CollectionUtils.isEmpty(newPermissionIds)) {
             // 新增权限
             assignRolePermission(roleId, newPermissionIds);
         }
+
+
+
     }
 
 
@@ -170,6 +174,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             }
             if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
                 labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
+                labelNames.add(MenuLabelEnum.AGILE_MENU.value());
+                labelNames.add(MenuLabelEnum.PROGRAM_MENU.value());
+                labelNames.add(MenuLabelEnum.OPERATIONS_MENU.value());
             }
             if (RoleLabelEnum.GITLAB_OWNER.value().equals(label.getName())
                     || RoleLabelEnum.GITLAB_DEVELOPER.value().equals(label.getName())) {
@@ -189,7 +196,6 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 ps.setCheckedFlag("N");
             }
         });
-        roleVO.setMenuIdList(psIds);
         roleVO.setMenuList(menus);
         return roleVO;
     }

@@ -1,8 +1,24 @@
 package io.choerodon.iam.app.service.impl;
 
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -17,10 +33,7 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
-import io.choerodon.iam.api.vo.BarLabelRotationVO;
 import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -37,25 +50,6 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -114,7 +108,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private OrganizationService organizationService;
 
 
     public OrganizationProjectServiceImpl(SagaClient sagaClient,
@@ -132,8 +125,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           RoleMemberService roleMemberService,
                                           ProjectValidator projectValidator,
                                           TransactionalProducer producer,
-                                          DevopsFeignClient devopsFeignClient,
-                                          OrganizationService organizationService) {
+                                          DevopsFeignClient devopsFeignClient) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
@@ -150,7 +142,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
-        this.organizationService = organizationService;
     }
 
 

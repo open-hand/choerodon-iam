@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -21,6 +22,7 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
@@ -34,6 +36,8 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -44,10 +48,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.MemberRoleMapper;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -82,6 +83,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
+    private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -117,8 +119,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
-    private OrganizationMapper organizationMapper;
-    @Autowired
     private PasswordPolicyMapper passwordPolicyMapper;
     @Autowired
     private PasswordPolicyManager passwordPolicyManager;
@@ -149,6 +149,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private RoleC7nService roleC7nService;
     @Autowired
     private MemberRoleMapper memberRoleMapper;
+    @Autowired
+    private TenantMapper tenantMapper;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -512,7 +514,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
                 OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setEnabled(true);
@@ -530,8 +532,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
         boolean isAdmin = checkIsRoot(userId);
-        // todo 校验是否是组织管理员
-        boolean isOrgAdmin = true;
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
@@ -814,15 +815,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (checkPassword) {
             BaseUser baseUserDTO = new BaseUser();
             BeanUtils.copyProperties(user, baseUserDTO);
-            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(user.getOrganizationId());
+            Tenant organizationDTO = tenantRepository.selectByPrimaryKey(user.getOrganizationId());
             if (organizationDTO != null) {
                 PasswordPolicy example = new PasswordPolicy();
-                example.setOrganizationId(organizationDTO.getId());
+                example.setOrganizationId(organizationDTO.getTenantId());
                 if (userPasswordDTO.getPassword() != null) {
-                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getId(), baseUserDTO);
+                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), baseUserDTO);
                 }
                 // 校验用户密码
-                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getId(), true);
+                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), true);
             }
         }
         user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));
@@ -910,27 +911,27 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     public void createOrgAdministrator(List<Long> userIds, Long organizationId) {
         Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
-
+        Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
         Set<Long> notifyUserIds = new HashSet<>();
         Map<Long, List<MemberRole>> listMap = new HashMap<>();
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         Set<String> labelNames = new HashSet<>();
+        // 接收者
+        List<Receiver> receiverList=new ArrayList<>();
+
         userIds.forEach(id -> {
+            List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());
             memberRoleDTO.setMemberId(id);
             memberRoleDTO.setMemberType(MemberType.USER.value());
             memberRoleDTO.setSourceId(organizationId);
             memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleList.add(memberRoleDTO);
 
-            // 如果用户已被分配组织管理员角色 直接跳过
-            if (!CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
-                return;
-            }
-            if (memberRoleMapper.insert(memberRoleDTO) != 1) {
-                throw new CommonException("error.memberRole.create");
-            }
+            memberRoleService.batchAssignMemberRole(memberRoleList);
 
+            // 构建saga对象
             labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
             UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
             userMemberEventPayload.setUserId(id);
@@ -939,7 +940,16 @@ public class UserC7nServiceImpl implements UserC7nService {
             userMemberEventPayload.setRoleLabels(labelNames);
             userMemberEventPayloads.add(userMemberEventPayload);
 
+
+            // 构建消息对象
+            User user = userMapper.selectByPrimaryKey(id);
             notifyUserIds.add(id);
+
+            Receiver receiver=new Receiver();
+            receiver.setUserId(id);
+            // 发送邮件消息时 必填
+            receiver.setEmail(user.getEmail());
+            receiverList.add(receiver);
         });
 
         // 发送saga同步角色
@@ -951,16 +961,35 @@ public class UserC7nServiceImpl implements UserC7nService {
                         .withSagaCode(MEMBER_ROLE_UPDATE)
                         .withPayloadAndSerialize(userMemberEventPayloads),
                 builder -> {});
-//
-//        listMap.forEach((userId, memberRoleDTOS) -> {
-//            //添加组织管理员的角色后,用户需要有gitlab下三个组的owner权限
-//            roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, organizationId, userId, memberRoleDTOS, ResourceLevel.ORGANIZATION.value());
-//        });
+
+
+        // 准备消息发送的messageSender
+        MessageSender messageSender=new MessageSender();
+        // 消息code
+        messageSender.setMessageCode(MessageCodeConstants.BUSINESS_TYPE_CODE);
+        // 默认为0L,都填0L,可不填写
+        messageSender.setTenantId(0L);
+
+        // 消息参数 消息模板中${projectName}
+        Map<String,String> argsMap=new HashMap<>();
+        argsMap.put("organizationName", tenant.getTenantName());
+        argsMap.put("roleName","租户管理员");
+        argsMap.put("organizationId",tenant.getTableId());
+        argsMap.put("addCount",String.valueOf(userIds.size()));
+        messageSender.setArgs(argsMap);
+
+        messageSender.setReceiverAddressList(receiverList);
+
+        Map<String,Object> objectMap=new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),organizationId);
+        messageSender.setAdditionalInformation(objectMap);
+
+
         //添加组织管理员发送消息通知被添加者,异步发送消息
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("organizationName", organizationDTO.getName());
-//        params.put("roleName", tenantAdminRole.getName());
-//        //添加webhook json
+        messageClient.async().sendMessage(messageSender);
+
+
+        //添加webhook json
 //        JSONObject jsonObject = new JSONObject();
 //        jsonObject.put("organizationId", organizationDTO.getId());
 //        jsonObject.put("addCount", notifyUserIds.size());

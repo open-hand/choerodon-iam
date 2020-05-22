@@ -27,7 +27,19 @@ public enum MenuLabelEnum {
     /**
      * 项目层全流程项目标签
      */
-    GENERAL_MENU("GENERAL_MENU");
+    GENERAL_MENU("GENERAL_MENU"),
+    /**
+     * 项目层全流程项目标签
+     */
+    OPERATIONS_MENU("OPERATIONS_MENU"),
+    /**
+     * 项目层全流程项目标签
+     */
+    PROGRAM_MENU("PROGRAM_MENU"),
+    /**
+     * 项目层全流程项目标签
+     */
+    AGILE_MENU("AGILE_MENU");
     private final String value;
 
     MenuLabelEnum(String value) {

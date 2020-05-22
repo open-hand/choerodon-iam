@@ -194,5 +194,6 @@
                 </foreach>
             </if>
         </where>
+        group by im.id
     </select>
 </mapper>

@@ -1,20 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.hzero.core.exception.NotLoginException;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -34,6 +19,20 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.exception.NotLoginException;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -106,13 +105,13 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String level, Boolean builtIn, Boolean enabled, String params) {
+    public Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String roleLevel, Boolean builtIn, Boolean enabled, String params) {
         String labelName = null;
 
-        if (ResourceLevel.ORGANIZATION.value().equals(level)) {
+        if (ResourceLevel.ORGANIZATION.value().equals(roleLevel)) {
             labelName = RoleLabelEnum.TENANT_ROLE.value();
         }
-        if (ResourceLevel.PROJECT.value().equals(level)) {
+        if (ResourceLevel.PROJECT.value().equals(roleLevel)) {
             labelName = RoleLabelEnum.PROJECT_ROLE.value();
         }
         String finalLabelName = labelName;

@@ -131,11 +131,11 @@ public class ExcelImportUserTask {
     }
 
     private void sendNotice(Integer successCount, Long userId, Long organizationId) {
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("addCount", successCount);
+        Map<String, String> paramsMap = new HashMap<>();
+        paramsMap.put("addCount", String.valueOf(successCount));
         List<Long> userIds = new ArrayList<>();
         userIds.add(userId);
-        userService.sendNotice(userId, userIds, ADD_USER, paramsMap, organizationId);
+        userService.sendNotice(userIds, ADD_USER, paramsMap, organizationId, ResourceLevel.ORGANIZATION);
         logger.info("batch import user send station letter.");
     }
 

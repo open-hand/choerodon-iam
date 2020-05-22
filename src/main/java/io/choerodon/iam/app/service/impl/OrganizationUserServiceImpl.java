@@ -443,7 +443,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         //导入成功过后，通知成员
         users.forEach(e -> {
-            Map<String, Object> params = new HashMap<>();
+            Map<String, String> params = new HashMap<>();
             Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
             params.put("organizationName", organizationDTO.getTenantName());
             params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
@@ -467,7 +467,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 //                    new Date(),
 //                    userService.getWebHookUser(fromUserId)
 //            );
-            userC7nService.sendNotice(fromUserId, Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId());
+            userC7nService.sendNotice(Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());

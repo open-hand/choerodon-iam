@@ -6,6 +6,7 @@ import java.util.Set;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.iam.domain.entity.MemberRole;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -152,6 +153,16 @@ public class ProjectUserC7nController extends BaseController {
                                                     @RequestBody Set<Long> userIds,
                                                     @RequestParam(required = false) String param) {
         return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+    }
+
+    /*团队成员相关接口*/
+    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "项目层批量分配用户角色")
+    @PostMapping(value = "/projects/{project_id}/users/assign_roles")
+    public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                               @RequestBody List<MemberRole> memberRoleDTOS) {
+        userService.assignUsersProjectRoles(memberRoleDTOS);
+        return ResponseEntity.noContent().build();
     }
 
 }

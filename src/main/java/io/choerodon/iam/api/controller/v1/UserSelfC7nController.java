@@ -1,10 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -20,7 +17,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -31,7 +32,7 @@ import java.util.List;
 @RequestMapping(value = "/choerodon/v1")
 public class UserSelfC7nController extends BaseController {
     @Autowired
-    private OrganizationService organizationService;
+    private TenantC7nService tenantC7nService;
 
     @Autowired
     private UserC7nService userC7nService;
@@ -48,7 +49,7 @@ public class UserSelfC7nController extends BaseController {
         TenantDTO params = new TenantDTO();
         params.setTenantNum(tenantNum);
         params.setTenantName(tenantName);
-        return new ResponseEntity<>(organizationService.selectSelfTenants(params), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.selectSelfTenants(params), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true)

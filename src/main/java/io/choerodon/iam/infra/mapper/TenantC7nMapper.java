@@ -8,8 +8,7 @@ import org.hzero.iam.domain.entity.Tenant;
 
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 
 /**
  * @author wuguokai
@@ -25,29 +24,16 @@ public interface TenantC7nMapper {
     Set<TenantVO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
                                                  @Param("includedDisabled") Boolean includedDisabled);
 
-    Set<TenantVO> selectOrgByUserAndPros(@Param("memberId") Long memberId,
-                                         @Param("includedDisabled") Boolean includedDisabled);
-
     List<TenantVO> selectOrganizationsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
             @Param("size") Integer size,
             @Param("params") String params);
 
-    List<Long> listMemberIds(@Param("orgId") Long orgId,
-                             @Param("orgName") String orgName);
 
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
-    List<TenantVO> selectByTenantIds(@Param("ids") Set<Long> ids);
-
-    /**
-     * 获取所有组织{id,name}
-     *
-     * @return 组织{id,name}
-     */
-    List<TenantVO> selectAllTenants();
 
     /**
      * 获取 指定id范围 的 组织简要信息
@@ -59,7 +45,7 @@ public interface TenantC7nMapper {
      * @param params  全局模糊搜索查询参数
      * @return 查询结果
      */
-    List<TenantVO> selectSpecified(@Param("orgIds") Set<Long> orgIds,
+    List<Tenant> selectSpecified(@Param("orgIds") Set<Long> orgIds,
                                    @Param("name") String name,
                                    @Param("code") String code,
                                    @Param("enabled") Boolean enabled,
@@ -72,11 +58,21 @@ public interface TenantC7nMapper {
      * @param userId 用户Id
      * @return 用户所属组织信息
      */
-    TenantVO selectOwnOrgByUserId(@Param("userId") Long userId);
+    Tenant selectOwnOrgByUserId(@Param("userId") Long userId);
 
     ProjectOverViewVO projectOverview(@Param("organizationId") Long organizationId);
 
-    List<Long> getoRoganizationByName(@Param("name") String name);
+    List<Long> getOrganizationByName(@Param("name") String name);
 
     List<Tenant> selectByIds(@Param("ids") Set<Long> ids);
+
+
+    List<Tenant> selectByOrgIds(@Param("ids") Set<Long> ids);
+
+    /**
+     * 获取所有组织{id,name}
+     *
+     * @return 组织{id,name}
+     */
+    List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
 }

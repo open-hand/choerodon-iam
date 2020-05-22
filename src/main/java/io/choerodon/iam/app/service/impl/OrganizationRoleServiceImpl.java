@@ -21,6 +21,7 @@ import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -138,11 +139,16 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
             // 要删除的权限
             Set<Long> deletePermissionIds = permissionIds.stream().filter(permissionId -> !roleVO.getMenuIdList().contains(permissionId)).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(deletePermissionIds)) {
+                // 删除权限
+                rolePermissionC7nService.batchDelete(roleId, deletePermissionIds);
+            }
+            if (!CollectionUtils.isEmpty(newPermissionIds)) {
+                // 新增权限
+                assignRolePermission(roleId, newPermissionIds);
+            }
 
-            // 删除权限
-            rolePermissionC7nService.batchDelete(roleId, deletePermissionIds);
-            // 新增权限
-            assignRolePermission(roleId, newPermissionIds);
+
         }
     }
 

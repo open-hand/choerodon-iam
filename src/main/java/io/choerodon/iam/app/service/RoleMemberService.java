@@ -3,6 +3,8 @@ package io.choerodon.iam.app.service;
 import io.choerodon.iam.infra.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -55,4 +57,5 @@ public interface RoleMemberService {
                                                     List<MemberRole> memberRoleList,
                                                     List<MemberRole> returnList, String memberType);
 
+    ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel);
 }

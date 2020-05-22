@@ -7,10 +7,12 @@ import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleC7nService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -19,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -42,14 +45,17 @@ public class RoleMemberC7nController extends BaseController {
     private RoleC7nService roleC7nService;
     private ProjectUserService projectUserService;
     private UserC7nService userC7nService;
+    private RoleMemberService roleMemberService;
 
 
     public RoleMemberC7nController(RoleC7nService roleC7nService,
                                    UserC7nService userC7nService,
-                                   ProjectUserService projectUserService) {
+                                   ProjectUserService projectUserService,
+                                   RoleMemberService roleMemberService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
         this.userC7nService = userC7nService;
+        this.roleMemberService = roleMemberService;
     }
 
     /**
@@ -182,6 +188,18 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<List<MemberRole>> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                                 @RequestBody List<MemberRole> memberRoleDTOS) {
         return new ResponseEntity<>(userC7nService.assignUsersRoles(ResourceLevel.ORGANIZATION.value(), organizationId, memberRoleDTOS), HttpStatus.OK);
+    }
+    /**
+     * 组织层下载模板
+     *
+     * @param organizationId
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层下载excel导入模板")
+    @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
     }
 
 }

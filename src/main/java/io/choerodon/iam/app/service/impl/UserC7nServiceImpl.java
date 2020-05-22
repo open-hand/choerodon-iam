@@ -17,6 +17,7 @@ import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -436,24 +437,24 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Saga(code = SagaTopic.User.DELETE_ADMIN, description = "用户Root权限被删除事件同步", inputSchemaClass = DeleteAdminVO.class)
     @Override
     public void deleteAdminUser(long id) {
-        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
-        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
-        MemberRole siteMemberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
-        MemberRole orgMemberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
-        List<MemberRole> memberRoleList = new ArrayList<>();
-        memberRoleList.add(siteMemberRole);
-        memberRoleList.add(orgMemberRole);
-        memberRoleService.batchDeleteMemberRole(0L, memberRoleList);
-
-        producer.apply(StartSagaBuilder.newBuilder()
-                        .withRefId(String.valueOf(id))
-                        .withRefType("user")
-                        .withSourceId(0L)
-                        .withLevel(ResourceLevel.SITE)
-                        .withSagaCode(SagaTopic.User.DELETE_ADMIN)
-                        .withPayloadAndSerialize(new DeleteAdminVO(id)),
-                builder -> {
-                });
+        User userDTO = new User();
+        userDTO.setAdmin(true);
+        if (userMapper.selectCount(userDTO) > 1) {
+            User dto = userAssertHelper.userNotExisted(id);
+            if (dto.getAdmin()) {
+                dto.setAdmin(false);
+                producer.apply(StartSagaBuilder.newBuilder()
+                                .withRefId(String.valueOf(id))
+                                .withRefType("user")
+                                .withSourceId(0L)
+                                .withLevel(ResourceLevel.SITE)
+                                .withSagaCode(SagaTopic.User.DELETE_ADMIN)
+                                .withPayloadAndSerialize(new DeleteAdminVO(id)),
+                        builder -> updateSelective(dto));
+            }
+        } else {
+            throw new CommonException("error.user.admin.size");
+        }
     }
 
 

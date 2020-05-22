@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.AlreadyExistedException;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.stereotype.Component;
@@ -52,19 +53,19 @@ public class OrganizationAssertHelper extends AssertHelper {
 //    }
 
 
-//    private Tenant codeNotExisted(String code, String message) {
-//        OrganizationDTO dto = new OrganizationDTO();
-//        dto.setCode(code);
-//        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
-//    }
+    private Tenant numNotExisted(String num, String message) {
+        Tenant dto = new Tenant();
+        dto.setTenantNum(num);
+        return Optional.ofNullable(tenantMapper.selectOne(dto)).orElseThrow(() -> new CommonException(message));
+    }
 
-//    public void codeExisted(String code) {
-//        Tenant tenant = new Tenant();
-//        tenant.setCode(code);
-//        if (tenantMapper.selectOne(dto) != null) {
-//            throw new AlreadyExistedException("error.organization.code.duplicate");
-//        }
-//    }
+    public void numExisted(String num) {
+        Tenant tenant = new Tenant();
+        tenant.setTenantNum(num);
+        if (tenantMapper.selectOne(tenant) != null) {
+            throw new AlreadyExistedException("error.organization.code.duplicate");
+        }
+    }
 
     public enum WhichColumn {
         CODE, EMAIL_SUFFIX

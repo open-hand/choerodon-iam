@@ -1052,4 +1052,35 @@ public class UserC7nServiceImpl implements UserC7nService {
             return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectUsersOptional(param, organizationId));
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOrgAdministrator(Long organizationId, Long userId) {
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
+        Long roleId = tenantAdminRole.getId();
+        MemberRole memberRoleDTO = new MemberRole();
+        memberRoleDTO.setRoleId(roleId);
+        memberRoleDTO.setMemberId(userId);
+        memberRoleDTO.setMemberType(MemberType.USER.value());
+        memberRoleDTO.setSourceId(organizationId);
+        memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+        if (CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
+            throw new CommonException("error.memberRole.not.exist", roleId, userId);
+        }
+        if (memberRoleMapper.delete(memberRoleDTO) != 1) {
+            throw new CommonException("error.memberRole.delete");
+        }
+        //删除组织管理员成功后也要发saga删除gitlab相应的权限。
+        List<UserMemberEventPayload> userMemberEventPayloadList = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+        labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayload.setResourceId(organizationId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayloadList.add(userMemberEventPayload);
+        roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloadList, ResourceLevel.ORGANIZATION, organizationId);
+    }
+
 }

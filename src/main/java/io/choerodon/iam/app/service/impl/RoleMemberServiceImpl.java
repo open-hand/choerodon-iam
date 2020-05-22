@@ -5,13 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.RoleAssignmentDeleteDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
@@ -21,7 +26,11 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
+import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
+import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
+import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
 import io.choerodon.iam.infra.valitador.RoleAssignmentViewValidator;
+import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -38,14 +47,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
@@ -103,6 +112,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private UserMapper userMapper;
 
+    private ExcelImportUserTask excelImportUserTask;
+
+    private ExcelImportUserTask.FinishFallback finishFallback;
+    private TransactionalProducer producer;
+
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
                                  ProjectMapper projectMapper,
@@ -117,7 +131,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  UploadHistoryMapper uploadHistoryMapper,
                                  OrganizationUserService organizationUserService,
                                  UserService userService,
-                                 UserMapper userMapper) {
+                                 UserMapper userMapper,
+                                 ExcelImportUserTask excelImportUserTask,
+                                 ExcelImportUserTask.FinishFallback finishFallback,
+                                 TransactionalProducer producer) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
@@ -132,6 +149,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.organizationUserService = organizationUserService;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.excelImportUserTask = excelImportUserTask;
+        this.finishFallback = finishFallback;
+        this.producer = producer;
     }
 
 
@@ -417,6 +437,62 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     }
 
+    @Override
+    public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        validateSourceId(sourceId, sourceType);
+        ExcelReadConfig excelReadConfig = initExcelReadConfig();
+        long begin = System.currentTimeMillis();
+        try {
+            List<ExcelMemberRoleDTO> memberRoles = ExcelReadHelper.read(file, ExcelMemberRoleDTO.class, excelReadConfig);
+            if (memberRoles.isEmpty()) {
+                throw new CommonException("error.excel.memberRole.empty");
+            }
+            UploadHistoryDTO uploadHistory = initUploadHistory(sourceId, sourceType);
+            long end = System.currentTimeMillis();
+            logger.info("read excel for {} millisecond", (end - begin));
+            excelImportUserTask.importMemberRole(userDetails.getUserId(), memberRoles, uploadHistory, finishFallback);
+        } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new CommonException("error.excel.read", e);
+        } catch (IllegalArgumentException e) {
+            throw new CommonException("error.excel.illegal.column", e);
+        }
+    }
+
+    private void validateSourceId(Long sourceId, String sourceType) {
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)
+                && tenantMapper.selectByPrimaryKey(sourceId) == null) {
+            throw new CommonException("error.organization.not.exist");
+        }
+        if (ResourceLevel.PROJECT.value().equals(sourceType)
+                && projectMapper.selectByPrimaryKey(sourceId) == null) {
+            throw new CommonException("error.project.not.exist", sourceId);
+        }
+    }
+
+    private ExcelReadConfig initExcelReadConfig() {
+        ExcelReadConfig excelReadConfig = new ExcelReadConfig();
+        String[] skipSheetNames = {"readme"};
+        Map<String, String> propertyMap = new HashMap<>();
+        propertyMap.put("登录名*", "loginName");
+        propertyMap.put("角色编码*", "roleCode");
+        excelReadConfig.setSkipSheetNames(skipSheetNames);
+        excelReadConfig.setPropertyMap(propertyMap);
+        return excelReadConfig;
+    }
+
+    private UploadHistoryDTO initUploadHistory(Long sourceId, String sourceType) {
+        UploadHistoryDTO uploadHistory = new UploadHistoryDTO();
+        uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
+        uploadHistory.setType("member-role");
+        uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
+        uploadHistory.setSourceId(sourceId);
+        uploadHistory.setSourceType(sourceType);
+        if (uploadHistoryMapper.insertSelective(uploadHistory) != 1) {
+            throw new CommonException("error.uploadHistory.insert");
+        }
+        return uploadHistoryMapper.selectByPrimaryKey(uploadHistory);
+    }
     // TODO notify-service
 
     private void snedMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {
@@ -588,6 +664,49 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         delete(roleAssignmentDeleteDTO, sourceType, null);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
+    public void updateMemberRole(Long userId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
+    // 发送saga同步角色
+    producer.apply(StartSagaBuilder.newBuilder()
+                    .withRefId(userId.toString())
+                    .withRefType("user")
+                    .withSourceId(sourceId)
+                    .withLevel(level)
+                    .withSagaCode(MEMBER_ROLE_UPDATE)
+                    .withPayloadAndSerialize(userMemberEventPayloads),
+            builder -> {
+            });
+    }
+
+    @Override
+    @Saga(code = MEMBER_ROLE_DELETE, description = "删除用户角色", inputSchemaClass = List.class)
+    public void deleteMemberRoleForSaga(Long userId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
+        // 发送saga同步角色
+        producer.apply(StartSagaBuilder.newBuilder()
+                        .withRefId(userId.toString())
+                        .withRefType("user")
+                        .withSourceId(sourceId)
+                        .withLevel(level)
+                        .withSagaCode(MEMBER_ROLE_UPDATE)
+                        .withPayloadAndSerialize(userMemberEventPayloads),
+                builder -> {
+                });
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    public void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName) {
+
+        Role roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
+        if (devopsMessage) {
+            organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
+        }
+    }
+
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
     public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType, Boolean syncAll) {
         if (devopsMessage) {
@@ -605,13 +724,4 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    public void insertAndSendEvent(Long fromUserId, UserDTO userDTO, MemberRole memberRole, String loginName) {
-        Role roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
-        if (devopsMessage) {
-            organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
-        }
-    }
 }

@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleC7nService;
@@ -164,4 +166,16 @@ public class RoleMemberC7nController extends BaseController {
                                                                               Boolean onlySelectEnable) {
         return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
     }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "分页查询全平台层用户（未禁用）")
+    @GetMapping(value = "/all/users")
+    @CustomPageRequest
+    public ResponseEntity<Page<SimplifiedUserVO>> queryAllUsers(@ApiIgnore
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                @RequestParam(value = "organization_id") Long organizationId,
+                                                                @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(userC7nService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
+    }
+
 }

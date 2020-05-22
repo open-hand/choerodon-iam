@@ -17,7 +17,6 @@ import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -1039,5 +1038,17 @@ public class UserC7nServiceImpl implements UserC7nService {
 //        );
 //        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
 
+    }
+
+    @Override
+    public Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
+        if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
+           return new Page<>();
+        }
+        if (organizationId.equals(0L)) {
+            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectAllUsersSimplifiedInfo(param));
+        } else {
+            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectUsersOptional(param, organizationId));
+        }
     }
 }

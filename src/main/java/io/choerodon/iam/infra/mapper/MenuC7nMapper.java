@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Menu;
 
@@ -13,7 +14,7 @@ import java.util.Set;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-public interface MenuC7nMapper {
+public interface MenuC7nMapper extends BaseMapper<Menu> {
     /**
      * 根据角色查询菜单列表，用于左侧菜单树展示
      * <p>

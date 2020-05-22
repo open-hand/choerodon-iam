@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.api.vo.UserRoleVO;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
@@ -15,7 +16,7 @@ import java.util.List;
  * @date 2020/4/21
  * @description
  */
-public interface RoleC7nMapper {
+public interface RoleC7nMapper extends BaseMapper<Role> {
 
     List<UserRoleVO> selectRoles(@Param("userId") Long userId, @Param("name") String name, @Param("level") String level, @Param("params") String params);
 

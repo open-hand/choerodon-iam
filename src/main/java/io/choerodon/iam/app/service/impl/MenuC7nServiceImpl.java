@@ -1,16 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.MenuC7nService;
+import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.repository.MenuRepository;
@@ -25,15 +24,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.MenuC7nService;
-import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 〈功能简述〉
@@ -91,6 +89,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         }
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
+            labels.add(MenuLabelEnum.AGILE_MENU.value());
+            labels.add(MenuLabelEnum.PROGRAM_MENU.value());
+            labels.add(MenuLabelEnum.OPERATIONS_MENU.value());
         }
 //        menuParams.setLabels(labels);
         SecurityTokenHelper.close();

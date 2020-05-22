@@ -1,11 +1,12 @@
 package io.choerodon.iam.api.vo;
 
-import java.util.List;
-import java.util.Set;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.mybatis.domian.SecurityToken;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -27,6 +28,7 @@ public class RoleVO extends Role {
     private Boolean updatePermissionFlag;
 
     private List<Menu> menuList;
+
     public Set<Long> getMenuIdList() {
         return menuIdList;
     }
@@ -65,5 +67,10 @@ public class RoleVO extends Role {
 
     public void setMenuList(List<Menu> menuList) {
         this.menuList = menuList;
+    }
+
+    @Override
+    public Class<? extends SecurityToken> associateEntityClass() {
+        return Role.class;
     }
 }

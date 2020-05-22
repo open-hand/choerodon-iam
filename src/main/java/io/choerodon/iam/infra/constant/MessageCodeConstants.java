@@ -7,5 +7,6 @@ package io.choerodon.iam.infra.constant;
  */
 public class MessageCodeConstants {
     public static String DISABLE_ORGANIZATION = "disableOrganization";
+    public static final String BUSINESS_TYPE_CODE = "addMember";
 
 }

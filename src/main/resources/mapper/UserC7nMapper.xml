@@ -62,8 +62,9 @@
         </collection>
     </resultMap>
 
-    <select id="listUsersByIds" resultMap="userDTO">
-        SELECT * FROM iam_user
+    <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
+        SELECT *
+        FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">

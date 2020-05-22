@@ -140,4 +140,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     public Role getTenantAdminRole(Long organizationId) {
         return roleC7nMapper.getTenantAdminRole(organizationId);
     }
+
+    @Override
+    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable) {
+        return roleC7nMapper.listRolesByName(organizationId,roleName,onlySelectEnable);
+    }
 }

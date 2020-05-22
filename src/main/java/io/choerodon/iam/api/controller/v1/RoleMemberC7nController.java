@@ -154,4 +154,14 @@ public class RoleMemberC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.SITE.value(), 0L, userName), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表")
+    @GetMapping(value = "/organizations/{organization_id}/roles")
+    public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                      @RequestParam(name = "role_name") String roleName,
+                                                                      @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
+                                                                              Boolean onlySelectEnable) {
+        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
+    }
 }

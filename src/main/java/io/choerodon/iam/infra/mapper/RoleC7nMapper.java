@@ -80,4 +80,8 @@ public interface RoleC7nMapper {
     Role getTenantAdminRole(Long organizationId);
 
     List<Label> listRoleLabels(@Param("roleId") Long roleId);
+
+    List<RoleDTO> listRolesByName(@Param("tenantId") Long tenantId,
+                                  @Param("name") String name,
+                                  @Param("enabled") Boolean enabled);
 }

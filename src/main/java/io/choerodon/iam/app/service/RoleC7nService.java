@@ -35,8 +35,6 @@ public interface RoleC7nService {
     /**
      * 查询当前用户自己的角色
      *
-     * @param organizationId
-     * @param userId
      * @return
      */
     Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
@@ -46,4 +44,13 @@ public interface RoleC7nService {
                                Boolean builtIn, Boolean enabled, String params);
 
     Role getTenantAdminRole(Long organizationId);
+
+    /**
+     * 查询组织层角色
+     * @param organizationId
+     * @param roleName
+     * @param onlySelectEnable
+     * @return
+     */
+    List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable);
 }

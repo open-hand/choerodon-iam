@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -178,6 +179,11 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
         return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+    }
+
+    @Override
+    public void assignUsersProjectRoles(List<MemberRole> memberRoleDTOS) {
+
     }
 
 }

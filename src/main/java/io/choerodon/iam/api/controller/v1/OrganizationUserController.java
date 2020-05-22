@@ -237,23 +237,4 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
 
-    @PostMapping("/org_administrator")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "添加组织管理员角色")
-    public ResponseEntity<Void> createOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                          @RequestParam(name = "id") List<Long> userIds) {
-        userC7nService.createOrgAdministrator(userIds, organizationId);
-        return ResponseEntity.noContent().build();
-
-    }
-    @DeleteMapping("/org_administrator/{id}")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "删除该User在本组织的组织管理员角色")
-    public ResponseEntity<Void> deleteOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                          @PathVariable(name = "id") Long userId) {
-        userC7nService.deleteOrgAdministrator(organizationId, userId);
-        return ResponseEntity.noContent().build();
-
-    }
-
 }

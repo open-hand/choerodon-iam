@@ -10,6 +10,7 @@ import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.domain.entity.MemberRole;
 
 /**
  * @author zmf
@@ -91,4 +92,5 @@ public interface ProjectUserService {
 
     List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
+    void assignUsersProjectRoles(List<MemberRole> memberRoleDTOS);
 }

@@ -117,8 +117,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
-    private OrganizationMapper organizationMapper;
-    @Autowired
     private PasswordPolicyMapper passwordPolicyMapper;
     @Autowired
     private PasswordPolicyManager passwordPolicyManager;
@@ -512,7 +510,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
                 OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setEnabled(true);
@@ -530,8 +528,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
         boolean isAdmin = checkIsRoot(userId);
-        // todo 校验是否是组织管理员
-        boolean isOrgAdmin = true;
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
@@ -814,15 +811,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (checkPassword) {
             BaseUser baseUserDTO = new BaseUser();
             BeanUtils.copyProperties(user, baseUserDTO);
-            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(user.getOrganizationId());
+            Tenant organizationDTO = tenantRepository.selectByPrimaryKey(user.getOrganizationId());
             if (organizationDTO != null) {
                 PasswordPolicy example = new PasswordPolicy();
-                example.setOrganizationId(organizationDTO.getId());
+                example.setOrganizationId(organizationDTO.getTenantId());
                 if (userPasswordDTO.getPassword() != null) {
-                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getId(), baseUserDTO);
+                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), baseUserDTO);
                 }
                 // 校验用户密码
-                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getId(), true);
+                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), true);
             }
         }
         user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));

@@ -8,16 +8,20 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -48,6 +52,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
+    public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
+    public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
+
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -69,6 +77,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     // 注入messageClient
     @Autowired
     protected MessageClient messageClient;
+    @Autowired
+    private TenantMapper tenantMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     // TODO 重写tenant逻辑
     @Override
@@ -209,7 +221,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 .collect(Collectors.toList());
         List<ProjectOverViewVO> reOverViewVOS = new ArrayList<>();
         List<ProjectOverViewVO> temOverViewVOS = new ArrayList<>();
-        collect.stream().forEach(projectOverViewVO -> {
+        collect.forEach(projectOverViewVO -> {
             if (reOverViewVOS.size() < 24) {
                 reOverViewVOS.add(projectOverViewVO);
             }
@@ -236,6 +248,70 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             return Collections.emptyList();
         }
         return tenantC7nMapper.selectByIds(ids);
+    }
+
+    @Override
+    public List<TenantVO> selectSelfTenants(TenantDTO params) {
+        CustomUserDetails self = UserUtils.getUserDetails();
+        params.setUserId(self.getUserId());
+        return listOwnedOrganizationByTenant(params);
+    }
+
+    @Override
+    public List<TenantVO> listOwnedOrganizationByUserId(Long userId) {
+        TenantDTO params = new TenantDTO();
+        params.setUserId(userId);
+        return listOwnedOrganizationByTenant(params);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        User example = new User();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
+    }
+
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        return projectMapper.selectCount(example);
+    }
+
+    /**
+     * 查询用户可访问的组织，into判断是否可进
+     * @param params
+     * @return
+     */
+    private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
+        Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
+        Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
+        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
+
+        User user = userMapper.selectByPrimaryKey(params.getUserId());
+        return getOwnedOrganizations(user.getId(),Boolean.TRUE.equals(user.getAdmin()) , tenantDTOS);
+    }
+
+    /**
+     * 计算into字段
+     */
+    private List<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
+        List<TenantVO> tenantVOS = ConvertUtils.convertList(tenantDTOS, TenantVO.class);
+
+        if (isAdmin) {
+            tenantVOS.forEach(tenantVO -> tenantVO.setInto(true));
+        } else {
+            Set<Long> orgIds = tenantVOS.stream().map(Tenant::getTenantId).collect(Collectors.toSet());
+            Set<Long> managedOrgIds = userC7nMapper.listManagedOrgIdByUserId(userId, orgIds);
+            Map<Long, TenantVO> tenantVOMap = tenantVOS.stream().collect(Collectors.toMap(Tenant::getTenantId, v -> v));
+            managedOrgIds.forEach(orgId -> {
+                TenantVO tenantVO = tenantVOMap.get(orgId);
+                if (tenantVO != null) {
+                    tenantVO.setInto(true);
+                }
+            });
+        }
+        return tenantVOS;
     }
 
     private void checkCode(TenantVO tenantVO) {

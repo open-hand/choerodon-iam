@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -68,8 +68,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Value("${spring.application.name:default}")
     private String serviceName;
 
-    private SagaClient sagaClient;
-
     private final ObjectMapper mapper = new ObjectMapper();
 
     private UserMapper userMapper;
@@ -83,9 +81,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private AgileFeignClient agileFeignClient;
     private TestManagerFeignClient testManagerFeignClient;
     private ProjectUserMapper projectUserMapper;
+    private TransactionalProducer transactionalProducer;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
-                                 SagaClient sagaClient,
                                  OrganizationAssertHelper organizationAssertHelper,
                                  UserMapper userMapper,
                                  ProjectMapper projectMapper,
@@ -95,9 +93,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  TenantMapper organizationMapper,
                                  TestManagerFeignClient testManagerFeignClient,
                                  AgileFeignClient agileFeignClient,
+                                 TransactionalProducer transactionalProducer,
                                  ProjectUserMapper projectUserMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
-        this.sagaClient = sagaClient;
         this.organizationAssertHelper = organizationAssertHelper;
         this.userMapper = userMapper;
         this.projectMapper = projectMapper;
@@ -108,6 +106,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
         this.projectUserMapper = projectUserMapper;
+        this.transactionalProducer = transactionalProducer;
     }
 
     @Override
@@ -168,13 +167,22 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             }
             projectEventMsg.setProjectId(newProject.getId());
             projectEventMsg.setProjectCode(newProject.getCode());
-            ProjectDTO newDTO = organizationProjectC7nService.updateSelective(projectDTO);
             projectEventMsg.setProjectName(projectDTO.getName());
-            projectEventMsg.setImageUrl(newDTO.getImageUrl());
-            BeanUtils.copyProperties(newDTO, dto);
+            projectEventMsg.setImageUrl(newProject.getImageUrl());
+
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + newProject.getId(), ResourceLevel.PROJECT.value(), projectDTO.getId()));
+                transactionalProducer.apply(StartSagaBuilder.newBuilder()
+                                .withRefId(String.valueOf(projectDTO.getId()))
+                                .withRefType(ResourceLevel.PROJECT.value())
+                                .withSagaCode(PROJECT_UPDATE)
+                                .withLevel(ResourceLevel.PROJECT)
+                                .withSourceId(projectDTO.getId())
+                                .withJson(input),
+                        builder -> {
+                            ProjectDTO newDTO = organizationProjectC7nService.updateSelective(projectDTO);
+                            BeanUtils.copyProperties(newDTO, dto);
+                        });
             } catch (Exception e) {
                 throw new CommonException("error.projectService.update.event", e);
             }

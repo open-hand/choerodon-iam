@@ -27,6 +27,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -200,6 +201,14 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
         return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
+    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("组织层从excel里面批量导入用户角色关系")
+    @PostMapping("/organizations/{organization_id}/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(), file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 }

@@ -246,5 +246,14 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.noContent().build();
 
     }
+    @DeleteMapping("/org_administrator/{id}")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除该User在本组织的组织管理员角色")
+    public ResponseEntity<Void> deleteOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @PathVariable(name = "id") Long userId) {
+        userC7nService.deleteOrgAdministrator(organizationId, userId);
+        return ResponseEntity.noContent().build();
+
+    }
 
 }

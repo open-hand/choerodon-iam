@@ -8,10 +8,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -69,6 +72,10 @@ public class ExcelImportUserTask {
 
     private RandomInfoGenerator randomInfoGenerator;
 
+    private RoleC7nMapper roleC7nMapper;
+
+    private UserMapper userMapper;
+
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
                                FileFeignClient fileFeignClient,
@@ -78,7 +85,9 @@ public class ExcelImportUserTask {
                                RoleC7nMapper roleMapper,
                                MemberRoleRepository memberRoleRepository,
                                RoleAssertHelper roleAssertHelper,
-                               RandomInfoGenerator randomInfoGenerator) {
+                               RandomInfoGenerator randomInfoGenerator,
+                               RoleC7nMapper roleC7nMapper,
+                               UserMapper userMapper) {
         this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
@@ -89,6 +98,8 @@ public class ExcelImportUserTask {
         this.memberRoleRepository = memberRoleRepository;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
+        this.roleC7nMapper = roleC7nMapper;
+        this.userMapper = userMapper;
     }
 
     @Async("excel-executor")
@@ -165,12 +176,11 @@ public class ExcelImportUserTask {
     }
 
     @Async("excel-executor")
-    public void importMemberRole(List<ExcelMemberRoleVO> memberRoles, UploadHistoryDTO uploadHistory,
-                                 FinishFallback finishFallback) {
+    public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
-        List<ExcelMemberRoleVO> errorMemberRoles = new CopyOnWriteArrayList<>();
-        List<ExcelMemberRoleVO> validateMemberRoles = new CopyOnWriteArrayList<>();
+        List<ExcelMemberRoleDTO> errorMemberRoles = new CopyOnWriteArrayList<>();
+        List<ExcelMemberRoleDTO> validateMemberRoles = new CopyOnWriteArrayList<>();
         memberRoles.parallelStream().forEach(mr -> {
             if (StringUtils.isEmpty(mr.getLoginName())) {
                 mr.setCause("登录名为空");
@@ -183,14 +193,21 @@ public class ExcelImportUserTask {
             }
         });
         //去重
-        List<ExcelMemberRoleVO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
+        List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
+        Map<MemberRole, String> excelMemberRoleDTOS = new HashMap<>();
         //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
             //检查loginName是否存在
-            UserDTO userDTO = getUser(errorMemberRoles, emr, loginName);
+            User userDTO = getUser(errorMemberRoles, emr, loginName);
             if (userDTO == null) {
+                return;
+            }
+            Long userId = userDTO.getId();
+            //检查role code是否存在
+            Role role = getRole(errorMemberRoles, emr, code, uploadHistory.getSourceId());
+            if (role == null) {
                 return;
             }
             if (!userDTO.getEnabled()) {
@@ -198,17 +215,11 @@ public class ExcelImportUserTask {
                 errorMemberRoles.add(emr);
                 return;
             }
-            Long userId = userDTO.getId();
-            //检查role code是否存在
-            Role role = getRole(errorMemberRoles, emr, code);
-            if (role == null) {
-                return;
-            }
-            if (!uploadHistory.getSourceType().equals(role.getLevel())) {
-                emr.setCause("导入角色层级与当前层级不匹配");
-                errorMemberRoles.add(emr);
-                return;
-            }
+//            if (!uploadHistory.getSourceType().equals(role.getResourceLevel())) {
+//                emr.setCause("导入角色层级与当前层级不匹配");
+//                errorMemberRoles.add(emr);
+//                return;
+//            }
             if (role.getEnabled() != null && !role.getEnabled()) {
                 emr.setCause("导入角色未启用");
                 errorMemberRoles.add(emr);
@@ -223,12 +234,16 @@ public class ExcelImportUserTask {
             }
             Long roleId = role.getId();
             //检查memberRole是否存在
+            // !!! 存在则不做处理
             MemberRole memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
             if (memberRole == null) {
                 return;
             }
-            roleMemberService.insertAndSendEvent(userId, userDTO, memberRole, loginName);
+
+            roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
+            excelMemberRoleDTOS.put(memberRole, loginName);
         });
+
         Integer failedCount = errorMemberRoles.size();
         Integer successfulCount = total - failedCount;
         uploadHistory.setFailedCount(failedCount);
@@ -251,8 +266,7 @@ public class ExcelImportUserTask {
             finishFallback.callback(uploadHistory);
         }
     }
-
-    private MemberRole getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleVO> errorMemberRoles, ExcelMemberRoleVO emr, Long userId, Long roleId) {
+    private MemberRole getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
         MemberRole memberRole = new MemberRole();
         memberRole.setSourceType(sourceType);
         memberRole.setSourceId(sourceId);
@@ -267,18 +281,24 @@ public class ExcelImportUserTask {
         return memberRole;
     }
 
-    private Role getRole(List<ExcelMemberRoleVO> errorMemberRoles, ExcelMemberRoleVO emr, String code) {
-        Role role = roleMapper.selectByCode(code);
-        if (role == null) {
+    private Role getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code, Long tenantId) {
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(tenantId, code);
+        if (org.springframework.util.CollectionUtils.isEmpty(roles)) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
             return null;
         }
-        return role;
+        return roles.get(0);
     }
 
-    private UserDTO getUser(List<ExcelMemberRoleVO> errorMemberRoles, ExcelMemberRoleVO emr, String loginName) {
-        UserDTO userDTO = userC7nMapper.queryUserByLoginName(loginName);
+    private User getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
+        UserDTO user = new UserDTO();
+        if (loginName.matches(UserDTO.EMAIL_REG)) {
+            user.setEmail(loginName);
+        } else {
+            user.setLoginName(loginName);
+        }
+        User userDTO = userMapper.selectOne(user);
         if (userDTO == null) {
             emr.setCause("登录名不存在");
             errorMemberRoles.add(emr);
@@ -295,21 +315,21 @@ public class ExcelImportUserTask {
      * @param errorMemberRoles    重复的数据集合
      * @return
      */
-    private List<ExcelMemberRoleVO> distinctMemberRole(List<ExcelMemberRoleVO> validateMemberRoles, List<ExcelMemberRoleVO> errorMemberRoles) {
-        List<ExcelMemberRoleVO> distinctList = new ArrayList<>();
+    private List<ExcelMemberRoleDTO> distinctMemberRole(List<ExcelMemberRoleDTO> validateMemberRoles, List<ExcelMemberRoleDTO> errorMemberRoles) {
+        List<ExcelMemberRoleDTO> distinctList = new ArrayList<>();
         //excel内去重
-        Map<Map<String, String>, List<ExcelMemberRoleVO>> distinctMap =
+        Map<Map<String, String>, List<ExcelMemberRoleDTO>> distinctMap =
                 validateMemberRoles.stream().collect(Collectors.groupingBy(m -> {
                     Map<String, String> map = new HashMap<>();
                     map.put(m.getLoginName(), m.getRoleCode());
                     return map;
                 }));
-        for (Map.Entry<Map<String, String>, List<ExcelMemberRoleVO>> entry : distinctMap.entrySet()) {
-            List<ExcelMemberRoleVO> list = entry.getValue();
+        for (Map.Entry<Map<String, String>, List<ExcelMemberRoleDTO>> entry : distinctMap.entrySet()) {
+            List<ExcelMemberRoleDTO> list = entry.getValue();
             distinctList.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
-                    ExcelMemberRoleVO dto = list.get(i);
+                    ExcelMemberRoleDTO dto = list.get(i);
                     dto.setCause("excel中存在重复的数据");
                     errorMemberRoles.add(dto);
                 }
@@ -434,14 +454,14 @@ public class ExcelImportUserTask {
         return url;
     }
 
-    private String exportAndUploadMemberRole(List<ExcelMemberRoleVO> errorMemberRoles) {
+    private String exportAndUploadMemberRole(List<ExcelMemberRoleDTO> errorMemberRoles) {
         Map<String, String> propertyMap = new LinkedHashMap<>();
         propertyMap.put("loginName", "登录名*");
         propertyMap.put("roleCode", "角色编码*");
         propertyMap.put("cause", "原因");
         HSSFWorkbook hssfWorkbook;
         try {
-            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap, errorMemberRoles, "error", ExcelMemberRoleVO.class);
+            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap, errorMemberRoles, "error", ExcelMemberRoleDTO.class);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             logger.error("something wrong was happened when exporting the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.export");

@@ -327,4 +327,6 @@ public interface UserC7nService {
 
     Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
 
+    void deleteOrgAdministrator(Long organizationId, Long userId);
+
 }

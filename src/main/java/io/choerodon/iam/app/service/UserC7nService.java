@@ -1,10 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -12,11 +12,12 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -175,13 +176,14 @@ public interface UserC7nService {
      * 异步
      * 向用户发送通知（包括邮件和站内信）
      *
-     * @param fromUserId 发送通知的用户
-     * @param userIds    接受通知的目标用户
-     * @param code       业务code
-     * @param params     渲染参数
-     * @param sourceId   触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     * @param userIds       接受通知的目标用户
+     * @param code          业务code
+     * @param params        渲染参数
+     * @param sourceId      触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     * @param resourceLevel 资源层次
      */
-    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
+    void sendNotice(List<Long> userIds, String code,
+                    Map<String, String> params, Long sourceId, ResourceLevel resourceLevel);
     // TODO notify-service
 //    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
 //
@@ -316,6 +318,7 @@ public interface UserC7nService {
 
     /**
      * 给用户分配组织管理员角色
+     *
      * @param userIds
      * @param organizationId
      */

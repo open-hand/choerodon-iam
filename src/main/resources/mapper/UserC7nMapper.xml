@@ -174,23 +174,7 @@
         case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
         from iam_user iu
         ) iut
-        where iut.id IN (
-        SELECT
-        imr.member_id
-        FROM
-        iam_member_role imr
-        INNER JOIN iam_role ir ON (
-        ir.`code` = 'role/site/default/administrator'
-        OR ir. CODE = 'role/organization/default/administrator'
-        )
-        AND imr.role_id = ir.id
-        WHERE
-        imr.member_type = 'user'
-        GROUP BY
-        imr.member_id
-        HAVING
-        COUNT(imr.role_id) = 2
-        )
+        where iut.is_admin = 1
         <if test="loginName!= null">
             AND iut.target_login_name LIKE concat(concat('%', #{loginName}), '%')
         </if>
@@ -203,9 +187,7 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        <if test="userId != null">
-            AND iut.id =#{userId}
-        </if>
+        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">

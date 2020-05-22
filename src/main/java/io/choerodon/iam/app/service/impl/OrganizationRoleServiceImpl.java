@@ -126,30 +126,30 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         // 预定义角色无法修改
         checkEnableEdit(roleId);
 
-        if (Boolean.TRUE.equals(roleVO.getUpdateRoleFlag())) {
-            roleMapper.updateByPrimaryKeySelective(roleVO);
+
+        // 修改角色
+        roleMapper.updateByPrimaryKeySelective(roleVO);
+
+        // 更新角色权限
+        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
+        Set<Long> permissionIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
+        Set<Long> psIds = listUserInfoPsIds();
+        permissionIds.addAll(psIds);
+        // 要新增的权限
+        Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
+        // 要删除的权限
+        Set<Long> deletePermissionIds = permissionIds.stream().filter(permissionId -> !roleVO.getMenuIdList().contains(permissionId)).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(deletePermissionIds)) {
+            // 删除权限
+            rolePermissionC7nService.batchDelete(roleId, deletePermissionIds);
+        }
+        if (!CollectionUtils.isEmpty(newPermissionIds)) {
+            // 新增权限
+            assignRolePermission(roleId, newPermissionIds);
         }
 
-        if (Boolean.TRUE.equals(roleVO.getUpdatePermissionFlag())) {
-            List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleId(roleId);
-            Set<Long> permissionIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-            Set<Long> psIds = listUserInfoPsIds();
-            permissionIds.addAll(psIds);
-            // 要新增的权限
-            Set<Long> newPermissionIds = roleVO.getMenuIdList().stream().filter(permissionId -> !permissionIds.contains(permissionId)).collect(Collectors.toSet());
-            // 要删除的权限
-            Set<Long> deletePermissionIds = permissionIds.stream().filter(permissionId -> !roleVO.getMenuIdList().contains(permissionId)).collect(Collectors.toSet());
-            if (!CollectionUtils.isEmpty(deletePermissionIds)) {
-                // 删除权限
-                rolePermissionC7nService.batchDelete(roleId, deletePermissionIds);
-            }
-            if (!CollectionUtils.isEmpty(newPermissionIds)) {
-                // 新增权限
-                assignRolePermission(roleId, newPermissionIds);
-            }
 
 
-        }
     }
 
 
@@ -196,7 +196,6 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 ps.setCheckedFlag("N");
             }
         });
-        roleVO.setMenuIdList(psIds);
         roleVO.setMenuList(menus);
         return roleVO;
     }

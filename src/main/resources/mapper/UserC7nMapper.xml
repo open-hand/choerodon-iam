@@ -635,6 +635,8 @@
         FROM
         iam_member_role imr
         LEFT JOIN iam_role ir ON ir.ID = imr.ROLE_ID
+        LEFT JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
         LEFT JOIN
         (
         select iu.*,
@@ -642,7 +644,7 @@
         from iam_user iu
         ) iut ON imr.MEMBER_ID = iut.ID
         WHERE
-        ir.CODE = 'role/organization/default/administrator'
+        il.name = 'TENANT_ADMIN'
         AND imr.source_type='organization'
         AND imr.source_id=#{organizationId}
         AND imr.member_type = 'user'

@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.UpdateException;
@@ -919,20 +920,16 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<Receiver> receiverList=new ArrayList<>();
 
         userIds.forEach(id -> {
+            List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());
             memberRoleDTO.setMemberId(id);
             memberRoleDTO.setMemberType(MemberType.USER.value());
             memberRoleDTO.setSourceId(organizationId);
             memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleList.add(memberRoleDTO);
 
-            // 如果用户已被分配组织管理员角色 直接跳过
-            if (!CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
-                return;
-            }
-            if (memberRoleMapper.insert(memberRoleDTO) != 1) {
-                throw new CommonException("error.memberRole.create");
-            }
+            memberRoleService.batchAssignMemberRole(memberRoleList);
 
             // 构建saga对象
             labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
@@ -979,16 +976,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         argsMap.put("roleName","租户管理员");
         argsMap.put("organizationId",tenant.getTableId());
         argsMap.put("addCount",String.valueOf(userIds.size()));
-//        argsMap.put("userList",StringuserIds.size());
         messageSender.setArgs(argsMap);
 
         messageSender.setReceiverAddressList(receiverList);
 
-//        Map<String,Object> objectMap=new HashMap<>();
-//        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),1L);
-//        objectMap.put(MessageAdditionalType.PARAM_ENV_ID.getTypeName(),1L);
-//        objectMap.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(),"service");
-//        messageSender.setAdditionalInformation(objectMap);
+        Map<String,Object> objectMap=new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),organizationId);
+        messageSender.setAdditionalInformation(objectMap);
 
 
         //添加组织管理员发送消息通知被添加者,异步发送消息

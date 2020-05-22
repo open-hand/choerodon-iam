@@ -10,6 +10,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
@@ -323,4 +324,7 @@ public interface UserC7nService {
      * @param organizationId
      */
     void createOrgAdministrator(List<Long> userIds, Long organizationId);
+
+    Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
+
 }

@@ -15,8 +15,12 @@ import io.choerodon.iam.infra.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.valitador.RoleAssignmentViewValidator;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Client;
@@ -27,9 +31,17 @@ import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -356,6 +368,53 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         //查当前用户/客户端有那些角色
         return memberRoleMapper.select(memberRole)
                 .stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("charset", "utf-8");
+        //设置下载文件名
+        String filename = "用户角色关系导入模板." + suffix;
+        try {
+            filename = URLEncoder.encode(filename, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.info("url encodes exception: {}", e.getMessage());
+            throw new CommonException("error.encode.url");
+        }
+        headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+        InputStream inputStream;
+        // 根据层级，设置excel文件路径
+        String excelPath;
+        if (ResourceLevel.SITE.value().equals(resourceLevel)) {
+            excelPath = SITE_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.ORGANIZATION.value().equals(resourceLevel)) {
+            excelPath = ORGANIZATION_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else if (ResourceLevel.PROJECT.value().equals(resourceLevel)) {
+            excelPath = PROJECT_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
+        } else {
+            return null;
+        }
+        // 根据excel类型，设置响应头mediaType
+        String mediaTypeValue;
+        if (ExcelSuffix.XLS.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.ms-excel";
+        } else if (ExcelSuffix.XLSX.value().equals(suffix)) {
+            mediaTypeValue = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        } else {
+            return null;
+        }
+
+        inputStream = this.getClass().getResourceAsStream(excelPath);
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(mediaTypeValue))
+                .body(new InputStreamResource(inputStream));
+
     }
 
     // TODO notify-service

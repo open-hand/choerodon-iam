@@ -62,8 +62,9 @@
         </collection>
     </resultMap>
 
-    <select id="listUsersByIds" resultMap="userDTO">
-        SELECT * FROM iam_user
+    <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
+        SELECT *
+        FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">
@@ -174,23 +175,7 @@
         case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
         from iam_user iu
         ) iut
-        where iut.id IN (
-        SELECT
-        imr.member_id
-        FROM
-        iam_member_role imr
-        INNER JOIN iam_role ir ON (
-        ir.`code` = 'role/site/default/administrator'
-        OR ir. CODE = 'role/organization/default/administrator'
-        )
-        AND imr.role_id = ir.id
-        WHERE
-        imr.member_type = 'user'
-        GROUP BY
-        imr.member_id
-        HAVING
-        COUNT(imr.role_id) = 2
-        )
+        where iut.is_admin = 1
         <if test="loginName!= null">
             AND iut.target_login_name LIKE concat(concat('%', #{loginName}), '%')
         </if>
@@ -203,9 +188,7 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        <if test="userId != null">
-            AND iut.id =#{userId}
-        </if>
+        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">
@@ -635,6 +618,8 @@
         FROM
         iam_member_role imr
         LEFT JOIN iam_role ir ON ir.ID = imr.ROLE_ID
+        LEFT JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
         LEFT JOIN
         (
         select iu.*,
@@ -642,7 +627,7 @@
         from iam_user iu
         ) iut ON imr.MEMBER_ID = iut.ID
         WHERE
-        ir.CODE = 'role/organization/default/administrator'
+        il.name = 'TENANT_ADMIN'
         AND imr.source_type='organization'
         AND imr.source_id=#{organizationId}
         AND imr.member_type = 'user'

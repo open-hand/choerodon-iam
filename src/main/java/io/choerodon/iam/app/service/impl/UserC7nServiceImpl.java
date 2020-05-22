@@ -1,6 +1,46 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -34,44 +74,6 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -80,6 +82,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
@@ -93,6 +96,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
@@ -142,8 +147,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     private ProjectUserMapper projectUserMapper;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private TenantRepository tenantRepository;
     @Autowired
     private RoleC7nService roleC7nService;
@@ -154,6 +157,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
+
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);
@@ -356,35 +360,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Transactional
     public void addAdminUsers(long[] ids) {
         List<Long> adminUserIds = new ArrayList<>();
-        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
-        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
-        List<MemberRole> memberRoleList = new ArrayList<>();
-
         for (long id : ids) {
-            List<Long> allAdminUserIds = userC7nMapper.selectAdminUserPage(null, null, null, null)
-                    .stream().map(User::getId).collect(Collectors.toList());
-            if (!allAdminUserIds.contains(id)) {
-
-                List<Long> allSiteAdmin = userC7nMapper.selectUserByRoleCode(SITE_ADMIN_ROLE_CODE);
-                if (!allSiteAdmin.contains(id)) {
-                    MemberRole memberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
-                    memberRoleList.add(memberRole);
-                }
-                List<Long> allOrgAdmin = userC7nMapper.selectUserByRoleCode(ORG_ADMIN_ROLE_CODE);
-                if (!allOrgAdmin.contains(id)) {
-                    MemberRole memberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
-                    memberRoleList.add(memberRole);
-                }
+            User dto = userRepository.selectByPrimaryKey(id);
+            if (dto != null && !dto.getAdmin()) {
+                dto.setAdmin(true);
+                adminUserIds.add(id);
+                updateSelective(dto);
             }
         }
-        memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
-
         //添加成功后发送站内信和邮件通知被添加者
-        Long fromUserId = DetailsHelper.getUserDetails().getUserId();
         if (!adminUserIds.isEmpty()) {
-            // todo
-//            ((UserServiceImpl) AopContext.currentProxy()).sendNotice(fromUserId, adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
-//            messageClient.async().sendMessage();
+            ((UserC7nServiceImpl) AopContext.currentProxy()).sendNotice(adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.emptyMap(), 0L, ResourceLevel.SITE);
         }
         if (!adminUserIds.isEmpty()) {
             AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
@@ -400,27 +386,75 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
 
+    @Override
+    public void sendNotice(List<Long> userIds, String code,
+                           Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
+        LOGGER.info("ready : send Notice to {} users", userIds.size());
+        if (CollectionUtils.isEmpty(userIds)) {
+            return;
+        }
+
+        ExceptionUtil.doWithTryCatchAndLog(LOGGER,
+                () -> doSendNotice(userIds, code, params, sourceId, resourceLevel),
+                ex -> LOGGER.info("Failed to send notices. The code is {}, and the users are: {}", code, userIds));
+    }
+
+    private void doSendNotice(List<Long> userIds, String code, Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
+        MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
+        Map<String, Object> additionalParams = new HashMap<>();
+        messageSender.setTenantId(0L);
+        if (ResourceLevel.ORGANIZATION == resourceLevel) {
+            messageSender.setTenantId(sourceId);
+            additionalParams.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), sourceId);
+        } else if (ResourceLevel.PROJECT == resourceLevel) {
+            additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), sourceId);
+        }
+        messageSender.setReceiverAddressList(constructUsersByIds(userIds));
+        messageSender.setArgs(params);
+        messageSender.setMessageCode(code);
+        messageSender.setAdditionalInformation(additionalParams);
+
+        messageClient.async().sendMessage(messageSender);
+    }
+
+    private List<Receiver> constructUsersByIds(List<Long> userIds) {
+        List<User> users = userRepository.selectByIds(org.apache.commons.lang.StringUtils.join(userIds, ","));
+        if (!CollectionUtils.isEmpty(users)) {
+            return users.stream().map(u -> {
+                Receiver receiver = new Receiver();
+                receiver.setUserId(u.getId());
+                receiver.setEmail(u.getEmail());
+                receiver.setPhone(u.getPhone());
+                receiver.setTargetUserTenantId(Objects.requireNonNull(u.getOrganizationId(), "receiver tenant id can't be null"));
+                return receiver;
+            }).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+
     @Saga(code = SagaTopic.User.DELETE_ADMIN, description = "用户Root权限被删除事件同步", inputSchemaClass = DeleteAdminVO.class)
     @Override
     public void deleteAdminUser(long id) {
-        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
-        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
-        MemberRole siteMemberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
-        MemberRole orgMemberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
-        List<MemberRole> memberRoleList = new ArrayList<>();
-        memberRoleList.add(siteMemberRole);
-        memberRoleList.add(orgMemberRole);
-        memberRoleService.batchDeleteMemberRole(0L, memberRoleList);
-
-        producer.apply(StartSagaBuilder.newBuilder()
-                        .withRefId(String.valueOf(id))
-                        .withRefType("user")
-                        .withSourceId(0L)
-                        .withLevel(ResourceLevel.SITE)
-                        .withSagaCode(SagaTopic.User.DELETE_ADMIN)
-                        .withPayloadAndSerialize(new DeleteAdminVO(id)),
-                builder -> {
-                });
+        User userDTO = new User();
+        userDTO.setAdmin(true);
+        if (userMapper.selectCount(userDTO) > 1) {
+            User dto = userAssertHelper.userNotExisted(id);
+            if (dto.getAdmin()) {
+                dto.setAdmin(false);
+                producer.apply(StartSagaBuilder.newBuilder()
+                                .withRefId(String.valueOf(id))
+                                .withRefType("user")
+                                .withSourceId(0L)
+                                .withLevel(ResourceLevel.SITE)
+                                .withSagaCode(SagaTopic.User.DELETE_ADMIN)
+                                .withPayloadAndSerialize(new DeleteAdminVO(id)),
+                        builder -> updateSelective(dto));
+            }
+        } else {
+            throw new CommonException("error.user.admin.size");
+        }
     }
 
 
@@ -657,12 +691,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         return userWithGitlabIdVO;
     }
 
-    // TODO 完成sendNotice逻辑
-    @Override
-    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId) {
-        return null;
-    }
-
     @Override
     public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
         return userC7nMapper.isOrgAdministrator(organizationId, userId);
@@ -832,11 +860,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 //        passwordRecord.updatePassword(user.getId(), user.getPassword());
 
         // send siteMsg
-        Map<String, Object> paramsMap = new HashMap<>();
+        Map<String, String> paramsMap = new HashMap<>();
         paramsMap.put("userName", user.getRealName());
         List<Long> userIds = new ArrayList<>();
         userIds.add(user.getId());
-        sendNotice(user.getId(), userIds, "modifyPassword", paramsMap, 0L);
+        sendNotice(userIds, "modifyPassword", paramsMap, 0L, ResourceLevel.SITE);
     }
 
 
@@ -917,7 +945,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         Set<String> labelNames = new HashSet<>();
         // 接收者
-        List<Receiver> receiverList=new ArrayList<>();
+        List<Receiver> receiverList = new ArrayList<>();
 
         userIds.forEach(id -> {
             List<MemberRole> memberRoleList = new ArrayList<>();
@@ -945,7 +973,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             User user = userMapper.selectByPrimaryKey(id);
             notifyUserIds.add(id);
 
-            Receiver receiver=new Receiver();
+            Receiver receiver = new Receiver();
             receiver.setUserId(id);
             // 发送邮件消息时 必填
             receiver.setEmail(user.getEmail());
@@ -960,28 +988,29 @@ public class UserC7nServiceImpl implements UserC7nService {
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withSagaCode(MEMBER_ROLE_UPDATE)
                         .withPayloadAndSerialize(userMemberEventPayloads),
-                builder -> {});
+                builder -> {
+                });
 
 
         // 准备消息发送的messageSender
-        MessageSender messageSender=new MessageSender();
+        MessageSender messageSender = new MessageSender();
         // 消息code
         messageSender.setMessageCode(MessageCodeConstants.BUSINESS_TYPE_CODE);
         // 默认为0L,都填0L,可不填写
         messageSender.setTenantId(0L);
 
         // 消息参数 消息模板中${projectName}
-        Map<String,String> argsMap=new HashMap<>();
+        Map<String, String> argsMap = new HashMap<>();
         argsMap.put("organizationName", tenant.getTenantName());
-        argsMap.put("roleName","租户管理员");
-        argsMap.put("organizationId",tenant.getTableId());
-        argsMap.put("addCount",String.valueOf(userIds.size()));
+        argsMap.put("roleName", "租户管理员");
+        argsMap.put("organizationId", tenant.getTableId());
+        argsMap.put("addCount", String.valueOf(userIds.size()));
         messageSender.setArgs(argsMap);
 
         messageSender.setReceiverAddressList(receiverList);
 
-        Map<String,Object> objectMap=new HashMap<>();
-        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),organizationId);
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
         messageSender.setAdditionalInformation(objectMap);
 
 
@@ -1009,5 +1038,6 @@ public class UserC7nServiceImpl implements UserC7nService {
 //                userService.getWebHookUser(customUserDetails.getUserId())
 //        );
 //        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
+
     }
 }

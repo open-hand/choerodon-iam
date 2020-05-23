@@ -329,4 +329,5 @@ public interface UserC7nService {
 
     void deleteOrgAdministrator(Long organizationId, Long userId);
 
+    void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS);
 }

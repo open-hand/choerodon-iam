@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public interface LabelC7nMapper {
 
-    List<LabelDTO> selectByRoleId(Long roleId);
+    List<LabelDTO> selectByRoleId(@Param("roleId") Long roleId);
 
     List<LabelDTO> selectByUserId(Long id);
 

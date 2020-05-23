@@ -64,7 +64,7 @@ public interface RoleMemberService {
 
     void import2MemberRole(Long sourceId, String sourceType, MultipartFile file);
 
-    void updateMemberRole(Long userId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId);
+    void updateMemberRole(List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId);
 
     void deleteMemberRoleForSaga(Long userId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId);
 }

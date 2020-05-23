@@ -186,9 +186,10 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层批量分配用户角色")
     @PostMapping(value = "/organizations/{organization_id}/users/assign_roles")
-    public ResponseEntity<List<MemberRole>> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Void> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                                 @RequestBody List<MemberRole> memberRoleDTOS) {
-        return new ResponseEntity<>(userC7nService.assignUsersRoles(ResourceLevel.ORGANIZATION.value(), organizationId, memberRoleDTOS), HttpStatus.OK);
+        userC7nService.assignUsersRolesOnOrganizationLevel(organizationId, memberRoleDTOS);
+        return ResponseEntity.noContent().build();
     }
     /**
      * 组织层下载模板

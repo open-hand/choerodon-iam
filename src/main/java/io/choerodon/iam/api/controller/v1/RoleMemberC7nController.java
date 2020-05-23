@@ -2,15 +2,15 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -19,9 +19,11 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -47,15 +49,18 @@ public class RoleMemberC7nController extends BaseController {
     private ProjectUserService projectUserService;
     private UserC7nService userC7nService;
     private RoleMemberService roleMemberService;
+    private ClientC7nService clientC7nService;
 
 
     public RoleMemberC7nController(RoleC7nService roleC7nService,
                                    UserC7nService userC7nService,
+                                   ClientC7nService clientC7nService,
                                    ProjectUserService projectUserService,
                                    RoleMemberService roleMemberService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
         this.userC7nService = userC7nService;
+        this.clientC7nService = clientC7nService;
         this.roleMemberService = roleMemberService;
     }
 
@@ -203,6 +208,7 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
         return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
     }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("组织层从excel里面批量导入用户角色关系")
     @PostMapping("/organizations/{organization_id}/role_members/batch_import")
@@ -210,6 +216,63 @@ public class RoleMemberC7nController extends BaseController {
                                                           @RequestPart MultipartFile file) {
         roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层分页查询角色下的客户端")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients")
+    public ResponseEntity<Page<Client>> pagingQueryClientsByRoleIdOnOrganizationLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(clientC7nService.pagingQueryUsersByRoleId(pageRequest, ResourceLevel.ORGANIZATION, sourceId, clientRoleQueryVO, roleId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnOrganizationLevel(
+                clientRoleQueryVO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的用户数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的用户数量")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithUserCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithUserCountOnOrganizationLevel(
+                roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询project层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnProjectLevel(
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnProjectLevel(
+                clientRoleQueryVO, sourceId), HttpStatus.OK);
     }
 
 }

@@ -58,7 +58,6 @@ public interface RoleC7nMapper {
      */
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
-    Role selectByCode(@Param("code") String code);
 
 
     List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,

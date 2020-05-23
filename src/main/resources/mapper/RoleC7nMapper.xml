@@ -178,12 +178,6 @@
         </if>
     </select>
 
-    <select id="selectByCode" resultMap="RoleMap">
-        SELECT ir.*
-        FROM iam_role ir
-        WHERE ir.code = #{code,jdbcType=VARCHAR}
-    </select>
-
     <select id="fuzzySearchRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
     SELECT
     ir.*

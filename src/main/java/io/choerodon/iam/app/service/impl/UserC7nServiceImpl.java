@@ -1,46 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -74,6 +34,44 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -154,6 +152,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private MemberRoleMapper memberRoleMapper;
     @Autowired
     private TenantMapper tenantMapper;
+    @Autowired
+    private LabelC7nMapper labelC7nMapper;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -495,22 +495,14 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
-    public Boolean checkIsRoot(Long id) {
-        List<User> userList = userC7nMapper.selectAdminUserPage(null, null, null, id);
-        if (!CollectionUtils.isEmpty(userList)) {
-            return userList.contains(id);
-        } else {
-            return false;
-        }
+    public Boolean isRoot(Long id) {
+        User result = userRepository.selectByPrimaryKey(id);
+        return result != null && result.getAdmin();
     }
 
     @Override
     public List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled) {
-        CustomUserDetails customUserDetails = checkLoginUser(userId);
-        boolean isAdmin = false;
-        if (customUserDetails.getAdmin() != null) {
-            isAdmin = customUserDetails.getAdmin();
-        }
+        boolean isAdmin = isRoot(userId);
         ProjectDTO project = new ProjectDTO();
         if (!isAdmin && includedDisabled != null && !includedDisabled) {
             project.setEnabled(true);
@@ -565,7 +557,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        boolean isAdmin = checkIsRoot(userId);
+        boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
@@ -716,16 +708,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
-        // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
-        }
-        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
-        }
+//        // 校验组织人数是否已达上限
+//        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+//        }
+//        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+//        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
@@ -955,9 +947,11 @@ public class UserC7nServiceImpl implements UserC7nService {
             memberRoleDTO.setMemberType(MemberType.USER.value());
             memberRoleDTO.setSourceId(organizationId);
             memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevelValue(organizationId);
             memberRoleList.add(memberRoleDTO);
 
-            memberRoleService.batchAssignMemberRole(memberRoleList);
+            memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
 
             // 构建saga对象
             labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
@@ -1040,4 +1034,94 @@ public class UserC7nServiceImpl implements UserC7nService {
 //        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
 
     }
+
+    @Override
+    public Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
+        if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
+           return new Page<>();
+        }
+        if (organizationId.equals(0L)) {
+            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectAllUsersSimplifiedInfo(param));
+        } else {
+            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectUsersOptional(param, organizationId));
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOrgAdministrator(Long organizationId, Long userId) {
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
+        Long roleId = tenantAdminRole.getId();
+        MemberRole memberRoleDTO = new MemberRole();
+        memberRoleDTO.setRoleId(roleId);
+        memberRoleDTO.setMemberId(userId);
+        memberRoleDTO.setMemberType(MemberType.USER.value());
+        memberRoleDTO.setSourceId(organizationId);
+        memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+        if (CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
+            throw new CommonException("error.memberRole.not.exist", roleId, userId);
+        }
+        if (memberRoleMapper.delete(memberRoleDTO) != 1) {
+            throw new CommonException("error.memberRole.delete");
+        }
+        //删除组织管理员成功后也要发saga删除gitlab相应的权限。
+        List<UserMemberEventPayload> userMemberEventPayloadList = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+        labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayload.setResourceId(organizationId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayloadList.add(userMemberEventPayload);
+        roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloadList, ResourceLevel.ORGANIZATION, organizationId);
+    }
+
+    @Override
+    public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
+        Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
+        memberRoleDTOS.forEach(memberRoleDTO -> {
+
+            if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
+                throw new EmptyParamException("error.memberRole.insert.empty");
+            }
+            // 构建saga对象
+            Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRolelabelsMap.get(memberRoleDTO.getMemberId());
+                if (roleLabels != null) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRolelabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
+                }
+            }
+
+
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setSourceId(organizationId);
+            memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevelValue(organizationId);
+        });
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleDTOS);
+
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        userRolelabelsMap.forEach((k, v) -> {
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(k);
+            userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setResourceId(organizationId);
+            userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+            userMemberEventPayloads.add(userMemberEventPayload);
+
+        });
+        roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
+
+
+    }
+
 }

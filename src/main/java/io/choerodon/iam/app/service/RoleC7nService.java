@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
@@ -51,4 +52,12 @@ public interface RoleC7nService {
      * @return
      */
     List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable);
+
+    List<RoleC7nDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+
+    List<RoleC7nDTO> listRolesWithClientCountOnProjectLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId);
+
+    List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId);
+
+
 }

@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -325,5 +326,27 @@ public interface UserC7nMapper {
     Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
 
     Set<String> matchPhone(@Param("phoneSet") Set<String> phoneSet);
+
+
+    List<SimplifiedUserVO> selectAllUsersSimplifiedInfo(@Param("params") String params);
+
+
+    /**
+     * 选择性查询用户，如果用户在组织下，则模糊查询，如果用户不在组织下精确匹配
+     *
+     * @param param
+     * @param organizationId
+     * @return
+     */
+    List<SimplifiedUserVO> selectUsersOptional(@Param("params") String param, @Param("organizationId") Long organizationId);
+
+    Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
+                                                   @Param("memberType") String memberType,
+                                                   @Param("sourceId") Long sourceId,
+                                                   @Param("sourceType") String sourceType,
+                                                   @Param("roleAssignmentSearchDTO")
+                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   @Param("param") String param);
+
 }
 

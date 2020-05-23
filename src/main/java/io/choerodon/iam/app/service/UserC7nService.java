@@ -10,6 +10,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
@@ -123,10 +124,10 @@ public interface UserC7nService {
     /**
      * 校验用户是否是root用户
      *
-     * @param id
-     * @return
+     * @param userId
+     * @return true表示是root用户
      */
-    Boolean checkIsRoot(Long id);
+    Boolean isRoot(Long userId);
 
 //    /**
 //     * 校验用户是否是组织Root用户
@@ -323,4 +324,10 @@ public interface UserC7nService {
      * @param organizationId
      */
     void createOrgAdministrator(List<Long> userIds, Long organizationId);
+
+    Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
+
+    void deleteOrgAdministrator(Long organizationId, Long userId);
+
+    void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS);
 }

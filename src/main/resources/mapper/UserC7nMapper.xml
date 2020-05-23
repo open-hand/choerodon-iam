@@ -62,8 +62,16 @@
         </collection>
     </resultMap>
 
+    <resultMap id="simplifiedUserDTO" type="io.choerodon.iam.api.vo.SimplifiedUserVO" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="loginName" column="login_name"/>
+        <result property="realName" column="real_name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="email" column="email"/>
+    </resultMap>
+
     <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
-        SELECT *
+        SELECT *,is_ldap as ldap
         FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"
@@ -188,7 +196,6 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">
@@ -1082,5 +1089,48 @@
         SELECT iu.*
         FROM iam_user iu
         WHERE iu.login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAllUsersSimplifiedInfo" resultMap="simplifiedUserDTO">
+        SELECT
+        id,
+        login_name,
+        real_name,
+        image_url,
+        email
+        FROM
+        iam_user
+        WHERE
+        is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name LIKE concat(concat('%',#{params}),'%') OR
+            real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectUsersOptional" resultMap="simplifiedUserDTO">
+        select id, login_name, real_name, image_url, email
+        from iam_user
+        where organization_id = #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name LIKE concat(concat('%',#{params}),'%') OR
+            real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+        union
+        select id, login_name, real_name, image_url, email
+        from iam_user
+        where organization_id != #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name = #{params} OR
+            real_name = #{params}
+            )
+        </if>
     </select>
 </mapper>

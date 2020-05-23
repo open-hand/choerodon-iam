@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import org.hzero.iam.api.dto.RoleDTO;
 
 import io.choerodon.core.domain.Page;
@@ -91,4 +92,5 @@ public interface ProjectUserService {
 
     List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
+    void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
 }

@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import org.hzero.iam.domain.entity.Role;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -18,6 +20,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @since 2019-04-22
  */
 @Table(name = "fd_project")
+@VersionAudit
+@ModifyAudit
 public class ProjectDTO extends AuditDomain {
 
     private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
@@ -25,7 +29,7 @@ public class ProjectDTO extends AuditDomain {
     private static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 

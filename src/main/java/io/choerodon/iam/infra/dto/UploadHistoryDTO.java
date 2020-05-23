@@ -8,17 +8,21 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-23
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "iam_upload_history")
 public class UploadHistoryDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "主键ID")
     private Long id;
     @ApiModelProperty(value = "用户ID")

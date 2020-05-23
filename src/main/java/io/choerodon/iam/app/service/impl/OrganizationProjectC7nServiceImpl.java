@@ -9,15 +9,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.LabelMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,25 +36,22 @@ import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
-import io.choerodon.iam.app.service.OrganizationProjectC7nService;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
-import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.ProjectCategory;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -86,6 +82,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private SagaClient sagaClient;
 
     private UserService userService;
+    private UserC7nService userC7nService;
 
 //    private AsgardFeignClient asgardFeignClient;
 
@@ -97,7 +94,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectTypeMapper projectTypeMapper;
 
-    private RoleMapper roleMapper;
+    private ProjectUserMapper projectUserMapper;
+
+    private LabelC7nMapper labelC7nMapper;
+
+    private RoleC7nMapper roleC7nMapper;
 
     private LabelMapper labelMapper;
 
@@ -115,6 +116,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private TransactionalProducer producer;
     private TenantC7nService tenantC7nService;
+    private C7nTenantConfigService c7nTenantConfigService;
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
@@ -127,23 +129,28 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectTypeMapper projectTypeMapper,
                                              OrganizationAssertHelper organizationAssertHelper,
                                              UserAssertHelper userAssertHelper,
-                                             RoleMapper roleMapper,
+                                             ProjectUserMapper projectUserMapper,
                                              LabelMapper labelMapper,
                                              MemberRoleService memberRoleService,
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
                                              TenantC7nService tenantC7nService,
+                                             UserC7nService userC7nService,
+                                             LabelC7nMapper labelC7nMapper,
+                                             RoleC7nMapper roleC7nMapper,
+                                             C7nTenantConfigService c7nTenantConfigService,
                                              OrganizationResourceLimitService organizationResourceLimitService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
+        this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.organizationAssertHelper = organizationAssertHelper;
         this.projectTypeMapper = projectTypeMapper;
         this.userAssertHelper = userAssertHelper;
-        this.roleMapper = roleMapper;
+        this.projectUserMapper = projectUserMapper;
         this.labelMapper = labelMapper;
         this.memberRoleService = memberRoleService;
         this.projectValidator = projectValidator;
@@ -151,6 +158,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.devopsFeignClient = devopsFeignClient;
         this.tenantC7nService = tenantC7nService;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.c7nTenantConfigService = c7nTenantConfigService;
+        this.labelC7nMapper = labelC7nMapper;
+        this.roleC7nMapper = roleC7nMapper;
     }
 
 
@@ -167,29 +177,18 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             res = sendCreateProjectEvent(projectDTO);
         } else {
             res = create(projectDTO);
-//            initMemberRole(projectDTO);
+            initMemberRole(projectDTO);
         }
-        insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
+        insertProjectMapCategory(projectCategoryDTO.getId(), res.getId());
         //创建项目成功发送webhook
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("projectId", res.getId());
-        jsonObject.put("name", res.getName());
-        jsonObject.put("code", res.getCode());
-        jsonObject.put("organizationId", res.getOrganizationId());
-        jsonObject.put("enabled", res.getEnabled());
-        jsonObject.put("category", res.getCategory());
-
-// todo 消息发送
-//        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                SendSettingBaseEnum.CREATE_PROJECT.value(),
-//                SendSettingBaseEnum.map.get(SendSettingBaseEnum.CREATE_PROJECT.value()),
-//                jsonObject,
-//                res.getCreationDate(),
-//                userService.getWebHookUser(res.getCreatedBy())
-//        );
-//        Map<String, Object> params = new HashMap<>();
-//
-//        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), webHookJsonSendDTO);
+        Map<String, String> params = new HashMap<>();
+        params.put("projectId", String.valueOf(res.getId()));
+        params.put("name", res.getName());
+        params.put("code", res.getCode());
+        params.put("organizationId", String.valueOf(res.getOrganizationId()));
+        params.put("enabled", String.valueOf(res.getEnabled()));
+        params.put("category", res.getCategory());
+        userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
         return res;
     }
 
@@ -225,9 +224,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .withSagaCode(PROJECT_CREATE),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
-//                    Set<String> roleLabels = initMemberRole(projectDTO);
-//                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
-                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, null);
+                    Set<String> roleLabels = initMemberRole(projectDTO);
+                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
                     builder
                             .withPayloadAndSerialize(projectEventPayload)
                             .withRefId(String.valueOf(projectDTO.getId()))
@@ -236,62 +234,54 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 });
     }
 
-    // TODO 重写tenant逻辑
     private ProjectEventPayload generateProjectEventMsg(ProjectDTO projectDTO, Set<String> roleLabels) {
-//        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
-//        CustomUserDetails details = DetailsHelper.getUserDetails();
-//        Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
-//        if (details != null && details.getUserId() != 0) {
-//            projectEventMsg.setUserName(details.getUsername());
-//            projectEventMsg.setUserId(details.getUserId());
-//        } else {
-//            TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
-//            Long userId = configVO.getUserId();
-//            User userDTO = userAssertHelper.userNotExisted(userId);
-//            projectEventMsg.setUserId(userId);
-//            projectEventMsg.setUserName(userDTO.getLoginName());
-//        }
-//        projectEventMsg.setRoleLabels(roleLabels);
-//        projectEventMsg.setProjectId(projectDTO.getId());
-//        projectEventMsg.setProjectCode(projectDTO.getCode());
-//        projectEventMsg.setProjectCategory(projectDTO.getCategory());
-//        projectEventMsg.setProjectName(projectDTO.getName());
-//        projectEventMsg.setImageUrl(projectDTO.getImageUrl());
-//        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
-//        projectEventMsg.setOrganizationName(tenant.getTenantName());
-//        projectEventMsg.setOrganizationId(tenant.getTenantId());
-        return new ProjectEventPayload();
+        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
+        if (details != null && details.getUserId() != 0) {
+            projectEventMsg.setUserName(details.getUsername());
+            projectEventMsg.setUserId(details.getUserId());
+        } else {
+            Long userId = Long.valueOf(c7nTenantConfigService.queryNonNullCertainConfigValue(projectDTO.getId(), TenantConfigEnum.USER_ID));
+            User userDTO = userAssertHelper.userNotExisted(userId);
+            projectEventMsg.setUserId(userId);
+            projectEventMsg.setUserName(userDTO.getLoginName());
+        }
+        projectEventMsg.setRoleLabels(roleLabels);
+        projectEventMsg.setProjectId(projectDTO.getId());
+        projectEventMsg.setProjectCode(projectDTO.getCode());
+        projectEventMsg.setProjectCategory(projectDTO.getCategory());
+        projectEventMsg.setProjectName(projectDTO.getName());
+        projectEventMsg.setImageUrl(projectDTO.getImageUrl());
+        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
+        projectEventMsg.setOrganizationName(tenant.getTenantName());
+        projectEventMsg.setOrganizationId(tenant.getTenantId());
+        return projectEventMsg;
     }
-//
-//    private Set<String> initMemberRole(ProjectDTO project) {
-//        List<Role> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabelEnum.PROJECT_OWNER.value(), "role", null);
-//        if (roles.isEmpty()) {
-//            throw new CommonException("error.role.not.found.by.label", RoleLabelEnum.PROJECT_OWNER.value(), "role");
-//        }
-//        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-//        if (customUserDetails == null) {
-//            throw new CommonException("error.user.not.login");
-//        }
-//        Long projectId = project.getId();
-//        Long userId = customUserDetails.getUserId();
-//        Set<String> labelNames = new HashSet<>();
-//        roles.forEach(role -> {
-//            //创建项目只分配项目层的角色
-//            if (ResourceLevel.PROJECT.value().equals(role.getResourceLevel())) {
-//                //查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
-//                List<Label> labels = labelMapper.selectByRoleId(role.getId());
-//                labelNames.addAll(labels.stream().map(Label::getName).collect(Collectors.toList()));
-//                MemberRole memberRole = new MemberRole();
-//                memberRole.setRoleId(role.getId());
-//                memberRole.setMemberType("user");
-//                memberRole.setMemberId(userId);
-//                memberRole.setSourceId(projectId);
-//                memberRole.setSourceType(ResourceLevel.PROJECT.value());
-//                memberRoleService.insertSelective(memberRole);
-//            }
-//        });
-//        return labelNames;
-//    }
+
+    private Set<String> initMemberRole(ProjectDTO project) {
+        // 查出项目所有者角色
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(project.getOrganizationId(), RoleLabelEnum.PROJECT_ADMIN.value());
+        if (roles.isEmpty()) {
+            throw new CommonException("error.role.not.found.by.label", RoleLabelEnum.PROJECT_ADMIN.value(), "role");
+        }
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        if (customUserDetails == null) {
+            throw new CommonException("error.user.not.login");
+        }
+        Long projectId = project.getId();
+        Long userId = customUserDetails.getUserId();
+        // 为创建者分配项目层的角色关系
+        roles.forEach(role -> {
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+            projectUserDTO.setMemberId(userId);
+            projectUserDTO.setProjectId(projectId);
+            projectUserDTO.setRoleId(role.getId());
+            projectUserMapper.insertSelective(projectUserDTO);
+        });
+        // 查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
+        return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toList()));
+    }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override

@@ -1,12 +1,24 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Optional;
+
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.asserts.ClientAssertHelper;
+import io.choerodon.iam.infra.mapper.ClientC7nMapper;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.page.PageMethod;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.infra.mapper.ClientMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -21,6 +33,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
 
     @Autowired
     private ClientMapper clientMapper;
+    @Autowired
+    private ClientC7nMapper clientC7nMapper;
     @Autowired
     private ClientAssertHelper clientAssertHelper;
 
@@ -40,6 +54,12 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             throw new CommonException(ORGANIZATION_ID_NOT_EQUAL_EXCEPTION);
         }
         return dto;
+    }
+
+    @Override
+    public Page<Client> pagingQueryUsersByRoleId(PageRequest pageRequest, ResourceLevel resourceType, Long sourceId, ClientRoleQueryVO clientRoleQueryVO, Long roleId) {
+        String param = Optional.ofNullable(clientRoleQueryVO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return PageHelper.doPage(pageRequest,() -> clientC7nMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, resourceType.value(), clientRoleQueryVO, param));
     }
 
     private String generateUniqueName() {

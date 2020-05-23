@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 import io.choerodon.iam.api.vo.UserRoleVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
@@ -12,13 +13,13 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
@@ -48,12 +49,16 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     private ProjectUserMapper projectUserMapper;
     private ProjectMapper projectMapper;
     private RoleMapper roleMapper;
+    private UserC7nMapper userC7nMapper;
+    private ClientC7nMapper clientC7nMapper;
 
-    public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, ProjectUserMapper projectUserMapper, ProjectMapper projectMapper, RoleMapper roleMapper) {
+    public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectUserMapper projectUserMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
         this.roleC7nMapper = roleC7nMapper;
         this.projectUserMapper = projectUserMapper;
         this.projectMapper = projectMapper;
         this.roleMapper = roleMapper;
+        this.userC7nMapper = userC7nMapper;
+        this.clientC7nMapper = clientC7nMapper;
     }
 
     @Override
@@ -142,6 +147,50 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
     @Override
     public List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable) {
-        return roleC7nMapper.listRolesByName(organizationId,roleName,onlySelectEnable);
+        return roleC7nMapper.listRolesByName(organizationId, roleName, onlySelectEnable);
     }
+
+    @Override
+    public List<RoleC7nDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
+        List<RoleC7nDTO> roles = ConvertUtils.convertList(
+                roleC7nMapper.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), false),
+                RoleC7nDTO.class);
+        String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
+        roles.forEach(r -> {
+            Integer count = userC7nMapper.selectUserCountFromMemberRoleByOptions(r.getId(),
+                    "user", sourceId, ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
+    @Override
+    public List<RoleC7nDTO> listRolesWithClientCountOnProjectLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId) {
+        List<RoleC7nDTO> roles = ConvertUtils.convertList(
+                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.PROJECT.value(), RoleLabelEnum.PROJECT_ROLE.value(), false),
+                RoleC7nDTO.class);
+        String param = ParamUtils.arrToStr(clientRoleQueryVO.getParam());
+        roles.forEach(r -> {
+            Integer count = clientC7nMapper.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), ResourceLevel.PROJECT.value(), sourceId, clientRoleQueryVO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
+
+    @Override
+    public List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId) {
+        List<RoleC7nDTO> roles = ConvertUtils.convertList(
+                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), false),
+                RoleC7nDTO.class);
+        String param = ParamUtils.arrToStr(clientRoleQueryVO.getParam());
+        roles.forEach(r -> {
+            Integer count = clientC7nMapper.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), ResourceLevel.ORGANIZATION.value(), sourceId, clientRoleQueryVO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
 }

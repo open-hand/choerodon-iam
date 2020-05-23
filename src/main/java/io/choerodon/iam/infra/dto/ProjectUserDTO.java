@@ -7,6 +7,8 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -14,10 +16,12 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @date 2020/4/16
  * @description
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "fd_project_user")
 public class ProjectUserDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("用户id")
     private Long memberId;

@@ -1,32 +1,40 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
+import io.choerodon.iam.api.vo.agile.RoleVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.agile.RoleVO;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import javax.validation.Valid;
+import java.util.List;
 
 
 /**
@@ -41,14 +49,20 @@ public class RoleMemberC7nController extends BaseController {
     private RoleC7nService roleC7nService;
     private ProjectUserService projectUserService;
     private UserC7nService userC7nService;
+    private RoleMemberService roleMemberService;
+    private ClientC7nService clientC7nService;
 
 
     public RoleMemberC7nController(RoleC7nService roleC7nService,
                                    UserC7nService userC7nService,
-                                   ProjectUserService projectUserService) {
+                                   ClientC7nService clientC7nService,
+                                   ProjectUserService projectUserService,
+                                   RoleMemberService roleMemberService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
         this.userC7nService = userC7nService;
+        this.clientC7nService = clientC7nService;
+        this.roleMemberService = roleMemberService;
     }
 
     /**
@@ -56,7 +70,7 @@ public class RoleMemberC7nController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
@@ -74,7 +88,7 @@ public class RoleMemberC7nController extends BaseController {
      * @param doPage                  是否分页，如果为false，则不分页
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
@@ -92,7 +106,7 @@ public class RoleMemberC7nController extends BaseController {
     /**
      * 查询用户在项目下拥有的角色
      */
-    @Permission(level = ResourceLevel.PROJECT, permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户在项目下拥有的角色")
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
@@ -106,7 +120,7 @@ public class RoleMemberC7nController extends BaseController {
      * @param projectId               项目id
      * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
@@ -118,7 +132,7 @@ public class RoleMemberC7nController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, projectId));
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
     public ResponseEntity<List<RoleDTO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
@@ -164,4 +178,104 @@ public class RoleMemberC7nController extends BaseController {
                                                                               Boolean onlySelectEnable) {
         return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
     }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "分页查询全平台层用户（未禁用）")
+    @GetMapping(value = "/all/users")
+    @CustomPageRequest
+    public ResponseEntity<Page<SimplifiedUserVO>> queryAllUsers(@ApiIgnore
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                @RequestParam(value = "organization_id") Long organizationId,
+                                                                @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(userC7nService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层批量分配用户角色")
+    @PostMapping(value = "/organizations/{organization_id}/users/assign_roles")
+    public ResponseEntity<Void> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                    @RequestBody List<MemberRole> memberRoleDTOS) {
+        userC7nService.assignUsersRolesOnOrganizationLevel(organizationId, memberRoleDTOS);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 组织层下载模板
+     *
+     * @param organizationId
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层下载excel导入模板")
+    @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("组织层从excel里面批量导入用户角色关系")
+    @PostMapping("/organizations/{organization_id}/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(), file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层分页查询角色下的客户端")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients")
+    public ResponseEntity<Page<Client>> pagingQueryClientsByRoleIdOnOrganizationLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(clientC7nService.pagingQueryUsersByRoleId(pageRequest, ResourceLevel.ORGANIZATION, sourceId, clientRoleQueryVO, roleId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnOrganizationLevel(
+                clientRoleQueryVO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的用户数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的用户数量")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithUserCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithUserCountOnOrganizationLevel(
+                roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询project层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnProjectLevel(
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
+        return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnProjectLevel(
+                clientRoleQueryVO, sourceId), HttpStatus.OK);
+    }
+
 }

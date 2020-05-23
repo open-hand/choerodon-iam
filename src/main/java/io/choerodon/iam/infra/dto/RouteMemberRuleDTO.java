@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 @Table(name = "fd_route_member_rule")
 public class RouteMemberRuleDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "主键ID")
     private Long id;
     @ApiModelProperty(value = "用户ID/必填")

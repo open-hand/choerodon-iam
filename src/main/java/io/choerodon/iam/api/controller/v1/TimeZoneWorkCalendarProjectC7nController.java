@@ -28,7 +28,7 @@ public class TimeZoneWorkCalendarProjectC7nController {
     @Autowired
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("获取冲刺有关于组织层时区设置")
     @GetMapping(value = "/time_zone_detail/{organization_id}")
     public ResponseEntity<TimeZoneWorkCalendarRefDetailVO> queryTimeZoneWorkCalendarDetail(@ApiParam(value = "项目id", required = true)

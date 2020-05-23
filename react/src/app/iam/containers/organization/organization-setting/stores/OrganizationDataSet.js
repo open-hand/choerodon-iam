@@ -5,9 +5,17 @@ export default ({ id = 0 }) => ({
     read: {
       url: `/iam/choerodon/v1/organizations/${id}/org_level`,
       method: 'get',
-      transformResponse: ((data, headers) => ({
-        list: [JSON.parse(data)],
-      })),
+      transformResponse: ((data, headers) => {
+        const newData = JSON.parse(data);
+        newData.tenantConfigVO = {
+          ...newData.tenantConfigVO,
+          name: newData.tenantName,
+          code: newData.tenantNum,
+        };
+        return ({
+          list: [newData.tenantConfigVO],
+        });
+      }),
     },
     update: {
       url: `/iam/choerodon/v1/organizations/${id}/organization_level`,

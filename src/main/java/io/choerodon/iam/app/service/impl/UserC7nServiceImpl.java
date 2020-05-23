@@ -152,6 +152,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private MemberRoleMapper memberRoleMapper;
     @Autowired
     private TenantMapper tenantMapper;
+    @Autowired
+    private LabelC7nMapper labelC7nMapper;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -714,16 +716,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
-        // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
-        }
-        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
-        }
+//        // 校验组织人数是否已达上限
+//        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+//        }
+//        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+//        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
@@ -1081,6 +1083,53 @@ public class UserC7nServiceImpl implements UserC7nService {
         userMemberEventPayload.setRoleLabels(labelNames);
         userMemberEventPayloadList.add(userMemberEventPayload);
         roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloadList, ResourceLevel.ORGANIZATION, organizationId);
+    }
+
+    @Override
+    public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
+        Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
+        memberRoleDTOS.forEach(memberRoleDTO -> {
+
+            if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
+                throw new EmptyParamException("error.memberRole.insert.empty");
+            }
+            // 构建saga对象
+            Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRolelabelsMap.get(memberRoleDTO.getMemberId());
+                if (roleLabels != null) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRolelabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
+                }
+            }
+
+
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setSourceId(organizationId);
+            memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevelValue(organizationId);
+        });
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleDTOS);
+
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        userRolelabelsMap.forEach((k, v) -> {
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(k);
+            userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setResourceId(organizationId);
+            userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+            userMemberEventPayloads.add(userMemberEventPayload);
+
+        });
+        roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
+
+
     }
 
 }

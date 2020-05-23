@@ -8,12 +8,10 @@
     </resultMap>
 
     <select id="selectByRoleId" resultMap="labelDTO">
-        SELECT iam_label.*
-        FROM iam_role_label
-        LEFT JOIN iam_label
-        ON iam_role_label.label_id = iam_label.id
-        AND iam_label.type = 'role'
-        WHERE iam_role_label.role_id = #{roleId}
+        SELECT il.*
+        FROM hiam_label_rel hlr
+        LEFT JOIN iam_label ON il.id = hlr.label_id AND il.TYPE = 'ROLE'
+        WHERE hlr.data_type = 'ROLE' AND hlr.data_id = #{roleId}
     </select>
 
     <select id="listByOption" resultMap="labelDTO">

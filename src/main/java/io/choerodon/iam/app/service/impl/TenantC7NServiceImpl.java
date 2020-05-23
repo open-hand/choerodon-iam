@@ -140,7 +140,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     // TODO 重写tenant逻辑
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-//        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
+        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
+//        //
 //        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
 //            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
 //                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
@@ -148,7 +149,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 //            }).collect(Collectors.toList());
 //            tenantVOS.setContent(list);
 //        }
-        return new Page<>();
+
+        return tenantVOS;
     }
 
     // TODO 重写tenant逻辑

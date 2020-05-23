@@ -59,5 +59,7 @@ public interface RoleC7nService {
 
     List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId);
 
+    List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
+
 
 }

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.ClientC7nMapper">
+    <select id="selectClientsByRoleIdAndOptions" resultType="org.hzero.iam.domain.entity.Client">
+        SELECT DISTINCT client.* FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectClientCountFromMemberRoleByOptions" resultType="int"
+            parameterType="io.choerodon.iam.api.vo.ClientRoleQueryVO">
+        SELECT COUNT(1) FROM (
+        SELECT DISTINCT client.id FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        ) t
+    </select>
+</mapper>

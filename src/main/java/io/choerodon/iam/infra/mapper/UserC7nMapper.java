@@ -340,5 +340,13 @@ public interface UserC7nMapper {
      */
     List<SimplifiedUserVO> selectUsersOptional(@Param("params") String param, @Param("organizationId") Long organizationId);
 
+    Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
+                                                   @Param("memberType") String memberType,
+                                                   @Param("sourceId") Long sourceId,
+                                                   @Param("sourceType") String sourceType,
+                                                   @Param("roleAssignmentSearchDTO")
+                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   @Param("param") String param);
+
 }
 

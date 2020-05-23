@@ -14,7 +14,7 @@ import java.util.Set;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-public interface MenuC7nMapper extends BaseMapper<Menu> {
+public interface MenuC7nMapper {
     /**
      * 根据角色查询菜单列表，用于左侧菜单树展示
      * <p>

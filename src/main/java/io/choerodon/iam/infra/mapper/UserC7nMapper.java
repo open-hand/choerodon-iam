@@ -18,7 +18,7 @@ import java.util.Set;
  * @date 2020/4/15
  * @description
  */
-public interface UserC7nMapper extends BaseMapper<User> {
+public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listUsersByEmails(@Param("emails") String[] emails);

@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author superlee
  */
-public interface LabelC7nMapper extends BaseMapper<Label> {
+public interface LabelC7nMapper{
 
     List<LabelDTO> selectByRoleId(@Param("roleId") Long roleId);
 

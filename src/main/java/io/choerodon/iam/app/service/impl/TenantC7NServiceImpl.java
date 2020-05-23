@@ -12,7 +12,9 @@ import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.TenantConfig;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -30,10 +32,12 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
@@ -81,6 +85,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantMapper tenantMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private TenantConfigRepository tenantConfigRepository;
 
     // TODO 重写tenant逻辑
     @Override
@@ -120,7 +126,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         CustomUserDetails customUserDetails = UserUtils.getUserDetails();
         TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
-
+        List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
+        dto.setTenantConfigVO(configDTOToVO(configList));
         List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, tenantId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());
@@ -280,6 +287,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     /**
      * 查询用户可访问的组织，into判断是否可进
+     *
      * @param params
      * @return
      */
@@ -289,7 +297,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
 
         User user = userMapper.selectByPrimaryKey(params.getUserId());
-        return getOwnedOrganizations(user.getId(),Boolean.TRUE.equals(user.getAdmin()) , tenantDTOS);
+        return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
     }
 
     /**
@@ -418,6 +426,39 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         Tenant tenant = new Tenant();
         BeanUtils.copyProperties(tenantVO, tenant);
         return tenant;
+    }
+
+    private TenantConfigVO configDTOToVO(List<TenantConfig> configs) {
+        TenantConfigVO tenantConfigVO = new TenantConfigVO();
+        configs.forEach(t -> {
+            switch (TenantConfigEnum.forValue(t.getConfigKey())) {
+                case ADDRESS:
+                    tenantConfigVO.setAddress(t.getConfigValue());
+                    break;
+                case SCALE:
+                    tenantConfigVO.setScale(t.getConfigValue());
+                    break;
+                case HOME_PAGE:
+                    tenantConfigVO.setHomePage(t.getConfigValue());
+                    break;
+                case IMAGE_URL:
+                    tenantConfigVO.setImageUrl(t.getConfigValue());
+                    break;
+                case BUSINESS_TYPE:
+                    tenantConfigVO.setBusinessType(t.getConfigValue());
+                    break;
+                case EMAIL_SUFFIX:
+                    tenantConfigVO.setEmailSuffix(t.getConfigValue());
+                    break;
+                case IS_REGISTER:
+                    tenantConfigVO.setRegister(Boolean.getBoolean(t.getConfigValue()));
+                    break;
+                case USER_ID:
+                    tenantConfigVO.setUserId(Long.parseLong(t.getConfigValue()));
+                    break;
+            }
+        });
+        return tenantConfigVO;
     }
 
 }

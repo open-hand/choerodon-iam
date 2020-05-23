@@ -21,7 +21,7 @@ public class TenantConfigVO {
     private String homePage;
 
     @ApiModelProperty(value = "组织规模")
-    private Integer scale;
+    private String scale;
 
     @ApiModelProperty(value = "组织所在行业")
     private String businessType;
@@ -64,11 +64,11 @@ public class TenantConfigVO {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getScale() {
+    public String getScale() {
         return scale;
     }
 
-    public void setScale(Integer scale) {
+    public void setScale(String scale) {
         this.scale = scale;
     }
 

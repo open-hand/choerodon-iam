@@ -202,7 +202,8 @@ export default withRouter(observer((props) => {
     history.push(`/iam/organization-setting/ldap${search}`);
   }
 
-  function handleSyncSetting() {
+  async function handleSyncSetting() {
+    const res = await axios.get(`/iam/v1/${organizationId}/ldaps`);
     Modal.open({
       key: syncModalKey,
       style: modalStyle,
@@ -215,7 +216,7 @@ export default withRouter(observer((props) => {
           </Tooltip>
         </div>
       ),
-      children: <LdapModal />,
+      children: <LdapModal ldapId={res.id} />,
       okText: '手动同步',
       cancelText: '关闭',
       footer: (okBtn, cancelBtn) => (

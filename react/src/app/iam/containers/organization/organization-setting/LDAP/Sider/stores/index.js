@@ -8,8 +8,8 @@ const Store = createContext();
 export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
-  const { children, AppState: { currentMenuType: { id: orgId } } } = props;
-  const ldapLoadClientDataSet = useMemo(() => new DataSet(LdapLoadClientDataSet({ orgId })), [orgId]);
+  const { children, AppState: { currentMenuType: { id: orgId } }, ldapId } = props;
+  const ldapLoadClientDataSet = useMemo(() => new DataSet(LdapLoadClientDataSet({ orgId, ldapId })), [orgId]);
   const value = {
     ...props,
     orgId,

@@ -1,9 +1,9 @@
-export default ({ orgId }) => ({
+export default ({ orgId, ldapId }) => ({
   autoQuery: false,
   paging: false,
   transport: {
     read: {
-      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/latest_history`,
+      url: `/iam/v1/${orgId}/ldaps/${ldapId}/latest-history`,
       method: 'get',
       dataKey: null,
     },

@@ -1,15 +1,23 @@
 package io.choerodon.iam.api.controller.v1;
 
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.OrgAdministratorVO;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
@@ -20,6 +28,19 @@ public class OrganizationAdminC7nController {
 
     @Autowired
     private UserC7nService userC7nService;
+
+    @GetMapping(value = "/org_administrator")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @CustomPageRequest
+    @ApiOperation(value = "查询本组织下的所有组织管理者")
+    public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
+                                                                                @ApiIgnore
+                                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
+                                                                                @RequestParam(required = false) String realName,
+                                                                                @RequestParam(required = false) String loginName,
+                                                                                @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userC7nService.pagingQueryOrgAdministrator(Pageable, organizationId, realName, loginName, params), HttpStatus.OK);
+    }
 
     @PostMapping("/org_administrator")
     @Permission(level = ResourceLevel.ORGANIZATION)

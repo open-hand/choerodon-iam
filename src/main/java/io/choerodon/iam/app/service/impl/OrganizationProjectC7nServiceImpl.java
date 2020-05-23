@@ -176,7 +176,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             // TODO by wanghao
 //            initMemberRole(projectDTO);
         }
-        insertProjectMapCategory(projectCategoryDTO.getId(), projectDTO.getId());
+        insertProjectMapCategory(projectCategoryDTO.getId(), res.getId());
         //创建项目成功发送webhook
         Map<String, String> params = new HashMap<>();
         params.put("projectId", String.valueOf(res.getId()));

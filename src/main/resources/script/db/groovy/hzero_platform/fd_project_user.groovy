@@ -22,11 +22,4 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
         addUniqueConstraint(tableName: 'FD_PROJECT_USER', columnNames: 'PROJECT_ID, MEMBER_ROLE_ID', constraintName: 'UK_FD_PROJECT_USER_ROLE')
 
     }
-
-    changeSet(author: 'zmf', id: 'FD_PROJECT_USER_ADD_ROLE_ID_AND_AUDIT_DOMAIN') {
-        addColumn(tableName: "FD_PROJECT_USER") {
-
-        }
-
-    }
 }

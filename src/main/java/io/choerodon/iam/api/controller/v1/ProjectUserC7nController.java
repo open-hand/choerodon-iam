@@ -143,7 +143,7 @@ public class ProjectUserC7nController extends BaseController {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProjectUser(projectId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
     @PostMapping(value = "/{project_id}/agile_users")
     @CustomPageRequest
@@ -157,7 +157,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     /*团队成员相关接口*/
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/projects/{project_id}/users/assign_roles")
     public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,

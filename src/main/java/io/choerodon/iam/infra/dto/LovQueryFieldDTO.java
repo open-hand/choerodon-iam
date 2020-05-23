@@ -1,7 +1,6 @@
 package io.choerodon.iam.infra.dto;
 
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
+import static io.choerodon.iam.infra.utils.RegularExpression.CODE_REGULAR_EXPRESSION;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -9,12 +8,18 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
-import static io.choerodon.iam.infra.utils.RegularExpression.CODE_REGULAR_EXPRESSION;
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author bgzyy
  * @since 2019/9/9
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "FD_LOV_QUERY_FIELD")
 public class LovQueryFieldDTO extends AuditDomain {
     @Id

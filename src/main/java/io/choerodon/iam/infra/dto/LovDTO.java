@@ -1,21 +1,25 @@
 package io.choerodon.iam.infra.dto;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import static io.choerodon.iam.infra.utils.RegularExpression.CODE_REGULAR_EXPRESSION;
 
+import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
-import java.util.List;
 
-import static io.choerodon.iam.infra.utils.RegularExpression.CODE_REGULAR_EXPRESSION;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author bgzyy
  * @since 2019/9/9
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "FD_LOV")
 public class LovDTO extends AuditDomain {
     @Id

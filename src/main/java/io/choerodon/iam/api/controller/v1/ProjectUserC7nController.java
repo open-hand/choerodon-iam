@@ -42,7 +42,7 @@ public class ProjectUserC7nController extends BaseController {
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）")
     @GetMapping(value = "/{project_id}/users/search")
     @CustomPageRequest
@@ -65,7 +65,7 @@ public class ProjectUserC7nController extends BaseController {
                 enabled, params), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己")
     @GetMapping(value = "/{project_id}/users/search/list")
     public ResponseEntity<List<UserDTO>> listUsersWithRolesOnProjectLevel(
@@ -83,7 +83,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的项目角色信息以及GitlabUserId）")
     @PostMapping(value = "/{project_id}/users/list_by_ids")
     public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
@@ -95,7 +95,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下指定角色的用户列表")
     @GetMapping(value = "/{project_id}/users/{role_lable}")
     public ResponseEntity<List<UserDTO>> listProjectUsersByProjectIdAndRoleLable(
@@ -110,7 +110,7 @@ public class ProjectUserC7nController extends BaseController {
     /**
      * 根据projectId和param模糊查询loginName和realName两列
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下的用户列表(根据登录名或真实名称搜索)")
     @GetMapping(value = "/{project_id}/users/search_by_name")
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
@@ -119,7 +119,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("根据项目id查询项目下的项目所有者")
     @GetMapping("/{project_id}/owner/list")
     public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
@@ -127,7 +127,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)")
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
     public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
@@ -136,14 +136,14 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProjectUser(projectId));
     }
 
-    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
     @PostMapping(value = "/{project_id}/agile_users")
     @CustomPageRequest
@@ -157,7 +157,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     /*团队成员相关接口*/
-    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/projects/{project_id}/users/assign_roles")
     public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,

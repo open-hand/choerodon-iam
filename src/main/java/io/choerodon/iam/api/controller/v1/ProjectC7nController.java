@@ -46,7 +46,7 @@ public class ProjectC7nController extends BaseController {
      * @param id 要查询的项目ID
      * @return 查询到的项目
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "按照项目Id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
@@ -70,7 +70,7 @@ public class ProjectC7nController extends BaseController {
     /**
      * 项目层更新项目，code和organizationId都不可更改
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
@@ -94,7 +94,7 @@ public class ProjectC7nController extends BaseController {
         return new ResponseEntity<>(projectService.update(projectDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "project_id") Long id) {
@@ -113,7 +113,7 @@ public class ProjectC7nController extends BaseController {
         return new ResponseEntity<>(projectService.getProListByName(name), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目所属组织下所有可用项目（不包含本项目，限制50个)")
     @GetMapping("/{project_id}/except_self/with_limit")
     public ResponseEntity<List<ProjectDTO>> listOrgProjectsWithLimitExceptSelf(@PathVariable(name = "project_id") Long projectId,
@@ -124,7 +124,7 @@ public class ProjectC7nController extends BaseController {
     /**
      * 根据projectId和param模糊查询loginName和realName两列
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询项目下的用户")
     @GetMapping(value = "/{project_id}/users")
     @CustomPageRequest

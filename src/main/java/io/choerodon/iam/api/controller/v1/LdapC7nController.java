@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Ldap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ import javax.validation.Valid;
 @RequestMapping("/choerodon/v1/organizations/{organization_id}")
 public class LdapC7nController extends BaseController {
 
+    @Autowired
     private LdapC7nService ldapC7nService;
 
     /**

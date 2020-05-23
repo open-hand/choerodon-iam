@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
@@ -46,7 +47,6 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.mapper.C7nLabelMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
@@ -79,7 +79,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private RoleService roleService;
 
-    private C7nLabelMapper c7nLabelMapper;
+    private LabelC7nMapper labelC7nMapper;
 
     private UserMapper userMapper;
 
@@ -103,7 +103,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        UserMapper userMapper,
                                        UserC7nMapper userC7nMapper,
                                        UserRepository userRepository,
-                                       C7nLabelMapper c7nLabelMapper,
+                                       LabelC7nMapper labelC7nMapper,
                                        TenantService tenantService,
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
@@ -116,7 +116,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userMapper = userMapper;
         this.userC7nMapper = userC7nMapper;
         this.userRepository = userRepository;
-        this.c7nLabelMapper = c7nLabelMapper;
+        this.labelC7nMapper = labelC7nMapper;
         this.roleService = roleService;
         this.tenantService = tenantService;
         this.randomInfoGenerator = randomInfoGenerator;
@@ -209,7 +209,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 List<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toList())).orElse(Collections.emptyList());
 
                 if (!ownRoleIds.isEmpty()) {
-                    userMemberEventMsg.setRoleLabels(c7nLabelMapper.selectLabelNamesInRoleIds(ownRoleIds));
+                    userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
                 }
                 userMemberEventPayloads.add(userMemberEventMsg);
             }

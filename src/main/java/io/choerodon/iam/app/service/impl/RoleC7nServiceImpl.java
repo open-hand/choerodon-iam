@@ -193,4 +193,10 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         return roles;
     }
 
+    @Override
+    public List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType) {
+        List<Role> roles = roleC7nMapper.selectRolesByLabelNameAndType(labelName, labelType, null);
+        return roles.stream().map(Role::getId).collect(Collectors.toList());
+    }
+
 }

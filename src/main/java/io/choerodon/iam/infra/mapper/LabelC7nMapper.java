@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.infra.dto.LabelDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Label;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 /**
  * @author superlee
  */
-public interface LabelC7nMapper {
+public interface LabelC7nMapper extends BaseMapper<Label> {
 
     List<LabelDTO> selectByRoleId(@Param("roleId") Long roleId);
 

@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.RolePermission;
 
@@ -14,7 +15,7 @@ import org.hzero.iam.domain.entity.RolePermission;
  * @author wanghao
  * @since 2020/4/23 13:55
  */
-public interface RolePermissionC7nMapper {
+public interface RolePermissionC7nMapper extends BaseMapper<RolePermission> {
     /**
      * 批量删除权限
      * @param roleId

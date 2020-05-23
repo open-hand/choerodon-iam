@@ -4,6 +4,7 @@ import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
@@ -17,7 +18,7 @@ import java.util.Set;
  * @date 2020/4/15
  * @description
  */
-public interface UserC7nMapper {
+public interface UserC7nMapper extends BaseMapper<User> {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listUsersByEmails(@Param("emails") String[] emails);

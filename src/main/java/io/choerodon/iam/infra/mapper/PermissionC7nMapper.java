@@ -12,7 +12,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @date 2020/4/16
  * @description
  */
-public interface PermissionC7nMapper  {
+public interface PermissionC7nMapper extends BaseMapper<Permission>  {
     List<Permission> selectByRoleId(@Param("roleId") Long roleId,
                                     @Param("params") String params);
 }

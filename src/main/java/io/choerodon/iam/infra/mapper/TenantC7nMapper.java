@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Tenant;
 
@@ -13,7 +14,7 @@ import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 /**
  * @author wuguokai
  */
-public interface TenantC7nMapper {
+public interface TenantC7nMapper extends BaseMapper<Tenant> {
 
     List<TenantVO> fulltextSearch(
             @Param("name") String name,

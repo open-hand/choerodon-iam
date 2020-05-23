@@ -10,7 +10,7 @@
     <select id="selectByRoleId" resultMap="labelDTO">
         SELECT il.*
         FROM hiam_label_rel hlr
-        LEFT JOIN iam_label ON il.id = hlr.label_id AND il.TYPE = 'ROLE'
+        LEFT JOIN iam_label il ON il.id = hlr.label_id AND il.TYPE = 'ROLE'
         WHERE hlr.data_type = 'ROLE' AND hlr.data_id = #{roleId}
     </select>
 

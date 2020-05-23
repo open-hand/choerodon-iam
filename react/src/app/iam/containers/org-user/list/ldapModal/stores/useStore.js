@@ -11,12 +11,12 @@ export default function useStore() {
       return this.tabKey;
     },
 
-    syncUsers(orgId) {
-      return axios.post(`/iam/choerodon/v1/organizations/${orgId}/ldaps/sync_users`);
+    syncUsers(orgId, ldapId) {
+      return axios.post(`/iam/v1/${orgId}/ldaps/${ldapId}/sync-users`);
     },
 
-    stopSyncUsers(orgId) {
-      return axios.put(`/iam/choerodon/v1/organizations/${orgId}/ldaps/stop`);
+    stopSyncUsers(orgId, ldapId) {
+      return axios.put(`/iam/v1/${orgId}/ldaps/${ldapId}/stop`);
     },
   }));
 }

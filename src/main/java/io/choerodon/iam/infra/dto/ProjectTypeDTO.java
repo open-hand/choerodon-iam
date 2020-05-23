@@ -9,17 +9,21 @@ import javax.validation.constraints.Pattern;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-23
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "fd_project_type")
 public class ProjectTypeDTO extends AuditDomain {
     private static final String CODE_REGULAR_EXPRESSION = "^[a-zA-Z][a-zA-Z0-9-_.//]*$";
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty(value = "项目类型编码")

@@ -1,21 +1,26 @@
 package io.choerodon.iam.infra.dto;
 
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * User: Mr.Wang
  * Date: 2020/2/25
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "fd_operate_log")
 public class OperateLogDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "主键ID")
     private Long id;
 

@@ -1,28 +1,33 @@
 package io.choerodon.iam.infra.dto;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.iam.domain.entity.Role;
-
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.iam.domain.entity.Role;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-22
  */
 @Table(name = "oauth_client")
+@VersionAudit
+@ModifyAudit
 public class ClientDTO extends AuditDomain {
 
     private static final String regex = "^[a-z0-9A-Z]+$";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "客户端ID/非必填")
     private Long id;
 

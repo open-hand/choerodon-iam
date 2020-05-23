@@ -124,10 +124,10 @@ public interface UserC7nService {
     /**
      * 校验用户是否是root用户
      *
-     * @param id
-     * @return
+     * @param userId
+     * @return true表示是root用户
      */
-    Boolean checkIsRoot(Long id);
+    Boolean isRoot(Long userId);
 
 //    /**
 //     * 校验用户是否是组织Root用户

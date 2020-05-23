@@ -495,22 +495,14 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
-    public Boolean checkIsRoot(Long id) {
-        List<User> userList = userC7nMapper.selectAdminUserPage(null, null, null, id);
-        if (!CollectionUtils.isEmpty(userList)) {
-            return userList.contains(id);
-        } else {
-            return false;
-        }
+    public Boolean isRoot(Long id) {
+        User result = userRepository.selectByPrimaryKey(id);
+        return result != null && result.getAdmin();
     }
 
     @Override
     public List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled) {
-        CustomUserDetails customUserDetails = checkLoginUser(userId);
-        boolean isAdmin = false;
-        if (customUserDetails.getAdmin() != null) {
-            isAdmin = customUserDetails.getAdmin();
-        }
+        boolean isAdmin = isRoot(userId);
         ProjectDTO project = new ProjectDTO();
         if (!isAdmin && includedDisabled != null && !includedDisabled) {
             project.setEnabled(true);
@@ -565,7 +557,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        boolean isAdmin = checkIsRoot(userId);
+        boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目

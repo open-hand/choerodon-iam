@@ -372,7 +372,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation("校验用户是否是Root用户")
     @GetMapping("/{id}/check_is_root")
     public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userC7nService.checkIsRoot(id));
+        return ResponseEntity.ok(userC7nService.isRoot(id));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)

@@ -155,15 +155,6 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
     List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                 @Param("userId") Long userId);
 
-    /**
-     * 查询项目下用户列表以及拥有的角色
-     * @param projectId
-     * @param roleAssignmentSearchDTO
-     * @return
-     */
-    List<UserDTO> listUserWithRolesOnProjectLevel(@Param("projectId") Long projectId,
-                                                  @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
-
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
                                   @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 

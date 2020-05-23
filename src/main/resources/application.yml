@@ -182,6 +182,8 @@ choerodon:
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
   category:
     enabled: true
+  devops:
+    message: true
 logging:
   level:
     org.apache.ibatis: ${LOG_LEVEL:debug}

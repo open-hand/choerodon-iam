@@ -15,7 +15,7 @@ import org.hzero.iam.domain.entity.RolePermission;
  * @author wanghao
  * @since 2020/4/23 13:55
  */
-public interface RolePermissionC7nMapper extends BaseMapper<RolePermission> {
+public interface RolePermissionC7nMapper  {
     /**
      * 批量删除权限
      * @param roleId

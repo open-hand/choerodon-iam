@@ -16,7 +16,7 @@ import java.util.List;
  * @date 2020/4/21
  * @description
  */
-public interface RoleC7nMapper extends BaseMapper<Role> {
+public interface RoleC7nMapper {
 
     List<UserRoleVO> selectRoles(@Param("userId") Long userId, @Param("name") String name, @Param("level") String level, @Param("params") String params);
 

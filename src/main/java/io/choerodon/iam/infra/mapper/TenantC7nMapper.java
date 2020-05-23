@@ -14,7 +14,7 @@ import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 /**
  * @author wuguokai
  */
-public interface TenantC7nMapper extends BaseMapper<Tenant> {
+public interface TenantC7nMapper  {
 
     List<TenantVO> fulltextSearch(
             @Param("name") String name,

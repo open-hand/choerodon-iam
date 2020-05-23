@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author carllhw
  */
-public interface MemberRoleC7nMapper extends BaseMapper<MemberRole> {
+public interface MemberRoleC7nMapper  {
 
 
     List<Long> selectDeleteList(@Param("memberId") long memberId, @Param("sourceId") long sourceId, @Param("memberType") String memberType, @Param("sourceType") String sourceType, @Param("list") List<Long> deleteList);

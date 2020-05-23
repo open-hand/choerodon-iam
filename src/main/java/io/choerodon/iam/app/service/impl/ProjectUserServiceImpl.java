@@ -4,6 +4,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
@@ -19,10 +25,6 @@ import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
@@ -38,22 +40,30 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class ProjectUserServiceImpl implements ProjectUserService {
+
+    private static final String ERROR_SAVE_PROJECTUSER_FAILED = "error.save.projectUser.failed";
     private ProjectUserMapper projectUserMapper;
     private DevopsFeignClient devopsFeignClient;
     private ProjectC7nService projectC7nService;
     private ProjectAssertHelper projectAssertHelper;
     private RoleC7nMapper roleC7nMapper;
+    private ProjectMapper projectMapper;
+    private OrganizationResourceLimitService organizationResourceLimitService;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
                                   RoleC7nMapper roleC7nMapper,
                                   ProjectAssertHelper projectAssertHelper,
-                                  ProjectC7nService projectC7nService) {
+                                  ProjectC7nService projectC7nService,
+                                  ProjectMapper projectMapper,
+                                  OrganizationResourceLimitService organizationResourceLimitService) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
         this.roleC7nMapper = roleC7nMapper;
         this.projectAssertHelper = projectAssertHelper;
+        this.projectMapper = projectMapper;
+        this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
     @Override
@@ -182,8 +192,29 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public void assignUsersProjectRoles(List<MemberRole> memberRoleDTOS) {
+    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+        // 校验项目人数是否已达上限
 
+        Set<Long> userIds = projectUserDTOList.stream().map(ProjectUserDTO::getMemberId).collect(Collectors.toSet());
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+
+        projectUserDTOList.forEach(projectUserDTO -> {
+            if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
+                throw new EmptyParamException("error.projectUser.insert.empty");
+            }
+            projectUserDTO.setProjectId(projectId);
+            if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+            }
+
+        });
+
+
+//        Map<Long, List<MemberRoleDTO>> memberRolesMap = memberRoleDTOList.stream().collect(Collectors.groupingBy(MemberRoleDTO::getMemberId));
+//        List<MemberRoleDTO> result = new ArrayList<>();
+//        memberRolesMap.forEach((memberId, memberRoleDTOS) -> result.addAll(roleMemberService.insertOrUpdateRolesOfUserByMemberId(false, sourceId, memberId, memberRoleDTOS, sourceType)));
+//        return result;
     }
 
 }

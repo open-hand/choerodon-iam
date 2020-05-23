@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -160,8 +161,8 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/projects/{project_id}/users/assign_roles")
     public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestBody List<MemberRole> memberRoleDTOS) {
-        userService.assignUsersProjectRoles(memberRoleDTOS);
+                                                               @RequestBody List<ProjectUserDTO> projectUserDTOList) {
+        userService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return ResponseEntity.noContent().build();
     }
 

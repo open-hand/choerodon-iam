@@ -214,18 +214,7 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{organization_id}/org_administrator")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @CustomPageRequest
-    @ApiOperation(value = "查询本组织下的所有组织管理者")
-    public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                                                @ApiIgnore
-                                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
-                                                                                @RequestParam(required = false) String realName,
-                                                                                @RequestParam(required = false) String loginName,
-                                                                                @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userC7nService.pagingQueryOrgAdministrator(Pageable, organizationId, realName, loginName, params), HttpStatus.OK);
-    }
+
 
 
     @GetMapping("/{tenant_id}/project/overview")

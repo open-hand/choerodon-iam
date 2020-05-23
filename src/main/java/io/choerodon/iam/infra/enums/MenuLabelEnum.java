@@ -29,13 +29,18 @@ public enum MenuLabelEnum {
      */
     GENERAL_MENU("GENERAL_MENU"),
     /**
-     * 项目层全流程项目标签
+     * 运维项目标签
      */
     OPERATIONS_MENU("OPERATIONS_MENU"),
     /**
-     * 项目层全流程项目标签
+     * 项目群项目标签
      */
     PROGRAM_MENU("PROGRAM_MENU"),
+
+    /**
+     * 项目群子项目项目标签
+     */
+    PROGRAM_PROJECT_MENU("PROGRAM_PROJECT_MENU"),
     /**
      * 项目层全流程项目标签
      */

@@ -196,7 +196,6 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">

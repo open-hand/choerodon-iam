@@ -32,9 +32,10 @@ public class RoleAssertHelper extends AssertHelper {
         this.roleC7nMapper = roleC7nMapper;
     }
 
-    public void codeExisted(String code) {
+    public void codeExisted(String code, Long tenantId) {
         Role dto = new Role();
         dto.setCode(code);
+        dto.setTenantId(tenantId);
         if (roleMapper.selectOne(dto) != null) {
             throw new AlreadyExistedException("error.role.code.existed");
         }

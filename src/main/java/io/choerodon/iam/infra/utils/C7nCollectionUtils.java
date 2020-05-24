@@ -5,9 +5,9 @@ import java.util.*;
 /**
  * @author superlee
  */
-public final class CollectionUtils {
+public class C7nCollectionUtils {
 
-    private CollectionUtils() {
+    private C7nCollectionUtils() {
         throw new IllegalStateException("cann`t instantiation class");
     }
 

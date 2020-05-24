@@ -1026,7 +1026,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 //        jsonObject.put("organizationId", organizationDTO.getId());
 //        jsonObject.put("addCount", notifyUserIds.size());
 //        List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
-//        if (!CollectionUtils.isEmpty(userList)) {
+//        if (!C7nCollectionUtils.isEmpty(userList)) {
 //            for (Long notifyUserId : notifyUserIds) {
 //                userList.add(userService.getWebHookUser(notifyUserId));
 //            }

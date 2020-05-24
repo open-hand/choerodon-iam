@@ -172,4 +172,8 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
     List<ProjectUserVO> listByProjectIdAndUserIds(@Param("projectId")Long projectId,
                                                   @Param("userIds")Set<Long> userIds);
 
+    List<MemberRole> selectByRoleIdAndUserId(@Param("roleId") Long roleId,
+                                             @Param("projectId") Long projectId,
+                                             @Param("userId") Long userId);
+
 }

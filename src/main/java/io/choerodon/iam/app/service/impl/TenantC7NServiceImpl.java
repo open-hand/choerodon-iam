@@ -142,7 +142,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
         Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
 //        //
-//        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
+//        if (!C7nCollectionUtils.isEmpty(tenantVOS.getContent())) {
 //            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
 //                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
 //                // todo 用户查询

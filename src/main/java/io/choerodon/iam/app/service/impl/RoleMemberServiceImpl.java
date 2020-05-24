@@ -702,9 +702,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     public void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName) {
 
         Role roleDTO = roleMapper.selectByPrimaryKey(memberRole.getRoleId());
-        if (devopsMessage) {
-            organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
-        }
+        organizationUserService.createUserAndUpdateRole(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
     }
 
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")

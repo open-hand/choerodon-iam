@@ -33,7 +33,7 @@ public interface RoleC7nMapper {
      * @return
      */
     List<Role> getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
-                               @Param("labelName") String labelName);
+                                     @Param("labelName") String labelName);
 
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
                                              @Param("organizationId") Long organizationId);

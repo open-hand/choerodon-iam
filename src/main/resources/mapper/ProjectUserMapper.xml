@@ -414,4 +414,19 @@
             imr.member_id = #{userId}
     </select>
 
+    <select id="selectByRoleIdAndUserId" resultType="org.hzero.iam.domain.entity.MemberRole">
+        SELECT
+            imr.*
+        FROM
+            iam_member_role imr
+            JOIN iam_role ir ON ir.id = imr.role_id
+            JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+                AND fpu.PROJECT_ID = #{projectId}
+        WHERE
+            imr.member_id = #{userId}
+            and imr.role_id = #{roleId}
+    </select>
+
+
+
 </mapper>

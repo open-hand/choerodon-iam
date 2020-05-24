@@ -14,6 +14,9 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
+    int countProjectsWithRolesSize(@Param("id") Long id,
+                                    @Param("params") String params);
+
     List<ProjectDTO> selectProjectsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,

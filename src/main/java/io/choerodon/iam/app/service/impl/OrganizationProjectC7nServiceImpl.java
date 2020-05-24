@@ -13,11 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.LabelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -125,6 +123,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
+    private ProjectUserService projectUserService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              UserService userService,
@@ -145,6 +145,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
+                                             ProjectUserService projectUserService,
                                              OrganizationResourceLimitService organizationResourceLimitService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
@@ -165,6 +166,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
+        this.projectUserService = projectUserService;
         this.roleC7nMapper = roleC7nMapper;
     }
 
@@ -277,23 +279,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Long projectId = project.getId();
         Long userId = customUserDetails.getUserId();
         // 为创建者分配项目层的角色关系
-        roles.forEach(role -> {
-            // 要先在组织层插入一条角色
-            MemberRole memberRole = new MemberRole();
-            memberRole.setMemberId(userId);
-            memberRole.setRoleId(role.getId());
-            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
-            memberRole.setSourceId(project.getOrganizationId());
-            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-            memberRole.setAssignLevelValue(project.getOrganizationId());
-            memberRole.setMemberType(HiamMemberType.USER.value());
-            // 直接插入，如果已经有了，会将id回写到dto
-            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
-            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setProjectId(projectId);
-            projectUserDTO.setMemberRoleId(memberRole.getId());
-            projectUserMapper.insertSelective(projectUserDTO);
-        });
+        projectUserService.assignProjectUserRolesInternal(projectId, roles.stream().map(role -> new ProjectUserDTO(userId, projectId, role.getId())).collect(Collectors.toList()));
+
         // 查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
         return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toList()));
     }

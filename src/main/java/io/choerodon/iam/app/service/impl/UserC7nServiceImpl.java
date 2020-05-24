@@ -479,17 +479,16 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         if (size == 0) {
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
-            result.setSize(projectList.size());
+            result.setTotalElements(projectList.size());
             result.getContent().addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
-            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setMemberId(id);
-            int count = projectUserMapper.selectCount(projectUserDTO);
-            result.setSize(count);
+            result.setTotalElements(projectMapper.countProjectsWithRolesSize(id, params));
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
             result.getContent().addAll(projectList);
         }
+        result.setNumber(page);
+        result.setSize(size);
         return result;
     }
 

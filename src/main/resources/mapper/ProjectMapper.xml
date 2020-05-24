@@ -98,6 +98,22 @@
         </if>
     </select>
 
+    <select id="countProjectsWithRolesSize" resultType="int">
+        SELECT COUNT(1)
+        FROM fd_project fp
+        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
+        WHERE imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
+
     <select id="selectProjectsWithRoles" resultMap="projectWithRoleDTO">
         SELECT
         fp.id,
@@ -116,9 +132,10 @@
         ir.creation_date as role_creation_date
         FROM fd_project fp
         INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
-        LEFT JOIN iam_role ir ON fpu.role_id = ir.id
+        INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
         LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
-        WHERE fpu.member_id = #{id}
+        WHERE imr.member_id = #{id}
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR

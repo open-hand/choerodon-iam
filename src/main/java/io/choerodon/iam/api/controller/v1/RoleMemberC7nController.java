@@ -11,12 +11,12 @@ import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -24,7 +24,6 @@ import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -46,20 +45,25 @@ import java.util.List;
 @RequestMapping(value = "/choerodon/v1")
 public class RoleMemberC7nController extends BaseController {
 
+    public static final String MEMBER_ROLE = "member-role";
+
     private RoleC7nService roleC7nService;
     private ProjectUserService projectUserService;
     private UserC7nService userC7nService;
     private RoleMemberService roleMemberService;
     private ClientC7nService clientC7nService;
+    private UploadHistoryService uploadHistoryService;
 
 
     public RoleMemberC7nController(RoleC7nService roleC7nService,
                                    UserC7nService userC7nService,
                                    ClientC7nService clientC7nService,
+                                   UploadHistoryService uploadHistoryService,
                                    ProjectUserService projectUserService,
                                    RoleMemberService roleMemberService) {
         this.roleC7nService = roleC7nService;
         this.projectUserService = projectUserService;
+        this.uploadHistoryService = uploadHistoryService;
         this.userC7nService = userC7nService;
         this.clientC7nService = clientC7nService;
         this.roleMemberService = roleMemberService;
@@ -276,6 +280,28 @@ public class RoleMemberC7nController extends BaseController {
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnProjectLevel(
                 clientRoleQueryVO, sourceId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation("查项目层的历史")
+    @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
+    public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
+                                                                   @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
+    }
+
+
+    /**
+     * 项目层下载模板
+     *
+     * @param projectId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层下载excel导入模板")
+    @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
     }
 
 }

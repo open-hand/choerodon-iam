@@ -14,9 +14,9 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.ProjectTypeC7nService;
+import io.choerodon.iam.app.service.ProjectCategoryC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -24,18 +24,18 @@ import io.choerodon.swagger.annotation.Permission;
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_TYPE)
 @RestController
 @RequestMapping("/choerodon/v1/projects/types")
-public class ProjectTypeC7nController {
+public class ProjectCategoryC7nController {
 
-    private ProjectTypeC7nService projectTypeService;
+    private ProjectCategoryC7nService projectTypeService;
 
-    public ProjectTypeC7nController(ProjectTypeC7nService projectTypeService) {
+    public ProjectCategoryC7nController(ProjectCategoryC7nService projectTypeService) {
         this.projectTypeService = projectTypeService;
     }
 
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @GetMapping
-    public List<ProjectTypeDTO> list() {
+    public List<ProjectCategoryDTO> list() {
         return projectTypeService.list();
     }
 
@@ -44,7 +44,7 @@ public class ProjectTypeC7nController {
     @ApiOperation(value = "分页模糊查询项目类型")
     @GetMapping(value = "/paging_query")
     @CustomPageRequest
-    public ResponseEntity<Page<ProjectTypeDTO>> pagingQuery(@ApiIgnore
+    public ResponseEntity<Page<ProjectCategoryDTO>> pagingQuery(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                             @RequestParam(required = false) String name,
                                                             @RequestParam(required = false) String code,
@@ -55,15 +55,15 @@ public class ProjectTypeC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "创建项目类型")
     @PostMapping
-    public ResponseEntity<ProjectTypeDTO> create(@RequestBody @Valid ProjectTypeDTO projectTypeDTO) {
+    public ResponseEntity<ProjectCategoryDTO> create(@RequestBody @Valid ProjectCategoryDTO projectTypeDTO) {
         return new ResponseEntity<>(projectTypeService.create(projectTypeDTO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "更新项目类型")
     @PostMapping("/{id}")
-    public ResponseEntity<ProjectTypeDTO> update(@PathVariable Long id,
-                                                 @RequestBody @Valid ProjectTypeDTO projectTypeDTO) {
+    public ResponseEntity<ProjectCategoryDTO> update(@PathVariable Long id,
+                                                 @RequestBody @Valid ProjectCategoryDTO projectTypeDTO) {
         return new ResponseEntity<>(projectTypeService.update(id, projectTypeDTO), HttpStatus.OK);
     }
 
@@ -74,7 +74,7 @@ public class ProjectTypeC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "重名校验")
     @PostMapping("/check")
-    public ResponseEntity check(@RequestBody ProjectTypeDTO projectTypeDTO) {
+    public ResponseEntity check(@RequestBody ProjectCategoryDTO projectTypeDTO) {
         projectTypeService.check(projectTypeDTO);
         return new ResponseEntity(HttpStatus.OK);
     }

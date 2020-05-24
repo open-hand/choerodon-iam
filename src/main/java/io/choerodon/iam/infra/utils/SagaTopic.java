@@ -28,6 +28,12 @@ public final class SagaTopic {
          * 组织层创建用户
          */
         public static final String ORG_USER_CREAT = "iam-create-org-user";
+
+
+        /**
+         * 项目层导入用户
+         */
+        public static final String PROJECT_IMPORT_USER = "project-import-user";
         /**
          * iam接收创建组织事件的SagaTaskCode
          */
@@ -95,6 +101,8 @@ public final class SagaTopic {
 
         //处理ldap自动同步创建task
         public static final String TASK_CREATE_LDAP_AUTO = "task-create-ldap-auto";
+
+        public static final String TASK_PROJECT_IMPORT_USER = "task-project-import-user";
 
         public static final String CREATE_LDAP_AUTO = "create-ldap-auto";
 

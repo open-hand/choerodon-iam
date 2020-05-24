@@ -11,10 +11,12 @@ import java.util.stream.Collectors;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.hzero.boot.file.FileClient;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -30,16 +34,20 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.CollectionUtils;
+import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 import io.choerodon.iam.infra.utils.MockMultipartFile;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.iam.infra.valitador.RoleValidator;
@@ -57,48 +65,60 @@ public class ExcelImportUserTask {
 
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
-    private FileFeignClient fileFeignClient;
+    private FileClient fileClient;
     private UserC7nService userService;
     private UserPasswordValidator userPasswordValidator;
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private UserC7nMapper userC7nMapper;
 
-    private RoleC7nMapper roleMapper;
+    private RoleC7nMapper roleC7nMapper;
 
     private MemberRoleRepository memberRoleRepository;
 
     private RoleAssertHelper roleAssertHelper;
 
-    private RandomInfoGenerator randomInfoGenerator;
+    private RoleRepository roleRepository;
 
-    private RoleC7nMapper roleC7nMapper;
+    private RandomInfoGenerator randomInfoGenerator;
 
     private UserMapper userMapper;
 
+    private ProjectUserService projectUserService;
+
+    private ProjectUserMapper projectUserMapper;
+
+    private ProjectAssertHelper projectAssertHelper;
+
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
-                               FileFeignClient fileFeignClient,
+                               FileClient fileClient,
+                               ProjectUserService projectUserService,
+                               ProjectUserMapper projectUserMapper,
+                               ProjectAssertHelper projectAssertHelper,
                                UserC7nService userService,
                                UserPasswordValidator userPasswordValidator,
                                UserC7nMapper userC7nMapper,
-                               RoleC7nMapper roleMapper,
+                               RoleRepository roleRepository,
+                               RoleC7nMapper roleC7nMapper,
                                MemberRoleRepository memberRoleRepository,
                                RoleAssertHelper roleAssertHelper,
                                RandomInfoGenerator randomInfoGenerator,
-                               RoleC7nMapper roleC7nMapper,
                                UserMapper userMapper) {
         this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
-        this.fileFeignClient = fileFeignClient;
+        this.fileClient = fileClient;
         this.userService = userService;
         this.userPasswordValidator = userPasswordValidator;
         this.userC7nMapper = userC7nMapper;
-        this.roleMapper = roleMapper;
         this.memberRoleRepository = memberRoleRepository;
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
         this.roleC7nMapper = roleC7nMapper;
+        this.projectUserService = projectUserService;
+        this.roleRepository = roleRepository;
+        this.projectUserMapper = projectUserMapper;
+        this.projectAssertHelper = projectAssertHelper;
         this.userMapper = userMapper;
     }
 
@@ -123,7 +143,7 @@ public class ExcelImportUserTask {
         List<UserDTO> usersToBeInserted = distinctPhoneOnDatabase(distinctEmailUsersOnDatabase, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
-        List<List<UserDTO>> actualUsersToBeInserted = CollectionUtils.fragmentList(usersToBeInserted, 999);
+        List<List<UserDTO>> actualUsersToBeInserted = C7nCollectionUtils.fragmentList(usersToBeInserted, 999);
         int validateErrorUsers = errorUsers.size();
         actualUsersToBeInserted.forEach(userFragments -> {
             if (!userFragments.isEmpty()) {
@@ -206,7 +226,8 @@ public class ExcelImportUserTask {
             }
             Long userId = userDTO.getId();
             //检查role code是否存在
-            Role role = getRole(errorMemberRoles, emr, code, uploadHistory.getSourceId());
+            Long sourceId = uploadHistory.getSourceType().equals(ResourceLevel.PROJECT.value()) ? projectAssertHelper.projectNotExisted(uploadHistory.getSourceId()).getOrganizationId() : uploadHistory.getSourceId();
+            Role role = getRole(errorMemberRoles, emr, code, sourceId);
             if (role == null) {
                 return;
             }
@@ -215,11 +236,6 @@ public class ExcelImportUserTask {
                 errorMemberRoles.add(emr);
                 return;
             }
-//            if (!uploadHistory.getSourceType().equals(role.getResourceLevel())) {
-//                emr.setCause("导入角色层级与当前层级不匹配");
-//                errorMemberRoles.add(emr);
-//                return;
-//            }
             if (role.getEnabled() != null && !role.getEnabled()) {
                 emr.setCause("导入角色未启用");
                 errorMemberRoles.add(emr);
@@ -233,14 +249,25 @@ public class ExcelImportUserTask {
                 return;
             }
             Long roleId = role.getId();
-            //检查memberRole是否存在
-            // !!! 存在则不做处理
-            MemberRole memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
-            if (memberRole == null) {
-                return;
+            //检查memberRole是否存在 导入组织成员重复，不在处理
+            MemberRole memberRole;
+            if (uploadHistory.getSourceType().equals(ResourceLevel.PROJECT.value())) {
+                memberRole = getMemberRoleForProject(uploadHistory.getSourceId(), errorMemberRoles, emr, userId, roleId);
+                if (memberRole == null) {
+                    return;
+                }
+                ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+                projectUserDTO.setRoleId(roleId);
+                projectUserDTO.setProjectId(sourceId);
+                projectUserDTO.setMemberRoleId(userId);
+                projectUserService.importProjectUser(userId, Arrays.asList(projectUserDTO));
+            } else {
+                memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
+                if (memberRole == null) {
+                    return;
+                }
+                roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
             }
-
-            roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
             excelMemberRoleDTOS.put(memberRole, loginName);
         });
 
@@ -282,14 +309,33 @@ public class ExcelImportUserTask {
         return memberRole;
     }
 
+    private MemberRole getMemberRoleForProject(Long sourceId, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
+        MemberRole memberRole = new MemberRole();
+        memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+        memberRole.setSourceId(projectDTO.getOrganizationId());
+        memberRole.setMemberType("user");
+        memberRole.setMemberId(userId);
+        memberRole.setRoleId(roleId);
+        if (!CollectionUtils.isEmpty(projectUserMapper.selectByRoleIdAndUserId(roleId, sourceId, userId))) {
+            emr.setCause("该用户已经被分配了该角色，sourceId={" + sourceId + "}");
+            errorMemberRoles.add(emr);
+            return null;
+        }
+        return memberRole;
+    }
+
     private Role getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code, Long tenantId) {
-        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(tenantId, code);
-        if (org.springframework.util.CollectionUtils.isEmpty(roles)) {
+        Role dto = new Role();
+        dto.setCode(code);
+        dto.setTenantId(tenantId);
+        Role role = roleRepository.selectOne(dto);
+        if (ObjectUtils.isEmpty(role)) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
             return null;
         }
-        return roles.get(0);
+        return role;
     }
 
     private User getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
@@ -344,7 +390,7 @@ public class ExcelImportUserTask {
         if (!validateUsers.isEmpty()) {
             Set<String> emailSet = validateUsers.stream().map(UserDTO::getEmail).collect(Collectors.toSet());
             //oracle In-list上限为1000，这里List size要小于1000
-            List<Set<String>> subEmailSet = CollectionUtils.fragmentSet(emailSet, 999);
+            List<Set<String>> subEmailSet = C7nCollectionUtils.fragmentSet(emailSet, 999);
             Set<String> existedEmails = new HashSet<>();
             subEmailSet.forEach(set -> existedEmails.addAll(userC7nMapper.matchEmail(set)));
             for (UserDTO user : validateUsers) {
@@ -365,7 +411,7 @@ public class ExcelImportUserTask {
             Set<String> phoneSet = validateUsers.stream().filter(u -> u.getPhone() != null)
                     .map(UserDTO::getPhone).collect(Collectors.toSet());
             //oracle In-list上限为1000，这里List size要小于1000
-            List<Set<String>> subPhoneSet = CollectionUtils.fragmentSet(phoneSet, 999);
+            List<Set<String>> subPhoneSet = C7nCollectionUtils.fragmentSet(phoneSet, 999);
             Set<String> existedPhones = new HashSet<>();
             subPhoneSet.forEach(set -> existedPhones.addAll(userC7nMapper.matchPhone(set)));
             for (UserDTO user : validateUsers) {
@@ -438,7 +484,7 @@ public class ExcelImportUserTask {
             hssfWorkbook.write(bos);
             MockMultipartFile multipartFile =
                     new MockMultipartFile("file", originalFilename, "application/vnd.ms-excel", bos.toByteArray());
-            url = fileFeignClient.uploadFile(bucketName, multipartFile.getOriginalFilename(), multipartFile).getBody();
+            url = fileClient.uploadFile(0L, bucketName, null, multipartFile);
         } catch (IOException e) {
             logger.error("HSSFWorkbook to ByteArrayOutputStream failed, exception: {}", e.getMessage());
             throw new CommonException("error.byteArrayOutputStream", e);

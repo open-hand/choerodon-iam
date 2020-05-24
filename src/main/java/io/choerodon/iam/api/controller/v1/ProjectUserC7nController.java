@@ -10,13 +10,16 @@ import org.hzero.core.util.Results;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -35,10 +38,13 @@ public class ProjectUserC7nController extends BaseController {
 
     private ProjectUserService userService;
     private OrganizationResourceLimitService organizationResourceLimitService;
+    private RoleMemberService roleMemberService;
 
     public ProjectUserC7nController(ProjectUserService userService,
+                                    RoleMemberService roleMemberService,
                                     OrganizationResourceLimitService organizationResourceLimitService) {
         this.userService = userService;
+        this.roleMemberService = roleMemberService;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
@@ -174,6 +180,15 @@ public class ProjectUserC7nController extends BaseController {
                                                                  @RequestBody List<Long> roleIds) {
         userService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return Results.success();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("项目层从excel里面批量导入用户角色关系")
+    @PostMapping("/{project_id}/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
+                                                     @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 

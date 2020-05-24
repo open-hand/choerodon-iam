@@ -1,5 +1,10 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -19,11 +24,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
@@ -33,6 +43,8 @@ import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
@@ -66,6 +78,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private LabelC7nMapper labelC7nMapper;
     private RoleMemberService roleMemberService;
     private MemberRoleService memberRoleService;
+    private TransactionalProducer producer;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -76,6 +89,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   ProjectMapper projectMapper,
                                   OrganizationResourceLimitService organizationResourceLimitService,
                                   RoleMapper roleMapper,
+                                  TransactionalProducer producer,
                                   LabelC7nMapper labelC7nMapper,
                                   MemberRoleService memberRoleService,
                                   RoleMemberService roleMemberService) {
@@ -89,6 +103,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.roleMapper = roleMapper;
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleService = memberRoleService;
+        this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.roleMemberService = roleMemberService;
     }
@@ -268,6 +283,24 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
         });
         // 4.todo 发送notice
+    }
+
+    @Override
+    @Saga(code = PROJECT_IMPORT_USER, description = "项目层导入用户", inputSchemaClass = List.class)
+    public void importProjectUser(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefId(projectId + "")
+                        .withRefType(ResourceLevel.PROJECT.value())
+                        .withSagaCode(PROJECT_IMPORT_USER),
+                builder -> {
+                    builder
+                            .withPayloadAndSerialize(projectUserDTOList)
+                            .withSourceId(projectId);
+                    return projectUserDTOList;
+                });
     }
 
     @Override

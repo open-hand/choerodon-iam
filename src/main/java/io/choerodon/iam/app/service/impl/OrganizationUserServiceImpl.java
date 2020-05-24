@@ -479,7 +479,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
             params.put("addCount", String.valueOf(insertUsers.size()));
 //            List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
-//            if (!CollectionUtils.isEmpty(userList)) {
+//            if (!C7nCollectionUtils.isEmpty(userList)) {
 //                for (User userDTO : insertUsers) {
 //                    userList.add(userService.getWebHookUser(userDTO.getId()));
 //                }

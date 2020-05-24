@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hzero.iam.api.dto.RoleDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
@@ -93,6 +94,8 @@ public interface ProjectUserService {
     List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
     void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
+
+    void importProjectUser(Long projectId, List<ProjectUserDTO> projectUserDTOList);
 
     /**
      * 内部用于给项目层分配角色

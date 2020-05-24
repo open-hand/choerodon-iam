@@ -3,10 +3,10 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import org.hzero.iam.api.dto.RoleDTO;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
@@ -93,4 +93,11 @@ public interface ProjectUserService {
     List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
     void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
+
+    /**
+     * 内部用于给项目层分配角色
+     * @param projectId 项目id
+     * @param projectUsers 项目-用户-角色信息
+     */
+    void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers);
 }

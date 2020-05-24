@@ -4,38 +4,39 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -59,6 +60,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private RoleMapper roleMapper;
     private LabelC7nMapper labelC7nMapper;
     private RoleMemberService roleMemberService;
+    private MemberRoleService memberRoleService;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -69,6 +71,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   OrganizationResourceLimitService organizationResourceLimitService,
                                   RoleMapper roleMapper,
                                   LabelC7nMapper labelC7nMapper,
+                                  MemberRoleService memberRoleService,
                                   RoleMemberService roleMemberService) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
@@ -79,6 +82,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.roleMapper = roleMapper;
         this.labelC7nMapper = labelC7nMapper;
+        this.memberRoleService = memberRoleService;
         this.roleMemberService = roleMemberService;
     }
 
@@ -191,9 +195,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
         Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
         projectUserDTOList.forEach(projectUserDTO -> {
             if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
@@ -213,21 +217,10 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                     userRolelabelsMap.put(projectUserDTO.getMemberId(), labelNames);
                 }
             }
-
-
-            if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
-                throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
-            }
-            // TODO ? 修复member-role表数据
-
-//            MemberRole memberRole = new MemberRole();
-//            memberRole.setMemberId(projectUserDTO.getMemberId());
-//            memberRole.setMemberType(MemberType.USER.value());
-//            memberRole.setAssignLevelValue(projectDTO.getOrganizationId());
-//            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-
-
         });
+
+        assignProjectUserRolesInternal(projectId, projectUserDTOList);
+
         // 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         userRolelabelsMap.forEach((k, v) -> {
@@ -242,4 +235,29 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers) {
+        ProjectDTO project = projectC7nService.queryProjectById(projectId);
+        projectUsers.forEach(u -> {
+            // 要先在组织层插入一条角色
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(u.getMemberId());
+            memberRole.setRoleId(u.getRoleId());
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setSourceId(project.getOrganizationId());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(project.getOrganizationId());
+            memberRole.setMemberType(HiamMemberType.USER.value());
+            // 直接插入，如果已经有了，会将id回写到dto
+            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
+            // 插入fd_project_user表数据
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+            projectUserDTO.setProjectId(projectId);
+            projectUserDTO.setMemberRoleId(Objects.requireNonNull(memberRole.getId()));
+            if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+            }
+        });
+    }
 }

@@ -6,6 +6,7 @@ import java.util.Set;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -158,10 +159,22 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")
-    public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                @RequestBody List<ProjectUserDTO> projectUserDTOList) {
         userService.assignUsersProjectRoles(projectId, projectUserDTOList);
-        return ResponseEntity.noContent().build();
+        return Results.success();
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层更新用户角色")
+    @PutMapping(value = "/{project_id}/users/{user_id}/assign_roles")
+    public ResponseEntity updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                 @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                                 @PathVariable(name = "user_id") Long userId,
+                                                                 @RequestBody List<Long> roleIds) {
+        userService.updateUserRoles(userId, projectId, roleIds, syncAll);
+        return Results.success();
+    }
+
 
 }

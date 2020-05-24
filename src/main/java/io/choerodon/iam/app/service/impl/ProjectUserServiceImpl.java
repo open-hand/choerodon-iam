@@ -6,7 +6,9 @@ import javax.annotation.Nullable;
 
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
@@ -32,6 +34,7 @@ import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
@@ -85,11 +88,8 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.roleMapper = roleMapper;
         this.labelC7nMapper = labelC7nMapper;
-<<<<<<< 70cb5694f1c85d9428d7fcd99acef60be0c5c233
         this.memberRoleService = memberRoleService;
-=======
         this.memberRoleRepository = memberRoleRepository;
->>>>>>> [IMP] 修改项目创建团队成员
         this.roleMemberService = roleMemberService;
     }
 
@@ -202,55 +202,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
-        Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
-        ProjectDTO projectDTO= projectAssertHelper.projectNotExisted(projectId);
-//        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
-        projectUserDTOList.forEach(projectUserDTO -> {
-            if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
-                throw new EmptyParamException("error.projectUser.insert.empty");
-            }
-            projectUserDTO.setProjectId(projectId);
-            MemberRole queryDTO=new MemberRole();
-            queryDTO.setMemberId(projectUserDTO.getMemberId());
-            queryDTO.setRoleId(projectUserDTO.getRoleId());
-            queryDTO.setSourceId(projectDTO.getOrganizationId());
-            MemberRole memberRole=memberRoleRepository.selectOne(queryDTO);
-            if(!ObjectUtils.isEmpty(memberRole)&&!ObjectUtils.isEmpty(memberRole.getId())){
-
-            }
-        });
-
-        assignProjectUserRolesInternal(projectId, projectUserDTOList);
-//            // 构建saga对象
-//            Role role = roleMapper.selectByPrimaryKey(projectUserDTO.getRoleId());
-//            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
-//            if (!CollectionUtils.isEmpty(labelDTOS)) {
-//                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
-//                Set<String> roleLabels = userRoleLabelsMap.get(projectUserDTO.getMemberId());
-//                if (roleLabels != null) {
-//                    roleLabels.addAll(labelNames);
-//                } else {
-//                    userRoleLabelsMap.put(projectUserDTO.getMemberId(), labelNames);
-//                }
-//            }
-
-
-        // 发送saga
-        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-        userRoleLabelsMap.forEach((k, v) -> {
-            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
-            userMemberEventPayload.setUserId(k);
-            userMemberEventPayload.setRoleLabels(v);
-            userMemberEventPayload.setResourceId(projectId);
-            userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
-            userMemberEventPayloads.add(userMemberEventPayload);
-
-        });
-        roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
-    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -276,5 +227,112 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
         });
+    }
+
+    @Override
+    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        projectUserDTOList.forEach(projectUserDTO -> {
+            if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
+                throw new EmptyParamException("error.projectUser.insert.empty");
+            }
+            projectUserDTO.setProjectId(projectId);
+            // 1. set memberRoleId
+            projectUserDTO.setMemberRoleId(getMemberRoleId(projectUserDTO.getMemberId(), projectUserDTO.getRoleId(), projectDTO.getOrganizationId()));
+            if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+            }
+            // 2.构建saga对象
+            Role role = roleMapper.selectByPrimaryKey(projectUserDTO.getRoleId());
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRoleLabelsMap.get(projectUserDTO.getMemberId());
+                if (!CollectionUtils.isEmpty(roleLabels)) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRoleLabelsMap.put(projectUserDTO.getMemberId(), labelNames);
+                }
+            }
+        });
+        // 3.发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        userRoleLabelsMap.forEach((k, v) -> {
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(k);
+            userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setResourceId(projectId);
+            userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
+            userMemberEventPayloads.add(userMemberEventPayload);
+            roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
+        });
+        // 4.todo 发送notice
+    }
+
+    @Override
+    public void updateUserRoles(Long userId, Long projectId, List<Long> roleIdList, Boolean syncAll) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+        // 1. 获取原memberRoleIds
+        List<Long> oldMemberRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId).stream().map(MemberRole::getId).collect(Collectors.toList());
+        List<Long> newMemberRoleIds = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+
+        // 2. 获取新memberRoleIds
+        for (Long roleId : roleIdList) {
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+            projectUserDTO.setProjectId(projectId);
+            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
+            if (projectUserMapper.selectOne(projectUserDTO) == null) {
+                if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                    throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+                }
+            }
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(roleMapper.selectByPrimaryKey(roleId).getId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                labelNames.addAll(labelDTOS.stream().map(Label::getName).collect(Collectors.toSet()));
+            }
+            newMemberRoleIds.add(projectUserDTO.getMemberRoleId());
+        }
+
+        // 3. 删除MemberRole
+        oldMemberRoleIds.forEach(aLong -> {
+            if (!newMemberRoleIds.contains(aLong)) {
+                List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
+                if (CollectionUtils.isEmpty(userDTOList)) {
+                    memberRoleRepository.deleteByPrimaryKey(aLong);
+                }
+            }
+        });
+
+        // 4. 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayload.setResourceId(projectId);
+        userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
+        userMemberEventPayload.setSyncAll(syncAll);
+        userMemberEventPayloads.add(userMemberEventPayload);
+        roleMemberService.updateMemberRole(userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
+
+    }
+
+    private Long getMemberRoleId(Long userId, Long roleId, Long organizationId) {
+        MemberRole memberRole = new MemberRole();
+        memberRole.setMemberId(userId);
+        memberRole.setRoleId(roleId);
+        memberRole.setSourceId(organizationId);
+        memberRole.setMemberType(MemberType.USER.value());
+        MemberRole queryMemberRole = memberRoleRepository.selectOne(memberRole);
+        if (ObjectUtils.isEmpty(queryMemberRole) || ObjectUtils.isEmpty(queryMemberRole.getId())) {
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(organizationId);
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleRepository.insert(memberRole);
+            return memberRole.getId();
+        } else {
+            return queryMemberRole.getId();
+        }
     }
 }

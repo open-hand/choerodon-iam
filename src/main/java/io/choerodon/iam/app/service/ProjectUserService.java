@@ -100,4 +100,7 @@ public interface ProjectUserService {
      * @param projectUsers 项目-用户-角色信息
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers);
+
+    void updateUserRoles(Long userId, Long sourceId, List<Long> roleDTOList, Boolean syncAll);
+
 }

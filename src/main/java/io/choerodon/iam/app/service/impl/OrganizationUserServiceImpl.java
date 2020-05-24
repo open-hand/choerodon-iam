@@ -368,7 +368,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
     @OperateLog(type = "disableUser", content = "用户%s已被%s停用", level = {ResourceLevel.ORGANIZATION})
     public User disableUser(Long organizationId, Long userId) {
-        userService.unfrozenUser(userId, organizationId);
+        userService.frozenUser(userId, organizationId);
         User user = query(organizationId, userId);
         if (devopsMessage) {
             UserEventPayload userEventPayload = new UserEventPayload();

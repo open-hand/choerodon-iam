@@ -1,25 +1,15 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.user.UserType;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
@@ -31,9 +21,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author superlee
@@ -104,7 +105,7 @@ public class OrganizationUserController extends BaseController {
         user.setUserType(UserType.ofDefault(user.getUserType()).value());
         user.setOrganizationId(organizationId);
         validObject(user);
-        return Results.success(organizationUserService.createUserWithRoles(user));
+        return Results.success(organizationUserService.createUserWithRoles(DetailsHelper.getUserDetails().getUserId(), user));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

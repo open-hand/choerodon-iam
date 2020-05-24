@@ -5,12 +5,14 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
 
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.utils.SagaTopic;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -153,6 +155,16 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                 @Param("userId") Long userId);
+
+    /**
+     * 查询用户在项目下拥有的memberRole
+     *
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                        @Param("userId") Long userId);
 
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
                                   @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);

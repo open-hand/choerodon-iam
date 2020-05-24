@@ -704,7 +704,6 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
 //        // 校验组织人数是否已达上限

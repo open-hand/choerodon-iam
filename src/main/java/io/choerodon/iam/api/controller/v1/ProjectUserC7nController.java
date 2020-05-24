@@ -155,7 +155,6 @@ public class ProjectUserC7nController extends BaseController {
         return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
-    /*团队成员相关接口*/
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")

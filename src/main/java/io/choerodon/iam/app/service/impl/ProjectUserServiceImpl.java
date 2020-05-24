@@ -13,6 +13,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -66,7 +67,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   DevopsFeignClient devopsFeignClient,
                                   RoleC7nMapper roleC7nMapper,
                                   ProjectAssertHelper projectAssertHelper,
-                                  ProjectC7nService projectC7nService,
+                                  @Lazy ProjectC7nService projectC7nService,
                                   ProjectMapper projectMapper,
                                   OrganizationResourceLimitService organizationResourceLimitService,
                                   RoleMapper roleMapper,
@@ -88,8 +89,8 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, String loginName, String realName, String roleName, Boolean enabled, String params) {
-          return PageHelper.doPage(pageRequest,()->projectUserMapper.selectUserWithRolesOnProjectLevel(
-                     ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params));
+        return PageHelper.doPage(pageRequest, () -> projectUserMapper.selectUserWithRolesOnProjectLevel(
+                ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params));
 
     }
 

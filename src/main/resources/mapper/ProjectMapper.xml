@@ -239,19 +239,23 @@
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
-                INNER JOIN fd_project_user imr ON imr.PROJECT_ID = fp.id
+                INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
             <otherwise>
-                LEFT JOIN fd_project_user imr ON (imr.PROJECT_ID = fp.id and imr.member_id = #{userId})
+                LEFT JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
         </choose>
         <where>
             fp.organization_id = #{organizationId}
+
             <if test="!isAdmin and !isOrgAdmin">
-                and imr.member_id = #{userId}
+                imr.member_id = #{userId} AND imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.source_id = #{organizationId)
             </if>
+
             <if test="projectDTO != null">
                 <if test="projectDTO.name != null">
                     AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')

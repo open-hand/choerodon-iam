@@ -300,7 +300,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             if (!newMemberRoleIds.contains(aLong)) {
                 List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
                 if (CollectionUtils.isEmpty(userDTOList)) {
-                    memberRoleRepository.deleteByPrimaryKey(aLong);
+                    memberRoleService.batchDeleteMemberRole(projectDTO.getOrganizationId(), Arrays.asList(memberRoleRepository.selectByPrimaryKey(aLong)));
                 }
             }
         });

@@ -329,7 +329,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevelValue(organizationId);
             memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-            memberRoleRepository.insert(memberRole);
+            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
             return memberRole.getId();
         } else {
             return queryMemberRole.getId();

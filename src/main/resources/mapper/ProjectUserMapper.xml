@@ -95,8 +95,8 @@
         case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
         from iam_user iu
         ) iut
-        left join iam_member_role imr ON iut.id = imr.member_id
-        left join fd_project_user fdu on fdu.MEMBER_ROLE_ID = imr.id
+        join iam_member_role imr ON iut.id = imr.member_id
+        join fd_project_user fdu on fdu.MEMBER_ROLE_ID = imr.id
         JOIN iam_role ir2 on ir2.id=imr.role_id
         <if test="roleName != null">
             left join iam_role ir on ir.id = imr.role_id
@@ -124,12 +124,9 @@
         </where>
         ) t1
         order by t1.is_enabled desc, t1.id desc
-        <if test="start != null and size != null">
-            limit #{start}, #{size}
-        </if>
         ) t2
-        left join iam_member_role imr2 ON t2.id = imr2.member_id
-        left join fd_project_user fdu2 on imr2.id = fdu2.MEMBER_ROLE_ID and fdu2.PROJECT_ID = #{sourceId}
+        join iam_member_role imr2 ON t2.id = imr2.member_id
+        join fd_project_user fdu2 on imr2.id = fdu2.MEMBER_ROLE_ID and fdu2.PROJECT_ID = #{sourceId}
         left join iam_role ir2 on ir2.id = imr2.role_id
         left join hpfm_tenant fo on (t2.organization_id = fo.tenant_id)
         left join hpfm_tenant_config htc ON fo.tenant_id = htc.tenant_id and htc.config_key = 'code'

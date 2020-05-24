@@ -84,30 +84,14 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, String loginName, String realName, String roleName, Boolean enabled, String params) {
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
-        boolean doPage = (size != 0);
-        Page<UserDTO> result = IamPageUtils.createEmptyPage(page, size);
-        if (doPage) {
-            int start = IamPageUtils.getBegin(page, size);
-            int count = projectUserMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
-                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotalElements(count);
-            result.getContent().addAll(users);
-        } else {
-            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
-                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
-            result.setTotalElements(users.size());
-            result.getContent().addAll(users);
-        }
-        return result;
+          return PageHelper.doPage(pageRequest,()->projectUserMapper.selectUserWithRolesOnProjectLevel(
+                     ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params));
+
     }
 
     @Override
     public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
-                null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
+        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
         return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
     }
 

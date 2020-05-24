@@ -1,28 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -56,6 +34,27 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -92,7 +91,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectMapper projectMapper;
 
-    private ProjectTypeMapper projectTypeMapper;
+    private ProjectCategoryMapper projectCategoryMapper;
 
     private ProjectUserMapper projectUserMapper;
 
@@ -126,7 +125,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
                                              ProjectMapper projectMapper,
                                              ProjectAssertHelper projectAssertHelper,
-                                             ProjectTypeMapper projectTypeMapper,
+                                             ProjectCategoryMapper projectCategoryMapper,
                                              OrganizationAssertHelper organizationAssertHelper,
                                              UserAssertHelper userAssertHelper,
                                              ProjectUserMapper projectUserMapper,
@@ -148,7 +147,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.projectMapper = projectMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.organizationAssertHelper = organizationAssertHelper;
-        this.projectTypeMapper = projectTypeMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
         this.userAssertHelper = userAssertHelper;
         this.projectUserMapper = projectUserMapper;
         this.labelMapper = labelMapper;
@@ -474,8 +473,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Override
     public Map<String, Object> getProjectsByType(Long organizationId) {
         //1.获取所有类型
-        List<ProjectTypeDTO> list = projectTypeMapper.selectAll();
-        List<String> legend = list.stream().map(ProjectTypeDTO::getName).collect(Collectors.toList());
+        List<ProjectCategoryDTO> list = projectCategoryMapper.selectAll();
+        List<String> legend = list.stream().map(ProjectCategoryDTO::getName).collect(Collectors.toList());
         List<Map<String, Object>> data = new ArrayList<>();
         //2.获取类型下所有项目名
         list.forEach(type -> {

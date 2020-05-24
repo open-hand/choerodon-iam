@@ -351,9 +351,10 @@
         iu.email
         end as login_name
         FROM fd_project_user fpu
-        JOIN iam_user iu ON iu.id = fpu.MEMBER_ID
-        WHERE fpu.PROJECT_ID = 1822
-        GROUP BY fpu.MEMBER_ID
+        JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+        JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE fpu.PROJECT_ID = #{projectId}
+        GROUP BY iu.id
         ) iut
         <where>
             <if test="roleAssignmentSearchDTO != null">

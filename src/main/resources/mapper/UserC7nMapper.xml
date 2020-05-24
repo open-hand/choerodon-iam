@@ -352,7 +352,7 @@
         <result property="imageUrl" column="image_url"/>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="userDTO">
+    <!--<select id="fulltextSearch" resultMap="userDTO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userSearchDTO.loginName!= null">
             AND login_name LIKE concat(concat('%',#{userSearchDTO.loginName}),'%')
@@ -389,9 +389,9 @@
             )
         </if>
         order by id desc
-    </select>
+    </select>-->
 
-    <select id="selectCountUsers" resultType="int">
+    <!--<select id="selectCountUsers" resultType="int">
         SELECT count(1)
         FROM (
         SELECT DISTINCT iut.id FROM
@@ -425,7 +425,7 @@
             </if>
         </if>
         ) t
-    </select>
+    </select>-->
 
     <select id="selectUserCountFromMemberRoleByOptions" resultType="int">
         SELECT COUNT(1) FROM (
@@ -456,7 +456,7 @@
         ) t
     </select>
 
-    <select id="selectUsersFromMemberRoleByOptions" resultMap="userDTO">
+    <!--<select id="selectUsersFromMemberRoleByOptions" resultMap="userDTO">
         SELECT iu.*,imr.source_id
         FROM iam_user iu
         INNER JOIN iam_member_role imr ON imr.member_id = iu.id
@@ -482,7 +482,7 @@
             </if>
         </where>
         order by imr.creation_date desc
-    </select>
+    </select>-->
 
     <select id="listUsersWithGitlabLabel" resultMap="projectUserWithRolesMap">
         SELECT
@@ -520,7 +520,7 @@
         order by imr.creation_date desc
     </select>
 
-    <select id="selectUsersByProjectIdAndOptions" resultMap="userDTO">
+    <!--<select id="selectUsersByProjectIdAndOptions" resultMap="userDTO">
         SELECT iam_user.*
         FROM iam_user
         JOIN
@@ -581,7 +581,7 @@
                  open="(" separator="," close=")">
             #{item}
         </foreach>
-    </select>
+    </select>-->
 
 
     <select id="matchEmail" resultType="java.lang.String">
@@ -604,12 +604,12 @@
         </foreach>
     </select>
 
-    <select id="totalNumberOfUsers" resultType="java.lang.Integer">
+    <!--<select id="totalNumberOfUsers" resultType="java.lang.Integer">
         SELECT
         COUNT(*)
         FROM
         iam_user
-    </select>
+    </select>-->
 
     <select id="listOrgAdministrator" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT
@@ -723,7 +723,9 @@
         ) iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         left join iam_role ir on ir.id = imr.role_id
-        where imr.source_id = #{sourceId} and imr.source_type = #{sourceType}
+        left join hiam_label_rel hlr on (hlr.data_id = ir.id and hlr.data_type = 'ROLE')
+        LEFT JOIN iam_label il on il.id = hlr.label_id
+        where imr.source_id = #{sourceId} and imr.source_type = #{sourceType} and il.name = 'TENANT_ROLE'
         <if test="roleName != null">
             and ir.name like concat(concat('%',#{roleName}),'%')
         </if>
@@ -1132,5 +1134,51 @@
             real_name = #{params}
             )
         </if>
+    </select>
+    <select id="listOrganizationUser" resultMap="userWithRolesMap">
+        SELECT *
+        FROM (
+            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap, iu.is_admin,
+            CASE
+            WHEN iu.is_ldap = 1 THEN
+            iu.login_name
+            ELSE
+            iu.email
+            end as login_name,
+            ir.name as role_name
+            FROM iam_member_role imr
+            LEFT JOIN iam_role ir ON ir.id = imr.role_id
+            LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+            LEFT JOIN iam_label il ON il.id = hlr.label_id
+            LEFT JOIN iam_user iu ON iu.id = imr.member_id
+            <where>
+                imr.source_id = 1 AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
+                <if test="roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{roleName}),'%')
+                </if>
+                <if test="realName != null">
+                    AND iu.real_name LIKE concat(concat('%',#{realName}),'%')
+                </if>
+                <if test="enabled != null">
+                    AND iu.is_enabled = enabled
+                </if>
+                <if test="locked != null">
+                    AND iu.is_enabled = locked
+                </if>
+            </where>
+            GROUP BY iu.id
+        ) iut
+        <where>
+            <if test="loginName != null">
+                AND iut.login_name LIKE concat(concat('%',loginName,'%')
+            </if>
+            <if test="param != null">
+                and (
+                iut.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iut.real_name LIKE concat(concat('%',#{param}),'%') OR
+                ir.name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
+        </where>
     </select>
 </mapper>

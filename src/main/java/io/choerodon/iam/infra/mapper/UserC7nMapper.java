@@ -4,7 +4,6 @@ import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
@@ -349,5 +348,12 @@ public interface UserC7nMapper {
                                                            RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                    @Param("param") String param);
 
+    List<User> listOrganizationUser(@Param("organizationId") Long organizationId,
+                                    @Param("loginName") String loginName,
+                                    @Param("realName") String realName,
+                                    @Param("roleName") String roleName,
+                                    @Param("enabled") Boolean enabled,
+                                    @Param("locked") Boolean locked,
+                                    @Param("params") String params);
 }
 

@@ -1,10 +1,11 @@
 package io.choerodon.iam.infra.dto;
 
-import javax.persistence.Transient;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.mybatis.domian.SecurityToken;
+
+import javax.persistence.Transient;
 
 /**
  * @author zmf
@@ -62,5 +63,10 @@ public class UserDTO extends User {
 
     public void setRoleLabels(String roleLabels) {
         this.roleLabels = roleLabels;
+    }
+
+    @Override
+    public Class<? extends SecurityToken> associateEntityClass() {
+        return User.class;
     }
 }

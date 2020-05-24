@@ -19,4 +19,13 @@
             #{item}
         </foreach>
     </select>
+    <select id="listMemberRoleByOrgIdAndUserIds" resultType="org.hzero.iam.domain.entity.MemberRole">
+        SELECT *
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+
+
+
+    </select>
 </mapper>

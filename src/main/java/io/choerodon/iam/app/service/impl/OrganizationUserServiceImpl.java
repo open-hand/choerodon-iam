@@ -1,15 +1,34 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.InsertException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.annotation.OperateLog;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.IamPageUtils;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
@@ -31,30 +50,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.annotation.OperateLog;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.IamPageUtils;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -94,6 +93,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private RandomInfoGenerator randomInfoGenerator;
 
     private TenantService tenantService;
+    private MemberRoleC7nMapper memberRoleC7nMapper;
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
@@ -111,7 +111,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        TenantService tenantService,
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
-                                       OrganizationResourceLimitService organizationResourceLimitService) {
+                                       OrganizationResourceLimitService organizationResourceLimitService,
+                                       MemberRoleC7nMapper memberRoleC7nMapper) {
         this.organizationAssertHelper = organizationAssertHelper;
         this.userAssertHelper = userAssertHelper;
         this.userService = userService;
@@ -125,6 +126,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.tenantService = tenantService;
         this.randomInfoGenerator = randomInfoGenerator;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.memberRoleC7nMapper = memberRoleC7nMapper;
     }
 
     @Override
@@ -135,6 +137,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         boolean doPage = (size != 0);
         Page<User> result = IamPageUtils.createEmptyPage(page, size);
         result.setContent(new ArrayList<>());
+        List<User> userList = userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params);
+        Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
+        memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIds(organizationId, userIds, realName, RoleLabelEnum.TENANT_ROLE.value());
         if (doPage) {
             int start = IamPageUtils.getBegin(page, size);
             int count = userC7nMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,

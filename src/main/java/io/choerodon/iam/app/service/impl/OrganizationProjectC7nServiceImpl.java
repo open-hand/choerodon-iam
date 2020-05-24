@@ -1,6 +1,30 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -22,7 +46,10 @@ import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
@@ -34,27 +61,6 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -272,10 +278,20 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Long userId = customUserDetails.getUserId();
         // 为创建者分配项目层的角色关系
         roles.forEach(role -> {
+            // 要先在组织层插入一条角色
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(userId);
+            memberRole.setRoleId(role.getId());
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setSourceId(project.getOrganizationId());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(project.getOrganizationId());
+            memberRole.setMemberType(HiamMemberType.USER.value());
+            // 直接插入，如果已经有了，会将id回写到dto
+            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
             ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setMemberId(userId);
             projectUserDTO.setProjectId(projectId);
-            projectUserDTO.setRoleId(role.getId());
+            projectUserDTO.setMemberRoleId(memberRole.getId());
             projectUserMapper.insertSelective(projectUserDTO);
         });
         // 查出来的符合要求的角色，要拿出来所有的label，发送给devops处理

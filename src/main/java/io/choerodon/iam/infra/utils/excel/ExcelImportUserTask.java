@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -28,7 +29,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.api.vo.ExcelMemberRoleVO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -120,18 +120,18 @@ public class ExcelImportUserTask {
         // 数据库里面根据email去重
         List<UserDTO> distinctEmailUsersOnDatabase = distinctEmailOnDatabase(distinctPhoneUsersOnExcel, errorUsers);
         // 数据库里面根据phone去重
-        List<UserDTO> insertUsers = distinctPhoneOnDatabase(distinctEmailUsersOnDatabase, errorUsers);
+        List<UserDTO> usersToBeInserted = distinctPhoneOnDatabase(distinctEmailUsersOnDatabase, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
-        List<List<UserDTO>> list = CollectionUtils.subList(insertUsers, 999);
+        List<List<UserDTO>> actualUsersToBeInserted = CollectionUtils.fragmentList(usersToBeInserted, 999);
         int validateErrorUsers = errorUsers.size();
-        list.forEach(l -> {
-            if (!l.isEmpty()) {
-                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(l, userId, organizationId));
+        actualUsersToBeInserted.forEach(userFragments -> {
+            if (!userFragments.isEmpty()) {
+                errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(userFragments, userId, organizationId));
             }
         });
         int insertErrorUsers = errorUsers.size() - validateErrorUsers;
-        Integer successCount = insertUsers.size() - insertErrorUsers;
+        Integer successCount = usersToBeInserted.size() - insertErrorUsers;
         Integer failedCount = errorUsers.size();
         uploadHistory.setSuccessfulCount(successCount);
         uploadHistory.setFailedCount(failedCount);
@@ -266,6 +266,7 @@ public class ExcelImportUserTask {
             finishFallback.callback(uploadHistory);
         }
     }
+
     private MemberRole getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
         MemberRole memberRole = new MemberRole();
         memberRole.setSourceType(sourceType);
@@ -343,7 +344,7 @@ public class ExcelImportUserTask {
         if (!validateUsers.isEmpty()) {
             Set<String> emailSet = validateUsers.stream().map(UserDTO::getEmail).collect(Collectors.toSet());
             //oracle In-list上限为1000，这里List size要小于1000
-            List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
+            List<Set<String>> subEmailSet = CollectionUtils.fragmentSet(emailSet, 999);
             Set<String> existedEmails = new HashSet<>();
             subEmailSet.forEach(set -> existedEmails.addAll(userC7nMapper.matchEmail(set)));
             for (UserDTO user : validateUsers) {
@@ -364,7 +365,7 @@ public class ExcelImportUserTask {
             Set<String> phoneSet = validateUsers.stream().filter(u -> u.getPhone() != null)
                     .map(UserDTO::getPhone).collect(Collectors.toSet());
             //oracle In-list上限为1000，这里List size要小于1000
-            List<Set<String>> subPhoneSet = CollectionUtils.subSet(phoneSet, 999);
+            List<Set<String>> subPhoneSet = CollectionUtils.fragmentSet(phoneSet, 999);
             Set<String> existedPhones = new HashSet<>();
             subPhoneSet.forEach(set -> existedPhones.addAll(userC7nMapper.matchPhone(set)));
             for (UserDTO user : validateUsers) {
@@ -493,18 +494,18 @@ public class ExcelImportUserTask {
     private boolean validateUsers(UserDTO user, List<ErrorUserVO> errorUsers, List<UserDTO> insertUsers, Long orgId) {
         String realName = user.getRealName();
         String email = user.getEmail();
-        String roleCodes = user.getRoleCodes();
+        String roleLabels = user.getRoleLabels();
         String phone = user.getPhone();
         String password = user.getPassword();
         trimUserField(user);
         boolean ok = false;
-        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleCodes)) {
-            errorUsers.add(getErrorUserDTO(user, "用户名为空、邮箱为空或角色编码为空"));
+        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleLabels)) {
+            errorUsers.add(getErrorUserDTO(user, "用户名为空、邮箱为空或角色标签为空"));
         } else if (realName.length() > 32) {
             errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
-        } else if (validateRoles(user, roleCodes, orgId)) {
+        } else if (validateRoles(user, roleLabels, orgId)) {
             errorUsers.add(getErrorUserDTO(user, "角色不存在、未启用或层级不合法"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
@@ -529,15 +530,15 @@ public class ExcelImportUserTask {
         return ok;
     }
 
-    private boolean validateRoles(UserDTO user, String roleCodes, Long orgId) {
-        String[] roleCodeList = roleCodes.split(",");
+    private boolean validateRoles(UserDTO user, String roleLabels, Long orgId) {
+        String[] roleLabelList = roleLabels.split(",");
         boolean rolesError = false;
         user.setRoles(new ArrayList<>());
-        for (int i = 0; i < roleCodeList.length; i++) {
+        for (String roleLabel : roleLabelList) {
             try {
-                Role role = roleAssertHelper.roleNotExisted(roleCodeList[i]);
-                RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false);
-                user.getRoles().add(role);
+                List<Role> roles = roleAssertHelper.roleExistedWithLabel(orgId, roleLabel);
+                roles.forEach(role -> RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false));
+                user.getRoles().addAll(roles);
             } catch (CommonException e) {
                 user.setRoles(null);
                 rolesError = true;

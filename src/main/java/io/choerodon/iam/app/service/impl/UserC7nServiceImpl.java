@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -34,6 +35,7 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -399,6 +401,15 @@ public class UserC7nServiceImpl implements UserC7nService {
                 ex -> LOGGER.info("Failed to send notices. The code is {}, and the users are: {}", code, userIds));
     }
 
+    /**
+     * 给指定用户发送消息
+     *
+     * @param userIds       接收者的id
+     * @param code          消息的编码
+     * @param params        消息所需的参数
+     * @param sourceId      消息的级别对应的id，如组织id，项目id
+     * @param resourceLevel 消息的级别
+     */
     private void doSendNotice(List<Long> userIds, String code, Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
         MessageSender messageSender = new MessageSender();
         messageSender.setTenantId(0L);
@@ -1036,12 +1047,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
         if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
-           return new Page<>();
+            return new Page<>();
         }
         if (organizationId.equals(0L)) {
-            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectAllUsersSimplifiedInfo(param));
+            return PageHelper.doPage(pageRequest, () -> userC7nMapper.selectAllUsersSimplifiedInfo(param));
         } else {
-            return PageHelper.doPage(pageRequest,() -> userC7nMapper.selectUsersOptional(param, organizationId));
+            return PageHelper.doPage(pageRequest, () -> userC7nMapper.selectUsersOptional(param, organizationId));
         }
     }
 

@@ -117,6 +117,7 @@ const ListView = () => {
         ]}
         expandIconColumnIndex={1}
         className={`${prefixCls}-table`}
+        style={{ height: '3.6rem' }}
       >
         <Column name="isChecked" editor width={50} />
         <Column name="name" renderer={renderName} width={400} />

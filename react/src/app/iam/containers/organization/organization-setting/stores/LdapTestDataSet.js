@@ -31,7 +31,7 @@ export default ({ orgId }) => ({
   },
   fields: [
     { name: 'account', type: 'string', label: '管理员登录名', defaultValue: '', required: true},
-    { name: 'password', type: 'string', label: '管理员密码', defaultValue: '', required: true}, // 必填
+    { name: 'ldapPassword', type: 'string', label: '管理员密码', defaultValue: '', required: true}, // 必填
     { name: 'canLogin', type: 'boolean', label: 'LDAP登录' },
     { name: 'canConnectServer', type: 'boolean', label: '基础链接' },
     { name: 'matchAttribute', type: 'boolean', label: '用户属性链接' },

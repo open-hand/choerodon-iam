@@ -83,7 +83,7 @@ const LdapView = observer(() => {
   }
   async function handleDisableLdap() {
     try {
-      await axios.put(`/iam/v1/${orgId}/ldaps/disable`);
+      await axios.put(`/iam/v1/${orgId}/ldaps/disable`, currentRecord ? JSON.stringify(currentRecord.toData()) : null);
       await ldapDataSet.query();
     } catch (e) {
       Choerodon.prompt(e);
@@ -103,7 +103,7 @@ const LdapView = observer(() => {
   }
   async function handleEnableLdap() {
     try {
-      const result = await axios.put(`/iam/v1/${orgId}/ldaps/enable`);
+      const result = await axios.put(`/iam/v1/${orgId}/ldaps/enable`, currentRecord ? JSON.stringify(currentRecord.toData()) : null);
       if (result.failed) {
         throw result.message;
       }
@@ -167,7 +167,7 @@ const LdapView = observer(() => {
             <Output name="baseDn" showHelp="none" />
             <Output name="account" showHelp="none" />
             <Output
-              name="password"
+              name="ldapPassword"
               renderer={({ text }) => (text ? <span style={{ fontWeight: 700 }}>··················</span> : <span>此用户暂未设置密码</span>)}
             />
           </Form>

@@ -28,6 +28,10 @@ public class UserDTO extends User {
     @ApiModelProperty(value = "用户角色编码,多个用英文逗号隔开")
     private String roleCodes;
 
+    @Transient
+    @ApiModelProperty(value = "用户角色标签,多个用英文逗号隔开")
+    private String roleLabels;
+
     public String getOrganizationCode() {
         return organizationCode;
     }
@@ -50,5 +54,13 @@ public class UserDTO extends User {
 
     public void setRoleCodes(String roleCodes) {
         this.roleCodes = roleCodes;
+    }
+
+    public String getRoleLabels() {
+        return roleLabels;
+    }
+
+    public void setRoleLabels(String roleLabels) {
+        this.roleLabels = roleLabels;
     }
 }

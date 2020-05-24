@@ -173,7 +173,7 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
                                                @RequestPart MultipartFile file) {
         excelService.importUsers(id, file);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

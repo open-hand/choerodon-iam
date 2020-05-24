@@ -7,14 +7,18 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,11 +160,28 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         List<Role> userRoles = user.getRoles();
+        // 将role转为memberRole， memberId不用给
+        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
         User result = userService.createUser(user);
         if (devopsMessage) {
             sendUserCreationSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
         }
         return result;
+    }
+
+    private List<MemberRole> role2MemberRole(Long organizationId, List<Role> roles) {
+        return roles.stream().map(role -> {
+                    MemberRole memberRole = new MemberRole();
+                    memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setAssignLevelValue(organizationId);
+                    memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setSourceId(organizationId);
+                    memberRole.setRoleId(role.getId());
+                    memberRole.setMemberType(HiamMemberType.USER.value());
+                    return memberRole;
+                }
+        ).collect(Collectors.toList());
+
     }
 
     @Override

@@ -5,13 +5,21 @@ import java.util.*;
 /**
  * @author superlee
  */
-public class CollectionUtils {
+public final class CollectionUtils {
 
     private CollectionUtils() {
         throw new IllegalStateException("cann`t instantiation class");
     }
 
-    public static <T> List<List<T>> subList(List<T> originalList, int volume) {
+    /**
+     * 将原本的列表按照容量分为多个子列表，对大列表进行分段
+     *
+     * @param originalList 原始列表
+     * @param volume       子列表容量
+     * @param <T>          类型
+     * @return 子列表的列表
+     */
+    public static <T> List<List<T>> fragmentList(List<T> originalList, int volume) {
         List<List<T>> list = new ArrayList<>();
         if (volume < 1) {
             return list;
@@ -22,7 +30,7 @@ public class CollectionUtils {
         int end = volume;
         if (size != 0) {
             for (int i = 0; i < count; i++) {
-                end = end > size ? size : end;
+                end = Math.min(end, size);
                 List<T> subList = originalList.subList(start, end);
                 start = start + volume;
                 end = end + volume;
@@ -32,7 +40,7 @@ public class CollectionUtils {
         return list;
     }
 
-    public static <T> List<Set<T>> subSet(Set<T> originalSet, int volume) {
+    public static <T> List<Set<T>> fragmentSet(Set<T> originalSet, int volume) {
         List<Set<T>> list = new ArrayList<>();
         if (volume < 1) {
             return list;

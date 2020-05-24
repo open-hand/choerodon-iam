@@ -29,6 +29,8 @@ public class ProjectUserDTO extends AuditDomain {
     private Long projectId;
     @ApiModelProperty("角色id")
     private Long roleId;
+    @ApiModelProperty("用户角色关系id")
+    private Long memberRoleId;
 
     public Long getId() {
         return id;
@@ -60,5 +62,13 @@ public class ProjectUserDTO extends AuditDomain {
 
     public void setRoleId(Long roleId) {
         this.roleId = roleId;
+    }
+
+    public Long getMemberRoleId() {
+        return memberRoleId;
+    }
+
+    public void setMemberRoleId(Long memberRoleId) {
+        this.memberRoleId = memberRoleId;
     }
 }

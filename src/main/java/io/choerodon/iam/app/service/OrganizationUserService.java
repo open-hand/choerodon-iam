@@ -19,10 +19,11 @@ public interface OrganizationUserService {
     /**
      * 创建用户并分配角色.
      *
-     * @param user 用户DTO
+     * @param fromUserId 操作人的id
+     * @param user       用户DTO
      * @return 用户
      */
-    User createUserWithRoles(User user);
+    User createUserWithRoles(Long fromUserId, User user);
 
     User createUserAndUpdateRole(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
 

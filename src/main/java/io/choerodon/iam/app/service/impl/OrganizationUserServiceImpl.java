@@ -1,7 +1,33 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.iam.app.service.RoleService;
+import org.hzero.iam.app.service.TenantService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -29,31 +55,6 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.app.service.TenantService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -161,15 +162,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
     @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
-    public User createUserWithRoles(User user) {
+    public User createUserWithRoles(Long fromUserId, User user) {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
-        Long userId = DetailsHelper.getUserDetails().getUserId();
         List<Role> userRoles = user.getRoles();
         // 将role转为memberRole， memberId不用给
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
         User result = userService.createUser(user);
         if (devopsMessage) {
-            sendUserCreationSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
+            sendUserCreationSaga(fromUserId, user, userRoles, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
         }
         return result;
     }
@@ -445,7 +445,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             User userDTO = null;
             try {
                 user.setOrganizationId(organizationId);
-                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(user);
+                userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(fromUserId, user);
             } catch (Exception e) {
                 LOGGER.error("context", e);
                 ErrorUserVO errorUser = new ErrorUserVO();

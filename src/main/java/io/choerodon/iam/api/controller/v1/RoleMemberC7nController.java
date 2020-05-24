@@ -287,7 +287,7 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
                                                                    @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService. latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
 
@@ -304,4 +304,12 @@ public class RoleMemberC7nController extends BaseController {
         return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
     }
 
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("查组织层的历史")
+    @GetMapping("/organizations/{organization_id}/member_role/users/{user_id}/upload/history")
+    public ResponseEntity<UploadHistoryDTO> latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
+                                                                        @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
+    }
 }

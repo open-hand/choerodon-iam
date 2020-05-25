@@ -27,12 +27,11 @@ public interface RoleMemberService {
             Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRole> memberRoleDTOList, String memberType);
 
     /**
-     * @param roleAssignmentDeleteDTO
-     * @param syncAll                 删除子项目所有权限
+     * @param projectId
+     * @param userId
+     * @param syncAll 删除子项目所有权限
      */
-    void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, Boolean syncAll);
-
-    void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
+    void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll);
 
     List<MemberRole> insertOrUpdateRolesOfUserByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType);
@@ -43,15 +42,6 @@ public interface RoleMemberService {
     List<MemberRole> insertOrUpdateRolesOfClientByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType);
 
-    /**
-     * 批量删除客户端及角色之间的关系
-     *
-     * @param roleAssignmentDeleteDTO 数据
-     * @param sourceType              sourceType
-     */
-    void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
-
-    void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
     void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName);
 

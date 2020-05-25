@@ -129,7 +129,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public Page<User> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
                                                                    String roleName, Boolean enabled, Boolean locked, String params) {
-
+        // todo 列表排序？？？
         Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
         List<User> userList = userPage.getContent();
         // 添加用户角色
@@ -323,7 +323,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             memberRole.setAssignLevelValue(organizationId);
             return memberRole;
         }).collect(Collectors.toList());
-        memberRoleService.batchAssignMemberRoleInternal(insertMemberRoles);
+        if (!CollectionUtils.isEmpty(insertMemberRoles)) {
+            memberRoleService.batchAssignMemberRoleInternal(insertMemberRoles);
+        }
 
         List<MemberRole> deleteMemberRoles = deleteIds.stream().map(id -> {
             MemberRole memberRole = new MemberRole();
@@ -336,7 +338,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             memberRole.setAssignLevelValue(organizationId);
             return memberRole;
         }).collect(Collectors.toList());
-        memberRoleService.batchDeleteMemberRole(organizationId, deleteMemberRoles);
+        if (!CollectionUtils.isEmpty(deleteMemberRoles)) {
+            memberRoleService.batchDeleteMemberRole(organizationId, deleteMemberRoles);
+        }
 
         List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
         Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList()));

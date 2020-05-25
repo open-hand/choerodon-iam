@@ -94,12 +94,16 @@ public class UserC7nController extends BaseController {
         if (user.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.null");
         }
-        user.setAdmin(null);
+        User queryInfo = userC7nService.queryInfo(id);
+        if (Objects.isNull(queryInfo)) {
+            throw new CommonException("error.user.update");
+        }
+        user.setAdmin(queryInfo.getAdmin());
         //不能修改状态
-        user.setEnabled(null);
-        user.setLdap(null);
-        user.setOrganizationId(null);
-        user.setLoginName(null);
+        user.setEnabled(queryInfo.getEnabled());
+        user.setLdap(queryInfo.getLdap());
+        user.setOrganizationId(queryInfo.getOrganizationId());
+        user.setLoginName(queryInfo.getLoginName());
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 

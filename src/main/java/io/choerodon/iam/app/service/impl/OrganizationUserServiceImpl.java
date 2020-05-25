@@ -34,10 +34,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.InsertException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
@@ -55,7 +52,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -77,7 +73,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final MemberRoleC7nMapper memberRoleC7nMapper;
     private final OrganizationAssertHelper organizationAssertHelper;
     private final OrganizationResourceLimitService organizationResourceLimitService;
-    private final RandomInfoGenerator randomInfoGenerator;
     private final RoleMemberService roleMemberService;
     private final RoleService roleService;
     private final TenantService tenantService;
@@ -94,7 +89,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        MemberRoleC7nMapper memberRoleC7nMapper,
                                        OrganizationAssertHelper organizationAssertHelper,
                                        OrganizationResourceLimitService organizationResourceLimitService,
-                                       RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
                                        TenantService tenantService,
                                        TransactionalProducer producer,
@@ -113,7 +107,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.organizationAssertHelper = organizationAssertHelper;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.producer = producer;
-        this.randomInfoGenerator = randomInfoGenerator;
         this.roleMemberService = roleMemberService;
         this.roleService = roleService;
         this.tenantService = tenantService;
@@ -161,7 +154,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
         User result = userService.createUser(user);
         if (devopsMessage) {
-            sendUserCreationSaga(fromUserId, user, userRoles, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
+            sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         }
         return result;
     }
@@ -229,13 +222,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
         }
         return userMemberEventPayloads;
-    }
-
-    private User insertSelective(User user) {
-        if (userRepository.insertSelective(user) != 1) {
-            throw new InsertException("error.user.create");
-        }
-        return userRepository.selectByPrimaryKey(user.getId());
     }
 
     private void generateUserEventPayload(List<UserEventPayload> payloads, User userDTO) {
@@ -514,77 +500,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             params.put("userList", JSON.toJSONString(insertUsers));
             params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
             params.put("addCount", String.valueOf(insertUsers.size()));
-            userC7nService.sendNotice(Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
+            userC7nService.sendNotice(Collections.singletonList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
         LOGGER.info("Batch insert {} users into tenant with id {} processed...", insertUsers.size(), organizationId);
         return errorUsers;
-    }
-
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
-    public User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles) {
-        organizationResourceLimitService.checkEnableCreateUserOrThrowE(organizationId, 1);
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        UserValidator.validateCreateUserWithRoles(user, checkRoles);
-        organizationAssertHelper.notExisted(organizationId);
-        userAssertHelper.emailExisted(user.getEmail());
-        checkPassword(user, organizationId, checkPassword);
-        user.setLoginName(randomInfoGenerator.randomLoginName());
-        List<Role> userRoles = user.getRoles();
-        if (devopsMessage) {
-            user = createUser(user);
-            createUserAndUpdateRole(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
-        } else {
-            user = createUser(user);
-        }
-        return user;
-    }
-
-    @Override
-    public User update(Long organizationId, User user) {
-        return null;
-    }
-
-    // TODO hero密码功能复用
-
-    /**
-     * 创建用户
-     *
-     * @param user 用户DTO
-     * @return 用户DTO
-     */
-    public User createUser(User user) {
-//        userDTO.setLocked(false);
-//        userDTO.setEnabled(true);
-//        userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
-//        if (userMapper.insertSelective(userDTO) != 1) {
-//            throw new InsertException("error.user.create");
-//        }
-//        passwordRecord.updatePassword(userDTO.getId(), userDTO.getPassword());
-        return userMapper.selectByPrimaryKey(user.getId());
-    }
-
-
-    // TODO 密码功能复用
-
-    /**
-     * 校验用户密码策略(开启时校验).
-     *
-     * @param user           用户DTO
-     * @param organizationId 组织Id
-     * @param checkPassword  是否校验
-     */
-    private void checkPassword(User user, Long organizationId, boolean checkPassword) {
-//        String password = userDTO.getPassword();
-//        if (checkPassword) {
-//            validatePasswordPolicy(userDTO, password, organizationId);
-//            userPasswordValidator.validate(password, organizationId, true);
-//        }
     }
 
     @Override

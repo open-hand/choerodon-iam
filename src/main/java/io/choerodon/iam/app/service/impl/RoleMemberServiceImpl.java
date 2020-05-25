@@ -698,25 +698,18 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
-    public void deleteProjectRole(Long projectId,Long userId, Boolean syncAll) {
+    public void deleteProjectRole(Long projectId, Long userId, Boolean syncAll) {
         deleteRoleForProject(projectId, userId);
-        if (devopsMessage) {
-            try {
-                List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-                UserMemberEventPayload userMemberEventMsg=new UserMemberEventPayload();
-                userMemberEventMsg.setResourceId(projectId);
-                userMemberEventMsg.setResourceType(ResourceLevel.PROJECT.value());
-                User user = userAssertHelper.userNotExisted(userId);
-                userMemberEventMsg.setUsername(user.getLoginName());
-                userMemberEventMsg.setUserId(userId);
-                userMemberEventMsg.setSyncAll(syncAll);
-                String input = mapper.writeValueAsString(userMemberEventPayloads);
-                String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
-                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds, ResourceLevel.PROJECT.value(),projectId));
-            } catch (Exception e) {
-                throw new CommonException("error.iRoleMemberServiceImpl.deleteMemberRole.event", e);
-            }
-        }
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+        userMemberEventMsg.setResourceId(projectId);
+        userMemberEventMsg.setResourceType(ResourceLevel.PROJECT.value());
+        User user = userAssertHelper.userNotExisted(userId);
+        userMemberEventMsg.setUsername(user.getLoginName());
+        userMemberEventMsg.setUserId(userId);
+        userMemberEventMsg.setSyncAll(syncAll);
+        deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
+
 
 }

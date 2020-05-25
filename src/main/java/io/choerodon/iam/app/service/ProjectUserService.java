@@ -1,12 +1,16 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Resource;
 
 import org.hzero.iam.api.dto.RoleDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -94,6 +98,9 @@ public interface ProjectUserService {
     List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
     void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
+
+    void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap);
+
 
     void importProjectUser(Long projectId, List<ProjectUserDTO> projectUserDTOList);
 

@@ -15,6 +15,7 @@ import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
@@ -224,6 +225,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevelValue(project.getOrganizationId());
             memberRole.setMemberType(HiamMemberType.USER.value());
+            Map<String, Object> additionalParams = new HashMap<>();
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+            memberRole.setAdditionalParams(additionalParams);
             // 直接插入，如果已经有了，会将id回写到dto
             memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
             // 插入fd_project_user表数据
@@ -264,17 +268,23 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             }
         });
         // 3.发送saga
+        assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap);
+        // 4.todo 发送notice
+
+    }
+
+    @Override
+    public void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap) {
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         userRoleLabelsMap.forEach((k, v) -> {
             UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
             userMemberEventPayload.setUserId(k);
             userMemberEventPayload.setRoleLabels(v);
-            userMemberEventPayload.setResourceId(projectId);
-            userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
+            userMemberEventPayload.setResourceId(sourceId);
+            userMemberEventPayload.setResourceType(level.value());
             userMemberEventPayloads.add(userMemberEventPayload);
-            roleMemberService.updateMemberRole(k, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
+            roleMemberService.updateMemberRole(k, userMemberEventPayloads, level, sourceId);
         });
-        // 4.todo 发送notice
     }
 
     @Override
@@ -349,12 +359,15 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         memberRole.setRoleId(roleId);
         memberRole.setSourceId(organizationId);
         memberRole.setMemberType(MemberType.USER.value());
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        memberRole.setAdditionalParams(additionalParams);
         MemberRole queryMemberRole = memberRoleRepository.selectOne(memberRole);
         if (ObjectUtils.isEmpty(queryMemberRole) || ObjectUtils.isEmpty(queryMemberRole.getId())) {
             memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevelValue(organizationId);
             memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
+            memberRoleService.batchAssignMemberRoleInternal(Arrays.asList(memberRole));
             return memberRole.getId();
         } else {
             return queryMemberRole.getId();

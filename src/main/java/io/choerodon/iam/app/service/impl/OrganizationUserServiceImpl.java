@@ -35,6 +35,8 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
@@ -52,6 +54,7 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -73,6 +76,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final MemberRoleC7nMapper memberRoleC7nMapper;
     private final OrganizationAssertHelper organizationAssertHelper;
     private final OrganizationResourceLimitService organizationResourceLimitService;
+    private final RandomInfoGenerator randomInfoGenerator;
     private final RoleMemberService roleMemberService;
     private final RoleService roleService;
     private final TenantService tenantService;
@@ -89,6 +93,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        MemberRoleC7nMapper memberRoleC7nMapper,
                                        OrganizationAssertHelper organizationAssertHelper,
                                        OrganizationResourceLimitService organizationResourceLimitService,
+                                       RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
                                        TenantService tenantService,
                                        TransactionalProducer producer,
@@ -106,6 +111,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.memberRoleService = memberRoleService;
         this.organizationAssertHelper = organizationAssertHelper;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.randomInfoGenerator = randomInfoGenerator;
         this.producer = producer;
         this.roleMemberService = roleMemberService;
         this.roleService = roleService;
@@ -157,6 +163,29 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         }
         return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
+    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
+    public User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles) {
+        organizationResourceLimitService.checkEnableCreateUserOrThrowE(organizationId, 1);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        UserValidator.validateCreateUserWithRoles(user, checkRoles);
+        organizationAssertHelper.notExisted(organizationId);
+        userAssertHelper.emailExisted(user.getEmail());
+        user.setLoginName(randomInfoGenerator.randomLoginName());
+        List<Role> userRoles = user.getRoles();
+        // 将role转为memberRole， memberId不用给
+        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
+        if (devopsMessage) {
+            user = userService.createUser(user);
+            createUserAndUpdateRole(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
+        } else {
+            user = userService.createUser(user);
+        }
+        return user;
     }
 
     private List<MemberRole> role2MemberRole(Long organizationId, List<Role> roles) {
@@ -509,24 +538,22 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public User createUserAndUpdateRole(Long fromUserId, User userDTO, List<Role> userRoles, String value, Long organizationId) {
-        return producer.applyAndReturn(
+    public void createUserAndUpdateRole(Long fromUserId, User userDTO, List<Role> userRoles, String value, Long organizationId) {
+        UserEventPayload userEventPayload = getUserEventPayload(userDTO);
+        CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
+        createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
+        List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(fromUserId, userDTO, userRoles, value, organizationId);
+        createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
+        producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withRefType("user")
-                        .withSagaCode(ORG_USER_CREAT),
+                        .withSagaCode(ORG_USER_CREAT)
+                        .withPayloadAndSerialize(createAndUpdateUserEventPayload)
+                        .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
+                        .withSourceId(organizationId),
                 builder -> {
-                    UserEventPayload userEventPayload = getUserEventPayload(userDTO);
-                    CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
-                    createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
-                    List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(fromUserId, userDTO, userRoles, value, organizationId);
-                    createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
-                    builder
-                            .withPayloadAndSerialize(createAndUpdateUserEventPayload)
-                            .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
-                            .withSourceId(organizationId);
-                    return userDTO;
                 });
     }
 }

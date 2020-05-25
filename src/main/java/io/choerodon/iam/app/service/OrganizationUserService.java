@@ -25,7 +25,18 @@ public interface OrganizationUserService {
      */
     User createUserWithRoles(Long fromUserId, User user);
 
-    User createUserAndUpdateRole(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
+    /**
+     * 创建用户并分配角色.
+     *
+     * @param organizationId 组织Id
+     * @param user           用户DTO
+     * @param checkPassword  是否校验密码策略
+     * @param checkRoles     是否校验角色必输
+     * @return 用户DTO
+     */
+    User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles);
+
+    void createUserAndUpdateRole(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
 
     void sendUserCreationSaga(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
 

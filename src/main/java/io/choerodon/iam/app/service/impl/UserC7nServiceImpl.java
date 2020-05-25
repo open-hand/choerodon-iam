@@ -16,6 +16,7 @@ import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -129,6 +130,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserPasswordValidator userPasswordValidator;
     @Autowired
     private RoleAssertHelper roleAssertHelper;
+    @Autowired
+    private UserPasswordService userPasswordService;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -835,28 +838,10 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
-        if (!ENCODER.matches(userPasswordDTO.getOriginalPassword(), user.getPassword())) {
+        if (!user.comparePassword(userPasswordDTO.getOriginalPassword())) {
             throw new CommonException("error.password.originalPassword");
         }
-        //密码策略
-        if (checkPassword) {
-            BaseUser baseUserDTO = new BaseUser();
-            BeanUtils.copyProperties(user, baseUserDTO);
-            Tenant organizationDTO = tenantRepository.selectByPrimaryKey(user.getOrganizationId());
-            if (organizationDTO != null) {
-                PasswordPolicy example = new PasswordPolicy();
-                example.setOrganizationId(organizationDTO.getTenantId());
-                if (userPasswordDTO.getPassword() != null) {
-                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), baseUserDTO);
-                }
-                // 校验用户密码
-                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getTenantId(), true);
-            }
-        }
-        user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));
-        updateSelective(user);
-        // TODO 用户更新密码逻辑需要考虑如何修改
-//        passwordRecord.updatePassword(user.getId(), user.getPassword());
+        userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
 
         // send siteMsg
         Map<String, String> paramsMap = new HashMap<>();

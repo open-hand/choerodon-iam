@@ -196,4 +196,34 @@
         </where>
         group by im.id
     </select>
+
+    <!-- 返回权限集检查状态 -->
+    <select id="checkPermissionSets" resultType="org.hzero.iam.api.dto.PermissionCheckDTO">
+    select
+    ps.code,
+    ps.h_controller_type controller_type,
+    1 approve
+    from iam_menu ps
+    join iam_role ir on ps.fd_level = ir.fd_level and ir.id in
+    <foreach collection="roleIds" open="(" separator="," close=")" item="roleId">
+        #{roleId}
+    </foreach>
+    <if test="projectId!=null">
+        JOIN iam_member_role imr ON imr.role_id = ir.id
+        AND imr.member_id = #{userId}
+        JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        AND fpu.PROJECT_ID = #{projectId}
+    </if>
+    join iam_role_permission irp on (
+    irp.role_id = ir.id
+    and ps.id = irp.permission_id
+    and irp.type = 'PS'
+    and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
+    )
+    <trim prefix="where" prefixOverrides="or">
+        <foreach collection="codes" item="code">
+            or ps.code like concat('%',#{code})
+        </foreach>
+    </trim>
+    </select>
 </mapper>

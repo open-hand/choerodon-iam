@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.domain.entity.Menu;
 
 import java.util.List;
@@ -45,4 +46,16 @@ public interface MenuC7nMapper {
     List<Menu> listUserInfoMenuOnlyTypeMenu();
 
     List<Menu> listMenuByLabelAndType(@Param("labelNames") Set<String> labelNames, @Param("type") String type);
+
+    /**
+     * 判断是否有权限
+     *
+     * @param roleIds 当前角色集合
+     * @param codes   权限集编码
+     */
+    List<PermissionCheckDTO> checkPermissionSets(@Param("roleIds") List<Long> roleIds,
+                                                 @Param("projectId") Long projectId,
+                                                 @Param("userId") Long userId,
+                                                 @Param("codes") List<String> codes);
+
 }

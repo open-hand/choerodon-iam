@@ -427,6 +427,31 @@
             and imr.role_id = #{roleId}
     </select>
 
+    <select id="listMemberRoleWithOutProjectId" resultType="org.hzero.iam.domain.entity.MemberRole">
+        SELECT
+            imr.*
+        FROM
+            iam_member_role imr
+            JOIN iam_role ir ON ir.id = imr.role_id
+            JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+            AND fpu.PROJECT_ID NOT IN (#{projectId})
+        WHERE
+            imr.member_id = #{userId}
+            AND imr.source_id = #{tenantId}
+            AND imr.source_type = 'organization'
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE fpu.*
+        FROM
+        fd_project_user fpu
+        WHERE
+        fpu.PROJECT_ID = #{projectId}
+        AND fpu.MEMBER_ROLE_ID IN
+        <foreach collection="memberRoleIds" open="(" separator="," close=")" item="memberRoleId">
+            #{memberRoleId}
+        </foreach>
+    </delete>
 
 
 </mapper>

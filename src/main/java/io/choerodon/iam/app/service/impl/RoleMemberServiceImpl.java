@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -14,23 +13,21 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
 import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
-import io.choerodon.iam.infra.valitador.RoleAssignmentViewValidator;
-import org.hzero.iam.api.dto.RoleDTO;
+
+import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -47,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -110,12 +108,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private UserService userService;
 
+    private ProjectAssertHelper projectAssertHelper;
+
     private UserMapper userMapper;
 
     private ExcelImportUserTask excelImportUserTask;
 
     private ExcelImportUserTask.FinishFallback finishFallback;
     private TransactionalProducer producer;
+    private MemberRoleService memberRoleService;
+    private ProjectUserMapper projectUserMapper;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
@@ -125,13 +127,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  RoleMapper roleMapper,
                                  UserAssertHelper userAssertHelper,
                                  SagaClient sagaClient,
+                                 MemberRoleService memberRoleService,
                                  LabelMapper labelMapper,
                                  LabelC7nMapper labelC7nMapper,
                                  ClientMapper clientMapper,
                                  UploadHistoryMapper uploadHistoryMapper,
                                  OrganizationUserService organizationUserService,
                                  UserService userService,
+                                 ProjectUserMapper projectUserMapper,
                                  UserMapper userMapper,
+                                 ProjectAssertHelper projectAssertHelper,
                                  ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  TransactionalProducer producer) {
@@ -151,6 +156,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.userMapper = userMapper;
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
+        this.memberRoleService = memberRoleService;
+        this.projectAssertHelper = projectAssertHelper;
+        this.projectUserMapper = projectUserMapper;
         this.producer = producer;
     }
 
@@ -235,17 +243,12 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, Boolean syncAll) {
-        String memberType = roleAssignmentDeleteDTO.getMemberType();
-        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
-            deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
-            return;
-        }
-        delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value(), syncAll);
+    public void deleteOnProjectLevel(Long projectId,Long userId, Boolean syncAll) {
+        deleteProjectRole(projectId, userId, syncAll);
         //删除用户所有项目角色时发送web hook
-        JSONObject jsonObject = new JSONObject();
-        List<Long> collect = roleAssignmentDeleteDTO.getData().keySet().stream().collect(Collectors.toList());
-        jsonObject.put("projectId", roleAssignmentDeleteDTO.getSourceId());
+//        JSONObject jsonObject = new JSONObject();
+//        List<Long> collect = roleAssignmentDeleteDTO.getData().keySet().stream().collect(Collectors.toList());
+//        jsonObject.put("projectId", roleAssignmentDeleteDTO.getSourceId());
         // TODO notify-service
 //        jsonObject.put("user", JSON.toJSONString(userService.getWebHookUser(collect.get(0))));
 //        UserDTO userDTO = userMapper.selectByPrimaryKey(collect.get(0));
@@ -260,10 +263,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 //        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userDTO.getId()), SendSettingBaseEnum.DELETE_USERROLES.value(), params, roleAssignmentDeleteDTO.getSourceId(), webHookJsonSendDTO);
     }
 
-    @Override
-    public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
-        deleteOnProjectLevel(roleAssignmentDeleteDTO, false);
-    }
 
     @Override
     public MemberRole insertSelective(MemberRole memberRoleDTO) {
@@ -578,27 +577,25 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         return returnList;
     }
 
-    @Override
-    public void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
-        deleteByView(roleAssignmentDeleteDTO, sourceType, null, false);
-    }
-
-    private void deleteByView(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO,
-                              String sourceType,
-                              List<UserMemberEventPayload> userMemberEventPayloads,
-                              Boolean syncAll) {
-        boolean doSendEvent = userMemberEventPayloads != null;
-        // 默认的 member type 是 'user'
-        String memberType =
-                roleAssignmentDeleteDTO.getMemberType() == null ? MemberType.USER.value() : roleAssignmentDeleteDTO.getMemberType();
-        String view = roleAssignmentDeleteDTO.getView();
-        Long sourceId = roleAssignmentDeleteDTO.getSourceId();
-        Map<Long, List<Long>> data = roleAssignmentDeleteDTO.getData();
-        if (RoleAssignmentViewValidator.USER_VIEW.equalsIgnoreCase(view)) {
-            deleteFromMap(data, false, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads, syncAll);
-        } else if (RoleAssignmentViewValidator.ROLE_VIEW.equalsIgnoreCase(view)) {
-            deleteFromMap(data, true, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads, syncAll);
+    private void deleteRoleForProject(Long sourceId,
+                                      Long userId) {
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
+        // 当前项目 memberRoleIds
+        List<MemberRole> projectMemberRoles = projectUserMapper.listMemberRoleByProjectIdAndUserId(sourceId, userId);
+        // 获取当前用户在该组织下其他项目用到的memberRoleIds
+        List<Long> otherMemberRoleIds = projectUserMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId()).stream().map(MemberRole::getId).collect(Collectors.toList());
+        // 组织层和项目层都要被删除的角色
+        List<MemberRole> delMemberRoles = new ArrayList<>();
+        projectMemberRoles.forEach(t -> {
+            if (!otherMemberRoleIds.contains(t.getId())) {
+                delMemberRoles.add(t);
+            }
+        });
+        if (!CollectionUtils.isEmpty(delMemberRoles)) {
+            memberRoleService.batchDeleteMemberRole(sourceId, delMemberRoles);
         }
+        projectUserMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toList()));
+
     }
 
     /**
@@ -659,10 +656,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         return userMemberEventMsg;
     }
 
-    @Override
-    public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
-        delete(roleAssignmentDeleteDTO, sourceType, null);
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -706,19 +699,24 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
-    public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType, Boolean syncAll) {
+    public void deleteProjectRole(Long projectId,Long userId, Boolean syncAll) {
+        deleteRoleForProject(projectId, userId);
         if (devopsMessage) {
-            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads, syncAll);
             try {
+                List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+                UserMemberEventPayload userMemberEventMsg=new UserMemberEventPayload();
+                userMemberEventMsg.setResourceId(projectId);
+                userMemberEventMsg.setResourceType(ResourceLevel.PROJECT.value());
+                User user = userAssertHelper.userNotExisted(userId);
+                userMemberEventMsg.setUsername(user.getLoginName());
+                userMemberEventMsg.setUserId(userId);
+                userMemberEventMsg.setSyncAll(syncAll);
                 String input = mapper.writeValueAsString(userMemberEventPayloads);
                 String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
-                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds, sourceType, roleAssignmentDeleteDTO.getSourceId()));
+                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds, ResourceLevel.PROJECT.value(),projectId));
             } catch (Exception e) {
                 throw new CommonException("error.iRoleMemberServiceImpl.deleteMemberRole.event", e);
             }
-        } else {
-            deleteByView(roleAssignmentDeleteDTO, sourceType, null, syncAll);
         }
     }
 

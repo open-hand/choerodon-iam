@@ -3,7 +3,10 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -190,6 +193,20 @@ public class ProjectUserC7nController extends BaseController {
         roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+    /**
+     * 在project层根据id删除角色
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层批量移除用户")
+    @PostMapping(value = "/{project_id}/users/{user_id}/role_members/delete")
+    public ResponseEntity deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+                                               @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                               @PathVariable(name = "user_id") Long userId) {
+        roleMemberService.deleteOnProjectLevel(sourceId, userId, syncAll);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 
 
 }

@@ -111,13 +111,14 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改用户")
     @PutMapping(value = "/users/{id}")
-    public ResponseEntity<User> update(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Void> update(@PathVariable(name = "organization_id") Long organizationId,
                                        @PathVariable Long id,
                                        @RequestBody User user) {
         user.setOrganizationId(organizationId);
         // TODO 不知道为什么校验失败，先屏蔽
 //        SecurityTokenHelper.validToken(user, false);
-        return Results.success(organizationUserService.updateUser(user));
+        organizationUserService.updateUser(organizationId, user);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

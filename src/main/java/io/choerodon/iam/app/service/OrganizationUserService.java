@@ -50,7 +50,7 @@ public interface OrganizationUserService {
 
     User update(Long organizationId, User user);
 
-    User updateUser(User user);
+    void updateUser(Long organizationId, User user);
 
     User resetUserPassword(Long organizationId, Long userId);
 

@@ -1,10 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.MemberRole;
-
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.MemberRole;
 
 /**
  * @author carllhw
@@ -20,4 +20,8 @@ public interface MemberRoleC7nMapper {
                                                      @Param("userIds") Set<Long> userIds,
                                                      @Param("roleName") String realName,
                                                      @Param("label") String label);
+
+    List<MemberRole> listMemberRoleByOrgIdAndUserIdAndRoleLable(@Param("organizationId") Long organizationId,
+                                                                @Param("userId") Long userId,
+                                                                @Param("labelName") String labelName);
 }

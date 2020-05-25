@@ -1,32 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.ExcelSuffix;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
-import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
-import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Client;
@@ -47,17 +33,30 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
+import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
+import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
 
 /**
  * @author superlee
@@ -660,10 +659,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
-    public void updateMemberRole(List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
+    public void updateMemberRole(Long fromUserId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
     // 发送saga同步角色
     producer.apply(StartSagaBuilder.newBuilder()
-                    .withRefId(DetailsHelper.getUserDetails().getUserId().toString())
+                    .withRefId(fromUserId.toString())
                     .withRefType("user")
                     .withSourceId(sourceId)
                     .withLevel(level)

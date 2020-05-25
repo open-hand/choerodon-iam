@@ -48,6 +48,7 @@ import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
 import io.choerodon.iam.infra.utils.MockMultipartFile;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.iam.infra.valitador.RoleValidator;
@@ -125,6 +126,10 @@ public class ExcelImportUserTask {
     @Async("excel-executor")
     public void importUsers(Long userId, List<UserDTO> users, Long organizationId, UploadHistoryDTO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
+        // 设置用户上下文
+        User operator = userMapper.selectByPrimaryKey(userId);
+        CustomContextUtil.setUserContext(operator.getLoginName(), userId, operator.getOrganizationId());
+
         List<UserDTO> validateUsers = new ArrayList<>();
         List<ErrorUserVO> errorUsers = new ArrayList<>();
         long begin = System.currentTimeMillis();

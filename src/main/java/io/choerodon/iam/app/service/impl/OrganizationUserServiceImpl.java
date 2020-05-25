@@ -183,24 +183,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public void sendUserCreationSaga(Long fromUserId, User userDTO, List<Role> userRoles, String value, Long organizationId) {
-        producer.applyAndReturn(
+        UserEventPayload userEventPayload = getUserEventPayload(userDTO);
+        CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
+        createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
+        List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(fromUserId, userDTO, userRoles, value, organizationId);
+        createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
+        producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withRefType("user")
                         .withSagaCode(ORG_USER_CREAT),
-                builder -> {
-                    UserEventPayload userEventPayload = getUserEventPayload(userDTO);
-                    CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
-                    createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
-                    List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(fromUserId, userDTO, userRoles, value, organizationId);
-                    createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
-                    builder
-                            .withPayloadAndSerialize(createAndUpdateUserEventPayload)
-                            .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
-                            .withSourceId(organizationId);
-                    return userDTO;
-                });
+                builder -> builder.withPayloadAndSerialize(createAndUpdateUserEventPayload)
+                        .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
+                        .withSourceId(organizationId));
     }
 
 

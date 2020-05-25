@@ -52,8 +52,8 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.IamPageUtils;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -133,29 +133,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public Page<User> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
                                                                    String roleName, Boolean enabled, Boolean locked, String params) {
-        int page = pageable.getPage();
-        int size = pageable.getSize();
-        boolean doPage = (size != 0);
-        Page<User> result = IamPageUtils.createEmptyPage(page, size);
-        result.setContent(new ArrayList<>());
-        List<User> userList = userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params);
-        Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
-        memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIds(organizationId, userIds, realName, RoleLabelEnum.TENANT_ROLE.value());
-        if (doPage) {
-            int start = IamPageUtils.getBegin(page, size);
-            int count = userC7nMapper.selectCountUsersOnOrganizationLevel(ResourceLevel.ORGANIZATION.value(), organizationId,
-                    loginName, realName, roleName, enabled, locked, params);
-            List<User> users = userC7nMapper.selectUserWithRolesOnOrganizationLevel(start, size, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotalElements(count);
-            result.getContent().addAll(users);
-        } else {
-            List<User> users = userC7nMapper.selectUserWithRolesOnOrganizationLevel(null, null, ResourceLevel.ORGANIZATION.value(),
-                    organizationId, loginName, realName, roleName, enabled, locked, params);
-            result.setTotalElements(users.size());
-            result.getContent().addAll(users);
+
+        Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
+        List<User> userList = userPage.getContent();
+        // 添加用户角色
+        if (!CollectionUtils.isEmpty(userList)) {
+            Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
+            List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIds(organizationId, userIds, roleName, RoleLabelEnum.TENANT_ROLE.value());
+
+            if(!CollectionUtils.isEmpty(memberRoles)) {
+                Map<Long, List<MemberRole>> roleMap = memberRoles.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
+                userList.forEach(user -> {
+                    List<MemberRole> memberRoleList = roleMap.get(user.getId());
+                    if (!CollectionUtils.isEmpty(memberRoleList)) {
+                        user.setRoles(memberRoleList.stream().map(MemberRole::getRole).collect(Collectors.toList()));
+                    }
+                });
+            }
         }
-        return result;
+        return userPage;
     }
 
     @Override

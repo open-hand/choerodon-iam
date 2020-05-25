@@ -1138,7 +1138,9 @@
     <select id="listOrganizationUser" resultType="org.hzero.iam.domain.entity.User">
         SELECT *
         FROM (
-            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,
+            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
+            iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,
+            iu.object_version_number
             CASE
             WHEN iu.is_ldap = 1 THEN
             iu.login_name

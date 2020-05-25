@@ -437,6 +437,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
+        LOGGER.info("Start to batch insert {} users into tenant with id {}...", insertUsers.size(), organizationId);
         List<ErrorUserVO> errorUsers = new ArrayList<>();
         List<UserEventPayload> payloads = new ArrayList<>();
         boolean errorUserFlag = true;
@@ -447,13 +448,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 user.setOrganizationId(organizationId);
                 userDTO = ((OrganizationUserServiceImpl) AopContext.currentProxy()).createUserWithRoles(fromUserId, user);
             } catch (Exception e) {
-                LOGGER.error("context", e);
+                LOGGER.error("BatchCreateUsersOnExcel context", e);
                 ErrorUserVO errorUser = new ErrorUserVO();
                 BeanUtils.copyProperties(user, errorUser);
                 if (e instanceof CommonException && ERROR_ORGANIZATION_USER_NUM_MAX.equals(((CommonException) e).getCode())) {
                     errorUser.setCause("组织用户数量已达上限：100，无法创建更多用户");
                 } else {
-                    errorUser.setCause("用户或角色插入异常");
+                    errorUser.setCause("用户或角色插入异常, 异常code是: " + e.getMessage());
                 }
                 errorUsers.add(errorUser);
                 errorUserFlag = false;
@@ -474,29 +475,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             params.put("organizationName", organizationDTO.getTenantName());
             params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
             params.put("userList", JSON.toJSONString(insertUsers));
-
-//            Map<String, String> jsonObject = new HashMap<>();
             params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
             params.put("addCount", String.valueOf(insertUsers.size()));
-//            List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
-//            if (!C7nCollectionUtils.isEmpty(userList)) {
-//                for (User userDTO : insertUsers) {
-//                    userList.add(userService.getWebHookUser(userDTO.getId()));
-//                }
-//            }
-//
-//            jsonObject.put("userList", JSON.toJSONString(userList));
-//            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                    SendSettingBaseEnum.ADD_MEMBER.value(),
-//                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
-//                    jsonObject,
-//                    new Date(),
-//                    userService.getWebHookUser(fromUserId)
-//            );
             userC7nService.sendNotice(Arrays.asList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
         });
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
+        LOGGER.info("Batch insert {} users into tenant with id {} processed...", insertUsers.size(), organizationId);
         return errorUsers;
     }
 

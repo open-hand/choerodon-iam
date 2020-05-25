@@ -150,6 +150,7 @@ public class ExcelImportUserTask {
                 errorUsers.addAll(organizationUserService.batchCreateUsersOnExcel(userFragments, userId, organizationId));
             }
         });
+        logger.info("Finished to try to insert users from excel...");
         int insertErrorUsers = errorUsers.size() - validateErrorUsers;
         Integer successCount = usersToBeInserted.size() - insertErrorUsers;
         Integer failedCount = errorUsers.size();
@@ -171,6 +172,7 @@ public class ExcelImportUserTask {
     }
 
     private void uploadAndFallback(UploadHistoryDTO uploadHistoryDTO, FinishFallback fallback, List<ErrorUserVO> errorUsers) {
+        logger.info("Start upload and fallback...");
         String url = "";
         if (uploadHistoryDTO.getFailedCount() > 0) {
             //失败的用户导出到excel
@@ -463,7 +465,7 @@ public class ExcelImportUserTask {
         Map<String, String> propertyMap = new LinkedHashMap<>();
         propertyMap.put("realName", "用户名*");
         propertyMap.put("email", "邮箱*");
-        propertyMap.put("roleCodes", "角色编码*");
+        propertyMap.put("roleLabels", "角色标签*");
         propertyMap.put("password", "密码");
         propertyMap.put("phone", "手机号");
         propertyMap.put("cause", "原因");

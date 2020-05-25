@@ -1135,24 +1135,23 @@
             )
         </if>
     </select>
-    <select id="listOrganizationUser" resultMap="userWithRolesMap">
+    <select id="listOrganizationUser" resultType="org.hzero.iam.domain.entity.User">
         SELECT *
         FROM (
-            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap, iu.is_admin,
+            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,
             CASE
             WHEN iu.is_ldap = 1 THEN
             iu.login_name
             ELSE
             iu.email
-            end as login_name,
-            ir.name as role_name
+            end as login_name
             FROM iam_member_role imr
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
             LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
             LEFT JOIN iam_label il ON il.id = hlr.label_id
             LEFT JOIN iam_user iu ON iu.id = imr.member_id
             <where>
-                imr.source_id = 1 AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
+                imr.source_id = #{organizationId} AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
                 <if test="roleName != null">
                     AND ir.name LIKE concat(concat('%',#{roleName}),'%')
                 </if>
@@ -1172,13 +1171,14 @@
             <if test="loginName != null">
                 AND iut.login_name LIKE concat(concat('%',loginName,'%')
             </if>
-            <if test="param != null">
+            <if test="params != null">
                 and (
-                iut.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iut.real_name LIKE concat(concat('%',#{param}),'%') OR
-                ir.name LIKE concat(concat('%',#{param}),'%')
+                iut.login_name LIKE concat(concat('%',#{params}),'%') OR
+                iut.real_name LIKE concat(concat('%',#{params}),'%') OR
+                ir.name LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
+        order by enabled desc
     </select>
 </mapper>

@@ -1,11 +1,25 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -26,27 +40,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.enums.TenantConfigEnum;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author scp
@@ -127,7 +125,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
         List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
-        dto.setTenantConfigVO(configDTOToVO(configList));
+        dto.setTenantConfigVO(TenantConfigConvertUtils.configDTOToVO((configList)));
         List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, tenantId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());
@@ -429,38 +427,4 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         BeanUtils.copyProperties(tenantVO, tenant);
         return tenant;
     }
-
-    private TenantConfigVO configDTOToVO(List<TenantConfig> configs) {
-        TenantConfigVO tenantConfigVO = new TenantConfigVO();
-        configs.forEach(t -> {
-            switch (TenantConfigEnum.forValue(t.getConfigKey())) {
-                case ADDRESS:
-                    tenantConfigVO.setAddress(t.getConfigValue());
-                    break;
-                case SCALE:
-                    tenantConfigVO.setScale(t.getConfigValue());
-                    break;
-                case HOME_PAGE:
-                    tenantConfigVO.setHomePage(t.getConfigValue());
-                    break;
-                case IMAGE_URL:
-                    tenantConfigVO.setImageUrl(t.getConfigValue());
-                    break;
-                case BUSINESS_TYPE:
-                    tenantConfigVO.setBusinessType(t.getConfigValue());
-                    break;
-                case EMAIL_SUFFIX:
-                    tenantConfigVO.setEmailSuffix(t.getConfigValue());
-                    break;
-                case IS_REGISTER:
-                    tenantConfigVO.setRegister(Boolean.getBoolean(t.getConfigValue()));
-                    break;
-                case USER_ID:
-                    tenantConfigVO.setUserId(Long.parseLong(t.getConfigValue()));
-                    break;
-            }
-        });
-        return tenantConfigVO;
-    }
-
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
@@ -40,6 +41,7 @@ import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -48,6 +50,7 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
@@ -98,6 +101,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
+    private MemberRoleService memberRoleService;
+
+    private RoleMemberService roleMemberService;
+
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     public OrganizationUserServiceImpl(OrganizationAssertHelper organizationAssertHelper,
@@ -113,7 +120,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
                                        OrganizationResourceLimitService organizationResourceLimitService,
-                                       MemberRoleC7nMapper memberRoleC7nMapper) {
+                                       MemberRoleC7nMapper memberRoleC7nMapper,
+                                       MemberRoleService memberRoleService,
+                                       RoleMemberService roleMemberService) {
         this.organizationAssertHelper = organizationAssertHelper;
         this.userAssertHelper = userAssertHelper;
         this.userService = userService;
@@ -128,6 +137,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.randomInfoGenerator = randomInfoGenerator;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
+        this.memberRoleService = memberRoleService;
+        this.roleMemberService = roleMemberService;
     }
 
     @Override
@@ -283,9 +294,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
-    public User updateUser(User user) {
-        User result = userService.updateUser(user);
-        if (devopsMessage) {
+    public void updateUser(Long organizationId, User user) {
+        // 1. 更新用户信息
+        // ldap用户不能更新用户信息，只更新角色关系
+        User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        if (Boolean.FALSE.equals(userDetails.ldapUser())) {
+            userService.updateUserInternal(user);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setEmail(user.getEmail());
             userEventPayload.setId(user.getId().toString());
@@ -306,7 +320,55 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
         }
-        return result;
+        // 2. 更新用户角色
+        // 查询用户拥有的组织层角色
+        List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
+        List<Role> roles = user.getRoles();
+        Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
+        Set<Long> oldIds = memberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+        // 要添加的角色
+        Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
+        // 要删除的角色
+        Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
+
+        List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(user.getId());
+            memberRole.setMemberType(MemberType.USER.value());
+            memberRole.setRoleId(id);
+            memberRole.setSourceId(organizationId);
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(organizationId);
+            return memberRole;
+        }).collect(Collectors.toList());
+        memberRoleService.batchAssignMemberRoleInternal(insertMemberRoles);
+
+        List<MemberRole> deleteMemberRoles = deleteIds.stream().map(id -> {
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(user.getId());
+            memberRole.setMemberType(MemberType.USER.value());
+            memberRole.setRoleId(id);
+            memberRole.setSourceId(organizationId);
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(organizationId);
+            return memberRole;
+        }).collect(Collectors.toList());
+        memberRoleService.batchDeleteMemberRole(organizationId, deleteMemberRoles);
+
+        List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
+        Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList()));
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(user.getId());
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayload.setResourceId(organizationId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayloads.add(userMemberEventPayload);
+        roleMemberService.updateMemberRole(user.getId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
     }
 
 

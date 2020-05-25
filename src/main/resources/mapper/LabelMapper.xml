@@ -63,12 +63,13 @@
     </select>
 
     <select id="selectLabelNamesInRoleIds" resultType="java.lang.String">
-        SELECT DISTINCT iam_label.name
-        FROM iam_label
-        INNER JOIN iam_role_label ON iam_role_label.label_id = iam_label.id
-        WHERE iam_role_label.role_id IN
-        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
-            #{item}
+        SELECT DISTINCT il.name
+        FROM iam_role ir
+        INNER JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        WHERE ir.id IN
+        <foreach item="roleId" index="index" collection="roleIds" open="(" separator="," close=")">
+            #{roleId}
         </foreach>
     </select>
     <select id="listByNames" resultType="org.hzero.iam.domain.entity.Label">

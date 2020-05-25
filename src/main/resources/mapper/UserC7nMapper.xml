@@ -1179,6 +1179,5 @@
                 )
             </if>
         </where>
-        order by enabled desc
     </select>
 </mapper>

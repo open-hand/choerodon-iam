@@ -26,6 +26,12 @@ public class UserAssertHelper extends AssertHelper {
         return userNotExisted(id, "error.user.not.exist");
     }
 
+    public void notExternalUser(Long originOrgId, Long userOrgId) {
+        if (!originOrgId.equals(userOrgId)) {
+            throw new CommonException("error.user.update.external", originOrgId, userOrgId);
+        }
+    }
+
     public User userNotExisted(WhichColumn whichColumn, String value) {
         switch (whichColumn) {
             case LOGIN_NAME:

@@ -1,27 +1,22 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.PermissionC7nService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.swagger.swagger.PermissionRegistry;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.domain.entity.Permission;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
 
 /**
  * @author scp

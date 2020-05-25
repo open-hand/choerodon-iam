@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
@@ -24,7 +25,6 @@ import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -69,76 +69,61 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
-    @Value("${choerodon.site.default.password:abcd1234}")
-    private String siteDefaultPassword;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private OrganizationAssertHelper organizationAssertHelper;
+    private final LabelC7nMapper labelC7nMapper;
+    private final MemberRoleService memberRoleService;
+    private final MemberRoleC7nMapper memberRoleC7nMapper;
+    private final OrganizationAssertHelper organizationAssertHelper;
+    private final OrganizationResourceLimitService organizationResourceLimitService;
+    private final RandomInfoGenerator randomInfoGenerator;
+    private final RoleMemberService roleMemberService;
+    private final RoleService roleService;
+    private final TenantService tenantService;
+    private final TransactionalProducer producer;
+    private final UserAssertHelper userAssertHelper;
+    private final UserC7nMapper userC7nMapper;
+    private final UserC7nService userC7nService;
+    private final UserMapper userMapper;
+    private final UserPasswordService userPasswordService;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
-    private UserAssertHelper userAssertHelper;
-
-    private UserService userService;
-
-    private UserC7nService userC7nService;
-
-    private TransactionalProducer producer;
-
-    private RoleService roleService;
-
-    private LabelC7nMapper labelC7nMapper;
-
-    private UserMapper userMapper;
-
-    private UserC7nMapper userC7nMapper;
-
-    private UserRepository userRepository;
-
-    private RandomInfoGenerator randomInfoGenerator;
-
-    private TenantService tenantService;
-    private MemberRoleC7nMapper memberRoleC7nMapper;
-
-    private OrganizationResourceLimitService organizationResourceLimitService;
-
-    private MemberRoleService memberRoleService;
-
-    private RoleMemberService roleMemberService;
-
-    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
-
-    public OrganizationUserServiceImpl(OrganizationAssertHelper organizationAssertHelper,
-                                       UserAssertHelper userAssertHelper,
-                                       UserService userService,
-                                       UserC7nService userC7nService,
-                                       TransactionalProducer producer,
-                                       UserMapper userMapper,
-                                       UserC7nMapper userC7nMapper,
-                                       UserRepository userRepository,
-                                       LabelC7nMapper labelC7nMapper,
-                                       TenantService tenantService,
+    public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
+                                       MemberRoleC7nMapper memberRoleC7nMapper,
+                                       OrganizationAssertHelper organizationAssertHelper,
+                                       OrganizationResourceLimitService organizationResourceLimitService,
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
-                                       OrganizationResourceLimitService organizationResourceLimitService,
-                                       MemberRoleC7nMapper memberRoleC7nMapper,
+                                       TenantService tenantService,
+                                       TransactionalProducer producer,
+                                       UserAssertHelper userAssertHelper,
+                                       UserC7nMapper userC7nMapper,
+                                       UserC7nService userC7nService,
+                                       UserMapper userMapper,
+                                       UserPasswordService userPasswordService,
+                                       UserRepository userRepository,
                                        MemberRoleService memberRoleService,
-                                       RoleMemberService roleMemberService) {
-        this.organizationAssertHelper = organizationAssertHelper;
-        this.userAssertHelper = userAssertHelper;
-        this.userService = userService;
-        this.userC7nService = userC7nService;
-        this.producer = producer;
-        this.userMapper = userMapper;
-        this.userC7nMapper = userC7nMapper;
-        this.userRepository = userRepository;
+                                       RoleMemberService roleMemberService,
+                                       UserService userService) {
         this.labelC7nMapper = labelC7nMapper;
-        this.roleService = roleService;
-        this.tenantService = tenantService;
-        this.randomInfoGenerator = randomInfoGenerator;
-        this.organizationResourceLimitService = organizationResourceLimitService;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.organizationResourceLimitService = organizationResourceLimitService;
+        this.producer = producer;
+        this.randomInfoGenerator = randomInfoGenerator;
         this.roleMemberService = roleMemberService;
+        this.roleService = roleService;
+        this.tenantService = tenantService;
+        this.userAssertHelper = userAssertHelper;
+        this.userC7nMapper = userC7nMapper;
+        this.userC7nService = userC7nService;
+        this.userMapper = userMapper;
+        this.userPasswordService = userPasswordService;
+        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -152,7 +137,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
             List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIds(organizationId, userIds, roleName, RoleLabelEnum.TENANT_ROLE.value());
 
-            if(!CollectionUtils.isEmpty(memberRoles)) {
+            if (!CollectionUtils.isEmpty(memberRoles)) {
                 Map<Long, List<MemberRole>> roleMap = memberRoles.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
                 userList.forEach(user -> {
                     List<MemberRole> memberRoleList = roleMap.get(user.getId());
@@ -376,27 +361,21 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = Exception.class)
     @OperateLog(type = "resetUserPassword", content = "%s重置%s的登录密码", level = {ResourceLevel.ORGANIZATION})
     public User resetUserPassword(Long organizationId, Long userId) {
-        userService.resetUserPassword(userId, organizationId);
         organizationAssertHelper.notExisted(organizationId);
         User user = userAssertHelper.userNotExisted(userId);
+        userAssertHelper.notExternalUser(organizationId, user.getOrganizationId());
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
 
-        // TODO 密码纪录
-        // passwordRecord.updatePassword(user.getId(), user.getPassword());
-
-        // delete access tokens, refresh tokens and sessions of the user after resetting his password
-        // TODO 删除token
-        // oauthTokenFeignClient.deleteTokens(user.getLoginName());
+        userService.resetUserPassword(userId, organizationId);
 
         // send siteMsg
-        // TODO 发送站内信
-//        Map<String, Object> paramsMap = new HashMap<>();
-//        paramsMap.put("userName", user.getRealName());
-//        paramsMap.put("defaultPassword", defaultPassword);
-//        List<Long> userIds = Collections.singletonList(userId);
-//        userService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
+        Map<String, String> paramsMap = new HashMap<>();
+        paramsMap.put("userName", user.getRealName());
+        paramsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+        List<Long> userIds = Collections.singletonList(userId);
+        userC7nService.sendNotice(userIds, "resetOrganizationUserPassword", paramsMap, organizationId, ResourceLevel.ORGANIZATION);
 
         return user;
     }

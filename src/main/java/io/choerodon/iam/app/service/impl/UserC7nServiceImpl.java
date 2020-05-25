@@ -391,10 +391,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public void sendNotice(List<Long> userIds, String code,
                            Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
-        LOGGER.info("ready : send Notice to {} users", userIds.size());
         if (CollectionUtils.isEmpty(userIds)) {
             return;
         }
+        LOGGER.info("ready : send Notice to {} users", userIds.size());
 
         ExceptionUtil.doWithTryCatchAndLog(LOGGER,
                 () -> doSendNotice(userIds, code, params, sourceId, resourceLevel),

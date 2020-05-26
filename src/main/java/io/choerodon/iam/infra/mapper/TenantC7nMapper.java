@@ -1,24 +1,23 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Tenant;
-
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
  */
-public interface TenantC7nMapper  {
+public interface TenantC7nMapper {
 
     List<TenantVO> fulltextSearch(
             @Param("name") String name,
             @Param("code") String code,
+            @Param("ownerRealName") String ownerRealName,
             @Param("enabled") Boolean enabled,
             @Param("params") String params);
 
@@ -30,7 +29,6 @@ public interface TenantC7nMapper  {
             @Param("start") Integer start,
             @Param("size") Integer size,
             @Param("params") String params);
-
 
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
@@ -47,10 +45,10 @@ public interface TenantC7nMapper  {
      * @return 查询结果
      */
     List<Tenant> selectSpecified(@Param("orgIds") Set<Long> orgIds,
-                                   @Param("name") String name,
-                                   @Param("code") String code,
-                                   @Param("enabled") Boolean enabled,
-                                   @Param("params") String params);
+                                 @Param("name") String name,
+                                 @Param("code") String code,
+                                 @Param("enabled") Boolean enabled,
+                                 @Param("params") String params);
 
 
     /**

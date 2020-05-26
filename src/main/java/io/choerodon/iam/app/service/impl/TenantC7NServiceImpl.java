@@ -133,7 +133,17 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 .build());
         TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
         tenantVO.setTenantConfigVO(tenantConfigVO);
-        return new TenantVO();
+        //返回组织所有者的手机号邮箱
+        if (tenantConfigVO.getUserId() != null) {
+            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+            if (user != null) {
+                tenantVO.setOwnerRealName(user.getRealName());
+                tenantVO.setOwnerEmail(user.getEmail());
+                tenantVO.setOwnerPhone(user.getPhone());
+                tenantVO.setOwnerLoginName(user.getLoginName());
+            }
+        }
+        return tenantVO;
     }
 
     @Override

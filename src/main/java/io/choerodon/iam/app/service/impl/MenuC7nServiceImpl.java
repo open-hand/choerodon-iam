@@ -11,6 +11,7 @@ import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import org.hzero.core.helper.LanguageHelper;
+import org.hzero.iam.api.dto.MenuTreeQueryDTO;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
@@ -136,24 +137,11 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                     });
             return cf.join();
         } else {
-            // todo 等权限刷新进去 使用hzero方法 将mapper 方法也删除
-//            return menuRepository.selectRoleMenuTree(null, null, labels);
-            CustomUserDetails self = UserUtils.getUserDetails();
-            List<Long> roleIds = self.roleMergeIds();
-            Long tenantId = self.getTenantId();
-
-            // 查询角色关联的菜单
-            Set<String> finalLabels1 = labels;
-            CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> menuC7nMapper.selectRoleMenus(roleIds, tenantId, finalLang, finalLabels1), SELECT_MENU_POOL);
-
-            CompletableFuture<List<Menu>> cf = f1
-                    // 转换成树形结构
-                    .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
-                    .exceptionally((e) -> {
-                        LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
-                        return Collections.emptyList();
-                    });
-            return cf.join();
+            MenuTreeQueryDTO menuTreeQueryDTO = new MenuTreeQueryDTO();
+            menuTreeQueryDTO.setLabels(labels);
+            menuTreeQueryDTO.setLang(finalLang);
+            menuTreeQueryDTO.setUnionLabel(true);
+            return menuRepository.selectRoleMenuTree(menuTreeQueryDTO);
         }
 
     }

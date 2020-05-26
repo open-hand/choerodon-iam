@@ -4,6 +4,7 @@ import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
@@ -355,5 +356,27 @@ public interface UserC7nMapper {
                                     @Param("enabled") Boolean enabled,
                                     @Param("locked") Boolean locked,
                                     @Param("params") String params);
+
+    /**
+     * 查询用户在项目下的角色标签
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 在项目下的所有角色标签
+     */
+    List<String> queryUserLabelsInProjectLevel(@Param("userId") Long userId,
+                                               @Param("projectId") Long projectId);
+
+    /**
+     * 用户在此项目是否有包含指定标签的角色
+     *
+     * @param userId    用户id
+     * @param labelName 标签名
+     * @param projectId 项目id
+     * @return true表示有
+     */
+    boolean doesUserHaveLabelInProject(@Param("userId") Long userId,
+                                       @Param("labelName") String labelName,
+                                       @Param("projectId") Long projectId);
 }
 

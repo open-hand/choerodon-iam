@@ -8,8 +8,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.boot.file.FileClient;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -33,6 +31,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;

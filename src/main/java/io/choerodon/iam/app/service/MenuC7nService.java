@@ -27,4 +27,6 @@ public interface MenuC7nService {
     List<Menu> listUserInfoMenuOnlyTypeMenu();
 
     List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type);
+
+    List<Menu> listMenuByLevel(String code);
 }

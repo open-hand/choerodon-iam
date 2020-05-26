@@ -19,6 +19,7 @@ import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +48,14 @@ import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
@@ -117,6 +120,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private TransactionalProducer producer;
     private MemberRoleService memberRoleService;
     private ProjectUserMapper projectUserMapper;
+    private MemberRoleRepository memberRoleRepository;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
@@ -138,7 +142,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ProjectAssertHelper projectAssertHelper,
                                  ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
-                                 TransactionalProducer producer) {
+                                 TransactionalProducer producer,
+                                 MemberRoleRepository memberRoleRepository) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
@@ -159,6 +164,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.projectAssertHelper = projectAssertHelper;
         this.projectUserMapper = projectUserMapper;
         this.producer = producer;
+        this.memberRoleRepository = memberRoleRepository;
     }
 
 
@@ -686,6 +692,68 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 builder -> {
                 });
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roles) {
+        // 查询用户拥有的组织层角色
+        List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
+        Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
+        Set<Long> oldIds = memberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+        // 要添加的角色
+        Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
+        // 要删除的角色
+        Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
+
+        List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(userId);
+            memberRole.setMemberType(MemberType.USER.value());
+            memberRole.setRoleId(id);
+            memberRole.setSourceId(tenantId);
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(tenantId);
+            Map<String, Object> additionalParams = new HashMap<>();
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+            memberRole.setAdditionalParams(additionalParams);
+            return memberRole;
+        }).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(insertMemberRoles)) {
+            memberRoleService.batchAssignMemberRoleInternal(insertMemberRoles);
+        }
+
+        List<MemberRole> deleteMemberRoles = deleteIds.stream().map(id -> {
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(userId);
+            memberRole.setMemberType(MemberType.USER.value());
+            memberRole.setRoleId(id);
+            memberRole.setSourceId(tenantId);
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(tenantId);
+            Map<String, Object> additionalParams = new HashMap<>();
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+            memberRole.setAdditionalParams(additionalParams);
+            return memberRole;
+        }).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(deleteMemberRoles)) {
+            memberRoleRepository.batchDelete(deleteMemberRoles);
+        }
+
+        List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
+        Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList()));
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayload.setResourceId(tenantId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayloads.add(userMemberEventPayload);
+        updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
     }
 
     @Override

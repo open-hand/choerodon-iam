@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -57,4 +58,7 @@ public interface RoleMemberService {
     void updateMemberRole(Long fromUserId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId);
 
     void deleteMemberRoleForSaga(Long userId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId);
+
+    void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roleList);
+
 }

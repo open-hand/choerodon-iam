@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.TenantConfigC7nMapper">
-
     <select id="queryTenantConfigByTenantIdAndKey" resultType="org.hzero.iam.domain.entity.TenantConfig">
         SELECT
-	      *
+        *
         FROM
-	      hpfm_tenant_config
+        hpfm_tenant_config
         WHERE
-	    tenant_id = #{tenantId}
-	    AND config_key = #{key}
+        tenant_id = #{tenantId}
+        AND config_key = #{key}
     </select>
 
+    <update id="updateByTenantId">
+        UPDATE hpfm_tenant_config SET config_value=#{configValue}
+        WHERE config_key=#{configKey}
+        AND tenant_id=#{tenantId}
+    </update>
 </mapper>

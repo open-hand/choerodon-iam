@@ -16,6 +16,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.UserMapper;
@@ -42,9 +43,9 @@ import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.annotation.OperateLog;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -88,6 +89,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserPasswordService userPasswordService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final MemberRoleRepository memberRoleRepository;
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -105,7 +107,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        UserRepository userRepository,
                                        MemberRoleService memberRoleService,
                                        RoleMemberService roleMemberService,
-                                       UserService userService) {
+                                       UserService userService,
+                                       MemberRoleRepository memberRoleRepository) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -123,6 +126,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userPasswordService = userPasswordService;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.memberRoleRepository = memberRoleRepository;
     }
 
     @Override
@@ -152,7 +156,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
     public User createUserWithRoles(Long fromUserId, User user) {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
         List<Role> userRoles = user.getRoles();
@@ -168,7 +171,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_USER_CREAT, description = "组织层创建用户", inputSchemaClass = CreateAndUpdateUserEventPayload.class)
-    @OperateLog(type = "createUserOrg", content = "%s创建用户%s", level = {ResourceLevel.ORGANIZATION})
     public User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles) {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(organizationId, 1);
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -336,6 +338,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevelValue(organizationId);
+            Map<String, Object> additionalParams = new HashMap<>();
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+            memberRole.setAdditionalParams(additionalParams);
             return memberRole;
         }).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(insertMemberRoles)) {
@@ -351,10 +356,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
             memberRole.setAssignLevelValue(organizationId);
+            Map<String, Object> additionalParams = new HashMap<>();
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+            memberRole.setAdditionalParams(additionalParams);
             return memberRole;
         }).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deleteMemberRoles)) {
-            memberRoleService.batchDeleteMemberRole(organizationId, deleteMemberRoles);
+            memberRoleRepository.batchDelete(deleteMemberRoles);
         }
 
         List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
@@ -374,7 +382,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @OperateLog(type = "resetUserPassword", content = "%s重置%s的登录密码", level = {ResourceLevel.ORGANIZATION})
     public User resetUserPassword(Long organizationId, Long userId) {
         organizationAssertHelper.notExisted(organizationId);
         User user = userAssertHelper.userNotExisted(userId);
@@ -406,7 +413,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @OperateLog(type = "unlockUser", content = "%s解锁用户%s", level = {ResourceLevel.ORGANIZATION})
     public User unlock(Long organizationId, Long userId) {
         userService.unlockUser(userId, organizationId);
         return query(organizationId, userId);
@@ -415,7 +421,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
-    @OperateLog(type = "enableUser", content = "用户%s被%s启用", level = {ResourceLevel.ORGANIZATION})
     public User enableUser(Long organizationId, Long userId) {
         userService.unfrozenUser(userId, organizationId);
         User user = query(organizationId, userId);
@@ -444,7 +449,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
-    @OperateLog(type = "disableUser", content = "用户%s已被%s停用", level = {ResourceLevel.ORGANIZATION})
     public User disableUser(Long organizationId, Long userId) {
         userService.frozenUser(userId, organizationId);
         User user = query(organizationId, userId);

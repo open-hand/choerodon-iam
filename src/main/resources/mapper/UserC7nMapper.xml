@@ -56,15 +56,23 @@
         <result column="h_parent_role_id" property="parentRoleId"/>
         <result column="h_inherit_role_id" property="inheritRoleId"/>
         <collection property="labels" ofType="org.hzero.iam.domain.entity.Label">
-            <id column="name" property="name" />
-            <result column="type" property="type" />
-            <result column="FD_LEVEL" property="createFlag" />
-            <result column="h_inherit_flag" property="fdLevel" />
+            <id column="label_name" property="name"/>
+            <result column="label_type" property="type"/>
+            <result column="label_LEVEL" property="fdLevel"/>
         </collection>
     </resultMap>
 
-    <select id="listUsersByIds" resultMap="userDTO">
-        SELECT * FROM iam_user
+    <resultMap id="simplifiedUserDTO" type="io.choerodon.iam.api.vo.SimplifiedUserVO" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="loginName" column="login_name"/>
+        <result property="realName" column="real_name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="email" column="email"/>
+    </resultMap>
+
+    <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
+        SELECT *,is_ldap as ldap
+        FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">
@@ -99,13 +107,10 @@
     </select>
 
     <select id="newUsersByDate" resultType="java.lang.Integer">
-        SELECT
-        COUNT(*)
-        FROM
-        iam_user
-        WHERE
-        creation_date BETWEEN #{begin}
-        AND #{end}
+        SELECT COUNT(*)
+        FROM iam_user
+        WHERE creation_date BETWEEN #{begin}
+                  AND #{end}
     </select>
 
     <select id="countPreviousNumberByOrgIdAndDate" resultType="java.lang.Long">
@@ -175,23 +180,7 @@
         case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
         from iam_user iu
         ) iut
-        where iut.id IN (
-        SELECT
-        imr.member_id
-        FROM
-        iam_member_role imr
-        INNER JOIN iam_role ir ON (
-        ir.`code` = 'role/site/default/administrator'
-        OR ir. CODE = 'role/organization/default/administrator'
-        )
-        AND imr.role_id = ir.id
-        WHERE
-        imr.member_type = 'user'
-        GROUP BY
-        imr.member_id
-        HAVING
-        COUNT(imr.role_id) = 2
-        )
+        where iut.is_admin = 1
         <if test="loginName!= null">
             AND iut.target_login_name LIKE concat(concat('%', #{loginName}), '%')
         </if>
@@ -204,21 +193,14 @@
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        <if test="userId != null">
-            AND iut.id =#{userId}
-        </if>
-        order by iut.id desc
     </select>
 
     <select id="selectUserByRoleCode" resultType="java.lang.Long">
-        SELECT
-        imr.member_id
-        FROM
-        iam_member_role imr
-        INNER JOIN iam_role ir ON ir.`code` = #{roleCode}
-        AND imr.role_id = ir.id
-        WHERE
-        imr.member_type = 'user'
+        SELECT imr.member_id
+        FROM iam_member_role imr
+                 INNER JOIN iam_role ir ON ir.`code` = #{roleCode}
+            AND imr.role_id = ir.id
+        WHERE imr.member_type = 'user'
 
     </select>
 
@@ -340,26 +322,18 @@
 
 
     <select id="selectRolesByUidAndProjectId" resultMap="RoleMap">
-        SELECT
-            ir.*,
-            il.name,
-            il.type,
-            il.FD_LEVEL
-        FROM
-            fd_project_user fpu
-            INNER JOIN
-            iam_role ir ON fpu.role_id = ir.id
-            left JOIN iam_role_label on irl.role_id=ir.id
-            Left JOIN iam_label il on il.id=irl.lable_id
-        ir.*
-        FROM
-        fd_project_user fpu
-        INNER JOIN
-        iam_role ir ON fpu.role_id = ir.id
-        WHERE
-        fpu.member_id = #{id}
-        AND
-        fpu.project_id = #{projectId}
+        SELECT ir.*,
+               il.name     AS label_name,
+               il.type     AS label_type,
+               il.FD_LEVEL AS label_LEVEL
+        FROM fd_project_user fpu
+                 INNER JOIN iam_role ir ON fpu.MEMBER_ROLE_ID = ir.id
+                 INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+                 left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+                 Left JOIN iam_label il on il.id = hlr.label_id
+        WHERE imr.member_id = #{id}
+          AND fpu.project_id = #{projectId}
+          AND hlr.data_type = 'ROLE'
     </select>
 
     <resultMap id="userWithRoleAndImage" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true"
@@ -367,7 +341,7 @@
         <result property="imageUrl" column="image_url"/>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="userDTO">
+    <!--<select id="fulltextSearch" resultMap="userDTO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userSearchDTO.loginName!= null">
             AND login_name LIKE concat(concat('%',#{userSearchDTO.loginName}),'%')
@@ -404,9 +378,9 @@
             )
         </if>
         order by id desc
-    </select>
+    </select>-->
 
-    <select id="selectCountUsers" resultType="int">
+    <!--<select id="selectCountUsers" resultType="int">
         SELECT count(1)
         FROM (
         SELECT DISTINCT iut.id FROM
@@ -440,7 +414,7 @@
             </if>
         </if>
         ) t
-    </select>
+    </select>-->
 
     <select id="selectUserCountFromMemberRoleByOptions" resultType="int">
         SELECT COUNT(1) FROM (
@@ -471,7 +445,7 @@
         ) t
     </select>
 
-    <select id="selectUsersFromMemberRoleByOptions" resultMap="userDTO">
+    <!--<select id="selectUsersFromMemberRoleByOptions" resultMap="userDTO">
         SELECT iu.*,imr.source_id
         FROM iam_user iu
         INNER JOIN iam_member_role imr ON imr.member_id = iu.id
@@ -497,7 +471,7 @@
             </if>
         </where>
         order by imr.creation_date desc
-    </select>
+    </select>-->
 
     <select id="listUsersWithGitlabLabel" resultMap="projectUserWithRolesMap">
         SELECT
@@ -508,12 +482,12 @@
         FROM
         iam_user iu
         INNER JOIN iam_label il ON il.`name` = #{labelName}
-        INNER JOIN iam_role_label irl ON irl.label_id = il.id
-        INNER JOIN iam_role ir ON ir.id = irl.role_id
-        AND ir.is_enabled = TRUE
-        INNER JOIN fd_project_user imr ON imr.member_id = iu.id and imr.role_id=ir.id
+        INNER JOIN hiam_label_rel irl ON irl.label_id = il.id
+        INNER JOIN iam_role ir ON ir.id = irl.data_id AND ir.is_enabled = TRUE AND irl.data_type = 'ROLE'
+        INNER JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.member_type = 'user'
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
         <where>
-            AND imr.PROJECT_ID = #{projectId}
+            AND fpu.PROJECT_ID = #{projectId}
             <if test="roleAssignmentSearchDTO != null">
                 <if test="roleAssignmentSearchDTO.loginName != null">
                     AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
@@ -532,10 +506,10 @@
                 )
             </if>
         </where>
-        order by imr.creation_date desc
+        order by fpu.creation_date desc
     </select>
 
-    <select id="selectUsersByProjectIdAndOptions" resultMap="userDTO">
+    <!--<select id="selectUsersByProjectIdAndOptions" resultMap="userDTO">
         SELECT iam_user.*
         FROM iam_user
         JOIN
@@ -596,7 +570,7 @@
                  open="(" separator="," close=")">
             #{item}
         </foreach>
-    </select>
+    </select>-->
 
 
     <select id="matchEmail" resultType="java.lang.String">
@@ -619,12 +593,12 @@
         </foreach>
     </select>
 
-    <select id="totalNumberOfUsers" resultType="java.lang.Integer">
+    <!--<select id="totalNumberOfUsers" resultType="java.lang.Integer">
         SELECT
         COUNT(*)
         FROM
         iam_user
-    </select>
+    </select>-->
 
     <select id="listOrgAdministrator" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT
@@ -640,6 +614,8 @@
         FROM
         iam_member_role imr
         LEFT JOIN iam_role ir ON ir.ID = imr.ROLE_ID
+        LEFT JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
         LEFT JOIN
         (
         select iu.*,
@@ -647,7 +623,7 @@
         from iam_user iu
         ) iut ON imr.MEMBER_ID = iut.ID
         WHERE
-        ir.CODE = 'role/organization/default/administrator'
+        il.name = 'TENANT_ADMIN'
         AND imr.source_type='organization'
         AND imr.source_id=#{organizationId}
         AND imr.member_type = 'user'
@@ -736,7 +712,9 @@
         ) iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         left join iam_role ir on ir.id = imr.role_id
-        where imr.source_id = #{sourceId} and imr.source_type = #{sourceType}
+        left join hiam_label_rel hlr on (hlr.data_id = ir.id and hlr.data_type = 'ROLE')
+        LEFT JOIN iam_label il on il.id = hlr.label_id
+        where imr.source_id = #{sourceId} and imr.source_type = #{sourceType} and il.name = 'TENANT_ROLE'
         <if test="roleName != null">
             and ir.name like concat(concat('%',#{roleName}),'%')
         </if>
@@ -995,36 +973,39 @@
     <select id="isOrgAdministrator" resultType="java.lang.Boolean">
         select count(imr.id)
         from iam_member_role imr
-        left join iam_role ir on imr.role_id = ir.id
-        where ir.code = 'role/organization/default/administrator'
-        and imr.source_type = 'organization' and imr.member_type = 'user'
-        and imr.source_id = #{organizationId} and imr.member_id = #{userId}
+                 left join iam_role ir on imr.role_id = ir.id
+                 left join hiam_label_rel hlr ON ir.id = hlr.data_id and hlr.data_type = 'ROLE'
+                 left join iam_label il ON hlr.label_id = il.id
+        where il.name = 'TENANT_ADMIN'
+          and imr.source_type = 'organization'
+          and imr.member_type = 'user'
+          and imr.source_id = #{organizationId}
+          and imr.member_id = #{userId}
     </select>
 
     <select id="checkIsGitlabProjectOwner" resultType="java.lang.Integer">
-        SELECT
-        COUNT(*)
-        FROM
-        iam_member_role imr
-        INNER JOIN iam_label il ON il.`name` = 'project.gitlab.owner'
-        INNER JOIN iam_role_label irl ON irl.label_id = il.id
-        INNER JOIN iam_role ir ON ir.id = irl.role_id
-        WHERE
-        imr.role_id = ir.id
-        AND imr.member_type = 'user'
-        AND imr.member_id = #{id}
-        AND imr.source_type = 'project'
-        AND imr.source_id = #{projectId}
+        SELECT COUNT(*)
+        FROM iam_member_role imr
+                 INNER JOIN iam_label il ON il.`name` = 'project.gitlab.owner'
+                 INNER JOIN iam_role_label irl ON irl.label_id = il.id
+                 INNER JOIN iam_role ir ON ir.id = irl.role_id
+        WHERE imr.role_id = ir.id
+          AND imr.member_type = 'user'
+          AND imr.member_id = #{id}
+          AND imr.source_type = 'project'
+          AND imr.source_id = #{projectId}
     </select>
-    <select id="listProjectUsersByProjectIdAndRoleLable" resultType="io.choerodon.iam.infra.dto.UserDTO">
+    <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_member_role imr
-        INNER JOIN iam_user iu ON iu.id = imr.member_id
-        INNER JOIN iam_role ir ON imr.role_id = ir.id
-        INNER JOIN iam_role_label irl ON irl.role_id = ir.id
-        INNER JOIN iam_label il ON il.id = irl.label_id
-        WHERE imr.member_type = 'user' AND imr.source_id = #{projectId}
-        AND imr.source_type = 'project' AND il.name = #{roleLable}
+                 INNER JOIN iam_user iu ON iu.id = imr.member_id
+                 INNER JOIN iam_role ir ON imr.role_id = ir.id
+                 INNER JOIN iam_role_label irl ON irl.role_id = ir.id
+                 INNER JOIN iam_label il ON il.id = irl.label_id
+        WHERE imr.member_type = 'user'
+          AND imr.source_id = #{projectId}
+          AND imr.source_type = 'project'
+          AND il.name = #{roleLabel}
     </select>
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
     <select id="listUsersByName" resultType="io.choerodon.iam.infra.dto.UserDTO">
@@ -1045,23 +1026,26 @@
     </select>
 
     <select id="queryAllOrgAdmin" resultType="io.choerodon.iam.infra.dto.UserDTO">
-        SELECT
-        DISTINCT iu.id,
-        iu.organization_id
-        FROM iam_user iu ,iam_member_role imr
-        WHERE iu.id=imr.member_id AND imr.role_id=#{roleId}
+        SELECT DISTINCT iu.id,
+                        iu.organization_id
+        FROM iam_user iu,
+             iam_member_role imr
+        WHERE iu.id = imr.member_id
+          AND imr.role_id = #{roleId}
     </select>
 
     <select id="listProjectOwnerById" resultType="io.choerodon.iam.infra.dto.UserDTO">
-        SELECT
-        iu.id,iu.email,iu.real_name,iu.phone,iu.login_name
+        SELECT iu.id,
+               iu.email,
+               iu.real_name,
+               iu.phone,
+               iu.login_name
         FROM iam_user iu
-        JOIN iam_member_role imr ON iu.id =imr.member_id
-        JOIN iam_role ir ON ir.id=imr.role_id
-        WHERE
-        imr.source_type='project'
-        AND ir.code='role/project/default/project-owner'
-        AND imr.source_id=#{projectId}
+                 JOIN iam_member_role imr ON iu.id = imr.member_id
+                 JOIN iam_role ir ON ir.id = imr.role_id
+        WHERE imr.source_type = 'project'
+          AND ir.code = 'role/project/default/project-owner'
+          AND imr.source_id = #{projectId}
     </select>
 
     <select id="listUsersByNameWithLimit" resultType="io.choerodon.iam.infra.dto.UserDTO">
@@ -1100,5 +1084,120 @@
         SELECT iu.*
         FROM iam_user iu
         WHERE iu.login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAllUsersSimplifiedInfo" resultMap="simplifiedUserDTO">
+        SELECT
+        id,
+        login_name,
+        real_name,
+        image_url,
+        email
+        FROM
+        iam_user
+        WHERE
+        is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name LIKE concat(concat('%',#{params}),'%') OR
+            real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectUsersOptional" resultMap="simplifiedUserDTO">
+        select id, login_name, real_name, image_url, email
+        from iam_user
+        where organization_id = #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name LIKE concat(concat('%',#{params}),'%') OR
+            real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+        union
+        select id, login_name, real_name, image_url, email
+        from iam_user
+        where organization_id != #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name = #{params} OR
+            real_name = #{params}
+            )
+        </if>
+    </select>
+    <select id="listOrganizationUser" resultType="org.hzero.iam.domain.entity.User">
+        SELECT *
+        FROM (
+            SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
+            iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,
+            iu.object_version_number,
+            CASE
+            WHEN iu.is_ldap = 1 THEN
+            iu.login_name
+            ELSE
+            iu.email
+            end as login_name
+            FROM iam_member_role imr
+            LEFT JOIN iam_role ir ON ir.id = imr.role_id
+            LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+            LEFT JOIN iam_label il ON il.id = hlr.label_id
+            LEFT JOIN iam_user iu ON iu.id = imr.member_id
+            <where>
+                imr.source_id = #{organizationId} AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
+                <if test="roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{roleName}),'%')
+                </if>
+                <if test="realName != null">
+                    AND iu.real_name LIKE concat(concat('%',#{realName}),'%')
+                </if>
+                <if test="enabled != null">
+                    AND iu.is_enabled = enabled
+                </if>
+                <if test="locked != null">
+                    AND iu.is_enabled = locked
+                </if>
+            </where>
+            GROUP BY iu.id
+        ) iut
+        <where>
+            <if test="loginName != null">
+                AND iut.login_name LIKE concat(concat('%',#{loginName},'%')
+            </if>
+            <if test="params != null">
+                and (
+                iut.login_name LIKE concat(concat('%',#{params}),'%') OR
+                iut.real_name LIKE concat(concat('%',#{params}),'%') OR
+                ir.name LIKE concat(concat('%',#{params}),'%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="queryUserLabelsInProjectLevel" resultType="String">
+        SELECT il.name AS label_name
+        FROM fd_project_user fpu
+                 INNER JOIN iam_role ir ON fpu.MEMBER_ROLE_ID = ir.id
+                 INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+                 left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+                 Left JOIN iam_label il on il.id = hlr.label_id
+        WHERE imr.member_id = #{userId}
+          AND fpu.project_id = #{projectId}
+          AND hlr.data_type = 'ROLE'
+    </select>
+
+    <select id="doesUserHaveLabelInProject" resultType="boolean">
+        SELECT COUNT(1)
+        FROM fd_project_user fpu
+        INNER JOIN iam_role ir ON fpu.MEMBER_ROLE_ID = ir.id
+        INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+        left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        Left JOIN iam_label il on il.id = hlr.label_id
+        WHERE imr.member_id = #{userId}
+        AND fpu.project_id = #{projectId}
+        AND hlr.data_type = 'ROLE'
+        AND il.name = #{labelName}
     </select>
 </mapper>

@@ -27,6 +27,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_REPORT = "Choerodon Report";
     public static final String CHOERODON_TENANT = "Choerodon Tenant";
     public static final String CHOERODON_USER = "Choerodon User";
+    public static final String ORGANIZATION_USER = "Organization User";
     public static final String CHOERODON_TENANT_PROJECT = "Choerodon Tenant Project";
     public static final String CHOERODON_USER_SELF = "Choerodon User Self";
     public static final String CHOERODON_ROLE_MEMBER = "Choerodon Role Member";
@@ -34,6 +35,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_WORK_CALENDAR = "Choerodon Work Calendar";
     public static final String CHOERODON_WORK_CALENDAR_PROJECT = "Choerodon Work Calendar Project";
     public static final String CHOERODON_WORK_CALENDAR_HOLIDAY_REF = "Choerodon Work Calendar Holiday Ref";
+    public static final String CHOERODON_ORGANIZATION_ADMIN = "Choerodon Organization Admin";
 
 
     @Autowired
@@ -53,7 +55,9 @@ public class C7nSwaggerApiConfig {
                 new Tag(CHOERODON_TENANT, "choerodon组织"),
                 new Tag(CHOERODON_USER, "choerodon用户"),
                 new Tag(CHOERODON_TENANT_PROJECT, "choerodon组织项目"),
-                new Tag(CHOERODON_USER_SELF, "choerodon登录用户接口 ")
+                new Tag(CHOERODON_USER_SELF, "choerodon登录用户接口 "),
+                new Tag(ORGANIZATION_USER, "choerodon组织用户"),
+                new Tag(CHOERODON_ORGANIZATION_ADMIN, "choerodon组织管理员")
 
         );
     }

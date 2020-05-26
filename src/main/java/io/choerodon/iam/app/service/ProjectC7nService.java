@@ -10,9 +10,6 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
-/**
- * @author flyleft
- */
 public interface ProjectC7nService {
 
     ProjectDTO queryProjectById(Long projectId);

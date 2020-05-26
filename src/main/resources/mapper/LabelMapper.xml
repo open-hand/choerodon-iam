@@ -8,12 +8,10 @@
     </resultMap>
 
     <select id="selectByRoleId" resultMap="labelDTO">
-        SELECT iam_label.*
-        FROM iam_role_label
-        LEFT JOIN iam_label
-        ON iam_role_label.label_id = iam_label.id
-        AND iam_label.type = 'role'
-        WHERE iam_role_label.role_id = #{roleId}
+        SELECT il.*
+        FROM hiam_label_rel hlr
+        LEFT JOIN iam_label il ON il.id = hlr.label_id AND il.TYPE = 'ROLE'
+        WHERE hlr.data_type = 'ROLE' AND hlr.data_id = #{roleId}
     </select>
 
     <select id="listByOption" resultMap="labelDTO">
@@ -65,12 +63,21 @@
     </select>
 
     <select id="selectLabelNamesInRoleIds" resultType="java.lang.String">
-        SELECT DISTINCT iam_label.name
-        FROM iam_label
-        INNER JOIN iam_role_label ON iam_role_label.label_id = iam_label.id
-        WHERE iam_role_label.role_id IN
-        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
-            #{item}
+        SELECT DISTINCT il.name
+        FROM iam_role ir
+        INNER JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        WHERE ir.id IN
+        <foreach item="roleId" index="index" collection="roleIds" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </select>
+    <select id="listByNames" resultType="org.hzero.iam.domain.entity.Label">
+        SELECT *
+        FROM iam_label il
+        WHERE il.name IN
+        <foreach collection="names" item="name" index="i" open="(" close=")" separator=",">
+            #{name}
         </foreach>
     </select>
 

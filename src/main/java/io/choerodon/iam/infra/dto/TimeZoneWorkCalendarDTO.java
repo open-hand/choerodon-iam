@@ -1,16 +1,23 @@
 package io.choerodon.iam.infra.dto;
 
 
-import io.choerodon.iam.infra.utils.StringUtil;
-import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
 import java.util.List;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import io.choerodon.iam.infra.utils.StringUtil;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author dinghuang123@gmail.com
  * @since 2018/10/12
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "iam_time_zone_work_calendar")
 public class TimeZoneWorkCalendarDTO extends AuditDomain {
 

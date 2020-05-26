@@ -9,6 +9,7 @@ public class ErrorUserVO {
     private String realName;
     private String email;
     private String roleCodes;
+    private String roleLabels;
     private String password;
     private String phone;
     //导入失败的原因
@@ -60,5 +61,13 @@ public class ErrorUserVO {
 
     public void setCause(String cause) {
         this.cause = cause;
+    }
+
+    public String getRoleLabels() {
+        return roleLabels;
+    }
+
+    public void setRoleLabels(String roleLabels) {
+        this.roleLabels = roleLabels;
     }
 }

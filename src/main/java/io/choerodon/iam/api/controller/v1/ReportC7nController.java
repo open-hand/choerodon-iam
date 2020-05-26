@@ -33,7 +33,7 @@ public class ReportC7nController {
         this.reportService = reportService;
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_MEMBER)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询报表列表")
     @GetMapping(value = "/list")
     public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId) {

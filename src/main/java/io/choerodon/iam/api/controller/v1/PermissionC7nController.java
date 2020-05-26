@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.app.service.PermissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +70,18 @@ public class PermissionC7nController {
         permissions.add(permission);
         permissionService.deleteApis(permissions);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("当前用户是否拥有权限集")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "codes", value = "权限集编码")
+    })
+    @PostMapping("/menus/check-permissions")
+    public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
+            @RequestParam(required = false) Long projectId,
+            @RequestBody List<String> codes) {
+        return Results.success(permissionC7nService.checkPermissionSets(codes,projectId));
     }
 
 }

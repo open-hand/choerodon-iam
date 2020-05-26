@@ -1,45 +1,21 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.annotation.OperateLog;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.asserts.RoleAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.*;
-import io.choerodon.iam.infra.valitador.RoleValidator;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -49,11 +25,10 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,15 +40,38 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.RoleAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.valitador.RoleValidator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -82,9 +80,11 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
+    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
+    private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -94,6 +94,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
@@ -120,8 +122,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
-    private OrganizationMapper organizationMapper;
-    @Autowired
     private PasswordPolicyMapper passwordPolicyMapper;
     @Autowired
     private PasswordPolicyManager passwordPolicyManager;
@@ -129,6 +129,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserPasswordValidator userPasswordValidator;
     @Autowired
     private RoleAssertHelper roleAssertHelper;
+    @Autowired
+    private UserPasswordService userPasswordService;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -145,12 +147,19 @@ public class UserC7nServiceImpl implements UserC7nService {
     private ProjectUserMapper projectUserMapper;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private RoleC7nService roleC7nService;
+    @Autowired
+    private MemberRoleMapper memberRoleMapper;
+    @Autowired
+    private TenantMapper tenantMapper;
+    @Autowired
+    private LabelC7nMapper labelC7nMapper;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
+
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);
@@ -353,35 +362,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Transactional
     public void addAdminUsers(long[] ids) {
         List<Long> adminUserIds = new ArrayList<>();
-        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
-        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
-        List<MemberRole> memberRoleList = new ArrayList<>();
-
         for (long id : ids) {
-            List<Long> allAdminUserIds = userC7nMapper.selectAdminUserPage(null, null, null, null)
-                    .stream().map(User::getId).collect(Collectors.toList());
-            if (!allAdminUserIds.contains(id)) {
-
-                List<Long> allSiteAdmin = userC7nMapper.selectUserByRoleCode(SITE_ADMIN_ROLE_CODE);
-                if (!allSiteAdmin.contains(id)) {
-                    MemberRole memberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
-                    memberRoleList.add(memberRole);
-                }
-                List<Long> allOrgAdmin = userC7nMapper.selectUserByRoleCode(ORG_ADMIN_ROLE_CODE);
-                if (!allOrgAdmin.contains(id)) {
-                    MemberRole memberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
-                    memberRoleList.add(memberRole);
-                }
+            User dto = userRepository.selectByPrimaryKey(id);
+            if (dto != null && !dto.getAdmin()) {
+                dto.setAdmin(true);
+                adminUserIds.add(id);
+                updateSelective(dto);
             }
         }
-        memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
-
         //添加成功后发送站内信和邮件通知被添加者
-        Long fromUserId = DetailsHelper.getUserDetails().getUserId();
         if (!adminUserIds.isEmpty()) {
-            // todo
-//            ((UserServiceImpl) AopContext.currentProxy()).sendNotice(fromUserId, adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, 0L);
-//            messageClient.async().sendMessage();
+            ((UserC7nServiceImpl) AopContext.currentProxy()).sendNotice(adminUserIds, ROOT_BUSINESS_TYPE_CODE, Collections.emptyMap(), 0L, ResourceLevel.SITE);
         }
         if (!adminUserIds.isEmpty()) {
             AssignAdminVO assignAdminVO = new AssignAdminVO(adminUserIds);
@@ -397,27 +388,84 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
 
+    @Override
+    public void sendNotice(List<Long> userIds, String code,
+                           Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return;
+        }
+        LOGGER.info("ready : send Notice to {} users", userIds.size());
+
+        ExceptionUtil.doWithTryCatchAndLog(LOGGER,
+                () -> doSendNotice(userIds, code, params, sourceId, resourceLevel),
+                ex -> LOGGER.info("Failed to send notices. The code is {}, and the users are: {}", code, userIds));
+    }
+
+    /**
+     * 给指定用户发送消息
+     *
+     * @param userIds       接收者的id
+     * @param code          消息的编码
+     * @param params        消息所需的参数
+     * @param sourceId      消息的级别对应的id，如组织id，项目id
+     * @param resourceLevel 消息的级别
+     */
+    private void doSendNotice(List<Long> userIds, String code, Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
+        MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
+        Map<String, Object> additionalParams = new HashMap<>();
+        messageSender.setTenantId(0L);
+        if (ResourceLevel.ORGANIZATION == resourceLevel) {
+            messageSender.setTenantId(sourceId);
+            additionalParams.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), sourceId);
+        } else if (ResourceLevel.PROJECT == resourceLevel) {
+            additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), sourceId);
+        }
+        messageSender.setReceiverAddressList(constructUsersByIds(userIds));
+        messageSender.setArgs(params);
+        messageSender.setMessageCode(code);
+        messageSender.setAdditionalInformation(additionalParams);
+
+        messageClient.async().sendMessage(messageSender);
+    }
+
+    private List<Receiver> constructUsersByIds(List<Long> userIds) {
+        List<User> users = userRepository.selectByIds(org.apache.commons.lang.StringUtils.join(userIds, ","));
+        if (!CollectionUtils.isEmpty(users)) {
+            return users.stream().map(u -> {
+                Receiver receiver = new Receiver();
+                receiver.setUserId(u.getId());
+                receiver.setEmail(u.getEmail());
+                receiver.setPhone(u.getPhone());
+                receiver.setTargetUserTenantId(Objects.requireNonNull(u.getOrganizationId(), "receiver tenant id can't be null"));
+                return receiver;
+            }).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+
     @Saga(code = SagaTopic.User.DELETE_ADMIN, description = "用户Root权限被删除事件同步", inputSchemaClass = DeleteAdminVO.class)
     @Override
     public void deleteAdminUser(long id) {
-        Long siteAdminRoleId = getRoleByCode(SITE_ADMIN_ROLE_CODE);
-        Long orgAdminRoleId = getRoleByCode(ORG_ADMIN_ROLE_CODE);
-        MemberRole siteMemberRole = new MemberRole(siteAdminRoleId, id, "user", 0L, "site", "organization", 0L);
-        MemberRole orgMemberRole = new MemberRole(orgAdminRoleId, id, "user", 0L, "organization", "organization", 0L);
-        List<MemberRole> memberRoleList = new ArrayList<>();
-        memberRoleList.add(siteMemberRole);
-        memberRoleList.add(orgMemberRole);
-        memberRoleService.batchDeleteMemberRole(0L, memberRoleList);
-
-        producer.apply(StartSagaBuilder.newBuilder()
-                        .withRefId(String.valueOf(id))
-                        .withRefType("user")
-                        .withSourceId(0L)
-                        .withLevel(ResourceLevel.SITE)
-                        .withSagaCode(SagaTopic.User.DELETE_ADMIN)
-                        .withPayloadAndSerialize(new DeleteAdminVO(id)),
-                builder -> {
-                });
+        User userDTO = new User();
+        userDTO.setAdmin(true);
+        if (userMapper.selectCount(userDTO) > 1) {
+            User dto = userAssertHelper.userNotExisted(id);
+            if (dto.getAdmin()) {
+                dto.setAdmin(false);
+                producer.apply(StartSagaBuilder.newBuilder()
+                                .withRefId(String.valueOf(id))
+                                .withRefType("user")
+                                .withSourceId(0L)
+                                .withLevel(ResourceLevel.SITE)
+                                .withSagaCode(SagaTopic.User.DELETE_ADMIN)
+                                .withPayloadAndSerialize(new DeleteAdminVO(id)),
+                        builder -> updateSelective(dto));
+            }
+        } else {
+            throw new CommonException("error.user.admin.size");
+        }
     }
 
 
@@ -442,38 +490,29 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         if (size == 0) {
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
-            result.setSize(projectList.size());
+            result.setTotalElements(projectList.size());
             result.getContent().addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
-            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setMemberId(id);
-            int count = projectUserMapper.selectCount(projectUserDTO);
-            result.setSize(count);
+            result.setTotalElements(projectMapper.countProjectsWithRolesSize(id, params));
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
             result.getContent().addAll(projectList);
         }
+        result.setNumber(page);
+        result.setSize(size);
         return result;
     }
 
 
     @Override
-    public Boolean checkIsRoot(Long id) {
-        List<User> userList = userC7nMapper.selectAdminUserPage(null, null, null, id);
-        if (!CollectionUtils.isEmpty(userList)) {
-            return userList.contains(id);
-        } else {
-            return false;
-        }
+    public Boolean isRoot(Long id) {
+        User result = userRepository.selectByPrimaryKey(id);
+        return result != null && result.getAdmin();
     }
 
     @Override
     public List<ProjectDTO> queryProjects(Long userId, Boolean includedDisabled) {
-        CustomUserDetails customUserDetails = checkLoginUser(userId);
-        boolean isAdmin = false;
-        if (customUserDetails.getAdmin() != null) {
-            isAdmin = customUserDetails.getAdmin();
-        }
+        boolean isAdmin = isRoot(userId);
         ProjectDTO project = new ProjectDTO();
         if (!isAdmin && includedDisabled != null && !includedDisabled) {
             project.setEnabled(true);
@@ -511,7 +550,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
                 OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setEnabled(true);
@@ -521,16 +560,24 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
-        // TODO
-        return null;
+    public List<UserWithGitlabIdVO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<User> userDTOS = userC7nMapper.listUserWithRolesOnOrganizationLevelByIds(organizationId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
     }
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        boolean isAdmin = checkIsRoot(userId);
-        // todo 校验是否是组织管理员
-        boolean isOrgAdmin = true;
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
@@ -559,8 +606,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
-        List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_ADMIN.value().equals(v.getCode()));
+        return userC7nMapper.doesUserHaveLabelInProject(id, RoleLabelEnum.PROJECT_ADMIN.value(), projectId);
     }
 
     @Override
@@ -655,16 +701,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         return userWithGitlabIdVO;
     }
 
-    // TODO 完成sendNotice逻辑
-    @Override
-    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId) {
-        return null;
-    }
-
-    // TODO 完成这里的逻辑
     @Override
     public Boolean checkIsOrgRoot(Long organizationId, Long userId) {
-        return false;
+        return userC7nMapper.isOrgAdministrator(organizationId, userId);
     }
 
 
@@ -684,19 +723,18 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @OperateLog(type = "assignUsersRoles", content = "用户%s被%s分配【%s】角色", level = {ResourceLevel.SITE, ResourceLevel.ORGANIZATION})
     public List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleDTOList) {
         validateSourceNotExisted(sourceType, sourceId);
-        // 校验组织人数是否已达上限
-        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
-        }
-        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
-        }
+//        // 校验组织人数是否已达上限
+//        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(sourceId, userIds.size());
+//        }
+//        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+//            Set<Long> userIds = memberRoleDTOList.stream().map(MemberRole::getMemberId).collect(Collectors.toSet());
+//            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
+//            organizationResourceLimitService.checkEnableCreateUserOrThrowE(projectDTO.getOrganizationId(), userIds.size());
+//        }
         memberRoleDTOList.forEach(memberRoleDTO -> {
             if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
@@ -756,31 +794,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable) {
-        return null;
-    }
-
-    @Override
-    public List<User> listUsersByName(Long projectId, String param) {
-        return null;
-    }
-
-    @Override
-    public List<User> listProjectOwnerById(Long projectId) {
-        return null;
-    }
-
-    @Override
-    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds) {
-        return null;
-    }
-
-    @Override
-    public List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        return null;
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
         // 更新用户密码
@@ -807,35 +820,17 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
-        if (!ENCODER.matches(userPasswordDTO.getOriginalPassword(), user.getPassword())) {
+        if (!user.comparePassword(userPasswordDTO.getOriginalPassword())) {
             throw new CommonException("error.password.originalPassword");
         }
-        //密码策略
-        if (checkPassword) {
-            BaseUser baseUserDTO = new BaseUser();
-            BeanUtils.copyProperties(user, baseUserDTO);
-            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(user.getOrganizationId());
-            if (organizationDTO != null) {
-                PasswordPolicy example = new PasswordPolicy();
-                example.setOrganizationId(organizationDTO.getId());
-                if (userPasswordDTO.getPassword() != null) {
-                    passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), organizationDTO.getId(), baseUserDTO);
-                }
-                // 校验用户密码
-                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDTO.getId(), true);
-            }
-        }
-        user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));
-        updateSelective(user);
-        // TODO 用户更新密码逻辑需要考虑如何修改
-//        passwordRecord.updatePassword(user.getId(), user.getPassword());
+        userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
 
         // send siteMsg
-        Map<String, Object> paramsMap = new HashMap<>();
+        Map<String, String> paramsMap = new HashMap<>();
         paramsMap.put("userName", user.getRealName());
         List<Long> userIds = new ArrayList<>();
         userIds.add(user.getId());
-        sendNotice(user.getId(), userIds, "modifyPassword", paramsMap, 0L);
+        sendNotice(userIds, "modifyPassword", paramsMap, 0L, ResourceLevel.SITE);
     }
 
 
@@ -889,8 +884,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         User user = userRepository.selectByPrimaryKey(userVO.getId());
         userVO.setObjectVersionNumber(user.getObjectVersionNumber());
         userVO.setAdmin(user.getAdmin());
+        userVO.setLdap(user.getLdap());
         if (!user.getAdmin()) {
-            List<TenantDTO> list = tenantRepository.selectSelfTenants(null);
+            List<TenantDTO> list = tenantRepository.selectSelfTenants(new TenantDTO());
             if (CollectionUtils.isEmpty(list)) {
                 throw new CommonException("error.get.user.tenants");
             }
@@ -898,4 +894,209 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
         return userVO;
     }
+
+    @Override
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName) {
+        validateSourceNotExisted(sourceType, sourceId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName);
+    }
+
+    @Override
+    @Transactional
+    @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
+    public void createOrgAdministrator(List<Long> userIds, Long organizationId) {
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
+        Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
+        Set<Long> notifyUserIds = new HashSet<>();
+        Map<Long, List<MemberRole>> listMap = new HashMap<>();
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+        // 接收者
+        List<Receiver> receiverList = new ArrayList<>();
+
+        userIds.forEach(id -> {
+            List<MemberRole> memberRoleList = new ArrayList<>();
+            MemberRole memberRoleDTO = new MemberRole();
+            memberRoleDTO.setRoleId(tenantAdminRole.getId());
+            memberRoleDTO.setMemberId(id);
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceId(organizationId);
+            memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevelValue(organizationId);
+            memberRoleList.add(memberRoleDTO);
+
+            memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
+
+            // 构建saga对象
+            labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(id);
+            userMemberEventPayload.setResourceId(organizationId);
+            userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+            userMemberEventPayload.setRoleLabels(labelNames);
+            userMemberEventPayloads.add(userMemberEventPayload);
+
+
+            // 构建消息对象
+            User user = userMapper.selectByPrimaryKey(id);
+            notifyUserIds.add(id);
+
+            Receiver receiver = new Receiver();
+            receiver.setUserId(id);
+            // 发送邮件消息时 必填
+            receiver.setEmail(user.getEmail());
+            receiverList.add(receiver);
+        });
+
+        // 发送saga同步角色
+        producer.apply(StartSagaBuilder.newBuilder()
+                        .withRefId(String.valueOf(DetailsHelper.getUserDetails().getUserId()))
+                        .withRefType("user")
+                        .withSourceId(organizationId)
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withSagaCode(MEMBER_ROLE_UPDATE)
+                        .withPayloadAndSerialize(userMemberEventPayloads),
+                builder -> {
+                });
+
+
+        // 准备消息发送的messageSender
+        MessageSender messageSender = new MessageSender();
+        // 消息code
+        messageSender.setMessageCode(MessageCodeConstants.BUSINESS_TYPE_CODE);
+        // 默认为0L,都填0L,可不填写
+        messageSender.setTenantId(0L);
+
+        // 消息参数 消息模板中${projectName}
+        Map<String, String> argsMap = new HashMap<>();
+        argsMap.put("organizationName", tenant.getTenantName());
+        argsMap.put("roleName", "租户管理员");
+        argsMap.put("organizationId", tenant.getTableId());
+        argsMap.put("addCount", String.valueOf(userIds.size()));
+        messageSender.setArgs(argsMap);
+
+        messageSender.setReceiverAddressList(receiverList);
+
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
+        messageSender.setAdditionalInformation(objectMap);
+
+
+        //添加组织管理员发送消息通知被添加者,异步发送消息
+        messageClient.async().sendMessage(messageSender);
+
+
+        //添加webhook json
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("organizationId", organizationDTO.getId());
+//        jsonObject.put("addCount", notifyUserIds.size());
+//        List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+//        if (!C7nCollectionUtils.isEmpty(userList)) {
+//            for (Long notifyUserId : notifyUserIds) {
+//                userList.add(userService.getWebHookUser(notifyUserId));
+//            }
+//        }
+//
+//        jsonObject.put("userList", JSON.toJSONString(userList));
+//        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+//                SendSettingBaseEnum.ADD_MEMBER.value(),
+//                SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
+//                jsonObject,
+//                new Date(),
+//                userService.getWebHookUser(customUserDetails.getUserId())
+//        );
+//        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
+
+    }
+
+    @Override
+    public Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
+        if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
+            return new Page<>();
+        }
+        if (organizationId.equals(0L)) {
+            return PageHelper.doPage(pageRequest, () -> userC7nMapper.selectAllUsersSimplifiedInfo(param));
+        } else {
+            return PageHelper.doPage(pageRequest, () -> userC7nMapper.selectUsersOptional(param, organizationId));
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOrgAdministrator(Long organizationId, Long userId) {
+        Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
+        Long roleId = tenantAdminRole.getId();
+        MemberRole memberRoleDTO = new MemberRole();
+        memberRoleDTO.setRoleId(roleId);
+        memberRoleDTO.setMemberId(userId);
+        memberRoleDTO.setMemberType(MemberType.USER.value());
+        memberRoleDTO.setSourceId(organizationId);
+        memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+        if (CollectionUtils.isEmpty(memberRoleMapper.select(memberRoleDTO))) {
+            throw new CommonException("error.memberRole.not.exist", roleId, userId);
+        }
+        if (memberRoleMapper.delete(memberRoleDTO) != 1) {
+            throw new CommonException("error.memberRole.delete");
+        }
+        //删除组织管理员成功后也要发saga删除gitlab相应的权限。
+        List<UserMemberEventPayload> userMemberEventPayloadList = new ArrayList<>();
+        Set<String> labelNames = new HashSet<>();
+        labelNames.add(RoleLabelEnum.TENANT_ADMIN.value());
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayload.setResourceId(organizationId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayloadList.add(userMemberEventPayload);
+        roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloadList, ResourceLevel.ORGANIZATION, organizationId);
+    }
+
+    @Override
+    public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
+        Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
+        memberRoleDTOS.forEach(memberRoleDTO -> {
+
+            if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
+                throw new EmptyParamException("error.memberRole.insert.empty");
+            }
+            // 构建saga对象
+            Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRolelabelsMap.get(memberRoleDTO.getMemberId());
+                if (roleLabels != null) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRolelabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
+                }
+            }
+
+
+            memberRoleDTO.setMemberType(MemberType.USER.value());
+            memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setSourceId(organizationId);
+            memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRoleDTO.setAssignLevelValue(organizationId);
+        });
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleDTOS);
+
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        userRolelabelsMap.forEach((k, v) -> {
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(k);
+            userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setResourceId(organizationId);
+            userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+            userMemberEventPayloads.add(userMemberEventPayload);
+
+        });
+        roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
+
+
+    }
+
 }

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -14,9 +13,13 @@ import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.UserInfoDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -91,7 +94,7 @@ public interface UserC7nService {
      *
      * @return 用户列表（包括用户信息以及所分配的组织角色信息）
      */
-    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
+    List<UserWithGitlabIdVO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
 
     /**
      * 查询组织下用户的项目列表.
@@ -123,10 +126,10 @@ public interface UserC7nService {
     /**
      * 校验用户是否是root用户
      *
-     * @param id
-     * @return
+     * @param userId
+     * @return true表示是root用户
      */
-    Boolean checkIsRoot(Long id);
+    Boolean isRoot(Long userId);
 
 //    /**
 //     * 校验用户是否是组织Root用户
@@ -176,13 +179,14 @@ public interface UserC7nService {
      * 异步
      * 向用户发送通知（包括邮件和站内信）
      *
-     * @param fromUserId 发送通知的用户
-     * @param userIds    接受通知的目标用户
-     * @param code       业务code
-     * @param params     渲染参数
-     * @param sourceId   触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     * @param userIds       接受通知的目标用户
+     * @param code          业务code
+     * @param params        渲染参数
+     * @param sourceId      触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     * @param resourceLevel 资源层次
      */
-    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
+    void sendNotice(List<Long> userIds, String code,
+                    Map<String, String> params, Long sourceId, ResourceLevel resourceLevel);
     // TODO notify-service
 //    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
 //
@@ -253,46 +257,6 @@ public interface UserC7nService {
      */
     List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleList);
 
-    /**
-     * 查询项目下指定角色的用户列表
-     *
-     * @param projectId
-     * @param roleLable
-     * @return
-     */
-    List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable);
-
-    /**
-     * 根据projectId和param模糊查询loginName和realName两列
-     *
-     * @param projectId
-     * @param param
-     * @return
-     */
-    List<User> listUsersByName(Long projectId, String param);
-
-    /**
-     * 查询项目下的项目所有者
-     *
-     * @param projectId
-     * @return
-     */
-    List<User> listProjectOwnerById(Long projectId);
-
-    /**
-     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds);
-
-    /**
-     * 项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己.
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
-
     UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
 
     void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);
@@ -304,4 +268,28 @@ public interface UserC7nService {
     List<UserDTO> listUsersWithGitlabLabel(Long projectId, String labelName, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     UserVO selectSelf();
+
+    /**
+     * 在全局层/组织层/项目层 根据用户名查询启用状态的用户列表.
+     *
+     * @param sourceType 资源层级
+     * @param sourceId   资源Id
+     * @param userName   用户名
+     * @return 启用状态的用户列表
+     */
+    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName);
+
+    /**
+     * 给用户分配组织管理员角色
+     *
+     * @param userIds
+     * @param organizationId
+     */
+    void createOrgAdministrator(List<Long> userIds, Long organizationId);
+
+    Page<SimplifiedUserVO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
+
+    void deleteOrgAdministrator(Long organizationId, Long userId);
+
+    void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS);
 }

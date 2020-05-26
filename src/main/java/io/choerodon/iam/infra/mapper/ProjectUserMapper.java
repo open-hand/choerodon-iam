@@ -5,12 +5,14 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
 
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.utils.SagaTopic;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -42,8 +44,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）
      */
-    List<UserDTO> selectUserWithRolesOnProjectLevel(@Param("start") Integer start,
-                                                 @Param("size") Integer size,
+    List<UserDTO> selectUserWithRolesOnProjectLevel(
                                                  @Param("sourceType") String sourceType,
                                                  @Param("sourceId") Long sourceId,
                                                  @Param("loginName") String loginName,
@@ -156,18 +157,37 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                                 @Param("userId") Long userId);
 
     /**
-     * 查询项目下用户列表以及拥有的角色
+     * 查询用户在项目下拥有的memberRole
+     *
      * @param projectId
-     * @param roleAssignmentSearchDTO
+     * @param userId
      * @return
      */
-    List<UserDTO> listUserWithRolesOnProjectLevel(@Param("projectId") Long projectId,
-                                                  @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+    List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                        @Param("userId") Long userId);
+
+    /**
+     * 查询用户在当前组织 其他项目下 拥有MemberRole
+     *
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    List<MemberRole> listMemberRoleWithOutProjectId(@Param("projectId") Long projectId,
+                                                    @Param("userId") Long userId,
+                                                    @Param("tenantId") Long tenantId);
+
+    void deleteByIds(@Param("projectId") Long projectId,
+                     @Param("memberRoleIds") List<Long> memberRoleIds);
 
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
                                   @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     List<ProjectUserVO> listByProjectIdAndUserIds(@Param("projectId")Long projectId,
                                                   @Param("userIds")Set<Long> userIds);
+
+    List<MemberRole> selectByRoleIdAndUserId(@Param("roleId") Long roleId,
+                                             @Param("projectId") Long projectId,
+                                             @Param("userId") Long userId);
 
 }

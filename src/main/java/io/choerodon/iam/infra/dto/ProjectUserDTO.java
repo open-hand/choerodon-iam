@@ -1,12 +1,11 @@
 package io.choerodon.iam.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -14,18 +13,35 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @date 2020/4/16
  * @description
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "fd_project_user")
 public class ProjectUserDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ApiModelProperty("用户id")
-    private Long memberId;
+
     @ApiModelProperty("项目id")
     private Long projectId;
+
+    @ApiModelProperty("用户角色关系id")
+    private Long memberRoleId;
+
+    @Transient
+    @ApiModelProperty("用户id")
+    private Long memberId;
+    @Transient
     @ApiModelProperty("角色id")
     private Long roleId;
 
+    public ProjectUserDTO() {
+    }
+
+    public ProjectUserDTO(Long memberId, Long projectId, Long roleId) {
+        this.memberId = memberId;
+        this.projectId = projectId;
+        this.roleId = roleId;
+    }
     public Long getId() {
         return id;
     }
@@ -56,5 +72,14 @@ public class ProjectUserDTO extends AuditDomain {
 
     public void setRoleId(Long roleId) {
         this.roleId = roleId;
+    }
+
+    public Long getMemberRoleId() {
+        return memberRoleId;
+    }
+
+    public ProjectUserDTO setMemberRoleId(Long memberRoleId) {
+        this.memberRoleId = memberRoleId;
+        return this;
     }
 }

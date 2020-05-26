@@ -1,44 +1,51 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.iam.app.service.TenantService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.app.service.TenantService;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.TenantConfig;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantConfigRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.util.Sqls;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author scp
@@ -48,6 +55,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
+    public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
+    public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
+    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
+
+
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -69,31 +81,69 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     // 注入messageClient
     @Autowired
     protected MessageClient messageClient;
+    @Autowired
+    private TenantMapper tenantMapper;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private TenantConfigRepository tenantConfigRepository;
+    @Autowired
+    private UserC7nService userC7nService;
+    @Autowired
+    TenantConfigC7nMapper tenantConfigMapper;
 
-    // TODO 重写tenant逻辑
+    private TenantConfigC7nMapper tenantConfigC7nMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateTenant(Long tenantId, TenantVO tenantVO) {
-//        Tenant tenant = getTenant(tenantVO);
-//
-//        TenantConfigVO configVO = JSON.parseObject(tenantService.queryTenant(tenantVO.getTenantId()).getExtInfo(), TenantConfigVO.class);
-//        configVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
-//        configVO.setImageUrl(tenantVO.getTenantConfigVO().getImageUrl());
-//        configVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
-//        tenant.setExtInfo(JSON.toJSONString(configVO));
-//
-//        tenantService.updateTenant(tenantId, tenant);
+        List<TenantConfig> tenantConfigs = TenantConfigConvertUtils.tenantConfigVOToTenantConfigList(tenantId, tenantVO.getTenantConfigVO());
+        Tenant tenant = getTenant(tenantVO);
+        tenant.setTenantId(tenantId);
+        if (tenantRepository.updateByPrimaryKeySelective(tenant) != 1) {
+            throw new CommonException("error.tenant.update");
+        }
+        if (CollectionUtils.isEmpty(tenantConfigs)) {
+            return;
+        }
+        for (TenantConfig tenantConfig : tenantConfigs) {
+            TenantConfig record = new TenantConfig();
+            record.setTenantId(tenantId);
+            record.setConfigKey(tenantConfig.getConfigKey());
+            TenantConfig selectOne = tenantConfigRepository.selectOne(record);
+            if (Objects.isNull(selectOne)) {
+                if (tenantConfigRepository.insert(tenantConfig) != 1) {
+                    throw new CommonException("error.tenant.update");
+                }
+            }
+            selectOne.setConfigValue(tenantConfig.getConfigValue());
+            tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
+        }
     }
 
-    // TODO 重写tenant逻辑
+
     @Override
     public TenantVO queryTenantById(Long tenantId) {
-//        Tenant tenant = tenantService.queryTenant(tenantId);
-//        TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
-//        TenantConfigVO configVO = JSON.parseObject(tenant.getExtInfo(), TenantConfigVO.class);
-//        tenantVO.setTenantConfigVO(configVO);
-
-        return new TenantVO();
+        Tenant tenant = tenantService.queryTenant(tenantId);
+        TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
+        List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
+                .where(Sqls.custom()
+                        .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantId)
+                )
+                .build());
+        TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
+        tenantVO.setTenantConfigVO(tenantConfigVO);
+        //返回组织所有者的手机号邮箱
+        if (tenantConfigVO.getUserId() != null) {
+            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+            if (user != null) {
+                tenantVO.setOwnerRealName(user.getRealName());
+                tenantVO.setOwnerEmail(user.getEmail());
+                tenantVO.setOwnerPhone(user.getPhone());
+                tenantVO.setOwnerLoginName(user.getLoginName());
+            }
+        }
+        return tenantVO;
     }
 
     @Override
@@ -108,7 +158,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         CustomUserDetails customUserDetails = UserUtils.getUserDetails();
         TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
-
+        List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
+        dto.setTenantConfigVO(TenantConfigConvertUtils.configDTOToVO((configList)));
         List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, tenantId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());
@@ -118,25 +169,60 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return dto;
     }
 
-    // TODO 重写tenant逻辑
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-//        Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
-//        if (!CollectionUtils.isEmpty(tenantVOS.getContent())) {
-//            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
-//                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
-//                // todo 用户查询
-//            }).collect(Collectors.toList());
-//            tenantVOS.setContent(list);
-//        }
-        return new Page<>();
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
+        tenantVOPage.getContent().forEach(
+                tenantVO -> {
+                    List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
+                            .where(Sqls.custom()
+                                    .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantVO.getTenantId())
+                            )
+                            .build());
+                    TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
+                    tenantVO.setTenantConfigVO(tenantConfigVO);
+                    if (tenantConfigVO.getUserId() != null) {
+                        User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+                        if (user != null) {
+                            tenantVO.setOwnerRealName(user.getRealName());
+                            tenantVO.setOwnerEmail(user.getEmail());
+                            tenantVO.setOwnerPhone(user.getPhone());
+                            tenantVO.setOwnerLoginName(user.getLoginName());
+                        }
+                    }
+                }
+        );
+        return tenantVOPage;
     }
 
-    // TODO 重写tenant逻辑
+    private List<TenantVO> fillTenant(List<TenantVO> content) {
+        if (CollectionUtils.isEmpty(content)) {
+            return null;
+        }
+        content.forEach(tenantVO -> {
+            Tenant tenant = tenantRepository.selectTenantDetails(tenantVO.getTenantId());
+            TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenant.getTenantConfigs());
+            if (Objects.isNull(tenantConfigVO)) {
+                return;
+            }
+            tenantVO.setTenantConfigVO(tenantConfigVO);
+            if (Objects.isNull(tenantConfigVO.getUserId())) {
+                return;
+            }
+            User user = userMapper.selectByPrimaryKey(Long.valueOf(tenantConfigVO.getUserId()));
+            if (!Objects.isNull(user)) {
+                tenantVO.setOwnerEmail(user.getEmail());
+                tenantVO.setOwnerLoginName(user.getLoginName());
+                tenantVO.setOwnerPhone(user.getPhone());
+                tenantVO.setOwnerRealName(user.getRealName());
+            }
+        });
+        return content;
+    }
+
     @Override
     public Page<TenantVO> getAllTenants(PageRequest pageRequest) {
-//        return PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.selectAllTenants());
-        return new Page<>();
+        return PageHelper.doPageAndSort(pageRequest, () -> tenantRepository.selectAll());
     }
 
     @Override
@@ -209,7 +295,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 .collect(Collectors.toList());
         List<ProjectOverViewVO> reOverViewVOS = new ArrayList<>();
         List<ProjectOverViewVO> temOverViewVOS = new ArrayList<>();
-        collect.stream().forEach(projectOverViewVO -> {
+        collect.forEach(projectOverViewVO -> {
             if (reOverViewVOS.size() < 24) {
                 reOverViewVOS.add(projectOverViewVO);
             }
@@ -236,6 +322,71 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             return Collections.emptyList();
         }
         return tenantC7nMapper.selectByIds(ids);
+    }
+
+    @Override
+    public List<TenantVO> selectSelfTenants(TenantDTO params) {
+        CustomUserDetails self = UserUtils.getUserDetails();
+        params.setUserId(self.getUserId());
+        return listOwnedOrganizationByTenant(params);
+    }
+
+    @Override
+    public List<TenantVO> listOwnedOrganizationByUserId(Long userId) {
+        TenantDTO params = new TenantDTO();
+        params.setUserId(userId);
+        return listOwnedOrganizationByTenant(params);
+    }
+
+    @Override
+    public int countUserNum(Long organizationId) {
+        User example = new User();
+        example.setOrganizationId(organizationId);
+        return userMapper.selectCount(example);
+    }
+
+    @Override
+    public int countProjectNum(Long organizationId) {
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        return projectMapper.selectCount(example);
+    }
+
+    /**
+     * 查询用户可访问的组织，into判断是否可进
+     *
+     * @param params
+     * @return
+     */
+    private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
+        Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
+        Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
+        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
+
+        User user = userMapper.selectByPrimaryKey(params.getUserId());
+        return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
+    }
+
+    /**
+     * 计算into字段
+     */
+    private List<TenantVO> getOwnedOrganizations(Long userId, boolean isAdmin, List<TenantDTO> tenantDTOS) {
+        List<TenantVO> tenantVOS = ConvertUtils.convertList(tenantDTOS, TenantVO.class);
+
+        if (isAdmin) {
+            tenantVOS.forEach(tenantVO -> tenantVO.setInto(true));
+        } else {
+            Set<Long> orgIds = tenantVOS.stream().map(Tenant::getTenantId).collect(Collectors.toSet());
+            Set<Long> managedOrgIds = userC7nMapper.listManagedOrgIdByUserId(userId, orgIds);
+            Map<Long, TenantVO> tenantVOMap = tenantVOS.stream().collect(Collectors.toMap(Tenant::getTenantId, v -> v));
+            managedOrgIds.forEach(orgId -> {
+                TenantVO tenantVO = tenantVOMap.get(orgId);
+                if (tenantVO != null) {
+                    tenantVO.setInto(true);
+                }
+            });
+        }
+        return tenantVOS;
     }
 
     private void checkCode(TenantVO tenantVO) {
@@ -343,5 +494,4 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         BeanUtils.copyProperties(tenantVO, tenant);
         return tenant;
     }
-
 }

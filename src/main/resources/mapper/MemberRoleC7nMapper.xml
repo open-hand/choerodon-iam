@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.MemberRoleC7nMapper">
+    <resultMap id="memberRoleMap" type="org.hzero.iam.domain.entity.MemberRole" autoMapping="true">
+        <id column="id" property="id"/>
+        <association property="role" javaType="org.hzero.iam.domain.entity.Role">
+            <id column="role_id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="code" property="code"/>
+            <result column="is_enabled" property="enabled"/>
+        </association>
+    </resultMap>
     <select id="selectCountBySourceId" resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT source_id)
         FROM iam_member_role
@@ -18,5 +27,40 @@
         <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
             #{item}
         </foreach>
+    </select>
+    <select id="listMemberRoleByOrgIdAndUserIds" resultMap="memberRoleMap">
+        SELECT *
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+        LEFT JOIN iam_label il ON hlr.label_id = il.id
+        <where>
+            imr.source_id = #{organizationId} and imr.member_type = 'user'
+            <if test="userIds != null and userIds.size() != 0">
+                and imr.member_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" index="i" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="roleName != null">
+                and ir.name LIKE concat(concat('%', #{roleName}), '%')
+            </if>
+            <if test="label != null">
+                AND il.name = #{label}
+            </if>
+        </where>
+
+
+    </select>
+    <select id="listMemberRoleByOrgIdAndUserIdAndRoleLable" resultMap="memberRoleMap">
+        SELECT *
+        FROM iam_member_role imr
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id and hlr.data_type = 'ROLE')
+        LEFT JOIN iam_label il ON il.id = hlr.label_id
+        WHERE
+        imr.source_type = 'organization' AND imr.source_id = #{organizationId}
+        and imr.member_type = 'user' and imr.member_id = #{userId}
+        and il.name = #{labelName}
     </select>
 </mapper>

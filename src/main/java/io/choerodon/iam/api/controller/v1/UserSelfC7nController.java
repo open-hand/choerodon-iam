@@ -1,10 +1,8 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -12,15 +10,18 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.core.util.Results;
 import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -31,7 +32,7 @@ import java.util.List;
 @RequestMapping(value = "/choerodon/v1")
 public class UserSelfC7nController extends BaseController {
     @Autowired
-    private OrganizationService organizationService;
+    private TenantC7nService tenantC7nService;
 
     @Autowired
     private UserC7nService userC7nService;
@@ -48,7 +49,7 @@ public class UserSelfC7nController extends BaseController {
         TenantDTO params = new TenantDTO();
         params.setTenantNum(tenantNum);
         params.setTenantName(tenantName);
-        return new ResponseEntity<>(organizationService.selectSelfTenants(params), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.selectSelfTenants(params), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true)
@@ -56,5 +57,14 @@ public class UserSelfC7nController extends BaseController {
     @GetMapping(value = "/users/self")
     public ResponseEntity<UserVO> selectSelf() {
         return Results.success(userC7nService.selectSelf());
+    }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "修改密码")
+    @PutMapping(value = "/users/{id}/password")
+    public ResponseEntity<Void> selfUpdatePassword(@PathVariable Long id,
+                                                   @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
+        userC7nService.selfUpdatePassword(id, userPasswordDTO, true, true);
+        return ResponseEntity.ok().build();
     }
 }

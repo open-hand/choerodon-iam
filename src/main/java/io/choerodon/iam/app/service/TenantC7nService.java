@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 
@@ -41,11 +42,11 @@ public interface TenantC7nService {
     /**
      * 分页获取 指定id范围 的 组织简要信息
      *
-     * @param orgIds   指定的组织范围
-     * @param name     组织名查询参数
-     * @param code     组织编码查询参数
-     * @param enabled  组织启停用查询参数
-     * @param params   全局模糊搜索查询参数
+     * @param orgIds      指定的组织范围
+     * @param name        组织名查询参数
+     * @param code        组织编码查询参数
+     * @param enabled     组织启停用查询参数
+     * @param params      全局模糊搜索查询参数
      * @param pageRequest 分页参数
      * @return 分页结果
      */
@@ -59,8 +60,32 @@ public interface TenantC7nService {
 
     /**
      * 根据组织id集合查询组织
+     *
      * @param ids id集合
      * @return 组织信息
      */
     List<Tenant> queryTenantsByIds(Set<Long> ids);
+
+    List<TenantVO> selectSelfTenants(TenantDTO params);
+
+    /**
+     * 查询用户组织列表，根据into字段判断是否能够进入
+     *
+     * @param userId 用户id
+     */
+    List<TenantVO> listOwnedOrganizationByUserId(Long userId);
+
+    /**
+     * 统计组织下的用户数量
+     *
+     * @param organizationId 组织id
+     */
+    int countUserNum(Long organizationId);
+
+    /**
+     * 统计组织下的项目数量
+     *
+     * @param organizationId 组织id
+     */
+    int countProjectNum(Long organizationId);
 }

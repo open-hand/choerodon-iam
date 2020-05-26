@@ -48,4 +48,9 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
         Assert.notNull(roleId, ERROR_ROLE_ID_NOT_BE_NULL);
         rolePermissionC7nMapper.batchDelete(roleId, deletePermissionIds);
     }
+
+    @Override
+    public List<RolePermission> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames) {
+        return rolePermissionC7nMapper.listRolePermissionByRoleIdAndLabels(roleId, labelNames);
+    }
 }

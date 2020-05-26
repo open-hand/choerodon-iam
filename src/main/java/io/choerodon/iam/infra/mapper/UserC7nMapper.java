@@ -1,8 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
@@ -267,12 +269,8 @@ public interface UserC7nMapper {
 
     /**
      * 查询项目下指定角色的用户列表
-     *
-     * @param projectId
-     * @param roleLable
-     * @return
      */
-    List<User> listProjectUsersByProjectIdAndRoleLable(@Param("projectId") Long projectId, @Param("roleLable") String roleLable);
+    List<User> listProjectUsersByProjectIdAndRoleLabel(@Param("projectId") Long projectId, @Param("roleLabel") String roleLabel);
 
 
     /**
@@ -325,5 +323,56 @@ public interface UserC7nMapper {
     Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
 
     Set<String> matchPhone(@Param("phoneSet") Set<String> phoneSet);
+
+
+    List<SimplifiedUserVO> selectAllUsersSimplifiedInfo(@Param("params") String params);
+
+
+    /**
+     * 选择性查询用户，如果用户在组织下，则模糊查询，如果用户不在组织下精确匹配
+     *
+     * @param param
+     * @param organizationId
+     * @return
+     */
+    List<SimplifiedUserVO> selectUsersOptional(@Param("params") String param, @Param("organizationId") Long organizationId);
+
+    Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
+                                                   @Param("memberType") String memberType,
+                                                   @Param("sourceId") Long sourceId,
+                                                   @Param("sourceType") String sourceType,
+                                                   @Param("roleAssignmentSearchDTO")
+                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   @Param("param") String param);
+
+    List<User> listOrganizationUser(@Param("organizationId") Long organizationId,
+                                    @Param("loginName") String loginName,
+                                    @Param("realName") String realName,
+                                    @Param("roleName") String roleName,
+                                    @Param("enabled") Boolean enabled,
+                                    @Param("locked") Boolean locked,
+                                    @Param("params") String params);
+
+    /**
+     * 查询用户在项目下的角色标签
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 在项目下的所有角色标签
+     */
+    List<String> queryUserLabelsInProjectLevel(@Param("userId") Long userId,
+                                               @Param("projectId") Long projectId);
+
+    /**
+     * 用户在此项目是否有包含指定标签的角色
+     *
+     * @param userId    用户id
+     * @param labelName 标签名
+     * @param projectId 项目id
+     * @return true表示有
+     */
+    boolean doesUserHaveLabelInProject(@Param("userId") Long userId,
+                                       @Param("labelName") String labelName,
+                                       @Param("projectId") Long projectId);
 }
 

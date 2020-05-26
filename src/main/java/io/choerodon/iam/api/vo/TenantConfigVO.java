@@ -2,6 +2,8 @@ package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Column;
+
 /**
  * @author scp
  * @date 2020/4/27
@@ -21,7 +23,7 @@ public class TenantConfigVO {
     private String homePage;
 
     @ApiModelProperty(value = "组织规模")
-    private Integer scale;
+    private String scale;
 
     @ApiModelProperty(value = "组织所在行业")
     private String businessType;
@@ -30,7 +32,30 @@ public class TenantConfigVO {
     private String emailSuffix;
 
     @ApiModelProperty(value = "是否是注册组织")
-    private Boolean isRegister;
+    private Boolean isRegister ;
+
+
+    @ApiModelProperty(value = "远程令牌连接功能是否开启，默认为true")
+    private Boolean remoteTokenEnabled;
+
+    @ApiModelProperty(value = "组织类别")
+    private String category;
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Boolean getRemoteTokenEnabled() {
+        return remoteTokenEnabled;
+    }
+
+    public void setRemoteTokenEnabled(Boolean remoteTokenEnabled) {
+        this.remoteTokenEnabled = remoteTokenEnabled;
+    }
 
     public Boolean getRegister() {
         return isRegister;
@@ -64,11 +89,11 @@ public class TenantConfigVO {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getScale() {
+    public String getScale() {
         return scale;
     }
 
-    public void setScale(Integer scale) {
+    public void setScale(String scale) {
         this.scale = scale;
     }
 

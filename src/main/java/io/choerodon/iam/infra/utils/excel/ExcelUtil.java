@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -31,7 +32,7 @@ public class ExcelUtil {
     private ExcelUtil() {
     }
 
-    private static Logger logger = LoggerFactory.getLogger(ExcelUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExcelUtil.class);
 
     public static boolean isExcel2003(String name) {
         return name.matches("^.+\\.(?i)(xls)$");
@@ -177,20 +178,43 @@ public class ExcelUtil {
     }
 
     /**
-     * 获取object对象的所有属性，并构建map对象，对象结果为Map
+     * 获取object对象(及其所有父类)的所有非静态属性，并构建map对象，对象结果为Map
      *
      * @param clazz object对象
      * @return map
      */
-    @SuppressWarnings("rawtypes")
-    public static Map<String, Field> getObjectField(Class clazz) {
-        Field[] fields = clazz.getDeclaredFields();       //获取object对象的所有属性
+    public static Map<String, Field> getObjectField(Class<?> clazz) {
+        String fieldName;
         Map<String, Field> fieldMap = new HashMap<>();
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            fieldMap.put(fieldName, field);
+        for (Class<?> itr = clazz; itr != null && !itr.equals(Object.class); itr = itr.getSuperclass()) {
+            Field[] currentFields = itr.getDeclaredFields();
+            for (Field field : currentFields) {
+                // 过滤掉静态属性
+                if (!Modifier.isStatic(field.getModifiers())) {
+                    fieldName = field.getName();
+                    fieldMap.put(fieldName, field);
+                }
+            }
         }
         return fieldMap;
+    }
+
+    /**
+     * 获取这个类及其所有父类的所有非静态属性
+     *
+     * @param clazz 目标类
+     * @return 非静态属性数组
+     */
+    public static Field[] getAllNonStaticFields(Class<?> clazz) {
+        // 获取对象(及其所有父类)的所有非静态属性
+        List<Field> fields = new ArrayList<>();
+
+        for (Class<?> itr = clazz; itr != null && !itr.equals(Object.class); itr = itr.getSuperclass()) {
+            // 过滤掉静态属性
+            fields.addAll(Arrays.stream(itr.getDeclaredFields()).filter(f -> !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList()));
+        }
+
+        return fields.toArray(new Field[0]);
     }
 
     /**
@@ -199,19 +223,18 @@ public class ExcelUtil {
      * @param clazz object对象
      * @return map
      */
-    @SuppressWarnings("rawtypes")
-    public static Map<String, Method> getObjectSetterMethod(Class clazz) {
-        Field[] fields = clazz.getDeclaredFields();       //获取object对象的所有属性
-        Method[] methods = clazz.getDeclaredMethods();    //获取object对象的所有方法
+    public static Map<String, Method> getObjectSetterMethod(Class<?> clazz) {
+        // 获取clazz对象的所有属性
+        Field[] fields = getAllNonStaticFields(clazz);
+        // 获取clazz对象的所有方法
+        Method[] methods = clazz.getMethods();
         Map<String, Method> methodMap = new HashMap<>();
         for (Field field : fields) {
             String fieldName = field.getName();
             for (Method method : methods) {
                 String methodName = method.getName();
                 //匹配set方法
-                if (methodName != null && "set".equals(methodName.substring(0, 3)) &&
-                        Modifier.isPublic(method.getModifiers()) &&
-                        ("set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)).equals(methodName)) {
+                if ("set".equals(methodName.substring(0, 3)) && Modifier.isPublic(method.getModifiers()) && ("set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)).equals(methodName)) {
                     methodMap.put(fieldName, method);       //将匹配的setter方法加入map对象中
                     break;
                 }
@@ -365,13 +388,13 @@ public class ExcelUtil {
                     value = getterMethod.invoke(t, new Object[]{});
                     fillInCell(row, column, value, sheet, cell);
                 } catch (NoSuchMethodException e) {
-                    logger.info("can not get the method {} by reflection", getterMethodName);
+                    LOGGER.info("can not get the method {} by reflection", getterMethodName);
                     throw e;
                 } catch (IllegalAccessException e) {
-                    logger.info("illegal access for the method {}", getterMethodName);
+                    LOGGER.info("illegal access for the method {}", getterMethodName);
                     throw e;
                 } catch (InvocationTargetException e) {
-                    logger.info("invoke failed for the method {}", getterMethodName);
+                    LOGGER.info("invoke failed for the method {}", getterMethodName);
                     throw e;
                 }
             }

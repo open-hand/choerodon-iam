@@ -1,16 +1,15 @@
 package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
-
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
-import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 
 /**
@@ -35,13 +34,32 @@ public interface RoleC7nService {
     /**
      * 查询当前用户自己的角色
      *
-     * @param organizationId
-     * @param userId
      * @return
      */
     Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
 
 
-    Page<RoleDTO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String level,
+    Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String roleLevel,
                                Boolean builtIn, Boolean enabled, String params);
+
+    Role getTenantAdminRole(Long organizationId);
+
+    /**
+     * 查询组织层角色
+     * @param organizationId
+     * @param roleName
+     * @param onlySelectEnable
+     * @return
+     */
+    List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable);
+
+    List<RoleC7nDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+
+    List<RoleC7nDTO> listRolesWithClientCountOnProjectLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId);
+
+    List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId);
+
+    List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
+
+
 }

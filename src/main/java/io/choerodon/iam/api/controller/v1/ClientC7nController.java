@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.app.service.ClientService;
-import org.hzero.iam.config.SwaggerApiConfig;
 import org.hzero.iam.domain.entity.Client;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

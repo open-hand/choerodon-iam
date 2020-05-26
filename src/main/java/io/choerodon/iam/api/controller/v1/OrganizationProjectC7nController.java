@@ -120,7 +120,7 @@ public class OrganizationProjectC7nController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.getProjectsByType(organizationId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "根据组织Id及项目code查询项目/devops用")
     @GetMapping(value = "/by_code")
     public ResponseEntity<ProjectDTO> getProjectByOrgIdAndCode(@PathVariable(name = "organization_id") Long organizationId,
@@ -128,14 +128,14 @@ public class OrganizationProjectC7nController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.getProjectByOrgIdAndCode(organizationId, code), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/all")
     public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationProjectService.listProjectsByOrgId(organizationId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "分页查询项目/devops用")
     @GetMapping
     @CustomPageRequest

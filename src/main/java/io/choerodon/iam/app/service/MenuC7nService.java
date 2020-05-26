@@ -14,8 +14,19 @@ import org.hzero.iam.domain.entity.Menu;
  */
 public interface MenuC7nService {
 
-    List<Menu> listPermissionSetTree(Long organizationId, String menuLevel);
+    List<Menu> listPermissionSetTree(Long tenantId, String menuLevel);
 
     List<Menu> listNavMenuTree(Set<String> labels, Long projectId);
 
+    List<Menu> listMenuByLabel(Set<String> labels);
+
+    /**
+     * 查询个人信息菜单,仅包含type = menu的
+     * @return
+     */
+    List<Menu> listUserInfoMenuOnlyTypeMenu();
+
+    List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type);
+
+    List<Menu> listMenuByLevel(String code);
 }

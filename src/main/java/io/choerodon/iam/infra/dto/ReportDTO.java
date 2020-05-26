@@ -4,12 +4,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author bgzyy
  * @since 2019/9/11
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "FD_REPORT")
 public class ReportDTO extends AuditDomain {
 

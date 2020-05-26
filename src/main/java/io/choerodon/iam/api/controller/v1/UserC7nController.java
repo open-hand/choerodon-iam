@@ -27,7 +27,7 @@ import io.choerodon.iam.api.vo.OrganizationProjectVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
-import io.choerodon.iam.app.service.OrganizationService;
+import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -51,16 +51,16 @@ public class UserC7nController extends BaseController {
     private UserService userService;
     private UserC7nService userC7nService;
     private PasswordPolicyMapper passwordPolicyMapper;
-    private OrganizationService organizationService;
+    private TenantC7nService tenantC7nService;
 
     public UserC7nController(UserService userService,
                              UserC7nService userC7nService,
                              PasswordPolicyMapper passwordPolicyMapper,
-                             OrganizationService organizationService) {
+                             TenantC7nService tenantC7nService) {
         this.userService = userService;
         this.userC7nService = userC7nService;
         this.passwordPolicyMapper = passwordPolicyMapper;
-        this.organizationService = organizationService;
+        this.tenantC7nService = tenantC7nService;
     }
 
 
@@ -94,12 +94,16 @@ public class UserC7nController extends BaseController {
         if (user.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.null");
         }
-        user.setAdmin(null);
+        User queryInfo = userC7nService.queryInfo(id);
+        if (Objects.isNull(queryInfo)) {
+            throw new CommonException("error.user.update");
+        }
+        user.setAdmin(queryInfo.getAdmin());
         //不能修改状态
-        user.setEnabled(null);
-        user.setLdap(null);
-        user.setOrganizationId(null);
-        user.setLoginName(null);
+        user.setEnabled(queryInfo.getEnabled());
+        user.setLdap(queryInfo.getLdap());
+        user.setOrganizationId(queryInfo.getOrganizationId());
+        user.setLoginName(queryInfo.getLoginName());
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 
@@ -149,7 +153,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@RequestBody User user) {
+    public ResponseEntity checkUserInfo(@RequestBody User user) {
         userC7nService.check(user);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -279,8 +283,6 @@ public class UserC7nController extends BaseController {
     }
 
 
-
-
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层分页查询用户列表（包括用户信息以及所分配的全局角色信息）")
     @GetMapping(value = "/search")
@@ -341,7 +343,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
-        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.PROJECT.value()));
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.PROJECT.value()));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -350,7 +352,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
-        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId,ResourceLevel.ORGANIZATION.value()));
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.ORGANIZATION.value()));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -365,8 +367,8 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平台人数统计")
     @GetMapping(value = "/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDate(@RequestParam(value = "start_time") Date startTime,
-                                                    @RequestParam(value = "end_time") Date endTime) {
+    public ResponseEntity<UserNumberVO> countByDateInSite(@RequestParam(value = "start_time") Date startTime,
+                                                          @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(null, startTime, endTime));
     }
 
@@ -374,14 +376,14 @@ public class UserC7nController extends BaseController {
     @ApiOperation("校验用户是否是Root用户")
     @GetMapping("/{id}/check_is_root")
     public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userC7nService.checkIsRoot(id));
+        return ResponseEntity.ok(userC7nService.isRoot(id));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation("查询用户组织列表，根据into字段判断是否能够进入")
     @GetMapping("/{user_id}/organizations")
     public ResponseEntity<List<TenantVO>> listOwnedOrganizationByUserId(@PathVariable("user_id") Long userId) {
-        return ResponseEntity.ok(organizationService.listOwnedOrganizationByUserId(userId));
+        return ResponseEntity.ok(tenantC7nService.listOwnedOrganizationByUserId(userId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
@@ -399,6 +401,6 @@ public class UserC7nController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @RequestParam(name = "label_name") String labelName,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName,roleAssignmentSearchDTO), HttpStatus.OK);
+        return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);
     }
 }

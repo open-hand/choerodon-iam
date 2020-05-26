@@ -1,12 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author jiameng.cao
@@ -24,4 +23,15 @@ public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
 
     Long getIdByCode(@Param("agile") String agile);
 
+    /**
+     * 模糊查询projectType
+     *
+     * @param name
+     * @param code
+     * @param param
+     * @return
+     */
+    List<ProjectCategoryDTO> fuzzyQuery(@Param("name") String name,
+                                        @Param("code") String code,
+                                        @Param("param") String param);
 }

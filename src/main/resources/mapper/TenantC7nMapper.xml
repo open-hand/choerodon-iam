@@ -14,7 +14,32 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">
+    <resultMap id="TenantDetailsResultMap" type="io.choerodon.iam.api.vo.TenantVO">
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="tenant_name" property="tenantName" jdbcType="VARCHAR"/>
+        <result column="tenant_num" property="tenantNum" jdbcType="VARCHAR"/>
+        <result column="enabled_flag" property="enabledFlag" jdbcType="DECIMAL"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="limit_user_qty" property="limitUserQty" jdbcType="DECIMAL"/>
+        <collection property="tenantConfigs" ofType="org.hzero.iam.domain.entity.TenantConfig">
+            <id column="tenant_config_id" property="tenantConfigId" />
+            <result column="tenant_id" property="tenantId"/>
+            <result column="config_key" property="configKey" />
+            <result column="config_value" property="configValue" />
+            <result column="object_version_number" property="objectVersionNumber" />
+        </collection>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="TenantDetailsResultMap">
+        SELECT
+        *
+        FROM
+        hpfm_tenant_config htc
+        RIGHT JOIN (
         SELECT
         org.*,
         CASE
@@ -67,8 +92,7 @@
             </if>
 
         </where>
-
-
+        ) temp ON temp.tenant_id = htc.tenant_id
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.api.vo.TenantVO">

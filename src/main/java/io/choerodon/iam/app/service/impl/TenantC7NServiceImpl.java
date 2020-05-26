@@ -8,14 +8,13 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -31,6 +30,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.TenantConfigMapper;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
@@ -85,6 +85,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private UserMapper userMapper;
     @Autowired
     private TenantConfigRepository tenantConfigRepository;
+    @Autowired
+    private UserC7nService userC7nService;
+    @Autowired
+    TenantConfigC7nMapper tenantConfigMapper;
+
 
     // TODO 重写tenant逻辑
     @Override
@@ -139,15 +144,32 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
         Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
-//        //
-//        if (!C7nCollectionUtils.isEmpty(tenantVOS.getContent())) {
-//            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
-//                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
-//                // todo 用户查询
-//            }).collect(Collectors.toList());
-//            tenantVOS.setContent(list);
-//        }
+        List<TenantVO> content = tenantVOS.getContent();
+        if (org.springframework.util.CollectionUtils.isEmpty(content)) {
+            return null;
+        }
+        content.forEach(tenantVO -> {
+            //为每个组织添加组织所有者
+            TenantConfig tenantConfig = tenantConfigMapper.queryTenantConfigByTenantIdAndKey(tenantVO.getTenantId(), TenantConfigEnum.USER_ID.value());
+            if (!Objects.isNull(tenantConfig)) {
+                User user = userC7nService.queryInfo(Long.valueOf(tenantConfig.getConfigValue()));
+                if (!Objects.isNull(user)) {
+                    tenantVO.setOwnerEmail(user.getEmail());
+                    tenantVO.setOwnerLoginName(user.getLoginName());
+                    tenantVO.setOwnerPhone(user.getPhone());
+                    tenantVO.setOwnerRealName(user.getRealName());
+                }
+            }
+            //为每个组织添加官网地址
+            List<TenantConfig> tenantConfigs = tenantVO.getTenantConfigs();
+            if (!CollectionUtils.isNotEmpty(tenantConfigs)){
+                for (TenantConfig config : tenantConfigs) {
+                    if (TenantConfigEnum.USER_ID.value().equals(config.))
+                }
 
+            }
+
+        });
         return tenantVOS;
     }
 

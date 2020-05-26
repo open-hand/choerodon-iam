@@ -28,7 +28,7 @@ public enum TenantConfigEnum {
         return this.value;
     }
 
-    private static HashMap<String, TenantConfigEnum> valuesMap = new HashMap<>(6);
+    private static HashMap<String, TenantConfigEnum> valuesMap = new HashMap<>(10);
 
     static {
         TenantConfigEnum[] var0 = values();

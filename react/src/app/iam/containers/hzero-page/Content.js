@@ -17,7 +17,7 @@ const HzeroPage = withRouter(((props) => {
 
   function handleClick() {
     const url = {
-      user: 'hiam/user-group-management',
+      user: 'hiam/sub-account-site',
       role: 'hiam/role/list',
       menu: 'hiam/menu',
       instance: 'hadm/instance',

@@ -271,7 +271,10 @@
             fp.organization_id = #{organizationId}
 
             <if test="!isAdmin and !isOrgAdmin">
-                imr.member_id = #{userId} AND imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.source_id = #{organizationId)
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_type = 'organization'
+                AND imr.source_id = #{organizationId}
             </if>
 
             <if test="projectDTO != null">

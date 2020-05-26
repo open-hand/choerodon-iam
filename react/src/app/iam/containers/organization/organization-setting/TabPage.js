@@ -7,9 +7,9 @@ import WorkCalendarHome from './WorkCalendar';
 export default function (props) {
   return (
     <PageWrap noHeader={[]}>
-      <PageTab route="/base/organization-setting/info" component={BasicInfo} title="组织信息" tabKey="choerodon.code.organization.general-info" />
-      <PageTab route="/base/organization-setting/ldap" component={Ldap} title="LDAP设置" tabKey="choerodon.code.organization.general-ldap" />
-      <PageTab route="/base/organization-setting/working-calendar" component={WorkCalendarHome} title="工作日历" tabKey="choerodon.code.organization.general-calendar" />
+      <PageTab route="/iam/organization-setting/info" component={BasicInfo} title="组织信息" tabKey="choerodon.code.organization.general-info" />
+      <PageTab route="/iam/organization-setting/ldap" component={Ldap} title="LDAP设置" tabKey="choerodon.code.organization.general-ldap" />
+      <PageTab route="/iam/organization-setting/working-calendar" component={WorkCalendarHome} title="工作日历" tabKey="choerodon.code.organization.general-calendar" />
     </PageWrap>
   );
 }

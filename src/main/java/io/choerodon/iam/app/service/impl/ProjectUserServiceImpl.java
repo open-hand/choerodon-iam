@@ -229,7 +229,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
             memberRole.setAdditionalParams(additionalParams);
             // 直接插入，如果已经有了，会将id回写到dto
-            memberRoleService.batchAssignMemberRole(Arrays.asList(memberRole));
+            memberRoleService.batchAssignMemberRoleInternal(Arrays.asList(memberRole));
             // 插入fd_project_user表数据
             ProjectUserDTO projectUserDTO = new ProjectUserDTO();
             projectUserDTO.setProjectId(projectId);

@@ -245,7 +245,7 @@ export default withRouter(observer((props) => {
     if (record.get('organizationId').toString() !== organizationId) {
       return (
         <span>
-          <Permission service={[permissions[6]]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
+          <Permission service={[]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
             <span onClick={() => handleUserRole(record)} className="link">{value}</span>
           </Permission>
           <div className="org-user-external-user">
@@ -257,7 +257,7 @@ export default withRouter(observer((props) => {
       );
     }
     return (
-      <Permission service={[permissions[1]]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
+      <Permission service={[]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
         <span onClick={() => handleModify(record)} className="link">{value}</span>
       </Permission>
     );
@@ -273,14 +273,14 @@ export default withRouter(observer((props) => {
   }
   function renderAction({ record }) {
     let actionDatas = [{
-      service: [permissions[3]],
+      service: [],
       text: <FormattedMessage id={`${intlPrefix}.action.reset`} />,
       action: () => handleResetPassword(record),
     }];
     // 外部人员的处理
     if (record.get('organizationId').toString() !== organizationId) {
       actionDatas = [{
-        service: [permissions[8]],
+        service: [],
         text: '删除',
         action: () => handleDeleteUser(record),
       }];
@@ -288,20 +288,20 @@ export default withRouter(observer((props) => {
     }
     if (record.get('enabled')) {
       actionDatas.push({
-        service: [permissions[5]],
+        service: [],
         text: <FormattedMessage id={`${intlPrefix}.action.disable`} />,
         action: () => handleDisable(record),
       });
     } else {
       actionDatas.push({
-        service: [permissions[4]],
+        service: [],
         text: <FormattedMessage id={`${intlPrefix}.action.enable`} />,
         action: () => handleEnable(record),
       });
     }
     if (record.get('locked')) {
       actionDatas.push({
-        service: [permissions[2]],
+        service: [],
         text: <FormattedMessage id={`${intlPrefix}.action.unlock`} />,
         action: () => handleUnLock(record),
       });

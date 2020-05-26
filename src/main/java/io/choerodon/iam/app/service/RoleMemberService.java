@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -61,4 +62,5 @@ public interface RoleMemberService {
 
     void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roleList);
 
+    void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds);
 }

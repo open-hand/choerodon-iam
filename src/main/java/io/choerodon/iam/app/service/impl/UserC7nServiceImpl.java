@@ -902,7 +902,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         userVO.setAdmin(user.getAdmin());
         userVO.setLdap(user.getLdap());
         if (!user.getAdmin()) {
-            List<TenantDTO> list = tenantRepository.selectSelfTenants(null);
+            List<TenantDTO> list = tenantRepository.selectSelfTenants(new TenantDTO());
             if (CollectionUtils.isEmpty(list)) {
                 throw new CommonException("error.get.user.tenants");
             }

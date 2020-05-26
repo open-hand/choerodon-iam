@@ -55,7 +55,7 @@ export default function ListView() {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Permission service={[]}>
+        <Permission service={['choerodon.code.site.manager.root-user.ps.add']}>
           <Button icon="playlist_add" onClick={handleCreate}><FormattedMessage id={`${intlPrefix}.button.add`} /></Button>
         </Permission>
       </Header>

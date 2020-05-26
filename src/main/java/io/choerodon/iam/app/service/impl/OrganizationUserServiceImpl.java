@@ -161,7 +161,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Role> userRoles = user.getRoles();
         // 将role转为memberRole， memberId不用给
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
-        User result = userService.createUser(user);
+        User result = userService.createUserInternal(user);
         if (devopsMessage) {
             sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         }
@@ -182,8 +182,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 将role转为memberRole， memberId不用给
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
         if (devopsMessage) {
-            user = userService.createUser(user);
-            createUserAndUpdateRole(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
+            user = userService.createUserInternal(user);
+            sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         } else {
             user = userService.createUser(user);
         }
@@ -542,7 +542,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public void createUserAndUpdateRole(Long fromUserId, User userDTO, List<Role> userRoles, String value, Long organizationId) {
+    public void sendCreateUserAndUpdateRoleSaga(Long fromUserId, User userDTO, List<Role> userRoles, String value, Long organizationId) {
         UserEventPayload userEventPayload = getUserEventPayload(userDTO);
         CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = new CreateAndUpdateUserEventPayload();
         createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);

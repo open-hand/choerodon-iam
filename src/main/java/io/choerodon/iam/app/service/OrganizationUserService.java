@@ -36,7 +36,7 @@ public interface OrganizationUserService {
      */
     User createUserWithRoles(Long organizationId, User user, boolean checkPassword, boolean checkRoles);
 
-    void createUserAndUpdateRole(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
+    void sendCreateUserAndUpdateRoleSaga(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
 
     void sendUserCreationSaga(Long formUserId, User user, List<Role> userRoles, String value, Long organizationId);
 

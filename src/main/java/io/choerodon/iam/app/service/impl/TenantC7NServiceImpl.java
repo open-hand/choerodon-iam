@@ -6,18 +6,18 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.iam.infra.utils.TenantUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,6 +58,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
+
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -85,21 +86,34 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private UserMapper userMapper;
     @Autowired
     private TenantConfigRepository tenantConfigRepository;
+    @Autowired
+    private UserC7nService userC7nService;
+    @Autowired
+    TenantConfigC7nMapper tenantConfigMapper;
 
-    // TODO 重写tenant逻辑
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateTenant(Long tenantId, TenantVO tenantVO) {
-//        Tenant tenant = getTenant(tenantVO);
-//
-//        TenantConfigVO configVO = JSON.parseObject(tenantService.queryTenant(tenantVO.getTenantId()).getExtInfo(), TenantConfigVO.class);
-//        configVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
-//        configVO.setImageUrl(tenantVO.getTenantConfigVO().getImageUrl());
-//        configVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
-//        tenant.setExtInfo(JSON.toJSONString(configVO));
-//
-//        tenantService.updateTenant(tenantId, tenant);
+        List<TenantConfig> tenantConfigs = TenantUtils.tenantConfigVOToTenantConfigList(tenantId, tenantVO.getTenantConfigVO());
+        if (CollectionUtils.isEmpty(tenantConfigs)) {
+            return;
+        }
+        for (TenantConfig tenantConfig : tenantConfigs) {
+            TenantConfig record = new TenantConfig();
+            record.setTenantId(tenantId);
+            record.setConfigKey(tenantConfig.getConfigKey());
+            TenantConfig selectOne = tenantConfigRepository.selectOne(record);
+            if (Objects.isNull(selectOne)) {
+                if (tenantConfigRepository.insert(tenantConfig) != 1) {
+                    throw new CommonException("error.tenant.update");
+                }
+            }
+            selectOne.setConfigValue(tenantConfig.getConfigValue());
+            tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
+        }
     }
+
 
     // TODO 重写tenant逻辑
     @Override
@@ -139,16 +153,34 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
         Page<TenantVO> tenantVOS = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, enabled, params));
-//        //
-//        if (!C7nCollectionUtils.isEmpty(tenantVOS.getContent())) {
-//            List<TenantVO> list = tenantVOS.getContent().stream().peek(t -> {
-//                t.setTenantConfigVO(JSON.parseObject(t.getExtInfo(), TenantConfigVO.class));
-//                // todo 用户查询
-//            }).collect(Collectors.toList());
-//            tenantVOS.setContent(list);
-//        }
-
+        List<TenantVO> content = tenantVOS.getContent();
+        tenantVOS.setContent(fillTenant(content));
         return tenantVOS;
+    }
+
+    private List<TenantVO> fillTenant(List<TenantVO> content) {
+        if (CollectionUtils.isEmpty(content)) {
+            return null;
+        }
+        content.forEach(tenantVO -> {
+            Tenant tenant = tenantRepository.selectTenantDetails(tenantVO.getTenantId());
+            TenantConfigVO tenantConfigVO = TenantUtils.tenantConfigListVOToTenantConfigVO(tenant.getTenantConfigs());
+            if (Objects.isNull(tenantConfigVO)) {
+                return;
+            }
+            tenantVO.setTenantConfigVO(tenantConfigVO);
+            if (Objects.isNull(tenantConfigVO.getUserId())) {
+                return;
+            }
+            User user = userC7nService.queryInfo(Long.valueOf(tenantConfigVO.getUserId()));
+            if (!Objects.isNull(user)) {
+                tenantVO.setOwnerEmail(user.getEmail());
+                tenantVO.setOwnerLoginName(user.getLoginName());
+                tenantVO.setOwnerPhone(user.getPhone());
+                tenantVO.setOwnerRealName(user.getRealName());
+            }
+        });
+        return content;
     }
 
     // TODO 重写tenant逻辑

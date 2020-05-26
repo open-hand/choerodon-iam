@@ -32,7 +32,7 @@ public class TenantConfigVO {
     private String emailSuffix;
 
     @ApiModelProperty(value = "是否是注册组织")
-    private Boolean isRegister = false;
+    private Boolean isRegister ;
 
 
     @ApiModelProperty(value = "远程令牌连接功能是否开启，默认为true")

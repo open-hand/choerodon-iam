@@ -34,7 +34,7 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="TenantDetailsResultMap">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">
         SELECT
         org.*,
         CASE

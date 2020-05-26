@@ -28,7 +28,7 @@ export default function ListView() {
   }
   function renderAction(record) {
     const actionDatas = [{
-      service: [permissions[2]],
+      service: [],
       text: <FormattedMessage id={`${intlPrefix}.action.delete`} />,
       action: () => handleDelete(record),
     }];
@@ -55,7 +55,7 @@ export default function ListView() {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Permission service={[permissions[1]]}>
+        <Permission service={[]}>
           <Button icon="playlist_add" onClick={handleCreate}><FormattedMessage id={`${intlPrefix}.button.add`} /></Button>
         </Permission>
       </Header>

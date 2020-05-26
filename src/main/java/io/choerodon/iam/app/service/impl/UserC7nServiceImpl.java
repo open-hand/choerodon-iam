@@ -597,8 +597,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
-        List<RoleC7nDTO> roleDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
-        return !CollectionUtils.isEmpty(roleDTOList) && roleDTOList.stream().anyMatch(v -> RoleLabelEnum.PROJECT_ADMIN.value().equals(v.getCode()));
+        return userC7nMapper.doesUserHaveLabelInProject(id, RoleLabelEnum.PROJECT_ADMIN.value(), projectId);
     }
 
     @Override

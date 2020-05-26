@@ -46,4 +46,12 @@ public class MenuC7nController {
     public ResponseEntity<List<Menu>> listMenuByLabel(@RequestParam(required = false) Set<String> labels) {
         return ResponseEntity.ok(menuC7nService.listMenuByLabel(labels));
     }
+
+    @ApiOperation(value = "根据层级查询菜单")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping(value = "/menus/menu_config")
+    public ResponseEntity<List<Menu>> listMenuByLevelCode(@RequestParam(value = "code") String code) {
+        return ResponseEntity.ok(menuC7nService.listMenuByLevel(code));
+    }
+
 }

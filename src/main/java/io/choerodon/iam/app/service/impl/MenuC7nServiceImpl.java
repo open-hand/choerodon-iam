@@ -1,15 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.MenuC7nService;
-import io.choerodon.iam.app.service.OrganizationRoleC7nService;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.repository.MenuRepository;
@@ -24,14 +24,16 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.MenuType;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.MenuC7nService;
+import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 
 /**
  * 〈功能简述〉
@@ -173,5 +175,33 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     public List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type) {
 
         return menuC7nMapper.listMenuByLabelAndType(labelNames, type);
+    }
+
+
+    @Override
+    public List<Menu> listMenuByLevel(String code) {
+        code = getCode(code);
+        Set<String> labelNames = new HashSet<>();
+        if (ResourceLevel.SITE.value().equals(code)) {
+            labelNames.add(MenuLabelEnum.SITE_MENU.value());
+        }
+        if (ResourceLevel.ORGANIZATION.value().equals(code)) {
+            labelNames.add(MenuLabelEnum.TENANT_MENU.value());
+        }
+        if (ResourceLevel.PROJECT.value().equals(code)) {
+            labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
+            labelNames.add(MenuLabelEnum.AGILE_MENU.value());
+            labelNames.add(MenuLabelEnum.OPERATIONS_MENU.value());
+            labelNames.add(MenuLabelEnum.PROGRAM_MENU.value());
+
+        }
+        if (ResourceLevel.USER.value().equals(code)) {
+            labelNames.add(MenuLabelEnum.USER_MENU.value());
+        }
+        return menuC7nMapper.listMenuByLabelAndType(labelNames, MenuType.MENU.value());
+    }
+    private String getCode(String code) {
+        int index = code.lastIndexOf('.');
+        return code.substring(index + 1);
     }
 }

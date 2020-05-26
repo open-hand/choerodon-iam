@@ -200,7 +200,7 @@
         WHERE fp.organization_id=#{organizationId}
         AND fp.is_enabled=1
         <if test="param != null">
-            and (
+            AND (
             fp.name like concat(concat('%',#{param}),'%')
             )
         </if>
@@ -215,7 +215,7 @@
         AND fpc.CODE = #{agile}
         AND fp.is_enabled=1
         <if test="param != null">
-            and (
+            AND (
             fp.name like concat(concat('%',#{param}),'%')
             )
         </if>
@@ -316,12 +316,14 @@
         inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
         or fpc.code='PROGRAM'))
         <if test="!isAdmin">
-            inner join fd_project_user imr ON imr.PROJECT_ID = fp.id
-            inner join iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+            INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+            INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+            INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
         </if>
         <where>
             <if test="!isAdmin">
-                and imr.member_id = #{userId}
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
             </if>
             <if test="projectDTO != null">
                 <if test="projectDTO.enabled != null">
@@ -337,23 +339,23 @@
         where fp.organization_id = #{organizationId}
         <if test="projectDTO != null">
             <if test="projectDTO.name != null">
-                and fp.name like concat(concat('%',#{projectDTO.name}),'%')
+                AND fp.name like concat(concat('%',#{projectDTO.name}),'%')
             </if>
             <if test="projectDTO.code != null">
-                and fp.code like concat(concat('%',#{projectDTO.code}),'%')
+                AND fp.code like concat(concat('%',#{projectDTO.code}),'%')
             </if>
             <if test="projectDTO.enabled != null">
-                and fp.is_enabled = #{projectDTO.enabled}
+                AND fp.is_enabled = #{projectDTO.enabled}
             </if>
             <if test="params != null">
-                and (
+                AND (
                 fp.name like concat(concat('%', #{params}), '%') OR
                 fp.code like concat(concat('%', #{params}), '%')
                 )
             </if>
         </if>
         order by
-        <if test="orderBy != null and orderBy != ''">
+        <if test="orderBy != null AND orderBy != ''">
             ${orderBy},
         </if>
         fp.id desc
@@ -362,8 +364,8 @@
     <select id="selectProjectsByUserId" resultMap="projectDTO">
         select distinct fp.*
         from fd_project fp
-        inner join fd_project_user fpu on (fp.id = fpu.PROJECT_ID)
-        inner join iam_role ir on (ir.id = fpu.role_id and ir.is_enabled = 1)
+        INNER JOIN fd_project_user fpu on (fp.id = fpu.PROJECT_ID)
+        INNER JOIN iam_role ir on (ir.id = fpu.role_id AND ir.is_enabled = 1)
         <where>
             fpu.member_id = #{userId}
             <if test="projectDTO != null">

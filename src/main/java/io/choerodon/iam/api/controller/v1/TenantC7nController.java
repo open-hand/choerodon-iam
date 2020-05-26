@@ -130,12 +130,12 @@ public class TenantC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<TenantVO>> pagingQuery(@ApiIgnore
                                                       @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                      @RequestParam(required = false) String name,
-                                                      @RequestParam(required = false) String code,
+                                                      @RequestParam(required = false) String tenantName,
+                                                      @RequestParam(required = false) String tenantNum,
                                                       @RequestParam(required = false) String ownerRealName,
-                                                      @RequestParam(required = false) Boolean enabled,
+                                                      @RequestParam(required = false) Boolean enabledFlag,
                                                       @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, name, code, ownerRealName, enabled, params), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, params), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})

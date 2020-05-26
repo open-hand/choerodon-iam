@@ -36,11 +36,6 @@
 
     <select id="fulltextSearch" resultMap="TenantDetailsResultMap">
         SELECT
-        *
-        FROM
-        hpfm_tenant_config htc
-        RIGHT JOIN (
-        SELECT
         org.*,
         CASE
         WHEN
@@ -92,7 +87,7 @@
             </if>
 
         </where>
-        ) temp ON temp.tenant_id = htc.tenant_id
+
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.api.vo.TenantVO">

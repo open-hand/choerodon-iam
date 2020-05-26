@@ -96,6 +96,8 @@ mybatis:
     mapUnderscoreToCamelCase: true
 
 hzero:
+  user:
+    enable-root: true
   data:
     permission:
       # 是否启用数据权限屏蔽

@@ -248,7 +248,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteOnProjectLevel(Long projectId,Long userId, Boolean syncAll) {
+    public void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll) {
         deleteProjectRole(projectId, userId, syncAll);
         //删除用户所有项目角色时发送web hook
 //        JSONObject jsonObject = new JSONObject();
@@ -559,7 +559,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
             String level = userMemberEventPayloads.get(0).getResourceType();
             Long sourceId = userMemberEventPayloads.get(0).getResourceId();
-            sagaClient.startSaga(code, new StartInstanceDTO(input, "users", refIds, level, sourceId));
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withSagaCode(code)
+                            .withJson(input)
+                            .withRefType("users")
+                            .withRefId(refIds)
+                            .withLevel(ResourceLevel.valueOf(level.toUpperCase()))
+                            .withSourceId(sourceId),
+                    builder -> {
+                    });
         } catch (Exception e) {
             throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event", e);
         }
@@ -666,16 +674,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     public void updateMemberRole(Long fromUserId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
-    // 发送saga同步角色
-    producer.apply(StartSagaBuilder.newBuilder()
-                    .withRefId(fromUserId.toString())
-                    .withRefType("user")
-                    .withSourceId(sourceId)
-                    .withLevel(level)
-                    .withSagaCode(MEMBER_ROLE_UPDATE)
-                    .withPayloadAndSerialize(userMemberEventPayloads),
-            builder -> {
-            });
+        // 发送saga同步角色
+        producer.apply(StartSagaBuilder.newBuilder()
+                        .withRefId(fromUserId.toString())
+                        .withRefType("user")
+                        .withSourceId(sourceId)
+                        .withLevel(level)
+                        .withSagaCode(MEMBER_ROLE_UPDATE)
+                        .withPayloadAndSerialize(userMemberEventPayloads),
+                builder -> {
+                });
     }
 
     @Override

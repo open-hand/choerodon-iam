@@ -3,10 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.Valid;
-
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -18,7 +15,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectUserService;
@@ -39,14 +35,14 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/choerodon/v1/projects")
 public class ProjectUserC7nController extends BaseController {
 
-    private ProjectUserService userService;
-    private OrganizationResourceLimitService organizationResourceLimitService;
-    private RoleMemberService roleMemberService;
+    private final ProjectUserService projectUserService;
+    private final OrganizationResourceLimitService organizationResourceLimitService;
+    private final RoleMemberService roleMemberService;
 
-    public ProjectUserC7nController(ProjectUserService userService,
+    public ProjectUserC7nController(ProjectUserService projectUserService,
                                     RoleMemberService roleMemberService,
                                     OrganizationResourceLimitService organizationResourceLimitService) {
-        this.userService = userService;
+        this.projectUserService = projectUserService;
         this.roleMemberService = roleMemberService;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
@@ -70,7 +66,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) Boolean enabled,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
+        return new ResponseEntity<>(projectUserService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
 
@@ -88,7 +84,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) String roleName,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
+        return new ResponseEntity<>(projectUserService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
     }
 
 
@@ -100,7 +96,7 @@ public class ProjectUserC7nController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
             @RequestBody Set<Long> userIds) {
-        return new ResponseEntity<>(userService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
+        return new ResponseEntity<>(projectUserService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
 
@@ -112,7 +108,7 @@ public class ProjectUserC7nController extends BaseController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "角色标签", required = true)
             @PathVariable("role_lable") String roleLable) {
-        return ResponseEntity.ok(userService.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLable));
+        return ResponseEntity.ok(projectUserService.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLable));
     }
 
 
@@ -124,7 +120,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/search_by_name")
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
                                                          @RequestParam(required = false) String param) {
-        return ResponseEntity.ok(userService.listUsersByName(projectId, param));
+        return ResponseEntity.ok(projectUserService.listUsersByName(projectId, param));
     }
 
 
@@ -132,7 +128,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation("根据项目id查询项目下的项目所有者")
     @GetMapping("/{project_id}/owner/list")
     public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
-        return ResponseEntity.ok(userService.listProjectOwnerById(projectId));
+        return ResponseEntity.ok(projectUserService.listProjectOwnerById(projectId));
     }
 
 
@@ -141,7 +137,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
     public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
                                                                   @RequestParam(name = "param", required = false) String param) {
-        return ResponseEntity.ok(userService.listUsersByNameWithLimit(projectId, param));
+        return ResponseEntity.ok(projectUserService.listUsersByNameWithLimit(projectId, param));
     }
 
 
@@ -162,7 +158,7 @@ public class ProjectUserC7nController extends BaseController {
                                                             PageRequest pageable,
                                                     @RequestBody Set<Long> userIds,
                                                     @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(userService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectUserService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -170,7 +166,7 @@ public class ProjectUserC7nController extends BaseController {
     @PostMapping(value = "/{project_id}/users/assign_roles")
     public ResponseEntity assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                @RequestBody List<ProjectUserDTO> projectUserDTOList) {
-        userService.assignUsersProjectRoles(projectId, projectUserDTOList);
+        projectUserService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return Results.success();
     }
 
@@ -181,7 +177,7 @@ public class ProjectUserC7nController extends BaseController {
                                                                  @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                                  @PathVariable(name = "user_id") Long userId,
                                                                  @RequestBody List<Long> roleIds) {
-        userService.updateUserRoles(userId, projectId, roleIds, syncAll);
+        projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return Results.success();
     }
 
@@ -200,13 +196,10 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量移除用户")
     @PostMapping(value = "/{project_id}/users/{user_id}/role_members/delete")
-    public ResponseEntity deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+    public ResponseEntity<Void> deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                @PathVariable(name = "user_id") Long userId) {
         roleMemberService.deleteOnProjectLevel(sourceId, userId, syncAll);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-
-
 }

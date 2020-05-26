@@ -995,7 +995,7 @@
           AND imr.source_type = 'project'
           AND imr.source_id = #{projectId}
     </select>
-    <select id="listProjectUsersByProjectIdAndRoleLable" resultType="io.choerodon.iam.infra.dto.UserDTO">
+    <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_member_role imr
                  INNER JOIN iam_user iu ON iu.id = imr.member_id
@@ -1005,7 +1005,7 @@
         WHERE imr.member_type = 'user'
           AND imr.source_id = #{projectId}
           AND imr.source_type = 'project'
-          AND il.name = #{roleLable}
+          AND il.name = #{roleLabel}
     </select>
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
     <select id="listUsersByName" resultType="io.choerodon.iam.infra.dto.UserDTO">

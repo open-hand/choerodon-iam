@@ -269,12 +269,8 @@ public interface UserC7nMapper {
 
     /**
      * 查询项目下指定角色的用户列表
-     *
-     * @param projectId
-     * @param roleLable
-     * @return
      */
-    List<User> listProjectUsersByProjectIdAndRoleLable(@Param("projectId") Long projectId, @Param("roleLable") String roleLable);
+    List<User> listProjectUsersByProjectIdAndRoleLabel(@Param("projectId") Long projectId, @Param("roleLabel") String roleLabel);
 
 
     /**

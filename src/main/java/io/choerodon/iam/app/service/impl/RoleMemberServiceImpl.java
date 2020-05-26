@@ -13,6 +13,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.internal.ws.spi.db.DatabindingException;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Client;
@@ -39,6 +42,7 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -49,6 +53,7 @@ import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
@@ -56,6 +61,7 @@ import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
@@ -121,6 +127,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private MemberRoleService memberRoleService;
     private ProjectUserMapper projectUserMapper;
     private MemberRoleRepository memberRoleRepository;
+    private MessageClient messageClient;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
@@ -143,6 +150,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  TransactionalProducer producer,
+                                 MessageClient messageClient,
                                  MemberRoleRepository memberRoleRepository) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
@@ -163,6 +171,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.memberRoleService = memberRoleService;
         this.projectAssertHelper = projectAssertHelper;
         this.projectUserMapper = projectUserMapper;
+        this.messageClient = messageClient;
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
     }
@@ -250,22 +259,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll) {
         deleteProjectRole(projectId, userId, syncAll);
-        //删除用户所有项目角色时发送web hook
-//        JSONObject jsonObject = new JSONObject();
-//        List<Long> collect = roleAssignmentDeleteDTO.getData().keySet().stream().collect(Collectors.toList());
-//        jsonObject.put("projectId", roleAssignmentDeleteDTO.getSourceId());
-        // TODO notify-service
-//        jsonObject.put("user", JSON.toJSONString(userService.getWebHookUser(collect.get(0))));
-//        UserDTO userDTO = userMapper.selectByPrimaryKey(collect.get(0));
-//        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                SendSettingBaseEnum.DELETE_USERROLES.value(),
-//                SendSettingBaseEnum.map.get(SendSettingBaseEnum.DELETE_USERROLES.value()),
-//                jsonObject,
-//                userDTO.getLastUpdateDate(),
-//                userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
-//        );
-//        Map<String, Object> params = new HashMap<>();
-//        userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userDTO.getId()), SendSettingBaseEnum.DELETE_USERROLES.value(), params, roleAssignmentDeleteDTO.getSourceId(), webHookJsonSendDTO);
+        mgsDeleteUserRoles(projectId, userId);
     }
 
 
@@ -497,6 +491,36 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         return uploadHistoryMapper.selectByPrimaryKey(uploadHistory);
     }
+
+    /**
+     * 删除项目下所有角色 发送消息
+     * @param projectId
+     * @param userId
+     */
+    private void mgsDeleteUserRoles(Long projectId,Long userId){
+        MessageSender messageSender = new MessageSender();
+        messageSender.setMessageCode(SendSettingBaseEnum.DELETE_USER_ROLES.value());
+        messageSender.setTenantId(0L);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("createdAt", new Date());
+        map.put("eventName", SendSettingBaseEnum.map.get(SendSettingBaseEnum.DELETE_USER_ROLES.value()));
+        map.put("objectKind", SendSettingBaseEnum.DELETE_USER_ROLES.value());
+        map.put("projectId", projectId);
+        User user = userMapper.selectByPrimaryKey(userId);
+        map.put("loginName", user.getLoginName());
+        map.put("userName", user.getRealName());
+        messageSender.setObjectArgs(map);
+
+        Map<String,Object> objectMap=new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),projectId);
+
+        ProjectDTO projectDTO=projectAssertHelper.projectNotExisted(projectId);
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),projectDTO.getOrganizationId());
+        messageSender.setAdditionalInformation(objectMap);
+        messageClient.async().sendMessage(messageSender);
+    }
+
     // TODO notify-service
 
     private void snedMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {

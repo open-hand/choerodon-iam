@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
@@ -27,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
@@ -42,6 +45,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
@@ -89,6 +93,8 @@ public class ExcelImportUserTask {
     private ProjectUserMapper projectUserMapper;
 
     private ProjectAssertHelper projectAssertHelper;
+    private MessageClient messageClient;
+
 
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
@@ -102,6 +108,7 @@ public class ExcelImportUserTask {
                                RoleRepository roleRepository,
                                RoleC7nMapper roleC7nMapper,
                                MemberRoleRepository memberRoleRepository,
+                               MessageClient messageClient,
                                RoleAssertHelper roleAssertHelper,
                                RandomInfoGenerator randomInfoGenerator,
                                UserMapper userMapper) {
@@ -120,6 +127,7 @@ public class ExcelImportUserTask {
         this.projectUserMapper = projectUserMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.userMapper = userMapper;
+        this.messageClient = messageClient;
     }
 
     @Async("excel-executor")
@@ -298,6 +306,36 @@ public class ExcelImportUserTask {
             uploadHistory.setFinished(true);
             finishFallback.callback(uploadHistory);
         }
+        mgsProjectAddUser(uploadHistory.getSourceId(), successfulCount);
+    }
+
+
+
+    /**
+     * 项目下导入用户 发送消息
+     * @param projectId
+     * @param count
+     */
+    private void mgsProjectAddUser(Long projectId, Integer count) {
+        MessageSender messageSender = new MessageSender();
+        messageSender.setMessageCode(SendSettingBaseEnum.PROJECT_ADD_USER.value());
+        messageSender.setTenantId(0L);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("createdAt", new Date());
+        map.put("eventName", SendSettingBaseEnum.map.get(SendSettingBaseEnum.PROJECT_ADD_USER.value()));
+        map.put("objectKind", SendSettingBaseEnum.PROJECT_ADD_USER.value());
+        map.put("projectId", projectId);
+        map.put("addCount", count);
+        ProjectDTO projectDTO=projectAssertHelper.projectNotExisted(projectId);
+        map.put("organizationId", projectDTO.getOrganizationId());
+        messageSender.setObjectArgs(map);
+
+        Map<String,Object> objectMap=new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),projectId);
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),projectDTO.getOrganizationId());
+        messageSender.setAdditionalInformation(objectMap);
+        messageClient.async().sendMessage(messageSender);
     }
 
     private MemberRole getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {

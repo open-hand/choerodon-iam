@@ -98,6 +98,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Transactional(rollbackFor = Exception.class)
     public void updateTenant(Long tenantId, TenantVO tenantVO) {
         List<TenantConfig> tenantConfigs = TenantConfigConvertUtils.tenantConfigVOToTenantConfigList(tenantId, tenantVO.getTenantConfigVO());
+        Tenant tenant = getTenant(tenantVO);
+        tenant.setTenantId(tenantId);
+        if (tenantRepository.updateByPrimaryKeySelective(tenant) != 1) {
+            throw new CommonException("error.tenant.update");
+        }
         if (CollectionUtils.isEmpty(tenantConfigs)) {
             return;
         }
@@ -178,6 +183,31 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 }
         );
         return tenantVOPage;
+    }
+
+    private List<TenantVO> fillTenant(List<TenantVO> content) {
+        if (CollectionUtils.isEmpty(content)) {
+            return null;
+        }
+        content.forEach(tenantVO -> {
+            Tenant tenant = tenantRepository.selectTenantDetails(tenantVO.getTenantId());
+            TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenant.getTenantConfigs());
+            if (Objects.isNull(tenantConfigVO)) {
+                return;
+            }
+            tenantVO.setTenantConfigVO(tenantConfigVO);
+            if (Objects.isNull(tenantConfigVO.getUserId())) {
+                return;
+            }
+            User user = userMapper.selectByPrimaryKey(Long.valueOf(tenantConfigVO.getUserId()));
+            if (!Objects.isNull(user)) {
+                tenantVO.setOwnerEmail(user.getEmail());
+                tenantVO.setOwnerLoginName(user.getLoginName());
+                tenantVO.setOwnerPhone(user.getPhone());
+                tenantVO.setOwnerRealName(user.getRealName());
+            }
+        });
+        return content;
     }
 
     @Override

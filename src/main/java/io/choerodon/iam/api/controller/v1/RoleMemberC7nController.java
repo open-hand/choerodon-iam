@@ -8,12 +8,14 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -314,13 +316,14 @@ public class RoleMemberC7nController extends BaseController {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
-//    @Permission(type = ResourceType.ORGANIZATION)
-//    @ApiOperation(value = "组织层更新用户角色")
-//    @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
-//    public ResponseEntity<UserDTO> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-//                                                                      @PathVariable(name = "user_id") Long userId,
-//                                                                      @RequestBody @Validated List<RoleDTO> roleDTOList) {
-//        return new ResponseEntity<>(userService.updateUserRoles(userId,
-//                ResourceLevel.ORGANIZATION.value(), organizationId, roleDTOList), HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层更新用户角色")
+    @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
+    public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                      @PathVariable(name = "user_id") Long userId,
+                                                                      @RequestBody @Validated List<Role> roles) {
+
+        roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
+        return ResponseEntity.noContent().build();
+    }
 }

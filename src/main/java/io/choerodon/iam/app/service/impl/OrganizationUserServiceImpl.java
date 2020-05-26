@@ -45,12 +45,10 @@ import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
@@ -319,64 +317,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
         }
         // 2. 更新用户角色
-        // 查询用户拥有的组织层角色
-        List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
-        List<Role> roles = user.getRoles();
-        Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
-        Set<Long> oldIds = memberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
-        // 要添加的角色
-        Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
-        // 要删除的角色
-        Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-
-        List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
-            MemberRole memberRole = new MemberRole();
-            memberRole.setMemberId(user.getId());
-            memberRole.setMemberType(MemberType.USER.value());
-            memberRole.setRoleId(id);
-            memberRole.setSourceId(organizationId);
-            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
-            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-            memberRole.setAssignLevelValue(organizationId);
-            Map<String, Object> additionalParams = new HashMap<>();
-            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
-            memberRole.setAdditionalParams(additionalParams);
-            return memberRole;
-        }).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(insertMemberRoles)) {
-            memberRoleService.batchAssignMemberRoleInternal(insertMemberRoles);
-        }
-
-        List<MemberRole> deleteMemberRoles = deleteIds.stream().map(id -> {
-            MemberRole memberRole = new MemberRole();
-            memberRole.setMemberId(user.getId());
-            memberRole.setMemberType(MemberType.USER.value());
-            memberRole.setRoleId(id);
-            memberRole.setSourceId(organizationId);
-            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
-            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-            memberRole.setAssignLevelValue(organizationId);
-            Map<String, Object> additionalParams = new HashMap<>();
-            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
-            memberRole.setAdditionalParams(additionalParams);
-            return memberRole;
-        }).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(deleteMemberRoles)) {
-            memberRoleRepository.batchDelete(deleteMemberRoles);
-        }
-
-        List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(organizationId, user.getId(), RoleLabelEnum.TENANT_ROLE.value());
-        Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList()));
-
-        // 发送saga
-        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
-        userMemberEventPayload.setUserId(user.getId());
-        userMemberEventPayload.setRoleLabels(labelNames);
-        userMemberEventPayload.setResourceId(organizationId);
-        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
-        userMemberEventPayloads.add(userMemberEventPayload);
-        roleMemberService.updateMemberRole(user.getId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
+        roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
     }
 
 

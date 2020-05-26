@@ -15,7 +15,6 @@ import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.entity.BaseUser;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -902,6 +901,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         User user = userRepository.selectByPrimaryKey(userVO.getId());
         userVO.setObjectVersionNumber(user.getObjectVersionNumber());
         userVO.setAdmin(user.getAdmin());
+        userVO.setLdap(user.getLdap());
         if (!user.getAdmin()) {
             List<TenantDTO> list = tenantRepository.selectSelfTenants(null);
             if (CollectionUtils.isEmpty(list)) {

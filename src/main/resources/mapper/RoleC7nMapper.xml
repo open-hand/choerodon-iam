@@ -53,18 +53,20 @@
         AND imr.source_type = #{sourceType}
     </select>
     <select id="getByTenantIdAndLabel" resultMap="RoleMap">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT ir.*
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
-        WHERE ir.h_tenant_id = #{tenantId} AND hlr.data_type = 'ROLE' AND il.`name` = #{labelName}
+        WHERE ir.h_tenant_id = #{tenantId} AND hlr.data_type = #{roleLabelDataType} AND il.`name` = #{labelName}
     </select>
 
     <select id="selectRolesByLabelNameAndType" resultMap="RoleDTO">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT ir.*
         FROM iam_role ir
-        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
-        LEFT JOIN iam_label il ON irl.label_id = il.id
+        LEFT JOIN hiam_label_rel hlr ON (ir.id = hlr.data_id and hlr.data_type = #{roleLabelDataType})
+        LEFT JOIN iam_label il ON hlr.label_id = il.id
         WHERE il.name = #{name}
         AND il.type = #{type}
         <choose>
@@ -77,12 +79,13 @@
         </choose>
     </select>
     <select id="listRolesByTenantIdAndLableWithOptions" resultType="org.hzero.iam.domain.entity.Role">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT ir.*
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
         <where>
-            hlr.data_type = 'ROLE' AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
+            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
             <!-- 模糊匹配role.name -->
             <if test="param != null and param.name != null">
                 AND ir.name LIKE concat(concat('%', #{param.name}), '%')
@@ -90,6 +93,7 @@
         </where>
     </select>
     <select id="getOrgAdminByUserIdAndTenantId" resultType="org.hzero.iam.domain.entity.Role">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT ir.*
         FROM iam_member_role imr
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -97,7 +101,7 @@
         LEFT JOIN iam_label il ON il.id = hlr.label_id
         WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.source_id = #{tenantId}
         AND imr.member_id = 1
-        AND hlr.data_type = 'ROLE'
+        AND hlr.data_type = #{roleLabelDataType}
         AND il.name = 'TENANT_ADMIN' OR ir.`code` = 'role/organization/default/administrator'
     </select>
 

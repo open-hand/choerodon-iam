@@ -24,7 +24,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -220,7 +219,7 @@ public class ExcelImportUserTask {
         });
         //去重
         List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
-        Map<MemberRole, String> excelMemberRoleDTOS = new HashMap<>();
+
         //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
@@ -272,10 +271,14 @@ public class ExcelImportUserTask {
                 if (memberRole == null) {
                     return;
                 }
-                roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
+                Set<Long> roleIds = new HashSet<>();
+                roleIds.add(roleId);
+                roleMemberService.addTenantRoleForUser(sourceId, userId, roleIds);
+//                roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
             }
-            excelMemberRoleDTOS.put(memberRole, loginName);
+
         });
+
 
         Integer failedCount = errorMemberRoles.size();
         Integer successfulCount = total - failedCount;
@@ -332,16 +335,13 @@ public class ExcelImportUserTask {
     }
 
     private Role getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code, Long tenantId) {
-        Role dto = new Role();
-        dto.setCode(code);
-        dto.setTenantId(tenantId);
-        Role role = roleRepository.selectOne(dto);
-        if (ObjectUtils.isEmpty(role)) {
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(tenantId, code);
+        if (org.springframework.util.CollectionUtils.isEmpty(roles)) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
             return null;
         }
-        return role;
+        return roles.get(0);
     }
 
     private User getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {

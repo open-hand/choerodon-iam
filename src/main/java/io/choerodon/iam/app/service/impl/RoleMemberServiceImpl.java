@@ -35,7 +35,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -479,7 +478,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         String[] skipSheetNames = {"readme"};
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("登录名*", "loginName");
-        propertyMap.put("角色编码*", "roleCode");
+        propertyMap.put("角色标签*", "roleCode");
         excelReadConfig.setSkipSheetNames(skipSheetNames);
         excelReadConfig.setPropertyMap(propertyMap);
         return excelReadConfig;
@@ -767,7 +766,49 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
         userMemberEventPayloads.add(userMemberEventPayload);
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
+
+        // TODO 发送消息？？？
     }
+
+    @Override
+    @Transactional
+    public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds) {
+        List<MemberRole> memberRoleList = new ArrayList<>();
+        roleIds.forEach(roleId -> {
+            MemberRole memberRole = new MemberRole();
+            memberRole.setMemberId(userId);
+            memberRole.setMemberType(MemberType.USER.value());
+            memberRole.setRoleId(roleId);
+            memberRole.setSourceId(tenantId);
+            memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+            memberRole.setAssignLevelValue(tenantId);
+            memberRoleList.add(memberRole);
+        });
+
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
+
+        List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
+        // 用户现在拥有的角色标签
+        List<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+        Set<String> labelNames = new HashSet<>();
+        if (!CollectionUtils.isEmpty(newRoleIds)) {
+            labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);
+        }
+
+        // 发送saga
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+        userMemberEventPayload.setUserId(userId);
+        userMemberEventPayload.setRoleLabels(labelNames);
+        userMemberEventPayload.setResourceId(tenantId);
+        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayloads.add(userMemberEventPayload);
+        updateMemberRole(userId, userMemberEventPayloads,ResourceLevel.ORGANIZATION, tenantId);
+
+        // TODO 发送消息？？？
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

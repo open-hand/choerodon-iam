@@ -5,9 +5,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.OrgAdministratorVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.DemoRegisterService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -44,23 +44,26 @@ public class TenantC7nController extends BaseController {
     private TenantC7nService tenantC7nService;
     private UserC7nService userC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;
+    private DemoRegisterService demoRegisterService;
 
     public TenantC7nController(TenantC7nService tenantC7nService,
                                UserC7nService userC7nService,
+                               DemoRegisterService demoRegisterService,
                                OrganizationResourceLimitService organizationResourceLimitService) {
         this.tenantC7nService = tenantC7nService;
         this.userC7nService = userC7nService;
+        this.demoRegisterService = demoRegisterService;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
 
-//    @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")
-//    @GetMapping(value = "/check/email")
-//    @Permission(permissionPublic = true)
-//    public ResponseEntity checkEmailIsExist(
-//            @RequestParam(value = "email") String email) {
-//        demoRegisterC7nService.checkEmail(email);
-//        return new ResponseEntity(HttpStatus.OK);
-//    }
+    @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")
+    @GetMapping(value = "/check/email")
+    @Permission(permissionPublic = true)
+    public ResponseEntity checkEmailIsExist(
+            @RequestParam(value = "email") String email) {
+        demoRegisterService.checkEmail(email);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 
     /**
      * 修改组织信息

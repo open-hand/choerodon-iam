@@ -25,13 +25,6 @@
         <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
         <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
         <result column="limit_user_qty" property="limitUserQty" jdbcType="DECIMAL"/>
-        <collection property="tenantConfigs" ofType="org.hzero.iam.domain.entity.TenantConfig">
-            <id column="tenant_config_id" property="tenantConfigId" />
-            <result column="tenant_id" property="tenantId"/>
-            <result column="config_key" property="configKey" />
-            <result column="config_value" property="configValue" />
-            <result column="object_version_number" property="objectVersionNumber" />
-        </collection>
     </resultMap>
 
     <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">

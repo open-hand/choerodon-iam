@@ -751,7 +751,12 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
 
         List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
-        Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList()));
+        // 用户现在拥有的角色标签
+        List<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+        Set<String> labelNames = new HashSet<>();
+        if (!CollectionUtils.isEmpty(newRoleIds)) {
+            labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);
+        }
 
         // 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();

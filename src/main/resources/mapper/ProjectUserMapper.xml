@@ -176,14 +176,13 @@
 
     <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
-        FROM fd_project_user fpu
-        INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+        FROM iam_member_role imr
+        INNER join fd_project_user fpu ON fpu.member_role_id = imr.id
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         INNER JOIN iam_role ir ON imr.role_id = ir.id
-        INNER JOIN iam_role_label irl ON irl.role_id = ir.id
-        INNER JOIN iam_label il ON il.id = irl.label_id
-        WHERE fpu.PROJECT_ID = #{projectId}
-        AND il.name = #{roleLabel}
+        INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        WHERE il.name = #{roleLabel} and fpu.project_id = #{projectId}
     </select>
 
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
@@ -193,14 +192,14 @@
         INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         INNER JOIN iam_role ir ON imr.role_id = ir.id
-        INNER JOIN iam_role_label irl ON irl.role_id = ir.id
-        INNER JOIN iam_label il ON il.id = irl.label_id
+        INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
+        INNER JOIN iam_label il ON il.id = hlr.label_id
         WHERE fpu.PROJECT_ID = #{projectId}
-        # TODO
-        AND (il.name = 'project.owner' OR il.name = 'project.gitlab.owner' OR il.name = 'project.gitlab.developer')
+        AND hlr.data_type='ROLE'
+        AND (il.name = 'PROJECT_ADMIN' OR il.name = 'GITLAB_OWNER' OR il.name = 'GITLAB_DEVELOPER')
+        AND il.type='ROLE'
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
-            #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%', #{param}),'%'))
         </if>
         GROUP BY iu.id
     </select>

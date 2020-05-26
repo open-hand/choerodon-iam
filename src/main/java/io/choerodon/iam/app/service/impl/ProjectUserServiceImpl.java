@@ -151,7 +151,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public List<UserDTO> listProjectOwnerById(Long projectId) {
-        return projectUserMapper.listProjectOwnerById(projectId);
+        return projectUserMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, RoleLabelEnum.PROJECT_ADMIN.value());
     }
 
     @Override

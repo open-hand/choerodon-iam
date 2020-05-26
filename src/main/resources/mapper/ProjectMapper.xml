@@ -77,11 +77,12 @@
         iam_user.id
         FROM
         iam_user
-        RIGHT JOIN (
+        INNER JOIN (
         SELECT DISTINCT
-        member_id
+        imr.member_id
         FROM
         fd_project_user fpu
+        INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         WHERE
         fpu.PROJECT_ID = #{projectId}
         ) t ON iam_user.id = t.member_id

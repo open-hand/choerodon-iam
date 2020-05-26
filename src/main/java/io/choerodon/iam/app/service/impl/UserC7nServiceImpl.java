@@ -560,9 +560,18 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
-        // TODO
-        return null;
+    public List<UserWithGitlabIdVO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<User> userDTOS = userC7nMapper.listUserWithRolesOnOrganizationLevelByIds(organizationId, userIds);
+        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        if (userAttrVOS == null) {
+            userAttrVOS = new ArrayList<>();
+        }
+        Map<Long, Long> userIdMap = userAttrVOS.stream().collect(Collectors.toMap(UserAttrVO::getIamUserId, UserAttrVO::getGitlabUserId));
+        // 填充gitlabUserId
+        return userDTOS.stream().map(user -> toUserWithGitlabIdDTO(user, userIdMap.get(user.getId()))).collect(Collectors.toList());
     }
 
     @Override
@@ -782,31 +791,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (ResourceLevel.PROJECT.value().equals(sourceType)) {
             projectAssertHelper.projectNotExisted(sourceId);
         }
-    }
-
-    @Override
-    public List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable) {
-        return null;
-    }
-
-    @Override
-    public List<User> listUsersByName(Long projectId, String param) {
-        return null;
-    }
-
-    @Override
-    public List<User> listProjectOwnerById(Long projectId) {
-        return null;
-    }
-
-    @Override
-    public List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds) {
-        return null;
-    }
-
-    @Override
-    public List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        return null;
     }
 
     @Override

@@ -10,14 +10,16 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.UserInfoDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -92,7 +94,7 @@ public interface UserC7nService {
      *
      * @return 用户列表（包括用户信息以及所分配的组织角色信息）
      */
-    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
+    List<UserWithGitlabIdVO> listUsersWithRolesAndGitlabUserIdByIdsInOrg(Long organizationId, Set<Long> userIds);
 
     /**
      * 查询组织下用户的项目列表.
@@ -254,46 +256,6 @@ public interface UserC7nService {
      * @return 用户角色DTO列表
      */
     List<MemberRole> assignUsersRoles(String sourceType, Long sourceId, List<MemberRole> memberRoleList);
-
-    /**
-     * 查询项目下指定角色的用户列表
-     *
-     * @param projectId
-     * @param roleLable
-     * @return
-     */
-    List<User> listProjectUsersByProjectIdAndRoleLable(Long projectId, String roleLable);
-
-    /**
-     * 根据projectId和param模糊查询loginName和realName两列
-     *
-     * @param projectId
-     * @param param
-     * @return
-     */
-    List<User> listUsersByName(Long projectId, String param);
-
-    /**
-     * 查询项目下的项目所有者
-     *
-     * @param projectId
-     * @return
-     */
-    List<User> listProjectOwnerById(Long projectId);
-
-    /**
-     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<UserWithGitlabIdDTO> listUsersWithRolesAndGitlabUserIdByIdsInProject(Long projectId, Set<Long> userIds);
-
-    /**
-     * 项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己.
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<User> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params);
 
     UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
 

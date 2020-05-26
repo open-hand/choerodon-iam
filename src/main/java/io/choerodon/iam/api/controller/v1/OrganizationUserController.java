@@ -27,11 +27,11 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -88,7 +88,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的组织角色信息以及GitlabUserId）")
     @PostMapping(value = "/users/list_by_ids")
-    public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
+    public ResponseEntity<List<UserWithGitlabIdVO>> listUsersWithRolesAndGitlabUserIdByIds(
             @ApiParam(value = "组织id", required = true)
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiParam(value = "多个用户id", required = true)

@@ -21,16 +21,17 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
     // console.log(dataSet);
     dataSet.current.set('imageUrl', url);
     changeUrl(`${url}`);
-    try {
-      if ((await dataSet.submit()) !== false) {
-        dataSet.query();
-        changeAvatarStatus(false);
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    changeAvatarStatus(false);
+    // try {
+    //   if ((await dataSet.submit()) !== false) {
+    //     dataSet.query();
+    //     changeAvatarStatus(false);
+    //   } else {
+    //     return false;
+    //   }
+    // } catch (e) {
+    //   return false;
+    // }
   }
   return (
     <div className="c7n-organization-infoForm">
@@ -39,7 +40,7 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
           <div
             className="c7n-organization-avater"
             style={{
-              backgroundImage: imageUrl ? `url(${imageUrl})` : '',
+              backgroundImage: imageUrl ? `url('${imageUrl}')` : '',
             }}
           >
             {!imageUrl && (

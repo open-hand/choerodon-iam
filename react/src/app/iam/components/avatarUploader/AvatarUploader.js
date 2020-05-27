@@ -65,11 +65,13 @@ export default class AvatarUploader extends Component {
       startY: round(startY * scale),
       endX: round(size * scale),
       endY: round(size * scale),
+      bucketName: 'hzero-iam',
     });
     const data = new FormData();
+    const { AppState: { currentMenuType: { organizationId } } } = this.props;
     data.append('file', file);
     this.setState({ submitting: true });
-    axios.post(`/hfle/v1/cut_image?${qs}`, data)
+    axios.post(`/hfle/choerodon/v1/${organizationId}/cut_image?${qs}`, data)
       .then((res) => {
         if (res.failed) {
           Choerodon.prompt(res.message);

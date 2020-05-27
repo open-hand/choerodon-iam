@@ -171,7 +171,7 @@ const GeneralSetting = observer(() => {
                         className="c7n-iam-generalsetting-avatar-wrap"
                         style={{
                           backgroundColor: '#c5cbe8',
-                          backgroundImage: imageUrl ? `url(${Choerodon.fileServer(imageUrl)})` : '',
+                          backgroundImage: imageUrl ? `url('${Choerodon.fileServer(imageUrl)}')` : '',
                         }}
                       >
                         {!imageUrl && name && name.charAt(0)}

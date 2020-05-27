@@ -63,7 +63,7 @@ const Edit = Form.create({})(observer(({
         <div
           className={`${prefixCls}-avatar-wrap`}
           style={{
-            backgroundImage: imageUrl ? `url(${Choerodon.fileServer(imageUrl)})` : '',
+            backgroundImage: imageUrl ? `url('${Choerodon.fileServer(imageUrl)}')` : '',
             height: 80,
             width: 80,
             lineHeight: '80px',

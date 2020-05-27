@@ -59,7 +59,6 @@ public class OrganizationProjectC7nController extends BaseController {
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                              @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
-        projectValidator.validateProjectCategoryCode(projectDTO.getCode());
         return new ResponseEntity<>(organizationProjectService.createProject(organizationId, projectDTO), HttpStatus.OK);
     }
 

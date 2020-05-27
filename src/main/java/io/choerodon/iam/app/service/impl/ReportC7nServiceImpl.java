@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.ReportC7nService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ReportDTO;
+import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ReportMapper;
 
@@ -36,6 +37,11 @@ public class ReportC7nServiceImpl implements ReportC7nService {
             return reportDTOS.stream()
                     .filter(reportDTO -> reportDTO.getReportType().equals("敏捷报表")
                             || reportDTO.getReportType().equals("测试报表"))
+                    .collect(Collectors.toList());
+        }
+        if(projectDTO.getCategories().stream().anyMatch(categoryDTO -> ProjectCategoryEnum.OPERATIONS.value().equals(categoryDTO.getCode()))) {
+            return reportDTOS.stream()
+                    .filter(reportDTO -> reportDTO.getReportType().equals("DevOps 报表"))
                     .collect(Collectors.toList());
         }
         return reportDTOS;

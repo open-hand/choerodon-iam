@@ -1,17 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.app.service.ProjectCategoryC7nService;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.util.List;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.app.service.ProjectCategoryC7nService;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -29,7 +32,13 @@ public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService 
 
     @Override
     public List<ProjectCategoryDTO> list() {
-        return projectCategoryMapper.selectAll();
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setBuiltInFlag(true);
+        projectCategoryDTO.setDisplayFlag(true);
+        return projectCategoryMapper.select(projectCategoryDTO)
+                .stream()
+                .filter(category -> ProjectCategoryEnum.contains(category.getCode()))
+                .collect(Collectors.toList());
     }
 
     @Override

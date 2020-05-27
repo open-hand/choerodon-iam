@@ -36,6 +36,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_WORK_CALENDAR_PROJECT = "Choerodon Work Calendar Project";
     public static final String CHOERODON_WORK_CALENDAR_HOLIDAY_REF = "Choerodon Work Calendar Holiday Ref";
     public static final String CHOERODON_ORGANIZATION_ADMIN = "Choerodon Organization Admin";
+    public static final String CHOERODON_ORGANIZATION_PROJECT_CATEGORY = "Choerodon Organization Project Category";
 
 
     @Autowired

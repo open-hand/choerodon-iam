@@ -115,8 +115,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 if (tenantConfigRepository.insert(tenantConfig) != 1) {
                     throw new CommonException("error.tenant.update");
                 }
-            }
-            else {
+            } else {
                 selectOne.setConfigValue(tenantConfig.getConfigValue());
                 tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
             }
@@ -161,7 +160,18 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
         List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
-        dto.setTenantConfigVO(TenantConfigConvertUtils.configDTOToVO((configList)));
+        TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO((configList));
+        dto.setTenantConfigVO(tenantConfigVO);
+        //添加组织所有者信息
+        if (!Objects.isNull(tenantConfigVO.getUserId())) {
+            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+            if (!Objects.isNull(user)) {
+                dto.setOwnerRealName(user.getRealName());
+                dto.setOwnerLoginName(user.getLoginName());
+                dto.setOwnerPhone(user.getPhone());
+                dto.setOwnerEmail(user.getEmail());
+            }
+        }
         List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, tenantId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());

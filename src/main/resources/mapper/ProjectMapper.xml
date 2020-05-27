@@ -89,11 +89,15 @@
     </select>
 
     <select id="selectUserProjectsUnderOrg" resultMap="projectDTO">
-        SELECT DISTINCT fp.*
-        FROM fd_project fp
-        INNER JOIN iam_member_role imr
-        ON imr.source_id = fp.id
-        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId}
+        SELECT DISTINCT
+        fp.*
+        FROM
+        fd_project fp
+        INNER JOIN hzero_platform.iam_member_role imr ON imr.source_id = fp.ORGANIZATION_ID
+        INNER JOIN hzero_platform.fd_project_user pu ON pu.MEMBER_ROLE_ID = imr.id
+        WHERE imr.member_id = #{userId}
+        AND fp.organization_id = #{orgId}
+        AND fp.id = pu.PROJECT_ID
         <if test="isEnabled != null">
             AND is_enabled = #{isEnabled}
         </if>

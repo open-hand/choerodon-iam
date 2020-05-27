@@ -22,12 +22,12 @@ export default function (orgId, optionsDataSet) {
       create: ({ data: [data] }) => ({
         url: `/iam/v1/${orgId}/clients`,
         method: 'post',
-        transformRequest: (([v]) => JSON.stringify(v)),
+        data: { ...data, pwdReplayFlag: 0 },
       }),
       update: ({ data: [data] }) => ({
-        url: `/iam/v1/${orgId}/clients/${data.id}`,
-        method: 'post',
-        transformRequest: (([v]) => JSON.stringify(v)),
+        url: `/iam/v1/${orgId}/clients`,
+        method: 'put',
+        data: { ...data, pwdReplayFlag: 0 },
       }),
     },
     fields: [

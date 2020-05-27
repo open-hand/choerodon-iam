@@ -39,7 +39,7 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
           <div
             className="c7n-organization-avater"
             style={{
-              backgroundImage: `url(${imageUrl})`,
+              backgroundImage: imageUrl ? `url(${imageUrl})` : '',
             }}
           >
             {!imageUrl && (

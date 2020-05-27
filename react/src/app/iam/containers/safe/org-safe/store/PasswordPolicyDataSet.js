@@ -51,8 +51,8 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
       submit: (record) => {
         if (record.data[0].id) {
           return {
-            url: `/iam/v1/${organizationId}/password_policies/${record.data[0].id}`,
-            method: 'post',
+            url: `/iam/v1/${organizationId}/password-policies`,
+            method: 'put',
             transformRequest: (([data]) => {
               Object.keys(data).forEach((key) => {
                 const field = fields.find((v) => v.name === key);

@@ -48,9 +48,10 @@ const Client = observer(() => {
       className: 'c7n-iam-confirm-modal',
       title: '确认删除客户端',
       content: `确认删除客户端"${record.get('name')}"吗？`,
+      maskClosable: false,
       onOk: async () => {
         try {
-          await axios.delete(`/iam/choerodon/organizations/${orgId}/clients/${record.get('id')}`);
+          await axios.delete(`/iam/choerodon/v1/organizations/${orgId}/clients/${record.get('id')}`);
           await clientDataSet.query();
         } catch (err) {
           message.prompt(err);

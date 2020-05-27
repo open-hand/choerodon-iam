@@ -25,6 +25,7 @@ export default ({ id = 0 }) => ({
       postData.tenantConfigVO = {
         homePage: data.homePage || '',
         address: data.address || '',
+        imageUrl: data.imageUrl || '',
       };
       return ({
         url: `/iam/choerodon/v1/organizations/${id}/organization_level`,

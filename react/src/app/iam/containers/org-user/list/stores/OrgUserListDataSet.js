@@ -56,7 +56,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
       { name: 'realName', type: 'string', label: username, required: true, validator: checkRealname },
       { name: 'loginName', type: 'string', label: loginName, unique: true },
       { name: 'enabled', type: 'boolean', label: status, textField: 'text', valueField: 'value', options: statusOptionDs },
-      { name: 'roles', type: 'number', label: '角色', maxTagTextLength: 1, multiple: true, textField: 'name', valueField: 'id' },
+      { name: 'roles', type: 'object', label: '角色', maxTagTextLength: 1, multiple: true, textField: 'name', valueField: 'id' },
       { name: 'locked', type: 'boolean', label: safeStatus, textField: 'text', valueField: 'value', options: safeOptionDs },
       { name: 'email', type: 'email', label: '邮箱', validator: check, required: true },
       { name: 'password', type: 'string', label: '密码' },

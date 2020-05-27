@@ -301,6 +301,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
+            user.setEmailCheckFlag(BaseConstants.Flag.YES);
+            user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setEmail(user.getEmail());

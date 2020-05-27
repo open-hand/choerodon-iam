@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author dengyouquan
  **/
-@FeignClient(value = "asgard-service",
+@FeignClient(value = "hzero-asgard",
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
     @PutMapping("/v1/schedules/organizations/{organization_id}/tasks/disable")

@@ -851,7 +851,7 @@
         (imr2.member_id = t2.id and imr2.member_type = 'user'
         and imr2.source_id = #{sourceId} and imr2.source_type = #{sourceType})
         left join iam_role ir2 on ir2.id = imr2.role_id
-        left join fd_organization fo on (t2.organization_id = fo.id)
+        left join hpfm_tenant fo on (t2.organization_id = fo.id)
     </select>
 
     <select id="listUserWithRolesOnProjectLevelByIds" resultMap="userWithRoleAndImage">
@@ -889,7 +889,7 @@
         (imr2.member_id = t2.id and imr2.member_type = 'user'
         and imr2.source_id = #{projectId,jdbcType=BIGINT} and imr2.source_type = 'project')
         left join iam_role ir2 on ir2.id = imr2.role_id
-        left join fd_organization fo on (t2.organization_id = fo.id)
+        left join hpfm_tenant fo on (t2.organization_id = fo.id)
     </select>
 
 

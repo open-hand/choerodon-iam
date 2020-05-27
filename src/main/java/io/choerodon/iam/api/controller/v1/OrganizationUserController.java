@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.user.UserType;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
@@ -115,8 +116,7 @@ public class OrganizationUserController extends BaseController {
                                        @PathVariable Long id,
                                        @RequestBody User user) {
         user.setOrganizationId(organizationId);
-        // TODO 不知道为什么校验失败，先屏蔽
-//        SecurityTokenHelper.validToken(user, false);
+        SecurityTokenHelper.validToken(user, false);
         organizationUserService.updateUser(organizationId, user);
         return ResponseEntity.noContent().build();
     }

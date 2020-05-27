@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -66,5 +67,13 @@ public class UserSelfC7nController extends BaseController {
                                                    @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
         userC7nService.selfUpdatePassword(id, userPasswordDTO, true, true);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/switch/site")
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "组织切换到平台")
+    public ResponseEntity switchSite() {
+        userC7nService.switchSite();
+        return Results.success();
     }
 }

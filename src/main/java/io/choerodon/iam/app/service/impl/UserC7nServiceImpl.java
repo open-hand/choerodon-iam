@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -22,8 +23,11 @@ import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.service.user.UserDetailsService;
+import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
@@ -61,6 +65,7 @@ import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
@@ -131,6 +136,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     private RoleAssertHelper roleAssertHelper;
     @Autowired
     private UserPasswordService userPasswordService;
+    @Autowired
+    private UserDetailsService userDetailsService;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -1099,4 +1108,21 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     }
 
+    @Override
+    public void switchSite() {
+        userDetailsService.storeUserTenant(TenantConstants.DEFAULT_TENANT_TD);
+        UserVO userVO = userRepository.selectSelf();
+        if (userVO.getCurrentRoleLevel().equals(ResourceLevel.SITE.value())) return;
+        List<org.hzero.iam.domain.vo.RoleVO> roles = roleRepository.selectSelfCurrentTenantRoles(false);
+        List<String> rolesStr = roles.stream().map(RoleVO::getLevel).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(roles) || !rolesStr.contains(ResourceLevel.SITE.value())) {
+            throw new CommonException("error.without.site.role");
+        }
+        for (RoleVO t : roles) {
+            if (t.getLevel().equals(ResourceLevel.SITE.value())) {
+                userDetailsService.storeUserRole(t.getId());
+                break;
+            }
+        }
+    }
 }

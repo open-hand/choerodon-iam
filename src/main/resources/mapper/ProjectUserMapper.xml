@@ -124,6 +124,9 @@
         </where>
         ) t1
         order by t1.is_enabled desc, t1.id desc
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>
         ) t2
         join iam_member_role imr2 ON t2.id = imr2.member_id
         join fd_project_user fdu2 on imr2.id = fdu2.MEMBER_ROLE_ID and fdu2.PROJECT_ID = #{sourceId}

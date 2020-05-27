@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.TenantService;
@@ -159,6 +160,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Role> userRoles = user.getRoles();
         // 将role转为memberRole， memberId不用给
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
+
+        // 允许邮箱和手机号登录
+        user.setEmailCheckFlag(BaseConstants.Flag.YES);
+        user.setPhoneCheckFlag(BaseConstants.Flag.YES);
+
         User result = userService.createUserInternal(user);
         if (devopsMessage) {
             sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());

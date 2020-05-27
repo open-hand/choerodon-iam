@@ -165,10 +165,14 @@
         </where>
         ) t1
         ) t2
-        left join iam_member_role imr2 ON t2.id = imr2.member_id
-        left join fd_project_user fpu2 on
-        (imr2.id = fpu2.MEMBER_ROLE_ID and fpu2.PROJECT_ID = #{projectId,jdbcType=BIGINT})
-        left join iam_role ir2 on ir2.id = imr2.role_id
+        left join
+
+        (select imr2.role_id, imr2.member_id
+        from iam_member_role imr2
+        inner join fd_project_user fpu2 on (imr2.id = fpu2.MEMBER_ROLE_ID and fpu2.PROJECT_ID = #{projectId,jdbcType=BIGINT})
+        ) mr ON t2.id = mr.member_id
+
+        left join iam_role ir2 on ir2.id = mr.role_id
         left join hpfm_tenant fo on (t2.organization_id = fo.tenant_id)
         left join hpfm_tenant_config htc ON fo.tenant_id = htc.tenant_id and htc.config_key = 'code'
     </select>
@@ -177,12 +181,13 @@
     <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_member_role imr
-        INNER join fd_project_user fpu ON fpu.member_role_id = imr.id
-        INNER JOIN iam_user iu ON iu.id = imr.member_id
-        INNER JOIN iam_role ir ON imr.role_id = ir.id
-        INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
-        INNER JOIN iam_label il ON il.id = hlr.label_id
-        WHERE il.name = #{roleLabel} and fpu.project_id = #{projectId}
+                 INNER join fd_project_user fpu ON fpu.member_role_id = imr.id
+                 INNER JOIN iam_user iu ON iu.id = imr.member_id
+                 INNER JOIN iam_role ir ON imr.role_id = ir.id
+                 INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
+                 INNER JOIN iam_label il ON il.id = hlr.label_id
+        WHERE il.name = #{roleLabel}
+          and fpu.project_id = #{projectId}
     </select>
 
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
@@ -199,21 +204,25 @@
         AND (il.name = 'PROJECT_ADMIN' OR il.name = 'GITLAB_OWNER' OR il.name = 'GITLAB_DEVELOPER')
         AND il.type='ROLE'
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%', #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
+            #{param}),'%'))
         </if>
         GROUP BY iu.id
     </select>
 
 
     <select id="listProjectOwnerById" resultType="io.choerodon.iam.infra.dto.UserDTO">
-        SELECT
-        iu.id,iu.email,iu.real_name,iu.phone,iu.login_name
+        SELECT iu.id,
+               iu.email,
+               iu.real_name,
+               iu.phone,
+               iu.login_name
         FROM iam_user iu
-        INNER JOIN iam_member_role imr ON iu.id = imr.member_id
-        INNER JOIN fd_project_user fpu ON imr.id =fpu.MEMBER_ROLE_ID
-        INNER JOIN iam_role ir ON ir.id=imr.role_id
-        WHERE ir.code='role/project/default/project-owner'
-        AND   fpu.PROJECT_ID=#{projectId}
+                 INNER JOIN iam_member_role imr ON iu.id = imr.member_id
+                 INNER JOIN fd_project_user fpu ON imr.id = fpu.MEMBER_ROLE_ID
+                 INNER JOIN iam_role ir ON ir.id = imr.role_id
+        WHERE ir.code = 'role/project/default/project-owner'
+          AND fpu.PROJECT_ID = #{projectId}
     </select>
 
     <select id="listUsersByNameWithLimit" resultType="io.choerodon.iam.infra.dto.UserDTO">
@@ -233,15 +242,15 @@
     <select id="listProjectRoleIds" resultType="java.lang.Long">
         SELECT imr.ROLE_ID
         FROM fd_project_user fpu
-        INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
-        AND imr.MEMBER_ID = #{userId,jdbcType=BIGINT}
+          AND imr.MEMBER_ID = #{userId,jdbcType=BIGINT}
     </select>
 
     <select id="countProjectRoleUser" resultType="io.choerodon.iam.api.vo.agile.RoleUserCountVO">
         SELECT imr.ROLE_ID, COUNT(*) AS USER_NUMBER
         FROM fd_project_user fpu
-        INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId}
         GROUP BY imr.ROLE_ID
     </select>
@@ -334,15 +343,17 @@
     <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT ir.*
         FROM fd_project_user fpu
-        INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-        INNER JOIN iam_role ir ON ir.id = imr.ROLE_ID
-        WHERE fpu.PROJECT_ID = #{projectId} and imr.MEMBER_ID = #{userId}
+                 INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                 INNER JOIN iam_role ir ON ir.id = imr.ROLE_ID
+        WHERE fpu.PROJECT_ID = #{projectId}
+          and imr.MEMBER_ID = #{userId}
     </select>
 
     <select id="listProjectUser" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT *
         FROM (
-        SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap, iu.is_admin,
+        SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap,
+        iu.is_admin,
         CASE
         WHEN iu.is_ldap = 1 THEN
         iu.login_name
@@ -400,44 +411,35 @@
             #{userId}
         </foreach>
     </select>
-    
+
     <select id="listMemberRoleByProjectIdAndUserId" resultType="org.hzero.iam.domain.entity.MemberRole">
-        SELECT
-            imr.*
-        FROM
-            iam_member_role imr
-            JOIN iam_role ir ON ir.id = imr.role_id
-            JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        SELECT imr.*
+        FROM iam_member_role imr
+                 JOIN iam_role ir ON ir.id = imr.role_id
+                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID = #{projectId}
-        WHERE
-            imr.member_id = #{userId}
+        WHERE imr.member_id = #{userId}
     </select>
 
     <select id="selectByRoleIdAndUserId" resultType="org.hzero.iam.domain.entity.MemberRole">
-        SELECT
-            imr.*
-        FROM
-            iam_member_role imr
-            JOIN iam_role ir ON ir.id = imr.role_id
-            JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
-                AND fpu.PROJECT_ID = #{projectId}
-        WHERE
-            imr.member_id = #{userId}
-            and imr.role_id = #{roleId}
+        SELECT imr.*
+        FROM iam_member_role imr
+                 JOIN iam_role ir ON ir.id = imr.role_id
+                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+            AND fpu.PROJECT_ID = #{projectId}
+        WHERE imr.member_id = #{userId}
+          and imr.role_id = #{roleId}
     </select>
 
     <select id="listMemberRoleWithOutProjectId" resultType="org.hzero.iam.domain.entity.MemberRole">
-        SELECT
-            imr.*
-        FROM
-            iam_member_role imr
-            JOIN iam_role ir ON ir.id = imr.role_id
-            JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        SELECT imr.*
+        FROM iam_member_role imr
+                 JOIN iam_role ir ON ir.id = imr.role_id
+                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID NOT IN (#{projectId})
-        WHERE
-            imr.member_id = #{userId}
-            AND imr.source_id = #{tenantId}
-            AND imr.source_type = 'organization'
+        WHERE imr.member_id = #{userId}
+          AND imr.source_id = #{tenantId}
+          AND imr.source_type = 'organization'
     </select>
 
     <delete id="deleteByIds">

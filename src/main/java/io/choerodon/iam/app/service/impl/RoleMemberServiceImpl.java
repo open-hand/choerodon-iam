@@ -1,19 +1,33 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.xml.internal.ws.spi.db.DatabindingException;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
+import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
+import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -37,34 +51,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.constant.MessageCodeConstants;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.ExcelSuffix;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
-import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
-import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
 /**
  * @author superlee
@@ -493,10 +490,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     /**
      * 删除项目下所有角色 发送消息
+     *
      * @param projectId
      * @param userId
      */
-    private void mgsDeleteUserRoles(Long projectId,Long userId){
+    private void mgsDeleteUserRoles(Long projectId, Long userId) {
         MessageSender messageSender = new MessageSender();
         messageSender.setMessageCode(SendSettingBaseEnum.DELETE_USER_ROLES.value());
         messageSender.setTenantId(0L);
@@ -511,11 +509,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         map.put("userName", user.getRealName());
         messageSender.setObjectArgs(map);
 
-        Map<String,Object> objectMap=new HashMap<>();
-        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),projectId);
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectId);
 
-        ProjectDTO projectDTO=projectAssertHelper.projectNotExisted(projectId);
-        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), projectDTO.getOrganizationId());
         messageSender.setAdditionalInformation(objectMap);
         messageClient.async().sendMessage(messageSender);
     }
@@ -828,7 +826,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayload.setResourceId(tenantId);
         userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
         userMemberEventPayloads.add(userMemberEventPayload);
-        updateMemberRole(userId, userMemberEventPayloads,ResourceLevel.ORGANIZATION, tenantId);
+        updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
 
         // TODO 发送消息？？？
     }

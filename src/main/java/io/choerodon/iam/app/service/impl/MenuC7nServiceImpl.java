@@ -8,13 +8,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.iam.api.dto.MenuTreeQueryDTO;
 import org.hzero.iam.domain.entity.Menu;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
@@ -33,6 +37,7 @@ import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 
@@ -59,7 +64,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 //    private RoleC7nService roleC7nService;
+    private UserRepository userRepository;
     private MenuMapper menuMapper;
+    private MemberRoleC7nMapper memberRoleC7nMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               @Lazy OrganizationRoleC7nService organizationRoleC7nService,
@@ -67,7 +74,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               MenuRepository menuRepository,
                               RoleRepository roleRepository,
 //                              RoleC7nService roleC7nService,
-                              MenuMapper menuMapper) {
+                              MenuMapper menuMapper,
+                              UserRepository userRepository,
+                              MemberRoleC7nMapper memberRoleC7nMapper) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -75,6 +84,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         this.menuRepository = menuRepository;
 //        this.roleC7nService = roleC7nService;
         this.menuMapper = menuMapper;
+        this.userRepository = userRepository;
+        this.memberRoleC7nMapper = memberRoleC7nMapper;
     }
 
     @Override
@@ -188,6 +199,28 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         }
         return menuC7nMapper.listMenuByLabelAndType(labelNames, MenuType.MENU.value());
     }
+
+    @Override
+    public Boolean hasSiteMenuPermission() {
+        CustomUserDetails userDetails = UserUtils.getUserDetails();
+        User user = userRepository.selectByPrimaryKey(userDetails.getUserId());
+
+        // root用户能够访问
+        if (Boolean.TRUE.equals(user.getAdmin())) {
+            return true;
+        }
+
+        // 拥有平台层菜单也能访问
+        List<Role> roleList = memberRoleC7nMapper.listRoleByUserIdAndLevel(user.getId(), ResourceLevel.SITE.value());
+        if (CollectionUtils.isEmpty(roleList)) {
+            return false;
+        }
+
+        Set<Long> roleIds = roleList.stream().map(Role::getId).collect(Collectors.toSet());
+        long menuCount = menuC7nMapper.countPermissionSetByRoleIdsAndLevel(roleIds, ResourceLevel.SITE.value());
+        return menuCount > 0;
+    }
+
     private String getCode(String code) {
         int index = code.lastIndexOf('.');
         return code.substring(index + 1);

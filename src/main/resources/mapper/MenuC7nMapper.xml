@@ -226,4 +226,22 @@
         </foreach>
     </trim>
     </select>
+    <select id="listPermissionSetByRoleIdsAndLevel" resultMap="MenuMap">
+        SELECT im.*
+        FROM iam_role_permission irp
+        JOIN iam_menu im ON im.id = irp.permission_id AND irp.type = 'PS'
+        WHERE im.fd_level = #{level} and irp.role_id in
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+            #{roleId}
+        </foreach>
+    </select>
+    <select id="countPermissionSetByRoleIdsAndLevel" resultType="long">
+        SELECT count(*)
+        FROM iam_role_permission irp
+        JOIN iam_menu im ON im.id = irp.permission_id AND irp.type = 'PS'
+        WHERE im.fd_level = #{level} and irp.role_id in
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+            #{roleId}
+        </foreach>
+    </select>
 </mapper>

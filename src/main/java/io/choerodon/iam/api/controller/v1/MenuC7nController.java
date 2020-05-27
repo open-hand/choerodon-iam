@@ -54,4 +54,10 @@ public class MenuC7nController {
         return ResponseEntity.ok(menuC7nService.listMenuByLevel(code));
     }
 
+    @ApiOperation(value = "判断用户是否能够看到平台层菜单")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping(value = "/menus/site_menu_flag")
+    public ResponseEntity<Boolean> hasSiteMenuPermission() {
+        return ResponseEntity.ok(menuC7nService.hasSiteMenuPermission());
+    }
 }

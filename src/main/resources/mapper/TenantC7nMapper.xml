@@ -80,7 +80,7 @@
             </if>
 
         </where>
-
+         order by org.creation_date DESC
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.api.vo.TenantVO">

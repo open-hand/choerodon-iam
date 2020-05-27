@@ -116,8 +116,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     throw new CommonException("error.tenant.update");
                 }
             }
-            selectOne.setConfigValue(tenantConfig.getConfigValue());
-            tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
+            else {
+                selectOne.setConfigValue(tenantConfig.getConfigValue());
+                tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
+            }
         }
     }
 

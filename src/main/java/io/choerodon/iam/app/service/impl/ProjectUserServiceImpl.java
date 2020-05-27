@@ -1,5 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -25,30 +47,10 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -103,14 +105,29 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, String loginName, String realName, String roleName, Boolean enabled, String params) {
-        return PageHelper.doPage(pageRequest, () -> projectUserMapper.selectUserWithRolesOnProjectLevel(
-                ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params));
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        boolean doPage = (size != 0);
+        Page<UserDTO> result;
 
+        // 因为PageHelper和Mybatis的级联映射,这里只能手写分页
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count = projectUserMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
+                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            result = PageUtils.buildPage(page, size, count, users);
+        } else {
+            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
+                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            result = PageUtils.buildPage(page, size, users.size(), users);
+        }
+        return result;
     }
 
     @Override
     public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
+        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
         return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
     }
 

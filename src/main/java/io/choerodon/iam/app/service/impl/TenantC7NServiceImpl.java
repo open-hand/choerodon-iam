@@ -379,7 +379,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         if (CollectionUtils.isEmpty(tenantDTOS)) {
             return new ArrayList<>();
         }
-        tenantDTOS = tenantDTOS.stream().filter(tenantDTO -> tenantDTO.getTenantId() == 0).collect(Collectors.toList());
+        tenantDTOS = tenantDTOS.stream().filter(tenantDTO -> tenantDTO.getTenantId() != 0).collect(Collectors.toList());
         User user = userMapper.selectByPrimaryKey(params.getUserId());
         return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
     }

@@ -63,4 +63,10 @@
         and imr.member_type = 'user' and imr.member_id = #{userId}
         and il.name = #{labelName}
     </select>
+    <select id="listRoleByUserIdAndLevel" resultType="org.hzero.iam.domain.entity.Role">
+        SELECT ir.*
+        FROM iam_member_role imr
+        JOIN iam_role ir ON ir.id = imr.role_id
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} and imr.source_type = #{level}
+    </select>
 </mapper>

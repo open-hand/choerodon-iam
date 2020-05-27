@@ -1,3 +1,5 @@
+import pick from 'lodash/pick';
+
 export default ({ id = 0 }) => ({
   // autoCreate: true,
   autoQuery: true,
@@ -8,6 +10,7 @@ export default ({ id = 0 }) => ({
       transformResponse: ((data, headers) => {
         const newData = JSON.parse(data);
         newData.tenantConfigVO = {
+          ...newData,
           ...newData.tenantConfigVO,
           name: newData.tenantName,
           code: newData.tenantNum,
@@ -17,18 +20,17 @@ export default ({ id = 0 }) => ({
         });
       }),
     },
-    update: {
-      url: `/iam/choerodon/v1/organizations/${id}/organization_level`,
-      method: 'put',
-      transformRequest: (([data], headers) => {
-        if (!data.homePage) {
-          data.homePage = '';
-        }
-        return JSON.stringify(data);
-      }),
-      transformResponse: ((data, headers) => ({
-        list: [JSON.parse(data)],
-      })),
+    update: ({ data: [data] }) => {
+      const postData = pick(data, ['tenantName', 'tenantNum', 'objectVersionNumber', 'enabledFlag']);
+      postData.tenantConfigVO = {
+        homePage: data.homePage || '',
+        address: data.address || '',
+      };
+      return ({
+        url: `/iam/choerodon/v1/organizations/${id}/organization_level`,
+        method: 'put',
+        data: postData,
+      });
     },
   },
   fields: [

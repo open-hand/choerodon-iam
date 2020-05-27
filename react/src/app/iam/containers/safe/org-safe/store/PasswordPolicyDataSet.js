@@ -56,7 +56,7 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
             transformRequest: (([data]) => {
               Object.keys(data).forEach((key) => {
                 const field = fields.find((v) => v.name === key);
-                if ((data[key] === null || data[key] === undefined) && field.type === 'number') {
+                if ((data[key] === null || data[key] === undefined) && field && field.type === 'number') {
                   data[key] = 0;
                 }
               });

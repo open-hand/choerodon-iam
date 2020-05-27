@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -973,7 +972,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         // 准备消息发送的messageSender
         MessageSender messageSender = new MessageSender();
         // 消息code
-        messageSender.setMessageCode(MessageCodeConstants.BUSINESS_TYPE_CODE);
+        messageSender.setMessageCode(MessageCodeConstants.ADD_MEMBER);
         // 默认为0L,都填0L,可不填写
         messageSender.setTenantId(0L);
 
@@ -992,30 +991,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         messageSender.setAdditionalInformation(objectMap);
 
 
-        //添加组织管理员发送消息通知被添加者,异步发送消息
-        messageClient.async().sendMessage(messageSender);
-
-
-        //添加webhook json
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("organizationId", organizationDTO.getId());
-//        jsonObject.put("addCount", notifyUserIds.size());
-//        List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
-//        if (!C7nCollectionUtils.isEmpty(userList)) {
-//            for (Long notifyUserId : notifyUserIds) {
-//                userList.add(userService.getWebHookUser(notifyUserId));
-//            }
-//        }
-//
-//        jsonObject.put("userList", JSON.toJSONString(userList));
-//        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                SendSettingBaseEnum.ADD_MEMBER.value(),
-//                SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
-//                jsonObject,
-//                new Date(),
-//                userService.getWebHookUser(customUserDetails.getUserId())
-//        );
-//        userService.sendNotice(customUserDetails.getUserId(), new ArrayList<>(notifyUserIds), BUSINESS_TYPE_CODE, params, organizationId, webHookJsonSendDTO);
+        //添加组织管理员发送消息通知被添加者
+        messageClient.sendMessage(messageSender);
 
     }
 
@@ -1064,13 +1041,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
         Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
+        Map<Long, MessageSender> rolelMessagesMap = new HashMap<>();
+        Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
         memberRoleDTOS.forEach(memberRoleDTO -> {
+            User user = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
+            Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
 
-            if (memberRoleDTO.getRoleId() == null || memberRoleDTO.getMemberId() == null) {
+            if (user == null || role == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
             }
+
             // 构建saga对象
-            Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
             List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
             if (!CollectionUtils.isEmpty(labelDTOS)) {
                 Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
@@ -1080,6 +1061,55 @@ public class UserC7nServiceImpl implements UserC7nService {
                 } else {
                     userRolelabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
                 }
+            }
+            // 构建消息对象
+            MessageSender messageSender = rolelMessagesMap.get(memberRoleDTO.getRoleId());
+            if (messageSender != null) {
+                Receiver receiver = new Receiver();
+                receiver.setUserId(user.getId());
+                // 发送邮件消息时 必填
+                receiver.setEmail(user.getEmail());
+                // 发送短信消息 必填
+                receiver.setPhone(user.getPhone());
+                // 必填
+                receiver.setTargetUserTenantId(tenant.getTenantId());
+                messageSender.getReceiverAddressList().add(receiver);
+            } else {
+                // 构建消息对象
+                messageSender = new MessageSender();
+                // 消息code
+                messageSender.setMessageCode(MessageCodeConstants.ADD_MEMBER);
+                // 默认为0L,都填0L,可不填写
+                messageSender.setTenantId(0L);
+
+                // 消息参数 消息模板中${projectName}
+                Map<String, String> argsMap = new HashMap<>();
+                argsMap.put("organizationName", tenant.getTenantName());
+                argsMap.put("roleName", role.getName());
+                argsMap.put("organizationId", tenant.getTenantId().toString());
+                // todo? addCount啥意思？
+                argsMap.put("addCount", "1");
+                messageSender.setArgs(argsMap);
+
+                //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+                Map<String, Object> objectMap = new HashMap<>();
+                //发送组织层和项目层消息时必填 当前组织id
+                objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
+                messageSender.setAdditionalInformation(objectMap);
+                // 接收者
+                List<Receiver> receiverList = new ArrayList<>();
+                Receiver receiver = new Receiver();
+                receiver.setUserId(user.getId());
+                // 发送邮件消息时 必填
+                receiver.setEmail(user.getEmail());
+                // 发送短信消息 必填
+                receiver.setPhone(user.getPhone());
+                // 必填
+                receiver.setTargetUserTenantId(tenant.getTenantId());
+                receiverList.add(receiver);
+                messageSender.setReceiverAddressList(receiverList);
+
+                rolelMessagesMap.put(memberRoleDTO.getRoleId(), messageSender);
             }
 
 
@@ -1105,6 +1135,16 @@ public class UserC7nServiceImpl implements UserC7nService {
         });
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
 
+
+
+        // 发送消息
+        try {
+            rolelMessagesMap.forEach((k, v) -> {
+                messageClient.sendMessage(v);
+            });
+        } catch (Exception e) {
+            LOGGER.info("Send add member role message failed. memberRoleList : {}", memberRoleDTOS);
+        }
 
     }
 

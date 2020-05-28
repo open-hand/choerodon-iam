@@ -141,7 +141,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {

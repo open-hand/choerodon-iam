@@ -233,7 +233,7 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {

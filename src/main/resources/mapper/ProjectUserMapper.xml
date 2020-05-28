@@ -422,6 +422,12 @@
                  JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID = #{projectId}
         WHERE imr.member_id = #{userId}
+        <if test="roleIds!=null">
+            AND imr.role_id IN
+            <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+                #{roleId}
+            </foreach>
+        </if>
     </select>
 
     <select id="selectByRoleIdAndUserId" resultType="org.hzero.iam.domain.entity.MemberRole">
@@ -443,6 +449,12 @@
         WHERE imr.member_id = #{userId}
           AND imr.source_id = #{tenantId}
           AND imr.source_type = 'organization'
+        <if test="roleIds!=null">
+            AND imr.role_id IN
+            <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+                #{roleId}
+            </foreach>
+        </if>
     </select>
 
     <delete id="deleteByIds">

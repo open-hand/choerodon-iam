@@ -35,6 +35,8 @@ public interface RoleMemberService {
      */
     void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll);
 
+    void deleteProjectRole(Long projectId, Long userId, List<Long> roleIds, Boolean syncAll);
+
     List<MemberRole> insertOrUpdateRolesOfUserByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType);
 

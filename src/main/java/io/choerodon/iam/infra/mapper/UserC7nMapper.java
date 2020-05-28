@@ -174,50 +174,50 @@ public interface UserC7nMapper {
                                     @Param("params") String params);
 
 
-    /**
-     * 项目层查询用户总数.
-     * 1. 查询当前项目分配了项目角色的用户
-     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
-     *
-     * @return 项目用户总数
-     */
-    int selectCountUsersOnProjectLevel(@Param("sourceType") String sourceType,
-                                       @Param("sourceId") Long sourceId,
-                                       @Param("loginName") String loginName,
-                                       @Param("realName") String realName,
-                                       @Param("roleName") String roleName,
-                                       @Param("enabled") Boolean enabled,
-                                       @Param("params") String params);
-
-    /**
-     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
-     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
-     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
-     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<User> selectUserWithRolesOnProjectLevel(@Param("start") Integer start,
-                                                 @Param("size") Integer size,
-                                                 @Param("sourceType") String sourceType,
-                                                 @Param("sourceId") Long sourceId,
-                                                 @Param("loginName") String loginName,
-                                                 @Param("realName") String realName,
-                                                 @Param("roleName") String roleName,
-                                                 @Param("enabled") Boolean enabled,
-                                                 @Param("params") String params);
-
-    /**
-     * 项目层根据用户id查询用户列表（包括用户信息以及所分配的项目角色信息）.
-     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
-     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
-     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
-     *
-     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
-     */
-    List<User> listUserWithRolesOnProjectLevelByIds(
-            @Param("projectId") Long projectId,
-            @Param("userIds") Set<Long> userIds);
+//    /**
+//     * 项目层查询用户总数.
+//     * 1. 查询当前项目分配了项目角色的用户
+//     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+//     *
+//     * @return 项目用户总数
+//     */
+//    int selectCountUsersOnProjectLevel(@Param("sourceType") String sourceType,
+//                                       @Param("sourceId") Long sourceId,
+//                                       @Param("loginName") String loginName,
+//                                       @Param("realName") String realName,
+//                                       @Param("roleName") String roleName,
+//                                       @Param("enabled") Boolean enabled,
+//                                       @Param("params") String params);
+//
+//    /**
+//     * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
+//     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+//     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+//     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+//     *
+//     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+//     */
+//    List<User> selectUserWithRolesOnProjectLevel(@Param("start") Integer start,
+//                                                 @Param("size") Integer size,
+//                                                 @Param("sourceType") String sourceType,
+//                                                 @Param("sourceId") Long sourceId,
+//                                                 @Param("loginName") String loginName,
+//                                                 @Param("realName") String realName,
+//                                                 @Param("roleName") String roleName,
+//                                                 @Param("enabled") Boolean enabled,
+//                                                 @Param("params") String params);
+//
+//    /**
+//     * 项目层根据用户id查询用户列表（包括用户信息以及所分配的项目角色信息）.
+//     * 1. 用户信息包括用户Id、用户名、登录名、状态、安全状态、所属组织Id
+//     * 2. 角色信息包括角色Id、角色名、角色编码、启用状态
+//     * 3. 根据是否为ldap导入用户,登录名为用户的登录名或邮箱
+//     *
+//     * @return 用户列表（包括用户信息以及所分配的项目角色信息）
+//     */
+//    List<User> listUserWithRolesOnProjectLevelByIds(
+//            @Param("projectId") Long projectId,
+//            @Param("userIds") Set<Long> userIds);
 
 
     /**

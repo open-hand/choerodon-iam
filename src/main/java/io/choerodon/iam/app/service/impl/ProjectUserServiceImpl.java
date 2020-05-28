@@ -357,7 +357,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 //                }
 //            }
 //        });
-        List<MemberRole> oldMemberRoleList = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId);
+        List<MemberRole> oldMemberRoleList = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null);
         Map<Long, Long> oldMemberRoleMap = oldMemberRoleList.stream().collect(Collectors.toMap(MemberRole::getRoleId, MemberRole::getId));
         Set<Long> oldRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
 

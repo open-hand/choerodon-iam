@@ -167,7 +167,8 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @return
      */
     List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
-                                                        @Param("userId") Long userId);
+                                                        @Param("userId") Long userId,
+                                                        @Param("roleIds") List<Long> roleIds);
 
     /**
      * 查询用户在当前组织 其他项目下 拥有MemberRole
@@ -178,7 +179,8 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<MemberRole> listMemberRoleWithOutProjectId(@Param("projectId") Long projectId,
                                                     @Param("userId") Long userId,
-                                                    @Param("tenantId") Long tenantId);
+                                                    @Param("tenantId") Long tenantId,
+                                                    @Param("roleIds") List<Long> roleIds);
 
     void deleteByIds(@Param("projectId") Long projectId,
                      @Param("memberRoleIds") Set<Long> memberRoleIds);

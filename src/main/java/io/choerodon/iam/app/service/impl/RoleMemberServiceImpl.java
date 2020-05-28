@@ -255,7 +255,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll) {
-        deleteProjectRole(projectId, userId, syncAll);
+        deleteProjectRole(projectId, userId, null, syncAll);
         mgsDeleteUserRoles(projectId, userId);
     }
 
@@ -613,12 +613,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     private void deleteRoleForProject(Long sourceId,
+                                      List<Long> roleIds,
                                       Long userId) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
-        // 当前项目 memberRoleIds
-        List<MemberRole> projectMemberRoles = projectUserMapper.listMemberRoleByProjectIdAndUserId(sourceId, userId);
+        // 当前项目需要删除的 memberRoleIds
+        List<MemberRole> projectMemberRoles = projectUserMapper.listMemberRoleByProjectIdAndUserId(sourceId, userId, roleIds);
         // 获取当前用户在该组织下其他项目用到的memberRoleIds
-        List<Long> otherMemberRoleIds = projectUserMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId()).stream().map(MemberRole::getId).collect(Collectors.toList());
+        List<Long> otherMemberRoleIds = projectUserMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId(), roleIds).stream().map(MemberRole::getId).collect(Collectors.toList());
         // 组织层和项目层都要被删除的角色
         List<MemberRole> delMemberRoles = new ArrayList<>();
         projectMemberRoles.forEach(t -> {
@@ -842,9 +843,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         organizationUserService.sendCreateUserAndUpdateRoleSaga(fromUserId, userDTO, Arrays.asList(roleDTO), memberRole.getSourceType(), memberRole.getSourceId());
     }
 
+    /**
+     * 删除用户项目下角色
+     * @param projectId
+     * @param userId
+     * @param roleIds roleIds不为null，删除指定角色
+     * @param syncAll
+     */
     @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
-    public void deleteProjectRole(Long projectId, Long userId, Boolean syncAll) {
-        deleteRoleForProject(projectId, userId);
+    public void deleteProjectRole(Long projectId, Long userId, List<Long> roleIds, Boolean syncAll) {
+        deleteRoleForProject(projectId, roleIds, userId);
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
         userMemberEventMsg.setResourceId(projectId);
@@ -853,6 +861,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventMsg.setUsername(user.getLoginName());
         userMemberEventMsg.setUserId(userId);
         userMemberEventMsg.setSyncAll(syncAll);
+        if (!CollectionUtils.isEmpty(roleIds)) {
+            Set<Long> allRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null).stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+            allRoleIds.removeAll(roleIds);
+            userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(allRoleIds));
+        }
         deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
 

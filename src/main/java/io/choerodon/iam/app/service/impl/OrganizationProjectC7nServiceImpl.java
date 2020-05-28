@@ -444,16 +444,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
     @Override
-    public void check(ProjectDTO projectDTO) {
+    public Boolean check(ProjectDTO projectDTO) {
         boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
-            throw new CommonException("error.project.code.empty");
+            return false;
         } else {
-            checkCode(projectDTO);
+            return checkCode(projectDTO);
         }
     }
 
-    private void checkCode(ProjectDTO projectDTO) {
+    private Boolean checkCode(ProjectDTO projectDTO) {
         boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
         ProjectDTO project = new ProjectDTO();
         project.setOrganizationId(projectDTO.getOrganizationId());
@@ -461,16 +461,17 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         if (createCheck) {
             boolean existed = projectMapper.selectOne(project) != null;
             if (existed) {
-                throw new CommonException("error.project.code.exist");
+                return false;
             }
         } else {
             Long id = projectDTO.getId();
             ProjectDTO dto = projectMapper.selectOne(project);
             boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
-                throw new CommonException("error.project.code.exist");
+                return false;
             }
         }
+        return true;
     }
 
     @Override

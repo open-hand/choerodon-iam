@@ -494,13 +494,13 @@
         ir.code as role_code
         FROM
         iam_user iu
-        INNER JOIN iam_label il ON il.`name` = #{labelName}
-        INNER JOIN hiam_label_rel irl ON irl.label_id = il.id
-        INNER JOIN iam_role ir ON ir.id = irl.data_id AND ir.is_enabled = TRUE AND irl.data_type = 'ROLE'
-        INNER JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.member_type = 'user'
+        INNER JOIN iam_member_role imr ON (iu.id = imr.member_id AND imr.member_type = 'user')
         INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_role ir ON (ir.id = imr.role_id AND ir.is_enabled = TRUE )
+        INNER JOIN hiam_label_rel irl ON (irl.data_id = ir.id AND irl.data_type = 'ROLE')
+        INNER JOIN iam_label il ON il.id = irl.label_id
         <where>
-            AND fpu.PROJECT_ID = #{projectId}
+            AND fpu.PROJECT_ID = #{projectId} and il.`name` = #{labelName}
             <if test="roleAssignmentSearchDTO != null">
                 <if test="roleAssignmentSearchDTO.loginName != null">
                     AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')

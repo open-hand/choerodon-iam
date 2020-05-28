@@ -444,7 +444,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
     @Override
-    public Boolean check(ProjectDTO projectDTO) {
+    public Boolean  check(ProjectDTO projectDTO) {
         boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
             return false;

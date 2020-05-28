@@ -11,5 +11,6 @@ public class MessageCodeConstants {
     public static String INVITE_USER = "inviteUser";
     public static final String ADD_MEMBER = "addMember";
     public static final String STOP_USER = "stopUser";
+    public static final String RESET_ORGANIZATION_USER_PASSWORD = "resetOrganizationUserPassword";
 
 }

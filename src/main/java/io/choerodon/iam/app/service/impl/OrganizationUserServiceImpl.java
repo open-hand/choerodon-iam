@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -348,14 +349,54 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
         userService.resetUserPassword(userId, organizationId);
 
+        // 发送重置密码消息
+        sendResetOrganizationUserPassword(organizationId, user);
         // send siteMsg
-        Map<String, String> paramsMap = new HashMap<>();
-        paramsMap.put("userName", user.getRealName());
-        paramsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
-        List<Long> userIds = Collections.singletonList(userId);
-        userC7nService.sendNotice(userIds, "resetOrganizationUserPassword", paramsMap, organizationId, ResourceLevel.ORGANIZATION);
+//        Map<String, String> paramsMap = new HashMap<>();
+//        paramsMap.put("userName", user.getRealName());
+//        paramsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+//        List<Long> userIds = Collections.singletonList(userId);
+//        userC7nService.sendNotice(userIds, "resetOrganizationUserPassword", paramsMap, organizationId, ResourceLevel.ORGANIZATION);
 
         return user;
+    }
+
+    private void sendResetOrganizationUserPassword(Long organizationId, User user) {
+        try {
+            // 构建消息对象
+            MessageSender messageSender = new MessageSender();
+            // 消息code
+            messageSender.setMessageCode(MessageCodeConstants.RESET_ORGANIZATION_USER_PASSWORD);
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            // 消息参数 消息模板中${projectName}
+            Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+            messageSender.setArgs(argsMap);
+
+            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+            Map<String, Object> objectMap = new HashMap<>();
+            //发送组织层和项目层消息时必填 当前组织id
+            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
+            messageSender.setAdditionalInformation(objectMap);
+
+            // 接收者
+            List<Receiver> receiverList = new ArrayList<>();
+            Receiver receiver = new Receiver();
+            receiver.setUserId(user.getId());
+            // 发送邮件消息时 必填
+            receiver.setEmail(user.getEmail());
+            // 发送短信消息 必填
+            receiver.setPhone(user.getPhone());
+            // 必填
+            receiver.setTargetUserTenantId(organizationId);
+            receiverList.add(receiver);
+            messageSender.setReceiverAddressList(receiverList);
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info("Send Reset Organization User Password failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+        }
     }
 
 

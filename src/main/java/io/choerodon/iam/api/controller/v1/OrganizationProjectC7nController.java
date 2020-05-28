@@ -183,7 +183,7 @@ public class OrganizationProjectC7nController extends BaseController {
         return ResponseEntity.ok(organizationProjectC7nService.listProjectsWithLimit(organizationId, name));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建项目")
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {

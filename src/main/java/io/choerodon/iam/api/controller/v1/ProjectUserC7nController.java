@@ -165,7 +165,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")
     public ResponseEntity assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestBody List<ProjectUserDTO> projectUserDTOList) {
+                                                         @RequestBody List<ProjectUserDTO> projectUserDTOList) {
         projectUserService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return Results.success();
     }

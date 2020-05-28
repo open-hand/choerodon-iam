@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 
 @Service
 public class MessageSendServiceImpl implements MessageSendService {
@@ -84,6 +87,52 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageClient.sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+        }
+    }
+
+    @Override
+    public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList) {
+        try {
+            // 构建消息对象
+            MessageSender messageSender = new MessageSender();
+            // 消息code
+            messageSender.setMessageCode(MessageCodeConstants.PROJECT_ADD_USER);
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            List<WebHookUser> webHookUsers = new ArrayList<>();
+            // 接收者
+            List<Receiver> receiverList = new ArrayList<>();
+            userList.forEach(user -> {
+                WebHookUser webHookUser = new WebHookUser();
+                webHookUser.setLoginName(user.getLoginName());
+                webHookUser.setUserName(user.getRealName());
+                webHookUsers.add(webHookUser);
+
+                Receiver receiver = new Receiver();
+                receiver.setUserId(user.getId());
+                // 发送邮件消息时 必填
+                receiver.setEmail(user.getEmail());
+                // 发送短信消息 必填
+                receiver.setPhone(user.getPhone());
+                // 必填
+                receiver.setTargetUserTenantId(user.getOrganizationId());
+                receiverList.add(receiver);
+
+            });
+
+            // 消息参数 消息模板中${projectName}
+            Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("projectName", projectDTO.getName());
+            argsMap.put("roleName", roleName);
+            argsMap.put("organizationId", projectDTO.getOrganizationId().toString());
+            argsMap.put("addCount", String.valueOf(userList.size()));
+            argsMap.put("userList", JSON.toJSONString(webHookUsers));
+            messageSender.setArgs(argsMap);
+            messageSender.setReceiverAddressList(receiverList);
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info("Send Add project user failed. userList : {}", userList);
         }
     }
 }

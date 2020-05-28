@@ -15,6 +15,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.*;
@@ -74,6 +72,8 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private RoleMemberService roleMemberService;
     private MemberRoleService memberRoleService;
     private TransactionalProducer producer;
+    private MessageSendService messageSendService;
+    private UserMapper userMapper;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -87,7 +87,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   TransactionalProducer producer,
                                   LabelC7nMapper labelC7nMapper,
                                   MemberRoleService memberRoleService,
-                                  @Lazy RoleMemberService roleMemberService) {
+                                  @Lazy RoleMemberService roleMemberService,
+                                  MessageSendService messageSendService,
+                                  UserMapper userMapper) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
@@ -101,6 +103,8 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.roleMemberService = roleMemberService;
+        this.messageSendService = messageSendService;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -265,6 +269,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
                 throw new EmptyParamException("error.projectUser.insert.empty");
             }
+            User user = userMapper.selectByPrimaryKey(projectUserDTO.getMemberId());
             projectUserDTO.setProjectId(projectId);
             // 1. set memberRoleId
             projectUserDTO.setMemberRoleId(getMemberRoleId(projectUserDTO.getMemberId(), projectUserDTO.getRoleId(), projectDTO.getOrganizationId()));
@@ -283,11 +288,13 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                     userRoleLabelsMap.put(projectUserDTO.getMemberId(), labelNames);
                 }
             }
+            // 发送通知
+            List<User> userList = new ArrayList<>();
+            userList.add(user);
+            messageSendService.sendProjectAddUserMsg(projectDTO, role.getName(), userList);
         });
         // 3.发送saga
         assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap);
-        // 4.todo 发送notice
-
     }
 
     @Override

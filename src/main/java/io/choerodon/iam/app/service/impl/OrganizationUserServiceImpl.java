@@ -351,6 +351,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
         // 发送重置密码消息
         sendResetOrganizationUserPassword(organizationId, user);
+        // todo delete flag
         // send siteMsg
 //        Map<String, String> paramsMap = new HashMap<>();
 //        paramsMap.put("userName", user.getRealName());

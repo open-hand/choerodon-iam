@@ -22,6 +22,7 @@ const ListView = () => {
     AppState: { currentMenuType: { organizationId } },
     listDataSet: dataSet,
     prefixCls,
+    permissions,
   } = context;
 
   function refresh() {
@@ -101,7 +102,7 @@ const ListView = () => {
   }
 
   return (
-    <Page service={[]}>
+    <Page service={permissions}>
       <Header>
         <Button icon="playlist_add" onClick={() => openModal('add', 'organization')}>创建组织角色</Button>
         <Button icon="playlist_add" onClick={() => openModal('add', 'project')}>创建项目角色</Button>

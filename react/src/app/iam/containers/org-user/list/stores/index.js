@@ -57,18 +57,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       prefixCls: 'base-org-user-list',
       intlPrefix,
       permissions: [
-        // 'base-service.organization-user.pagingQueryUsersWithRolesOnOrganizationLevel', // 查询 0
-        // 'base-service.organization-user.update', // 修改用户 1
-        // 'base-service.organization-user.unlock', // 解锁 2
-        // 'base-service.organization-user.resetUserPassword', // 重置密码 3
-        // 'base-service.organization-user.enableUser', // 启用用户 4
-        // 'base-service.organization-user.disableUser', // 禁用用户 5
-        // 'base-service.organization-user.importUsersFromExcel', // 从excel里面批量导入用户 6
-        // 'base-service.role-member.assignUsersRolesOnOrganizationLevel', // 组织层批量分配用户角色 7
-        // 'base-service.role-member.updateUserRolesOnOrganizationLevel', // 组织层更新用户角色 8
-        // 'base-service.organization.pagingQueryUsersOnOrganization', // 分页模糊查询组织下的用户 9
-        // 'base-service.organization-user.latestHistory', // 查询最新的导入历史 10
-        // 'base-service.organization-user.createUserWithRoles', // 创建用户并分配角色 11
+        'choerodon.code.organization.manager.user.ps.default',
       ],
       organizationId,
       passwordPolicyDataSet,

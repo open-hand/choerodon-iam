@@ -35,7 +35,7 @@ export default observer(() => {
   }
 
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.organization.setting.general-setting.ps.working-calendar']}>
       <Header title="工作日历">
         <Permission>
           <Button onClick={handleEdit} type="primary" funcType="flat" icon="mode_edit">修改</Button>

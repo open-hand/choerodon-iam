@@ -114,15 +114,7 @@ const LdapView = observer(() => {
   }
   return (
     <TabPage
-      service={[
-        // 'base-service.ldap.queryByOrgId',
-        // 'base-service.ldap.update',
-        // 'base-service.ldap.disableLdap',
-        // 'base-service.ldap.enableLdap',
-        // 'base-service.ldap.testConnect',
-        // 'base-service.ldap.syncUsers',
-        // 'base-service.ldap.pagingQueryHistories',
-      ]}
+      service={['choerodon.code.organization.setting.general-setting.ps.ldap']}
     >
       <Header>
         <Permission service={['base-service.ldap.update']}>

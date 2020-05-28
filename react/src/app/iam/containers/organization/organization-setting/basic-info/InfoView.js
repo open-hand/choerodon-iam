@@ -50,10 +50,7 @@ const InfoView = observer(() => {
   }
   return (
     <TabPage
-      service={[
-        // 'base-service.organization.queryOrgLevel',
-        // 'base-service.organization.updateOnOrganizationLevel',
-      ]}
+      service={['choerodon.code.organization.setting.general-setting.ps.info']}
     >
 
       <Header>

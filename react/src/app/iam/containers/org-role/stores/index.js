@@ -19,7 +19,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       listDataSet,
       prefixCls: 'base-org-role-list',
       intlPrefix,
-      permissions: [],
+      permissions: [
+        'choerodon.code.organization.manager.role.ps.default',
+      ],
       level,
       setLevel,
     };

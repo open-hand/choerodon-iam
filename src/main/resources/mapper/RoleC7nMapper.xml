@@ -165,7 +165,7 @@
             CONCAT(fo.tenant_name, CONCAT(' / ', fp.name)) AS name,
             fp.code,
             fp.is_enabled,
-            imr.source_type,
+            'project' as source_type,
             GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
             fp.image_url,
             fp.name AS proj_name

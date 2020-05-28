@@ -13,10 +13,5 @@ import java.util.List;
  */
 public interface CategoryMenuMapper extends BaseMapper<CategoryMenuDTO> {
 
-    List<CategoryMenuDTO> selectByCode(@Param("code") String code);
-
-    List<String> getMenuCodesByOrgId(@Param("organizationId") Long organizationId, @Param("resourceLevel") String resourceLevel);
-
-    List<MenuCodeDTO> selectPermissionCodeIdsByCode(@Param("code") String code, @Param("resourceLevel") String resourceLevel);
 
 }

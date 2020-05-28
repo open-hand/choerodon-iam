@@ -1,5 +1,19 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+import javax.validation.Valid;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -17,19 +31,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai
@@ -183,9 +184,8 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@RequestBody TenantVO organization) {
-        tenantC7nService.check(organization);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<Boolean> check(@RequestBody TenantVO organization) {
+        return ResponseEntity.ok(tenantC7nService.check(organization));
     }
 
     /**

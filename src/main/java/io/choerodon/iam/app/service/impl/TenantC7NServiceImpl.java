@@ -253,12 +253,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public void check(TenantVO tenantVO) {
+    public Boolean check(TenantVO tenantVO) {
         Boolean checkCode = !StringUtils.isEmpty(tenantVO.getTenantNum());
         if (!checkCode) {
-            throw new CommonException("error.organization.code.empty");
+            return false;
         } else {
-            checkCode(tenantVO);
+            return checkCode(tenantVO);
         }
     }
 
@@ -406,22 +406,23 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return tenantVOS;
     }
 
-    private void checkCode(TenantVO tenantVO) {
+    private Boolean checkCode(TenantVO tenantVO) {
         Boolean createCheck = StringUtils.isEmpty(tenantVO.getTenantId());
         Tenant tenant = getTenant(tenantVO);
         if (createCheck) {
             Boolean existed = tenantRepository.selectOne(tenant) != null;
             if (existed) {
-                throw new CommonException("error.organization.code.exist");
+                return false;
             }
         } else {
             Long id = tenantVO.getTenantId();
             Tenant dto = tenantRepository.selectOne(tenant);
             Boolean existed = dto != null && !id.equals(dto.getTenantId());
             if (existed) {
-                throw new CommonException("error.organization.code.exist");
+                return false;
             }
         }
+        return true;
     }
 
     private Tenant updateAndSendEvent(Tenant tenant, String consumerType, Long userId) {

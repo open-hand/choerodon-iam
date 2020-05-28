@@ -176,7 +176,7 @@ public class ProjectUserC7nController extends BaseController {
     public ResponseEntity updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                  @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                                  @PathVariable(name = "user_id") Long userId,
-                                                                 @RequestBody List<Long> roleIds) {
+                                                                 @RequestBody Set<Long> roleIds) {
         projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return Results.success();
     }

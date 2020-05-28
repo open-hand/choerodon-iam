@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.hzero.iam.api.dto.RoleDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -111,6 +108,6 @@ public interface ProjectUserService {
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers);
 
-    void updateUserRoles(Long userId, Long sourceId, List<Long> roleDTOList, Boolean syncAll);
+    void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
 
 }

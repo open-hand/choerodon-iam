@@ -282,7 +282,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectUserService.assignProjectUserRolesInternal(projectId, roles.stream().map(role -> new ProjectUserDTO(userId, projectId, role.getId())).collect(Collectors.toList()));
 
         // 查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
-        return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toList()));
+        return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toSet()));
     }
 
     @Transactional(rollbackFor = CommonException.class)

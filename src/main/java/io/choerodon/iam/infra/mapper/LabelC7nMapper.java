@@ -17,7 +17,7 @@ public interface LabelC7nMapper {
 
     List<LabelDTO> selectByUserId(Long id);
 
-    Set<String> selectLabelNamesInRoleIds(@Param("roleIds") List<Long> roleIds);
+    Set<String> selectLabelNamesInRoleIds(@Param("roleIds") Set<Long> roleIds);
 
     List<LabelDTO> listByOption(@Param("label") LabelDTO labelDTO);
 

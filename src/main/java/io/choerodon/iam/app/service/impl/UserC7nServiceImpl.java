@@ -28,7 +28,6 @@ import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1170,6 +1169,15 @@ public class UserC7nServiceImpl implements UserC7nService {
                 userDetailsService.storeUserRole(t.getId());
                 break;
             }
+        }
+    }
+
+    @Override
+    public List<User> listUsersByRealNames(Set<String> realNames, Boolean onlyEnabled) {
+        if (ObjectUtils.isEmpty(realNames)) {
+            return new ArrayList<>();
+        } else {
+            return userC7nMapper.listUsersByRealNames(realNames, onlyEnabled);
         }
     }
 }

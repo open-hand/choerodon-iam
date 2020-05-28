@@ -106,6 +106,19 @@
         </if>
     </select>
 
+    <select id="listUsersByRealNames" resultMap="userDTO">
+        SELECT * FROM iam_user
+        WHERE 1=1
+        <if test="onlyEnabled == true">
+            AND is_enabled = 1
+        </if>
+        and
+        <foreach item="realName" index="index" collection="realNames"
+                 open="(" separator=" or " close=")">
+            real_name like concat(concat('%',#{realName}),'%')
+        </foreach>
+    </select>
+
     <select id="newUsersByDate" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM iam_user

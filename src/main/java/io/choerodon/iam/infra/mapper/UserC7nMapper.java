@@ -374,5 +374,15 @@ public interface UserC7nMapper {
     boolean doesUserHaveLabelInProject(@Param("userId") Long userId,
                                        @Param("labelName") String labelName,
                                        @Param("projectId") Long projectId);
+
+    /**
+     * 根据realName模糊查询用户
+     *
+     * @param realNames
+     * @param onlyEnabled
+     * @return
+     */
+    List<User> listUsersByRealNames(@Param("realNames") Set<String> realNames,
+                                    @Param("onlyEnabled") Boolean onlyEnabled);
 }
 

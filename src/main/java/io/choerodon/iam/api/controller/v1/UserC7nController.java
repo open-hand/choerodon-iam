@@ -228,6 +228,14 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.listUsersByLoginNames(loginNames, onlyEnabled), HttpStatus.OK);
     }
 
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据realName集合批量查询用户信息列表")
+    @PostMapping(value = "/real_names")
+    public ResponseEntity<List<User>> listUsersByRealNames(@RequestBody Set<String> realNames,
+                                                           @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
+        return new ResponseEntity<>(userC7nService.listUsersByRealNames(realNames, onlyEnabled), HttpStatus.OK);
+    }
+
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation("根据id分页获取组织列表和角色")
     @GetMapping("/{id}/organization_roles")

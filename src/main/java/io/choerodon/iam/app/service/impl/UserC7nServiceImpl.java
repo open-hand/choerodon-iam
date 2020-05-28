@@ -992,7 +992,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
         //添加组织管理员发送消息通知被添加者
-        messageClient.sendMessage(messageSender);
+        try {
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info("Send add organization admin  message failed. userIds : {}", userIds);
+        }
 
     }
 

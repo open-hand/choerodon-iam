@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -35,6 +37,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -46,6 +49,7 @@ import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -89,6 +93,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final MemberRoleRepository memberRoleRepository;
+    private final MessageClient messageClient;
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -107,7 +112,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        MemberRoleService memberRoleService,
                                        RoleMemberService roleMemberService,
                                        UserService userService,
-                                       MemberRoleRepository memberRoleRepository) {
+                                       MemberRoleRepository memberRoleRepository,
+                                       MessageClient messageClient) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -126,6 +132,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userRepository = userRepository;
         this.userService = userService;
         this.memberRoleRepository = memberRoleRepository;
+        this.messageClient = messageClient;
     }
 
     @Override
@@ -420,24 +427,37 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         }
-        if (!Objects.isNull(user)) {
-            // TODO 禁用成功后还要发送webhook json消息
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("loginName", user.getLoginName());
-//            jsonObject.put("userName", user.getRealName());
-//            jsonObject.put("enabled", user.getEnabled());
-//            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                    SendSettingBaseEnum.STOP_USER.value(),
-//                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.STOP_USER.value()),
-//                    jsonObject,
-//                    user.getLastUpdateDate(),
-//                    userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
-//            );
-//            Map<String, Object> params = new HashMap<>();
-//
-//            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingBaseEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
-        }
+        // 发送停用用户json
+        sendDisableUserMsg(user, organizationId);
         return user;
+    }
+
+    private void sendDisableUserMsg(User user, Long tenantId) {
+        try {
+            // 构建消息对象
+            MessageSender messageSender = new MessageSender();
+            // 消息code
+            messageSender.setMessageCode(MessageCodeConstants.STOP_USER);
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            // 消息参数 消息模板中${projectName}
+            Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("loginName", user.getLoginName());
+            argsMap.put("userName", user.getRealName());
+            argsMap.put("enabled", user.getEnabled().toString());
+            messageSender.setArgs(argsMap);
+
+            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+            Map<String, Object> objectMap = new HashMap<>();
+            //发送组织层和项目层消息时必填 当前组织id
+            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), tenantId);
+            messageSender.setAdditionalInformation(objectMap);
+
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+           LOGGER.info("Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+        }
     }
 
     @Override

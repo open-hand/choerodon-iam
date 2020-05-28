@@ -105,11 +105,10 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "项目信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Boolean> check(@PathVariable(name = "organization_id") Long organizationId,
                                 @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
-        organizationProjectService.check(projectDTO);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok(organizationProjectService.check(projectDTO));
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})

@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.data.domain.Pageable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -29,7 +27,7 @@ public interface OrganizationProjectC7nService {
 
     ProjectDTO disableProject(Long organizationId, Long projectId, Long userId);
 
-    void check(ProjectDTO projectDTO);
+    Boolean check(ProjectDTO projectDTO);
 
     /**
      * 查询 组织下 各类型下的项目数及项目名

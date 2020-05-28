@@ -1,5 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -29,27 +51,6 @@ import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -325,37 +326,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Transactional
     public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
-        // 1. 获取原memberRoleIds
-//        List<Long> oldMemberRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId).stream().map(MemberRole::getId).collect(Collectors.toList());
-//        Set<Long> newMemberRoleIds = new HashSet<>();
 
-//
-//        // 2. 获取新memberRoleIds
-//        for (Long roleId : roleIdList) {
-//            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-//            projectUserDTO.setProjectId(projectId);
-//            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
-//            if (projectUserMapper.selectOne(projectUserDTO) == null) {
-//                if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
-//                    throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
-//                }
-//            }
-//            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(roleMapper.selectByPrimaryKey(roleId).getId());
-//            if (!CollectionUtils.isEmpty(labelDTOS)) {
-//                labelNames.addAll(labelDTOS.stream().map(Label::getName).collect(Collectors.toSet()));
-//            }
-//            newMemberRoleIds.add(projectUserDTO.getMemberRoleId());
-//        }
-//
-//        // 3. 删除MemberRole
-//        oldMemberRoleIds.forEach(aLong -> {
-//            if (!newMemberRoleIds.contains(aLong)) {
-//                List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
-//                if (CollectionUtils.isEmpty(userDTOList)) {
-//                    memberRoleService.batchDeleteMemberRole(projectDTO.getOrganizationId(), Arrays.asList(memberRoleRepository.selectByPrimaryKey(aLong)));
-//                }
-//            }
-//        });
         List<MemberRole> oldMemberRoleList = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null);
         Map<Long, Long> oldMemberRoleMap = oldMemberRoleList.stream().collect(Collectors.toMap(MemberRole::getRoleId, MemberRole::getId));
         Set<Long> oldRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());

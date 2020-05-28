@@ -44,10 +44,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
@@ -95,6 +92,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserService userService;
     private final MemberRoleRepository memberRoleRepository;
     private final MessageClient messageClient;
+    private final MessageSendService messageSendService;
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -114,7 +112,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RoleMemberService roleMemberService,
                                        UserService userService,
                                        MemberRoleRepository memberRoleRepository,
-                                       MessageClient messageClient) {
+                                       MessageClient messageClient,
+                                       MessageSendService messageSendService) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -134,6 +133,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userService = userService;
         this.memberRoleRepository = memberRoleRepository;
         this.messageClient = messageClient;
+        this.messageSendService = messageSendService;
     }
 
     @Override
@@ -400,7 +400,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
     }
 
-
     @Override
     public User query(Long organizationId, Long id) {
         organizationAssertHelper.notExisted(organizationId);
@@ -470,37 +469,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
         }
         // 发送停用用户json
-        sendDisableUserMsg(user, organizationId);
+        messageSendService.sendDisableUserMsg(user, organizationId);
         return user;
     }
 
-    private void sendDisableUserMsg(User user, Long tenantId) {
-        try {
-            // 构建消息对象
-            MessageSender messageSender = new MessageSender();
-            // 消息code
-            messageSender.setMessageCode(MessageCodeConstants.STOP_USER);
-            // 默认为0L,都填0L,可不填写
-            messageSender.setTenantId(0L);
-
-            // 消息参数 消息模板中${projectName}
-            Map<String, String> argsMap = new HashMap<>();
-            argsMap.put("loginName", user.getLoginName());
-            argsMap.put("userName", user.getRealName());
-            argsMap.put("enabled", user.getEnabled().toString());
-            messageSender.setArgs(argsMap);
-
-            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
-            Map<String, Object> objectMap = new HashMap<>();
-            //发送组织层和项目层消息时必填 当前组织id
-            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), tenantId);
-            messageSender.setAdditionalInformation(objectMap);
-
-            messageClient.sendMessage(messageSender);
-        } catch (Exception e) {
-           LOGGER.info("Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
-        }
-    }
 
     @Override
     public List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {

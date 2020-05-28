@@ -35,7 +35,7 @@ public interface TenantC7nService {
 
     Tenant disableOrganization(Long organizationId, Long userId);
 
-    void check(TenantVO tenantVO);
+    Boolean check(TenantVO tenantVO);
 
     Page<User> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param);
 

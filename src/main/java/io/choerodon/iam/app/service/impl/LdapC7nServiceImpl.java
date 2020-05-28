@@ -48,7 +48,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private static final String TASK_DESCRIPTION = "组织下自动同步LDAP用户任务";
     private static final String CRON_TRIGGER = "cron-trigger";
     private static final String STOP = "STOP";
-    private static final String ORGANIZATION_CODE = "organizationCode";
+    private static final String TENANT_CODE = "tenantNum";
     private static final String EXECUTE_METHOD = "syncLdapUserOrganization";
 
     public static final String LDAP_CONNECTION_DTO = "ldapConnectionDTO";
@@ -199,7 +199,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         scheduleTaskDTO.setNotifyUser(notifyUser);
 
         Map<String, Object> mapParams = new HashMap<>();
-        mapParams.put(ORGANIZATION_CODE, tenant.getTenantNum());
+        mapParams.put(TENANT_CODE, tenant.getTenantNum());
         scheduleTaskDTO.setParams(mapParams);
 
         scheduleTaskDTO.setMethodId(getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId()).getId());

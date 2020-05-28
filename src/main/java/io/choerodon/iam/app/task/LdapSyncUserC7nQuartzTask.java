@@ -33,14 +33,15 @@ import java.util.concurrent.CountDownLatch;
  **/
 @Component
 public class LdapSyncUserC7nQuartzTask {
+
+    private static final String TENANT_CODE = "tenantNum";
+
     private final Logger logger = LoggerFactory.getLogger(LdapSyncUserC7nQuartzTask.class);
     private LdapConnectService ldapConnectService;
     private LdapC7nService ldapC7nService;
     private TenantMapper tenantMapper;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapHistoryRepository ldapHistoryRepository;
-
-    private static final String ORGANIZATION_CODE = "organizationCode";
 
     public LdapSyncUserC7nQuartzTask(LdapConnectService ldapConnectService,
                                      LdapC7nService ldapC7nService,
@@ -57,7 +58,7 @@ public class LdapSyncUserC7nQuartzTask {
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserSite",
             params = {
-                    @JobParam(name = ORGANIZATION_CODE, defaultValue = "hand", description = "组织编码")
+                    @JobParam(name = TENANT_CODE, defaultValue = "hand", description = "组织编码")
             }, description = "全局层同步LDAP用户")
     public void syncLdapUserSite(Map<String, Object> map) {
         long startTime = System.currentTimeMillis();
@@ -68,7 +69,7 @@ public class LdapSyncUserC7nQuartzTask {
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserOrganization", level = ResourceLevel.ORGANIZATION,
             params = {
-                    @JobParam(name = ORGANIZATION_CODE, description = "组织编码")
+                    @JobParam(name = TENANT_CODE, description = "组织编码")
             }, description = "组织层同步LDAP用户")
     public void syncLdapUserOrganization(Map<String, Object> map) {
         syncLdapUserSite(map);
@@ -76,7 +77,7 @@ public class LdapSyncUserC7nQuartzTask {
 
     @JobTask(maxRetryCount = 2, code = "syncDisabledLdapUserSite",
             params = {
-                    @JobParam(name = ORGANIZATION_CODE, defaultValue = "hand", description = "组织编码"),
+                    @JobParam(name = TENANT_CODE, defaultValue = "hand", description = "组织编码"),
                     @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件")
             },
             description = "全局层过滤并停用LDAP用户")
@@ -93,7 +94,7 @@ public class LdapSyncUserC7nQuartzTask {
 
     @JobTask(maxRetryCount = 2, code = "syncDisabledLdapUserOrg", level = ResourceLevel.ORGANIZATION,
             params = {
-                    @JobParam(name = ORGANIZATION_CODE, description = "组织编码"),
+                    @JobParam(name = TENANT_CODE, description = "组织编码"),
                     @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件")
             }, description = "组织层过滤并停用LDAP用户")
     public void syncDisabledLdapUserOrg(Map<String, Object> map) {
@@ -104,7 +105,7 @@ public class LdapSyncUserC7nQuartzTask {
         //获取方法参数
         String orgCode =
                 Optional
-                        .ofNullable((String) map.get(ORGANIZATION_CODE))
+                        .ofNullable((String) map.get(TENANT_CODE))
                         .orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
         Ldap ldap = getLdapByOrgCode(orgCode);
         if (!StringUtils.isEmpty(filter)) {

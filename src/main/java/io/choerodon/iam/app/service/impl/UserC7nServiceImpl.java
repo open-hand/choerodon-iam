@@ -28,6 +28,7 @@ import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1165,8 +1166,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     public void switchSite() {
         userDetailsService.storeUserTenant(TenantConstants.DEFAULT_TENANT_TD);
         UserVO userVO = userRepository.selectSelf();
+        LOGGER.info("==========================switch site user {}", userVO.toString());
         if (userVO.getCurrentRoleLevel().equals(ResourceLevel.SITE.value())) return;
-        List<org.hzero.iam.domain.vo.RoleVO> roles = roleRepository.selectSelfCurrentTenantRoles(false);
+        List<org.hzero.iam.domain.vo.RoleVO> roles = roleRepository.selectSelfCurrentTenantRoles(true);
+        LOGGER.info("==========================switch site roles {}", roles.toString());
         List<String> rolesStr = roles.stream().map(RoleVO::getLevel).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(roles) || !rolesStr.contains(ResourceLevel.SITE.value())) {
             throw new CommonException("error.without.site.role");

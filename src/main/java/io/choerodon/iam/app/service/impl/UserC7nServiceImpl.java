@@ -305,15 +305,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<User> listUsersByRealNames(Set<String> realNames, Boolean onlyEnabled) {
-        if (ObjectUtils.isEmpty(realNames)) {
-            return new ArrayList<>();
-        } else {
-            return userC7nMapper.listUsersByRealNames(realNames, onlyEnabled);
-        }
-    }
-
-    @Override
     public Long queryOrgIdByEmail(String email) {
         return userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.EMAIL, email).getOrganizationId();
     }

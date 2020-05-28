@@ -548,7 +548,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public Page<ProjectDTO> pagingQuery(Long organizationId, PageRequest pageRequest, ProjectDTO projectDTO, String params) {
         int size = pageRequest.getSize();
         boolean doPage = (size != 0);
-        String sortString = getSortStringForPageQuery(pageRequest.getSort());
+        String sortString = pageRequest.getSort() == null ? null : getSortStringForPageQuery(pageRequest.getSort());
         if (doPage) {
             return PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
 

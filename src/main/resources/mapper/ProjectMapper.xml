@@ -359,7 +359,7 @@
             </if>
         </if>
         order by
-        <if test="orderBy != null AND orderBy != ''">
+        <if test="orderBy != null and orderBy != ''">
             ${orderBy},
         </if>
         fp.id desc

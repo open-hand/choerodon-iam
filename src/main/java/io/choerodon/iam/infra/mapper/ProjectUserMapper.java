@@ -181,7 +181,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                                     @Param("tenantId") Long tenantId);
 
     void deleteByIds(@Param("projectId") Long projectId,
-                     @Param("memberRoleIds") List<Long> memberRoleIds);
+                     @Param("memberRoleIds") Set<Long> memberRoleIds);
 
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
                                   @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);

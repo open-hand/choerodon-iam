@@ -47,7 +47,7 @@ public interface RoleMemberService {
 
     void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName);
 
-    List<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
+    Set<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
                                                     Long memberId, String sourceType,
                                                     List<MemberRole> memberRoleList,
                                                     List<MemberRole> returnList, String memberType);

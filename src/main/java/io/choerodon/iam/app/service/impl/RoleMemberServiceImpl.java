@@ -1,6 +1,41 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -28,40 +63,6 @@ import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
 import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
 /**
  * @author superlee
@@ -312,7 +313,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             userMemberEventMsg.setUsername(userDTO.getLoginName());
             userMemberEventMsg.setSyncAll(syncAll);
 
-            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(userId,
+            Set<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(userId,
                     isEdit, sourceId, memberId, sourceType, memberRoles, returnList, MemberType.USER.value());
             if (!ownRoleIds.isEmpty()) {
                 userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
@@ -331,7 +332,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    public List<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
+    public Set<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
                                                            Long memberId, String sourceType,
                                                            List<MemberRole> memberRoleList,
                                                            List<MemberRole> returnList, String memberType) {
@@ -381,7 +382,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         //查当前用户/客户端有那些角色
         return memberRoleMapper.select(memberRole)
-                .stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+                .stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
     }
 
     @Override
@@ -628,7 +629,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (!CollectionUtils.isEmpty(delMemberRoles)) {
             memberRoleService.batchDeleteMemberRole(sourceId, delMemberRoles);
         }
-        projectUserMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toList()));
+        projectUserMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toSet()));
 
     }
 
@@ -773,7 +774,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
         List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
         // 用户现在拥有的角色标签
-        List<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+        Set<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
         Set<String> labelNames = new HashSet<>();
         if (!CollectionUtils.isEmpty(newRoleIds)) {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);
@@ -812,7 +813,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
         List<MemberRole> newMemberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
         // 用户现在拥有的角色标签
-        List<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+        Set<Long> newRoleIds = newMemberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
         Set<String> labelNames = new HashSet<>();
         if (!CollectionUtils.isEmpty(newRoleIds)) {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);

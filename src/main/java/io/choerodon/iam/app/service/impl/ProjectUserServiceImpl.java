@@ -323,39 +323,78 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public void updateUserRoles(Long userId, Long projectId, List<Long> roleIdList, Boolean syncAll) {
+    @Transactional
+    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
         // 1. 获取原memberRoleIds
-        List<Long> oldMemberRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId).stream().map(MemberRole::getId).collect(Collectors.toList());
-        List<Long> newMemberRoleIds = new ArrayList<>();
-        Set<String> labelNames = new HashSet<>();
+//        List<Long> oldMemberRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId).stream().map(MemberRole::getId).collect(Collectors.toList());
+//        Set<Long> newMemberRoleIds = new HashSet<>();
 
-        // 2. 获取新memberRoleIds
-        for (Long roleId : roleIdList) {
-            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setProjectId(projectId);
-            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
-            if (projectUserMapper.selectOne(projectUserDTO) == null) {
-                if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
-                    throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+//
+//        // 2. 获取新memberRoleIds
+//        for (Long roleId : roleIdList) {
+//            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+//            projectUserDTO.setProjectId(projectId);
+//            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
+//            if (projectUserMapper.selectOne(projectUserDTO) == null) {
+//                if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+//                    throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+//                }
+//            }
+//            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(roleMapper.selectByPrimaryKey(roleId).getId());
+//            if (!CollectionUtils.isEmpty(labelDTOS)) {
+//                labelNames.addAll(labelDTOS.stream().map(Label::getName).collect(Collectors.toSet()));
+//            }
+//            newMemberRoleIds.add(projectUserDTO.getMemberRoleId());
+//        }
+//
+//        // 3. 删除MemberRole
+//        oldMemberRoleIds.forEach(aLong -> {
+//            if (!newMemberRoleIds.contains(aLong)) {
+//                List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
+//                if (CollectionUtils.isEmpty(userDTOList)) {
+//                    memberRoleService.batchDeleteMemberRole(projectDTO.getOrganizationId(), Arrays.asList(memberRoleRepository.selectByPrimaryKey(aLong)));
+//                }
+//            }
+//        });
+        List<MemberRole> oldMemberRoleList = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId);
+        Map<Long, Long> oldMemberRoleMap = oldMemberRoleList.stream().collect(Collectors.toMap(MemberRole::getRoleId, MemberRole::getId));
+        Set<Long> oldRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+
+
+        // 要删除的角色
+        Set<Long> deleteRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).filter(v -> !roleIdList.contains(v)).collect(Collectors.toSet());
+        // 要新增的角色
+        Set<Long> insertRoleIds = roleIdList.stream().filter(v -> !oldRoleIds.contains(v)).collect(Collectors.toSet());
+
+        Set<Long> deleteMemberRoleIds = new HashSet<>();
+        // 删除角色，不删除member-role表中的角色（可能会有并发问题）
+        if (!CollectionUtils.isEmpty(deleteRoleIds)) {
+            deleteRoleIds.forEach(v -> {
+                Long memberRoleId = oldMemberRoleMap.get(v);
+                if (memberRoleId != null) {
+                    deleteMemberRoleIds.add(memberRoleId);
                 }
-            }
-            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(roleMapper.selectByPrimaryKey(roleId).getId());
-            if (!CollectionUtils.isEmpty(labelDTOS)) {
-                labelNames.addAll(labelDTOS.stream().map(Label::getName).collect(Collectors.toSet()));
-            }
-            newMemberRoleIds.add(projectUserDTO.getMemberRoleId());
+            });
+            projectUserMapper.deleteByIds(projectId, deleteMemberRoleIds);
         }
-
-        // 3. 删除MemberRole
-        oldMemberRoleIds.forEach(aLong -> {
-            if (!newMemberRoleIds.contains(aLong)) {
-                List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
-                if (CollectionUtils.isEmpty(userDTOList)) {
-                    memberRoleService.batchDeleteMemberRole(projectDTO.getOrganizationId(), Arrays.asList(memberRoleRepository.selectByPrimaryKey(aLong)));
+        // 新增角色
+        if (!CollectionUtils.isEmpty(insertRoleIds)) {
+            insertRoleIds.forEach(v -> {
+                ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+                projectUserDTO.setProjectId(projectId);
+                projectUserDTO.setMemberRoleId(getMemberRoleId(userId, v, projectDTO.getOrganizationId()));
+                if (projectUserMapper.selectOne(projectUserDTO) == null) {
+                    if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                        throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+                    }
                 }
-            }
-        });
+            });
+        }
+        Set<String> labelNames = new HashSet<>();
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            labelNames = labelC7nMapper.selectLabelNamesInRoleIds(roleIdList);
+        }
 
         // 4. 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();

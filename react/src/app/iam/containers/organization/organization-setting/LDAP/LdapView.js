@@ -117,22 +117,22 @@ const LdapView = observer(() => {
       service={['choerodon.code.organization.setting.general-setting.ps.ldap']}
     >
       <Header>
-        <Permission service={['base-service.ldap.update']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.update.ldap']}>
           <Button type="primary" funcType="flat" icon="mode_edit" onClick={modifyInfo}>修改</Button>
         </Permission>
-        <Permission service={['base-service.ldap.disableLdap']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.disable']}>
           {currentRecord && currentRecord.getPristineValue('enabled') ? <Button type="primary" funcType="flat" icon="remove_circle_outline" onClick={handleDisable}>停用</Button> : ''}
         </Permission>
-        <Permission service={['base-service.ldap.enableLdap']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.enable']}>
           {currentRecord && !currentRecord.getPristineValue('enabled') ? <Button type="primary" funcType="flat" icon="check_circle" onClick={handleEnableLdap}>启用</Button> : ''}
         </Permission>
-        <Permission service={['base-service.ldap.testConnect']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.test']}>
           <Button type="primary" funcType="flat" icon="low_priority" onClick={testLinks}>测试连接</Button>
         </Permission>
-        <Permission service={['base-service.ldap.syncUsers']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.sync']}>
           <Button type="primary" funcType="flat" icon="sync_user" onClick={loaderClient}>同步用户</Button>
         </Permission>
-        <Permission service={['base-service.ldap.pagingQueryHistories']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.records']}>
           <Button type="primary" funcType="flat" icon="sync_records" onClick={goToHistory}>同步记录</Button>
         </Permission>
       </Header>

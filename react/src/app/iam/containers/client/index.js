@@ -5,6 +5,7 @@ import { Modal as OldModal } from 'choerodon-ui';
 import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
 import { useContext } from 'react';
 import { FormattedMessage } from 'react-intl';
+import forEach from 'lodash/forEach';
 import Store from './store';
 import { StoreProvider } from './store';
 import EditRecord from './editRecord';
@@ -37,7 +38,14 @@ const Client = observer(() => {
   async function openRoleManageModal(record) {
     clientDataSet.current = record;
     const roleData = await axios.get(`/iam/v1/${orgId}/clients/${record.get('id')}`);
-    await record.set('roles', roleData.roles.map(({ id }) => id));
+    if (roleData) {
+      forEach(roleData, (value, key) => {
+        if (key !== 'authorizedGrantTypes' && (key !== 'scope' || value)) {
+          record.init(key, value);
+        }
+      });
+    }
+    await record.set('roles', roleData.memberRoleList || []);
     setEditRoleModal(true);
   }
   function handleRowClick(record) {
@@ -65,11 +73,11 @@ const Client = observer(() => {
 
   function renderAction({ record }) {
     const actionDatas = [{
-      service: ['base-service.client.delete'],
+      service: ['choerodon.code.organization.setting.client.ps.delete'],
       text: <FormattedMessage id="organization.client.delete.title" />,
       action: () => handleDelete(record),
     }, {
-      service: ['base-service.client.update'],
+      service: ['choerodon.code.organization.setting.client.ps.role'],
       text: '角色分配',
       action: () => handleRoleClick(record),
     }];

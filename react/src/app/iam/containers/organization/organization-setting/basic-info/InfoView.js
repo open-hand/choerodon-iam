@@ -54,7 +54,7 @@ const InfoView = observer(() => {
     >
 
       <Header>
-        <Permission service={['base-service.organization.updateOnOrganizationLevel']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.update.info']}>
           <Button
             type="primary"
             funcType="flat"

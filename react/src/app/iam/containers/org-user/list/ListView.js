@@ -273,7 +273,7 @@ export default withRouter(observer((props) => {
   }
   function renderAction({ record }) {
     let actionDatas = [{
-      service: [],
+      service: ['choerodon.code.organization.manager.user.ps.reset.password'],
       text: <FormattedMessage id={`${intlPrefix}.action.reset`} />,
       action: () => handleResetPassword(record),
     }];
@@ -288,13 +288,13 @@ export default withRouter(observer((props) => {
     }
     if (record.get('enabled')) {
       actionDatas.push({
-        service: [],
+        service: ['choerodon.code.organization.manager.user.ps.disable'],
         text: <FormattedMessage id={`${intlPrefix}.action.disable`} />,
         action: () => handleDisable(record),
       });
     } else {
       actionDatas.push({
-        service: [],
+        service: ['choerodon.code.organization.manager.user.ps.enable'],
         text: <FormattedMessage id={`${intlPrefix}.action.enable`} />,
         action: () => handleEnable(record),
       });
@@ -320,33 +320,48 @@ export default withRouter(observer((props) => {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Tooltip
-          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
-          placement="bottom"
-        >
-          <Button
-            icon="playlist_add"
-            disabled={!getCanCreate}
-            onClick={handleCreate}
+        <Permission service={['choerodon.code.organization.manager.user.ps.create']}>
+          <Tooltip
+            title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+            placement="bottom"
           >
-            <FormattedMessage id={`${intlPrefix}.button.create-user`} />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
-          placement="bottom"
-        >
-          <Button
-            icon="archive"
-            disabled={!getCanCreate}
-            onClick={handleImportUser}
+            <Button
+              icon="playlist_add"
+              disabled={!getCanCreate}
+              onClick={handleCreate}
+            >
+              <FormattedMessage id={`${intlPrefix}.button.create-user`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.import']}>
+          <Tooltip
+            title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+            placement="bottom"
           >
-            <FormattedMessage id={`${intlPrefix}.button.import-user`} />
+            <Button
+              icon="archive"
+              disabled={!getCanCreate}
+              onClick={handleImportUser}
+            >
+              <FormattedMessage id={`${intlPrefix}.button.import-user`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.add.user']}>
+          <Button
+            icon="person_add"
+            onClick={handleRoleAssignment}
+          >
+            添加组织用户
           </Button>
-        </Tooltip>
-        <Button icon="person_add" onClick={handleRoleAssignment}>添加组织用户</Button>
-        <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
-        <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.import.user']}>
+          <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.ldap']}>
+          <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
+        </Permission>
       </Header>
       <Breadcrumb />
       <Content

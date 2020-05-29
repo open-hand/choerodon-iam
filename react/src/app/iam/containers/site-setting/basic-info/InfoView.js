@@ -99,9 +99,15 @@ const InfoView = observer(() => {
   return (
     <TabPage service={['choerodon.code.site.setting.general-setting.ps.default']}>
       <Header>
-        <Button type="primary" funcType="flat" icon="mode_edit" onClick={openModal}> 修改信息 </Button>
-        <Button type="primary" funcType="flat" icon="mode_edit" onClick={openThemeColorModal}> 修改主题色 </Button>
-        <Button type="primary" funcType="flat" icon="swap_horiz" onClick={handleReset}> 重置 </Button>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.update']}>
+          <Button type="primary" funcType="flat" icon="mode_edit" onClick={openModal}> 修改信息 </Button>
+        </Permission>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.update.theme']}>
+          <Button type="primary" funcType="flat" icon="mode_edit" onClick={openThemeColorModal}> 修改主题色 </Button>
+        </Permission>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.reset']}>
+          <Button type="primary" funcType="flat" icon="swap_horiz" onClick={handleReset}> 重置 </Button>
+        </Permission>
       </Header>
 
       <Breadcrumb />

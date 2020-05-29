@@ -18,11 +18,7 @@ export default inject('AppState')(observer(({ dataSet, onOk, onCancel, clientSto
         const res = await clientStore.loadClientDetail(organizationId, record.get('id'));
         if (res) {
           forEach(res, (value, key) => {
-            if (key === 'scope') {
-              if (value) {
-                record.init(key, value);
-              }
-            } else if (key !== 'authorizedGrantTypes') {
+            if (key !== 'authorizedGrantTypes' && (key !== 'scope' || value)) {
               record.init(key, value);
             }
           });

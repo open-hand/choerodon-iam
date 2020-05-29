@@ -64,6 +64,7 @@ const ListView = () => {
     }
     return (
       <Permission
+        service={['choerodon.code.organization.manager.role.ps.update']}
         defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
       >
         <span
@@ -81,7 +82,7 @@ const ListView = () => {
     const builtIn = record.get('builtIn');
     const actionDatas = [
       {
-        service: [],
+        service: [enabled ? 'choerodon.code.organization.manager.role.ps.disable' : 'choerodon.code.organization.manager.role.ps.enable'],
         text: enabled ? '停用' : '启用',
         action: handleEnabled,
       },

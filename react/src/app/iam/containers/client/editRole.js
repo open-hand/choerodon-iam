@@ -14,7 +14,16 @@ export default observer(({ onCancel, onOk, ds, record, organizationId, optionsDa
   }
   async function handleOk() {
     try {
-      const result = await axios.post(`/iam/choerodon/v1/organizations/${organizationId}/clients/${record.get('id')}/assign_roles`, JSON.stringify(ds.current.toData().roles.filter(v => v)));
+      const postData = ds.current.toData();
+      postData.memberRoleList = [];
+      postData.roles.forEach(v => {
+        if (v) {
+          postData.memberRoleList.push({ id: v });
+        }
+      });
+      postData.pwdReplayFlag = 0;
+      postData.roles = null;
+      const result = await axios.put(`/iam/v1/${organizationId}/clients`, JSON.stringify(postData));
       if (result.failed) {
         throw result.message;
       }

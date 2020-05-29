@@ -99,7 +99,7 @@ const GeneralSetting = observer(() => {
             <FormattedMessage id="modify" />
           </Button>
         </Permission>
-        <Permission service={['choerodon.code.project.setting.general-setting.ps.default']}>
+        <Permission service={['choerodon.code.project.setting.general-setting.ps.disable']}>
           <Button
             icon="remove_circle_outline"
             onClick={handleDisable}

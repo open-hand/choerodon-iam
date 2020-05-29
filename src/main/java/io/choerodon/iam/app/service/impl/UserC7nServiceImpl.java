@@ -597,7 +597,8 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
         }
         projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
-        setProjectsInto(projects, isAdmin, isOrgAdmin);
+        Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
+        setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
         return projects;
     }
 
@@ -861,7 +862,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         return ConvertUtils.convertList(userC7nMapper.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO, param), UserDTO.class);
     }
 
-    private void setProjectsInto(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin) {
+    private void setProjectsIntoAndEditFlag(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin, Set<Long> pids) {
+
         if (!CollectionUtils.isEmpty(projects)) {
             projects.forEach(p -> {
                 p.setCategory(p.getCategories().get(0).getCode());
@@ -873,6 +875,11 @@ public class UserC7nServiceImpl implements UserC7nService {
                 // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
                 if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
                     p.setInto(false);
+                }
+
+                // 计算用户是否有编辑权限
+                if (isAdmin || isOrgAdmin || pids.contains(p.getId())) {
+                    p.setEditFlag(true);
                 }
 
             });

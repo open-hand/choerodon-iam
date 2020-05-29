@@ -72,7 +72,7 @@ public class PermissionC7nController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(permissionLogin = true)
     @ApiOperation("当前用户是否拥有权限集")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "codes", value = "权限集编码")
@@ -81,7 +81,7 @@ public class PermissionC7nController {
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
             @RequestParam(required = false) Long projectId,
             @RequestBody List<String> codes) {
-        return Results.success(permissionC7nService.checkPermissionSets(codes,projectId));
+        return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
     }
 
 }

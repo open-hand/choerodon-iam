@@ -33,6 +33,7 @@ public interface RoleC7nMapper {
      */
     List<Role> getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
                                      @Param("labelName") String labelName);
+
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
                                              @Param("organizationId") Long organizationId);
 
@@ -82,4 +83,7 @@ public interface RoleC7nMapper {
                                   @Param("name") String name,
                                   @Param("code") String code,
                                   @Param("enabled") Boolean enabled);
+
+    List<Role> listProjectRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                   @Param("userId") Long userId);
 }

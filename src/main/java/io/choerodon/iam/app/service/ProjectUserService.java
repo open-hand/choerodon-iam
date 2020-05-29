@@ -108,6 +108,8 @@ public interface ProjectUserService {
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers);
 
+    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds);
+
     void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
 
 }

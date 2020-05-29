@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectCategoryC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
@@ -31,7 +30,7 @@ public class OrganizationProjectCategoryC7nController extends BaseController {
         this.projectCategoryC7nService = projectCategoryC7nService;
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @GetMapping
     public ResponseEntity<List<ProjectCategoryDTO>> list(
             @PathVariable(value = "organization_id") Long organizationId) {

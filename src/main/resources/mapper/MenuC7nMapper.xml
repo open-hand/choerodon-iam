@@ -200,7 +200,7 @@
     <!-- 返回权限集检查状态 -->
     <select id="checkPermissionSets" resultType="org.hzero.iam.api.dto.PermissionCheckDTO">
     select
-    ps.code,
+    DISTINCT ps.code,
     ps.h_controller_type controller_type,
     1 approve
     from iam_menu ps
@@ -208,7 +208,7 @@
     <foreach collection="roleIds" open="(" separator="," close=")" item="roleId">
         #{roleId}
     </foreach>
-    <if test="projectId!=null">
+    <if test="projectId!=null and isOrgRoot==false">
         JOIN iam_member_role imr ON imr.role_id = ir.id
         AND imr.member_id = #{userId}
         JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id

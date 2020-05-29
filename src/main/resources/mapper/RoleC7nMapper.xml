@@ -288,4 +288,18 @@
             and ir.is_enabled = #{enabled}
         </if>
     </select>
+    <select id="listProjectRoleByProjectIdAndUserId" resultMap="RoleMap">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
+        SELECT ir.*
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON ir.id = imr.role_id
+        INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{roleLabelDataType} AND data_id = ir.id
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        <where>
+            imr.member_type = 'user' AND imr.member_id =#{userId}
+            AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ADMIN'
+        </where>
+        group by ir.id
+    </select>
 </mapper>

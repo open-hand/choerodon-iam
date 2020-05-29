@@ -1,5 +1,13 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.RoleC7nService;
@@ -9,13 +17,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping("/choerodon/v1")
@@ -45,7 +46,7 @@ public class RoleC7nController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询角色")
     @GetMapping(value = "/roles/search")
     @CustomPageRequest

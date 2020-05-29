@@ -20,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -28,7 +29,6 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
@@ -231,6 +231,15 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
     }
 
+    @Override
+    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+        Map<Long, List<ProjectUserDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectUserDTO::getMemberId));
+        map.forEach((k,v) -> {
+            addProjectRolesForUser(projectId, k, v.stream().map(ProjectUserDTO::getRoleId).collect(Collectors.toSet()));
+        });
+
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -262,36 +271,46 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds) {
+        Assert.notNull(projectId, "error.projectId.is.null");
+        Assert.notNull(userId, "error.userId.is.null");
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
-        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
-        projectUserDTOList.forEach(projectUserDTO -> {
-            if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
-                throw new EmptyParamException("error.projectUser.insert.empty");
-            }
-            User user = userMapper.selectByPrimaryKey(projectUserDTO.getMemberId());
+
+
+        roleIds.forEach(roleId -> {
+            User user = userMapper.selectByPrimaryKey(userId);
+            Role role = roleMapper.selectByPrimaryKey(roleId);
+
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
             projectUserDTO.setProjectId(projectId);
+            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
             // 1. set memberRoleId
-            projectUserDTO.setMemberRoleId(getMemberRoleId(projectUserDTO.getMemberId(), projectUserDTO.getRoleId(), projectDTO.getOrganizationId()));
             if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
-            // 2.构建saga对象
-            Role role = roleMapper.selectByPrimaryKey(projectUserDTO.getRoleId());
-            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
-            if (!CollectionUtils.isEmpty(labelDTOS)) {
-                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
-                Set<String> roleLabels = userRoleLabelsMap.get(projectUserDTO.getMemberId());
-                if (!CollectionUtils.isEmpty(roleLabels)) {
-                    roleLabels.addAll(labelNames);
-                } else {
-                    userRoleLabelsMap.put(projectUserDTO.getMemberId(), labelNames);
-                }
-            }
+
             // 发送通知
             List<User> userList = new ArrayList<>();
             userList.add(user);
             messageSendService.sendProjectAddUserMsg(projectDTO, role.getName(), userList);
+        });
+
+
+        // 2.构建saga对象
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        List<Role> roleList = roleC7nMapper.listProjectRoleByProjectIdAndUserId(projectId, userId);
+        Set<Long> ownedRoleIds = roleList.stream().map(Role::getId).collect(Collectors.toSet());
+        ownedRoleIds.forEach(id -> {
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRoleLabelsMap.get(userId);
+                if (!CollectionUtils.isEmpty(roleLabels)) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRoleLabelsMap.put(userId, labelNames);
+                }
+            }
         });
         // 3.发送saga
         assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap);

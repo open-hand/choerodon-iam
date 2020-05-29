@@ -17,10 +17,7 @@ import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
@@ -46,6 +43,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
+import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -125,6 +123,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private ProjectUserMapper projectUserMapper;
     private MemberRoleRepository memberRoleRepository;
     private MessageClient messageClient;
+    private MessageSendService messageSendService;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
@@ -148,7 +147,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  TransactionalProducer producer,
                                  MessageClient messageClient,
-                                 MemberRoleRepository memberRoleRepository) {
+                                 MemberRoleRepository memberRoleRepository,
+                                 MessageSendService messageSendService) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
@@ -171,6 +171,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.messageClient = messageClient;
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
+        this.messageSendService = messageSendService;
     }
 
 
@@ -728,6 +729,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roles) {
+        Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
+        User user = userMapper.selectByPrimaryKey(userId);
+
+
         // 查询用户拥有的组织层角色
         List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
         Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
@@ -791,13 +796,21 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayloads.add(userMemberEventPayload);
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
 
-        // TODO 发送消息？？？
-
+        // 发送消息
+        insertIds.forEach(roleId -> {
+            Role role = roleMapper.selectByPrimaryKey(roleId);
+            List<User> userList = new ArrayList<>();
+            userList.add(user);
+            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList);
+        });
     }
 
     @Override
     @Transactional
     public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds) {
+        Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
+        User user = userMapper.selectByPrimaryKey(userId);
+
         List<MemberRole> memberRoleList = new ArrayList<>();
         roleIds.forEach(roleId -> {
             MemberRole memberRole = new MemberRole();
@@ -831,7 +844,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayloads.add(userMemberEventPayload);
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
 
-        // TODO 发送消息？？？
+        // 发送消息
+        roleIds.forEach(roleId -> {
+            Role role = roleMapper.selectByPrimaryKey(roleId);
+            List<User> userList = new ArrayList<>();
+            userList.add(user);
+            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList);
+        });
     }
 
 

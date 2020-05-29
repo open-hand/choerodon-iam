@@ -232,6 +232,7 @@ public class ExcelImportUserTask {
         Map<Long, Set<Long>> userRoleMap = new HashMap<>();
         Map<Long, Set<Long>> userProjectUserMap = new HashMap<>();
         //***优化查询次数
+        // 校验参数，以及装配用户要分配的角色
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
@@ -279,6 +280,7 @@ public class ExcelImportUserTask {
                 } else {
                     roleIds = new HashSet<>();
                     roleIds.add(memberRole.getRoleId());
+                    userProjectUserMap.put(memberRole.getMemberId(), roleIds);
                 }
 
 //                ProjectUserDTO projectUserDTO = new ProjectUserDTO();
@@ -305,15 +307,20 @@ public class ExcelImportUserTask {
         });
         // 添加项目层角色
         if (uploadHistory.getSourceType().equals(ResourceLevel.PROJECT.value())) {
-            userProjectUserMap.forEach((k, v) -> {
-                projectUserService.addProjectRolesForUser(uploadHistory.getSourceId(), k, v);
-            });
+            if (!CollectionUtils.isEmpty(userProjectUserMap)) {
+                userProjectUserMap.forEach((k, v) -> {
+                    projectUserService.addProjectRolesForUser(uploadHistory.getSourceId(), k, v);
+                });
+            }
+
         }
         // 添加组织层角色
         if (uploadHistory.getSourceType().equals(ResourceLevel.ORGANIZATION.value())) {
-            userRoleMap.forEach((k, v) -> {
-                roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), k, v);
-            });
+            if (!CollectionUtils.isEmpty(userRoleMap)) {
+                userRoleMap.forEach((k, v) -> {
+                    roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), k, v);
+                });
+            }
         }
 
         Integer failedCount = errorMemberRoles.size();

@@ -1144,7 +1144,7 @@
         SELECT *
         FROM (
             SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
-            iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked
+            iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked,
             iu.object_version_number,
             CASE
             WHEN iu.is_ldap = 1 THEN

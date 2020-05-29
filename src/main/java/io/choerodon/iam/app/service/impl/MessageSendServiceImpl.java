@@ -56,7 +56,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             receiver.setTargetUserTenantId(user.getOrganizationId());
             receiverList.add(receiver);
             messageSender.setReceiverAddressList(receiverList);
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Send Add site user Msg failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
         }
@@ -85,7 +85,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), tenantId);
             messageSender.setAdditionalInformation(objectMap);
 
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
         }
@@ -131,7 +131,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             argsMap.put("userList", JSON.toJSONString(webHookUsers));
             messageSender.setArgs(argsMap);
             messageSender.setReceiverAddressList(receiverList);
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Send Add project user failed. userList : {}", userList);
         }
@@ -183,7 +183,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             //发送组织层和项目层消息时必填 当前组织id
             objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), tenant.getTenantId());
             messageSender.setAdditionalInformation(objectMap);
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Send add member msg failed. roleName : {}, userList : {}", roleName, userList);
         }

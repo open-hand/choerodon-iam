@@ -55,6 +55,7 @@ public interface MenuC7nMapper {
     List<PermissionCheckDTO> checkPermissionSets(@Param("roleIds") List<Long> roleIds,
                                                  @Param("projectId") Long projectId,
                                                  @Param("userId") Long userId,
+                                                 @Param("isOrgRoot") Boolean isOrgRoot,
                                                  @Param("codes") List<String> codes);
 
     List<Menu> listPermissionSetByRoleIdsAndLevel(@Param("roleIds") Set<Long> roleIds,

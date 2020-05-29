@@ -1166,10 +1166,10 @@
                     AND iu.real_name LIKE concat(concat('%',#{realName}),'%')
                 </if>
                 <if test="enabled != null">
-                    AND iu.is_enabled = enabled
+                    AND iu.is_enabled = #{enabled}
                 </if>
                 <if test="locked != null">
-                    AND iu.is_enabled = locked
+                    AND iu.is_enabled = #{locked}
                 </if>
             </where>
             GROUP BY iu.id

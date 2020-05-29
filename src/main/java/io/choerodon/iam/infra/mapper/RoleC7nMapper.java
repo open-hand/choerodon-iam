@@ -58,7 +58,6 @@ public interface RoleC7nMapper {
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
 
-
     List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,
                                          @Param("sourceId") Long sourceId,
                                          @Param("sourceType") String sourceType,
@@ -67,13 +66,13 @@ public interface RoleC7nMapper {
 
 
     List<io.choerodon.iam.api.vo.RoleVO> fulltextSearch(@Param("tenantId") Long tenantId,
-                                 @Param("name") String name,
-                                 @Param("code") String code,
-                                 @Param("level") String level,
-                                 @Param("builtIn") Boolean builtIn,
-                                 @Param("enabled") Boolean enabled,
-                                 @Param("labelName") String labelName,
-                                 @Param("params") String params);
+                                                        @Param("name") String name,
+                                                        @Param("code") String code,
+                                                        @Param("level") String level,
+                                                        @Param("builtIn") Boolean builtIn,
+                                                        @Param("enabled") Boolean enabled,
+                                                        @Param("labelName") String labelName,
+                                                        @Param("params") String params);
 
     Role getTenantAdminRole(Long organizationId);
 
@@ -81,5 +80,6 @@ public interface RoleC7nMapper {
 
     List<RoleDTO> listRolesByName(@Param("tenantId") Long tenantId,
                                   @Param("name") String name,
+                                  @Param("code") String code,
                                   @Param("enabled") Boolean enabled);
 }

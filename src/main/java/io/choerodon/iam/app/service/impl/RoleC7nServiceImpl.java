@@ -1,20 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.hzero.core.exception.NotLoginException;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -34,6 +19,20 @@ import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.exception.NotLoginException;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -146,8 +145,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable) {
-        return roleC7nMapper.listRolesByName(organizationId, roleName, onlySelectEnable);
+    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, String roleCode, Boolean onlySelectEnable) {
+        return roleC7nMapper.listRolesByName(organizationId, roleName, roleCode, onlySelectEnable);
     }
 
     @Override

@@ -39,19 +39,20 @@ public interface RoleC7nService {
     Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
 
 
-    Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest,Long tenantId, String name, String code, String roleLevel,
-                               Boolean builtIn, Boolean enabled, String params);
+    Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String roleLevel,
+                                                      Boolean builtIn, Boolean enabled, String params);
 
     Role getTenantAdminRole(Long organizationId);
 
     /**
      * 查询组织层角色
+     *
      * @param organizationId
      * @param roleName
      * @param onlySelectEnable
      * @return
      */
-    List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable);
+    List<RoleDTO> listRolesByName(Long organizationId, String roleName, String code, Boolean onlySelectEnable);
 
     List<RoleC7nDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 

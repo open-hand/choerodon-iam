@@ -1,25 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -37,6 +17,25 @@ import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 
 /**
@@ -181,9 +180,10 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/organizations/{organization_id}/roles")
     public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                       @RequestParam(name = "role_name", required = false) String roleName,
+                                                                      @RequestParam(name = "role_code", required = false) String roleCode,
                                                                       @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                               Boolean onlySelectEnable) {
-        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
+        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, onlySelectEnable), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)
@@ -290,7 +290,7 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
                                                                    @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService. latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
 
@@ -320,8 +320,8 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "组织层更新用户角色")
     @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
     public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-                                                                      @PathVariable(name = "user_id") Long userId,
-                                                                      @RequestBody @Validated List<Role> roles) {
+                                                                   @PathVariable(name = "user_id") Long userId,
+                                                                   @RequestBody @Validated List<Role> roles) {
 
         roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
         return ResponseEntity.noContent().build();

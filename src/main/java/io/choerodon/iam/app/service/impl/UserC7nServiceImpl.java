@@ -63,7 +63,6 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -164,6 +163,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private TenantMapper tenantMapper;
     @Autowired
     private LabelC7nMapper labelC7nMapper;
+    @Autowired
+    private MessageSendService messageSendService;
 
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -915,12 +916,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     public void createOrgAdministrator(List<Long> userIds, Long organizationId) {
         Role tenantAdminRole = roleC7nService.getTenantAdminRole(organizationId);
         Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
-        Set<Long> notifyUserIds = new HashSet<>();
-        Map<Long, List<MemberRole>> listMap = new HashMap<>();
+        List<User> notifyUserList = new ArrayList<>();
+
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         Set<String> labelNames = new HashSet<>();
-        // 接收者
-        List<Receiver> receiverList = new ArrayList<>();
 
         userIds.forEach(id -> {
             List<MemberRole> memberRoleList = new ArrayList<>();
@@ -948,13 +947,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
             // 构建消息对象
             User user = userMapper.selectByPrimaryKey(id);
-            notifyUserIds.add(id);
+            notifyUserList.add(user);
 
-            Receiver receiver = new Receiver();
-            receiver.setUserId(id);
-            // 发送邮件消息时 必填
-            receiver.setEmail(user.getEmail());
-            receiverList.add(receiver);
         });
 
         // 发送saga同步角色
@@ -968,36 +962,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 builder -> {
                 });
 
-
-        // 准备消息发送的messageSender
-        MessageSender messageSender = new MessageSender();
-        // 消息code
-        messageSender.setMessageCode(MessageCodeConstants.ADD_MEMBER);
-        // 默认为0L,都填0L,可不填写
-        messageSender.setTenantId(0L);
-
-        // 消息参数 消息模板中${projectName}
-        Map<String, String> argsMap = new HashMap<>();
-        argsMap.put("organizationName", tenant.getTenantName());
-        argsMap.put("roleName", "租户管理员");
-        argsMap.put("organizationId", tenant.getTableId());
-        argsMap.put("addCount", String.valueOf(userIds.size()));
-        messageSender.setArgs(argsMap);
-
-        messageSender.setReceiverAddressList(receiverList);
-
-        Map<String, Object> objectMap = new HashMap<>();
-        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
-        messageSender.setAdditionalInformation(objectMap);
-
-
-        //添加组织管理员发送消息通知被添加者
-        try {
-            messageClient.sendMessage(messageSender);
-        } catch (Exception e) {
-            LOGGER.info("Send add organization admin  message failed. userIds : {}", userIds);
-        }
-
+        messageSendService.sendAddMemberMsg(tenant, "租户管理员", notifyUserList);
     }
 
     @Override
@@ -1045,12 +1010,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
         Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
-        Map<Long, MessageSender> rolelMessagesMap = new HashMap<>();
+        Map<Long, List<User>> rolelUsersMap = new HashMap<>();
+        Map<Long, String> roleNameMap = new HashMap<>();
         Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
         memberRoleDTOS.forEach(memberRoleDTO -> {
             User user = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
             Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
 
+            // 下面发送消息时需要
+            if (roleNameMap.get(role.getId()) == null) {
+                roleNameMap.put(role.getId(), role.getName());
+            }
             if (user == null || role == null) {
                 throw new EmptyParamException("error.memberRole.insert.empty");
             }
@@ -1067,55 +1037,14 @@ public class UserC7nServiceImpl implements UserC7nService {
                 }
             }
             // 构建消息对象
-            MessageSender messageSender = rolelMessagesMap.get(memberRoleDTO.getRoleId());
-            if (messageSender != null) {
-                Receiver receiver = new Receiver();
-                receiver.setUserId(user.getId());
-                // 发送邮件消息时 必填
-                receiver.setEmail(user.getEmail());
-                // 发送短信消息 必填
-                receiver.setPhone(user.getPhone());
-                // 必填
-                receiver.setTargetUserTenantId(tenant.getTenantId());
-                messageSender.getReceiverAddressList().add(receiver);
+            List<User> userList = rolelUsersMap.get(memberRoleDTO.getRoleId());
+            if (userList != null) {
+                userList.add(user);
             } else {
-                // 构建消息对象
-                messageSender = new MessageSender();
-                // 消息code
-                messageSender.setMessageCode(MessageCodeConstants.ADD_MEMBER);
-                // 默认为0L,都填0L,可不填写
-                messageSender.setTenantId(0L);
-
-                // 消息参数 消息模板中${projectName}
-                Map<String, String> argsMap = new HashMap<>();
-                argsMap.put("organizationName", tenant.getTenantName());
-                argsMap.put("roleName", role.getName());
-                argsMap.put("organizationId", tenant.getTenantId().toString());
-                // todo? addCount啥意思？
-                argsMap.put("addCount", "1");
-                messageSender.setArgs(argsMap);
-
-                //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
-                Map<String, Object> objectMap = new HashMap<>();
-                //发送组织层和项目层消息时必填 当前组织id
-                objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
-                messageSender.setAdditionalInformation(objectMap);
-                // 接收者
-                List<Receiver> receiverList = new ArrayList<>();
-                Receiver receiver = new Receiver();
-                receiver.setUserId(user.getId());
-                // 发送邮件消息时 必填
-                receiver.setEmail(user.getEmail());
-                // 发送短信消息 必填
-                receiver.setPhone(user.getPhone());
-                // 必填
-                receiver.setTargetUserTenantId(tenant.getTenantId());
-                receiverList.add(receiver);
-                messageSender.setReceiverAddressList(receiverList);
-
-                rolelMessagesMap.put(memberRoleDTO.getRoleId(), messageSender);
+                userList = new ArrayList<>();
+                userList.add(user);
+                rolelUsersMap.put(memberRoleDTO.getRoleId(), userList);
             }
-
 
             memberRoleDTO.setMemberType(MemberType.USER.value());
             memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
@@ -1139,16 +1068,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         });
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
 
-
-
         // 发送消息
-        try {
-            rolelMessagesMap.forEach((k, v) -> {
-                messageClient.sendMessage(v);
-            });
-        } catch (Exception e) {
-            LOGGER.info("Send add member role message failed. memberRoleList : {}", memberRoleDTOS);
-        }
+        rolelUsersMap.forEach((k, v) -> messageSendService.sendAddMemberMsg(tenant, roleNameMap.get(k), v));
 
     }
 

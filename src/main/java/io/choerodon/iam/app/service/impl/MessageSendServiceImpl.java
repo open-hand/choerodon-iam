@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSON;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,6 +134,58 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageClient.sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Send Add project user failed. userList : {}", userList);
+        }
+    }
+
+    @Override
+    public void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList) {
+        try {
+            // 构建消息对象
+            MessageSender messageSender = new MessageSender();
+            // 消息code
+            messageSender.setMessageCode(MessageCodeConstants.ADD_MEMBER);
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            // 接收者
+            List<Receiver> receiverList = new ArrayList<>();
+            List<WebHookUser> webHookUserList = new ArrayList<>();
+            userList.forEach(user -> {
+
+                WebHookUser webHookUser = new WebHookUser();
+                webHookUser.setLoginName(user.getLoginName());
+                webHookUser.setUserName(user.getRealName());
+                webHookUserList.add(webHookUser);
+
+                Receiver receiver = new Receiver();
+                receiver.setUserId(user.getId());
+                // 发送邮件消息时 必填
+                receiver.setEmail(user.getEmail());
+                // 发送短信消息 必填
+                receiver.setPhone(user.getPhone());
+                // 必填
+                receiver.setTargetUserTenantId(tenant.getTenantId());
+                receiverList.add(receiver);
+            });
+            messageSender.setReceiverAddressList(receiverList);
+
+            // 消息参数 消息模板中${projectName}
+            Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("organizationName", tenant.getTenantName());
+            argsMap.put("roleName", roleName);
+            argsMap.put("organizationId", tenant.getTenantId().toString());
+            argsMap.put("addCount", String.valueOf(userList.size()));
+            argsMap.put("userList", JSON.toJSONString(webHookUserList));
+            messageSender.setArgs(argsMap);
+
+            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+            Map<String, Object> objectMap = new HashMap<>();
+            //发送组织层和项目层消息时必填 当前组织id
+            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), tenant.getTenantId());
+            messageSender.setAdditionalInformation(objectMap);
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info("Send add member msg failed. roleName : {}, userList : {}", roleName, userList);
         }
     }
 }

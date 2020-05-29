@@ -85,7 +85,8 @@
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
         <where>
-            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
+            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type
+            = 'ROLE'
             <!-- 模糊匹配role.name -->
             <if test="param != null and param.name != null">
                 AND ir.name LIKE concat(concat('%', #{param.name}), '%')
@@ -176,7 +177,8 @@
             inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
             inner join iam_label il on il.id = hlr.label_id
             INNER JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
-            WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND fp.is_enabled = 1 AND il.name = 'PROJECT_ROLE'
+            WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
+            fp.is_enabled = 1 AND il.name = 'PROJECT_ROLE'
             <if test="name != null">
                 AND fp.name LIKE concat(concat('%', #{name}), '%')
             </if>
@@ -188,23 +190,23 @@
     </select>
 
     <select id="fuzzySearchRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
-    SELECT
-    ir.*
-    FROM
-    iam_role ir
-    inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
-    INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
-    WHERE
-    ir.fd_level = #{sourceType}
-    <if test="sourceType == 'organization' and sourceId != null">
-        AND ir.h_tenant_id =#{sourceId}
-    </if>
-    <if test="roleName != null">
-        AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
-    </if>
-    <if test="onlySelectEnable">
-        AND ir.is_enabled = 1
-    </if>
+        SELECT
+        ir.*
+        FROM
+        iam_role ir
+        inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
+        INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
+        WHERE
+        ir.fd_level = #{sourceType}
+        <if test="sourceType == 'organization' and sourceId != null">
+            AND ir.h_tenant_id =#{sourceId}
+        </if>
+        <if test="roleName != null">
+            AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
+        </if>
+        <if test="onlySelectEnable">
+            AND ir.is_enabled = 1
+        </if>
     </select>
 
 
@@ -216,7 +218,7 @@
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
         INNER JOIN iam_label il on il.id=hlr.label_id
         <where>
-            ir.fd_level = #{level} AND  ir.h_tenant_id =#{tenantId}
+            ir.fd_level = #{level} AND ir.h_tenant_id =#{tenantId}
             <if test="name != null">
                 and ir.name like concat(concat('%',#{name}), '%')
             </if>
@@ -250,7 +252,8 @@
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
-        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ADMIN' AND ir.id not in
+        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ADMIN' AND ir.id not
+        in
         (SELECT ir.id
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
@@ -266,17 +269,20 @@
 
     <select id="listRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT
-            ir.*
+        ir.*
         FROM
-            iam_role ir
-            INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
-            INNER JOIN iam_label il ON il.id = hlr.label_id
-            AND il. NAME = 'TENANT_ROLE'
+        iam_role ir
+        INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        AND il. NAME = 'PROJECT_ROLE'
         WHERE
-            ir.fd_level = 'organization'
-            AND ir.h_tenant_id = #{tenantId}
+        ir.fd_level = 'organization'
+        AND ir.h_tenant_id = #{tenantId}
         <if test="name != null">
             and ir.name like concat(concat('%',#{name}), '%')
+        </if>
+        <if test="code!=null">
+            AND ir.code like concat(concat('%',#{code}), '%')
         </if>
         <if test="enabled != null">
             and ir.is_enabled = #{enabled}

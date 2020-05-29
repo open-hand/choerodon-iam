@@ -792,6 +792,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
 
         // TODO 发送消息？？？
+
     }
 
     @Override

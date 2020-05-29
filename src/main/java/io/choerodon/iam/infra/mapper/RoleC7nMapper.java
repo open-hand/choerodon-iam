@@ -1,15 +1,14 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.vo.UserRoleVO;
+import java.util.List;
 
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.UserRoleVO;
 
 /**
  * @author scp
@@ -34,7 +33,6 @@ public interface RoleC7nMapper {
      */
     List<Role> getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
                                      @Param("labelName") String labelName);
-
     List<Role> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
                                              @Param("organizationId") Long organizationId);
 

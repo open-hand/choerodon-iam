@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
 import org.hzero.iam.domain.entity.Client;
 
 import io.choerodon.core.domain.Page;
@@ -34,5 +36,15 @@ public interface ClientC7nService {
                                           Long sourceId,
                                           ClientRoleQueryVO clientRoleQueryVO,
                                           Long roleId);
+
+    /**
+     * 根据角色id给client分配角色
+     *
+     * @param organizationId
+     * @param clientId
+     * @param roleIds
+     * @return
+     */
+    void assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
 
 }

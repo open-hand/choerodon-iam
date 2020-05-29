@@ -86,15 +86,12 @@ const GeneralSetting = observer(() => {
   return (
     <Page
       service={[
-        'base-service.project.query',
-        'base-service.project.update',
-        'base-service.project.disableProject',
-        'base-service.project.list',
+        'choerodon.code.project.setting.general-setting.ps.info',
       ]}
     >
       <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
 
-        <Permission service={['base-service.project.update']}>
+        <Permission service={['choerodon.code.project.setting.general-setting.ps.update']}>
           <Button
             icon="mode_edit"
             onClick={handleEditClick}
@@ -102,7 +99,7 @@ const GeneralSetting = observer(() => {
             <FormattedMessage id="modify" />
           </Button>
         </Permission>
-        <Permission service={['base-service.project.disableProject']}>
+        <Permission service={['choerodon.code.project.setting.general-setting.ps.default']}>
           <Button
             icon="remove_circle_outline"
             onClick={handleDisable}

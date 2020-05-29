@@ -104,8 +104,22 @@ const ListView = () => {
   return (
     <Page service={permissions}>
       <Header>
-        <Button icon="playlist_add" onClick={() => openModal('add', 'organization')}>创建组织角色</Button>
-        <Button icon="playlist_add" onClick={() => openModal('add', 'project')}>创建项目角色</Button>
+        <Permission service={['choerodon.code.organization.manager.role.ps.create.organization']}>
+          <Button
+            icon="playlist_add"
+            onClick={() => openModal('add', 'organization')}
+          >
+            创建组织角色
+          </Button>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.role.ps.create.project']}>
+          <Button
+            icon="playlist_add"
+            onClick={() => openModal('add', 'project')}
+          >
+            创建项目角色
+          </Button>
+        </Permission>
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}`}>

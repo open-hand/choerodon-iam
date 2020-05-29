@@ -28,7 +28,7 @@ export default function ListView() {
   }
   function renderAction(record) {
     const actionDatas = [{
-      service: [],
+      service: ['choerodon.code.site.manager.root-user.ps.delete'],
       text: <FormattedMessage id={`${intlPrefix}.action.delete`} />,
       action: () => handleDelete(record),
     }];

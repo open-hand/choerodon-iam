@@ -14,7 +14,10 @@ import OptsLine from './component/opts-line';
 import ClusterOverview from './component/cluster-overview';
 
 const PlatformOverview = observer(() => (
-  <TabPage className="c7n-platform-overview">
+  <TabPage
+    className="c7n-platform-overview"
+    service={['choerodon.code.site.manager.platform-overview.ps.default']}
+  >
     <Breadcrumb />
     <Content style={{ paddingTop: 0 }}>
       <div className="c7n-platform-overview-firstline">

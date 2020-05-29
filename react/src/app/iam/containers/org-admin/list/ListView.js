@@ -36,7 +36,7 @@ export default function ListView() {
 
   function renderAction(record) {
     const actionDatas = [{
-      service: [],
+      service: ['choerodon.code.organization.manager.organization-admin.ps.delete'],
       text: <FormattedMessage id={`${intlPrefix}.action.delete`} />,
       action: () => handleDelete(record),
     }];
@@ -91,7 +91,7 @@ export default function ListView() {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Permission service={[]}>
+        <Permission service={['choerodon.code.organization.manager.organization-admin.ps.add']}>
           <Button icon="playlist_add" onClick={handleCreate}><FormattedMessage id={`${intlPrefix}.button.add`} /></Button>
         </Permission>
       </Header>

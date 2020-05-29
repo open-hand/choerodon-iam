@@ -11,11 +11,12 @@ export default ({ id = 0, intl, orgRoleDataSet, userStore }) => {
         return '请输入正确的邮箱地址';
       }
       const result = await axios.post(`/iam/choerodon/v1/organizations/${id}/users/check`, JSON.stringify({ organizationId: id, email: `${email}${suffix}` }));
-      if (result.failed) {
-        return result.message;
+      if (result.failed && !result) {
+        return '用户邮箱已存在';
       }
     } catch (e) {
-      Choerodon.prompt(e);
+      // Choerodon.prompt(e.message);
+      return '邮箱校验失败，请稍后再试';
     }
   }
   return {

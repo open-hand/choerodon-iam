@@ -80,7 +80,10 @@ const Client = observer(() => {
   }
   function renderName({ text, record }) {
     return (
-      <Permission service={['base-service.client.update']} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{text}</span>)}>
+      <Permission
+        service={['choerodon.code.organization.setting.client.ps.update']}
+        defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{text}</span>)}
+      >
         <span className="link" onClick={() => handleRowClick(record)}>
           {text}
         </span>
@@ -88,9 +91,9 @@ const Client = observer(() => {
     );
   }
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.organization.setting.client.ps.default']}>
       <Header>
-        <Permission service={['base-service.client.create']}>
+        <Permission service={['choerodon.code.organization.setting.client.ps.add']}>
           <Button color="blue" onClick={openCreateRecordModal}><Icon type="playlist_add" /> 添加客户端</Button>
         </Permission>
       </Header>

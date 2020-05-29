@@ -97,7 +97,7 @@ const InfoView = observer(() => {
     );
   }
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.site.setting.general-setting.ps.default']}>
       <Header>
         <Button type="primary" funcType="flat" icon="mode_edit" onClick={openModal}> 修改信息 </Button>
         <Button type="primary" funcType="flat" icon="mode_edit" onClick={openThemeColorModal}> 修改主题色 </Button>

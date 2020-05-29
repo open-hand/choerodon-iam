@@ -14,7 +14,7 @@ import EditRole from './editRole';
 const { Column } = Table;
 
 const Client = observer(() => {
-  const { clientDataSet, optionsDataSet, orgId } = useContext(Store);
+  const { clientDataSet, optionsDataSet, orgId, clientStore } = useContext(Store);
   const [editModal, setEditModal] = useState(false);
   const [createModal, setCreateModal] = useState(false);
   const [editRoleModal, setEditRoleModal] = useState(false);
@@ -104,7 +104,7 @@ const Client = observer(() => {
           <Column width={50} renderer={renderAction} />
           <Column name="authorizedGrantTypes" width={500} />
         </Table>
-        {editModal && <EditRecord onOk={() => setEditModal(false)} onCancel={() => setEditModal(false)} dataSet={clientDataSet} record={clientDataSet.current} />}
+        {editModal && <EditRecord onOk={() => setEditModal(false)} onCancel={() => setEditModal(false)} dataSet={clientDataSet} record={clientDataSet.current} clientStore={clientStore} />}
         {createModal && <CreateRecord onOk={() => setCreateModal(false)} onCancel={() => setCreateModal(false)} dataSet={clientDataSet} />}
         {editRoleModal && <EditRole optionsDataSet={optionsDataSet} organizationId={orgId} onOk={() => setEditRoleModal(false)} onCancel={() => setEditRoleModal(false)} ds={clientDataSet} dataSet={optionsDataSet} record={clientDataSet.current} />}
       </Content>

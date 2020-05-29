@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.repository.ClientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +26,15 @@ public class ClientC7nController extends BaseController {
 
     private final ClientService clientService;
     private final ClientC7nService clientC7nService;
+    private final ClientRepository clientRepository;
 
 
-    public ClientC7nController(ClientService clientService, ClientC7nService clientC7nService) {
+    public ClientC7nController(ClientService clientService,
+                               ClientRepository clientRepository,
+                               ClientC7nService clientC7nService) {
         this.clientService = clientService;
         this.clientC7nService = clientC7nService;
+        this.clientRepository = clientRepository;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -47,6 +52,7 @@ public class ClientC7nController extends BaseController {
         Client client = new Client();
         client.setOrganizationId(organizationId);
         client.setId(clientId);
+        client.setName(clientRepository.selectByPrimaryKey(clientId).getName());
         clientService.delete(client);
         return new ResponseEntity(HttpStatus.OK);
     }

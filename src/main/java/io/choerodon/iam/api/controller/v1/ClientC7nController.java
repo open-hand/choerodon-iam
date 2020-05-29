@@ -1,8 +1,11 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
+import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.repository.ClientRepository;
@@ -64,5 +67,14 @@ public class ClientC7nController extends BaseController {
         return new ResponseEntity<>(clientC7nService.queryByName(organizationId, clientName), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "客户端分配角色")
+    @PostMapping(value = "/{client_id}/assign_roles")
+    public ResponseEntity assignRoles(@PathVariable("organization_id") Long organizationId,
+                                      @PathVariable("client_id") Long clientId,
+                                      @RequestBody List<Long> roleIds) {
+        clientC7nService.assignRoles(organizationId, clientId, roleIds);
+        return Results.success();
+    }
 
 }

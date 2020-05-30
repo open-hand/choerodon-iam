@@ -33,7 +33,9 @@ import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.entity.TenantConfig;
 import org.hzero.iam.saas.domain.repository.TenantRepository;
+import org.hzero.iam.saas.infra.mapper.TenantConfigMapper;
 import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,6 +146,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserDetailsService userDetailsService;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private TenantConfigMapper tenantConfigMapper;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -1132,5 +1136,35 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId) {
         return userC7nMapper.listProjectUsersByRoleId(roleId, sourceId);
+    }
+
+    @Override
+    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
+        Tenant record = new Tenant();
+        record.setTenantNum(orgCode);
+        Tenant tenant = tenantMapper.selectOne(record);
+
+        TenantConfig confiRecord = new TenantConfig();
+        confiRecord.setTenantId(tenant.getTenantId());
+        Long userId = null;
+        List<TenantConfig> tenantConfigs = tenantConfigMapper.select(confiRecord);
+
+        for (TenantConfig tenantConfig : tenantConfigs) {
+            if ("userId".equalsIgnoreCase(tenantConfig.getConfigKey())) {
+                userId = Long.valueOf(tenantConfig.getConfigValue());
+            }
+        }
+
+        User user = userMapper.selectByPrimaryKey(userId);
+
+        User adminUser = new User();
+        adminUser.setLoginName("admin");
+        adminUser = userMapper.selectOne(adminUser);
+
+        RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
+        registrantInfoDTO.setUser(user);
+        registrantInfoDTO.setOrganizationName(tenant.getTenantName());
+        registrantInfoDTO.setAdminId(adminUser.getId());
+        return registrantInfoDTO;
     }
 }

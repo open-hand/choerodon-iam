@@ -274,7 +274,7 @@
         iam_role ir
         INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
         INNER JOIN iam_label il ON il.id = hlr.label_id
-        AND il. NAME = 'PROJECT_ROLE'
+        AND il. NAME = #{labelName}
         WHERE
         ir.fd_level = 'organization'
         AND ir.h_tenant_id = #{tenantId}

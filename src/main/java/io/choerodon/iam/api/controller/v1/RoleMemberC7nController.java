@@ -1,8 +1,21 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
+import io.choerodon.iam.api.vo.agile.RoleVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -20,22 +33,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ClientRoleQueryVO;
-import io.choerodon.iam.api.vo.SimplifiedUserVO;
-import io.choerodon.iam.api.vo.agile.RoleVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.RoleC7nDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.enums.ExcelSuffix;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import javax.validation.Valid;
+import java.util.List;
 
 
 /**
@@ -181,9 +180,10 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                       @RequestParam(name = "role_name", required = false) String roleName,
                                                                       @RequestParam(name = "role_code", required = false) String roleCode,
+                                                                      @RequestParam(name = "label_name") String labelName,
                                                                       @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                               Boolean onlySelectEnable) {
-        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, onlySelectEnable), HttpStatus.OK);
+        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)

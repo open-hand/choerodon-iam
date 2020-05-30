@@ -52,7 +52,7 @@ public interface RoleC7nService {
      * @param onlySelectEnable
      * @return
      */
-    List<RoleDTO> listRolesByName(Long organizationId, String roleName, String code, Boolean onlySelectEnable);
+    List<RoleDTO> listRolesByName(Long organizationId, String roleName, String code, String labelName, Boolean onlySelectEnable);
 
     List<RoleC7nDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 

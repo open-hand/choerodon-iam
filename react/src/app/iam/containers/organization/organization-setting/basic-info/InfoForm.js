@@ -64,8 +64,8 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
           </div>
           <span style={{ display: 'block', textAlign: 'center', fontSize: '.13rem', color: 'rgba(0,0,0,0.54)' }}>组织Logo</span>
         </div>
-        <TextField label="组织名称*" name="name" required />
-        <TextField label="组织编码" name="code" disabled />
+        <TextField name="tenantName" required />
+        <TextField name="tenantNum" disabled />
         <TextField label="组织所在地*" name="address" required />
         <TextField label="官网地址*" name="homePage" required />
         <TextField label="所有者" name="ownerRealName" disabled />

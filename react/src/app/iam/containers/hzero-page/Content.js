@@ -1,10 +1,16 @@
+/* eslint-disable */
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { Button } from 'choerodon-ui/pro';
+import Cookies from 'universal-cookie';
 import { Page, Content, Breadcrumb } from '@choerodon/boot';
 import { useHzeroPageStore } from './stores';
 
 import './index.less';
+
+const cookies = new Cookies();
+
+const getCookie = (name, option) => cookies.get(name, option);
 
 const HzeroPage = withRouter(((props) => {
   const {
@@ -24,8 +30,11 @@ const HzeroPage = withRouter(((props) => {
       api: 'hadm/api-overview',
       'api-test': 'hadm/api-test',
     };
-    // eslint-disable-next-line no-underscore-dangle
-    window.open(`${window._env_.HZERO_FRONT || process.env.HZERO_FRONT}/${url[pageType]}`);
+    // eslint-disable-next-line no-underscore-dangle,camelcase
+    const access_token = getCookie('access_token', { path: '/' });
+    const tokenType = getCookie('token_type', { path: '/' });
+    // eslint-disable-next-line camelcase
+    window.open(`${window._env_.HZERO_FRONT || process.env.HZERO_FRONT}/${url[pageType]}#access_token=${access_token}&token_type=${tokenType}`);
   }
 
   return (

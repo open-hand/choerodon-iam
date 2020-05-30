@@ -235,8 +235,16 @@ export default withRouter(observer((props) => {
     });
   }
 
+  function renderLoginName({ value }) {
+    return (
+      <Tooltip title={value}>
+        {value}
+      </Tooltip>
+    );
+  }
+
   function renderLocked({ value }) {
-    return value ? '锁定' : '';
+    return value ? '锁定' : '未锁定';
   }
   function rednerEnabled({ value }) {
     return <StatusTag name={value ? '启用' : '停用'} colorCode={value ? 'COMPLETED' : 'DEFAULT'} />;
@@ -373,7 +381,7 @@ export default withRouter(observer((props) => {
         <Table queryFields={getQueryFields()} queryFieldsLimit={3} labelLayout="float" pristine dataSet={dataSet}>
           <Column renderer={renderUserName} name="realName" />
           <Column renderer={renderAction} width={50} align="right" />
-          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" />
+          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" renderer={renderLoginName} />
           <Column renderer={rednerEnabled} name="enabled" align="left" />
           <Column minWidth={320} width={320} renderer={expandMoreColumn} className="org-user-roles" name="myRoles" />
           <Column renderer={renderSource} name="ldap" style={{ color: 'rgba(0, 0, 0, 0.65)' }} align="left" />

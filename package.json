@@ -12,6 +12,7 @@
     "@choerodon/master": "0.22.0-hzero"
   },
   "dependencies": {
+    "universal-cookie": "2.2.0",
     "choerodon-ui": "^0.8.x",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",

@@ -23,10 +23,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.OrganizationProjectVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -73,16 +70,15 @@ public class UserC7nController extends BaseController {
                 .orElseThrow(NotFoundException::new);
     }
 
-
-//    @Permission(permissionWithin = true)
-//    @ApiOperation(value = "获取组织注册信息")
-//    @GetMapping(value = "/registrant")
-//    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
-//            @RequestParam(value = "org_code") String orgCode) {
-//        return Optional.ofNullable(userService.queryRegistrantInfoAndAdmin(orgCode))
-//                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-//                .orElseThrow(NotFoundException::new);
-//    }
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "获取组织注册信息")
+    @GetMapping(value = "/registrant")
+    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
+            @RequestParam(value = "org_code") String orgCode) {
+        return Optional.ofNullable(userC7nService.queryRegistrantInfoAndAdmin(orgCode))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(NotFoundException::new);
+    }
 
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)

@@ -302,4 +302,6 @@ public interface UserC7nService {
     List<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(Long roleId, Long sourceId);
 
     List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId);
+
+    RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
 }

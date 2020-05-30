@@ -1,13 +1,14 @@
 package io.choerodon.iam.infra.utils;
 
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.infra.enums.TenantConfigEnum;
-import org.hzero.iam.domain.entity.TenantConfig;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import org.hzero.iam.saas.domain.entity.TenantConfig;
+
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 
 public class TenantConfigConvertUtils {
 

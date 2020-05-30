@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;

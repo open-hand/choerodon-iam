@@ -3,7 +3,8 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
-import org.hzero.iam.domain.entity.Tenant;
+
+import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;

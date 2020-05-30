@@ -3,8 +3,8 @@ package io.choerodon.iam.app.service.impl;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import org.hzero.iam.domain.entity.TenantConfig;
-import org.hzero.iam.domain.repository.TenantConfigRepository;
+import org.hzero.iam.saas.domain.entity.TenantConfig;
+import org.hzero.iam.saas.domain.repository.TenantConfigRepository;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -153,7 +153,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             MenuTreeQueryDTO menuTreeQueryDTO = new MenuTreeQueryDTO();
             menuTreeQueryDTO.setLabels(labels);
             menuTreeQueryDTO.setLang(finalLang);
-            menuTreeQueryDTO.setUnionLabel(false);
+            menuTreeQueryDTO.setUnionLabel(true);
             return menuRepository.selectRoleMenuTree(menuTreeQueryDTO);
         }
 

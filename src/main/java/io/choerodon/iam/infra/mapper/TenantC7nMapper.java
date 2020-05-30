@@ -1,13 +1,14 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.saas.domain.entity.Tenant;
+
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Tenant;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai

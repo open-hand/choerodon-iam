@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
 

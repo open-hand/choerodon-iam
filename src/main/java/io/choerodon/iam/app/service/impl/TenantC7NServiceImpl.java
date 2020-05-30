@@ -9,16 +9,17 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.TenantConfig;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.TenantConfigRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.IamTenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.saas.app.service.TenantService;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.entity.TenantConfig;
+import org.hzero.iam.saas.domain.repository.TenantConfigRepository;
+import org.hzero.iam.saas.domain.repository.TenantRepository;
+import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
@@ -92,8 +93,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private UserC7nService userC7nService;
     @Autowired
     TenantConfigC7nMapper tenantConfigMapper;
+    @Autowired
+    private IamTenantRepository iamTenantRepository;
 
-    private TenantConfigC7nMapper tenantConfigC7nMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -374,7 +376,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
         Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
         Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
-        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
+        List<TenantDTO> tenantDTOS = iamTenantRepository.selectSelfTenants(params);
         // 过滤hzero平台组织
         if (CollectionUtils.isEmpty(tenantDTOS)) {
             return new ArrayList<>();

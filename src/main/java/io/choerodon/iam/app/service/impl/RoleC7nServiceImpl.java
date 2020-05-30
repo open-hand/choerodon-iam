@@ -145,8 +145,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, String roleCode, Boolean onlySelectEnable) {
-        return roleC7nMapper.listRolesByName(organizationId, roleName, roleCode, onlySelectEnable);
+    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, String roleCode, String labelName, Boolean onlySelectEnable) {
+        return roleC7nMapper.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable);
     }
 
     @Override

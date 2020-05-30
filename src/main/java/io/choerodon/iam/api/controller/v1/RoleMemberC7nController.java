@@ -347,13 +347,4 @@ public class RoleMemberC7nController extends BaseController {
             @PathVariable(name = "organization_id") Long sourceId) {
         return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnOrganizationLevel(roleId, sourceId), HttpStatus.OK);
     }
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "项目层查询角色下的用户")
-    @CustomPageRequest
-    @PostMapping(value = "/projects/{project_id}/role_members/users")
-    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
-            @RequestParam(name = "role_id") Long roleId,
-            @PathVariable(name = "project_id") Long sourceId) {
-        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnProjectLevel(roleId, sourceId), HttpStatus.OK);
-    }
 }

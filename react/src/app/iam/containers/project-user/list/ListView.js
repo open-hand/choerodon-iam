@@ -146,7 +146,12 @@ export default function ListView(props) {
     ) : null;
     return (
       <Fragment>
-        <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+        <Permission
+          service={['choerodon.code.project.cooperation.team-member.ps.update']}
+          defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+        >
+          <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+        </Permission>
         {label}
         {programLabel}
       </Fragment>

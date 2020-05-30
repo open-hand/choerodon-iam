@@ -245,7 +245,10 @@ export default withRouter(observer((props) => {
     if (record.get('organizationId').toString() !== organizationId) {
       return (
         <span>
-          <Permission service={[]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
+          <Permission
+            service={['choerodon.code.organization.manager.user.ps.update']}
+            defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+          >
             <span onClick={() => handleUserRole(record)} className="link">{value}</span>
           </Permission>
           <div className="org-user-external-user">

@@ -1,16 +1,16 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.vo.SimplifiedUserVO;
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.RoleC7nDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
+import java.sql.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
-import java.sql.Date;
-import java.util.List;
-import java.util.Set;
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 
 /**
@@ -384,5 +384,13 @@ public interface UserC7nMapper {
      */
     List<User> listUsersByRealNames(@Param("realNames") Set<String> realNames,
                                     @Param("onlyEnabled") Boolean onlyEnabled);
+
+    List<UserDTO> listSiteUsersByRoleId(@Param("roleId") Long roleId);
+
+    List<UserDTO> listOrgUsersByRoleId(@Param("roleId") Long roleId,
+                                       @Param("tenantId") Long tenantId);
+
+    List<UserDTO> listProjectUsersByRoleId(@Param("roleId") Long roleId,
+                                           @Param("projectId") Long projectId);
 }
 

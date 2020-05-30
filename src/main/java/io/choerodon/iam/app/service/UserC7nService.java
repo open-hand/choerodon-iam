@@ -296,4 +296,10 @@ public interface UserC7nService {
     void switchSite();
 
     List<User> listUsersByRealNames(Set<String> realNames, Boolean onlyEnabled);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(Long roleId);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(Long roleId, Long sourceId);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId);
 }

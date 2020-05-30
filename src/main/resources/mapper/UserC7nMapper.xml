@@ -1212,4 +1212,28 @@
         AND hlr.data_type = 'ROLE'
         AND il.name = #{labelName}
     </select>
+
+    <select id="listSiteUsersByRoleId" resultMap="userWithRolesMap">
+        SELECT iu.*
+        FROM iam_role ir
+        INNER JOIN iam_member_role imr ON imr.role_id = ir.id
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE imr.member_type = 'user' AND imr.source_id = 0 AND imr.source_type = 'site' and ir.id = #{roleId}
+    </select>
+    <select id="listOrgUsersByRoleId" resultMap="userWithRolesMap">
+        SELECT *
+        FROM iam_role ir
+        INNER JOIN iam_member_role imr ON imr.role_id = ir.id
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE imr.member_type = 'user' AND imr.source_id = #{tenantId} AND imr.source_type = 'organization' AND ir.id = #{roleId}
+
+    </select>
+    <select id="listProjectUsersByRoleId" resultMap="userWithRolesMap">
+        SELECT *
+        FROM iam_role ir
+        INNER JOIN iam_member_role imr ON imr.role_id = ir.id
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND ir.id = #{roleId} and fpu.PROJECT_ID = #{projectId}
+    </select>
 </mapper>

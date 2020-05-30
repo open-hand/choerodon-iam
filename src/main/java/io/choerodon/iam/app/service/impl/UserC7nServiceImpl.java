@@ -1117,4 +1117,20 @@ public class UserC7nServiceImpl implements UserC7nService {
             return userC7nMapper.listUsersByRealNames(realNames, onlyEnabled);
         }
     }
+
+    @Override
+    public List<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(Long roleId) {
+        return userC7nMapper.listSiteUsersByRoleId(roleId);
+    }
+
+    @Override
+    public List<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(Long roleId, Long sourceId) {
+
+        return userC7nMapper.listOrgUsersByRoleId(roleId, sourceId);
+    }
+
+    @Override
+    public List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId) {
+        return userC7nMapper.listProjectUsersByRoleId(roleId, sourceId);
+    }
 }

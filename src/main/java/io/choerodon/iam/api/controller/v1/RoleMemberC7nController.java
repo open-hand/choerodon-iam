@@ -326,4 +326,34 @@ public class RoleMemberC7nController extends BaseController {
         roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
         return ResponseEntity.noContent().build();
     }
+    /**
+     * 根据角色Id分页查询该角色被分配的用户
+     *
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询角色下的用户")
+    @PostMapping(value = "/site/role_members/users")
+    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
+            @RequestParam(name = "role_id") Long roleId) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnSiteLevel(roleId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色下的用户")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users")
+    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnOrganizationLevel(roleId, sourceId), HttpStatus.OK);
+    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层查询角色下的用户")
+    @CustomPageRequest
+    @PostMapping(value = "/projects/{project_id}/role_members/users")
+    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "project_id") Long sourceId) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnProjectLevel(roleId, sourceId), HttpStatus.OK);
+    }
 }

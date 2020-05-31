@@ -213,4 +213,18 @@
         SELECT ht.tenant_id AS id, ht.tenant_name AS `name`
         FROM hpfm_tenant ht
     </select>
+    <select id="listVisibleTentant" resultType="org.hzero.iam.api.dto.TenantDTO">
+        SELECT ht.*
+        FROM iam_member_role imr
+        INNER JOIN hpfm_tenant ht ON ht.tenant_id = imr.source_id
+        <where>
+            imr.member_type = 'user' AND imr.member_id = #{params.userId} AND imr.source_type = 'organization'
+            <if test="params.tenantName != null">
+                 AND ht.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')
+            </if>
+            <if test="params.tenantNum != null">
+                 AND ht.tenant_num LIKE concat(concat('%', #{param1.tenantNum}), '%')
+            </if>
+        </where>
+    </select>
 </mapper>

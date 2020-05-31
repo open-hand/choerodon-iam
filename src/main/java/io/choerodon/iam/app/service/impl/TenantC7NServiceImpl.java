@@ -376,7 +376,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
         Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
         Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
-        List<TenantDTO> tenantDTOS = iamTenantRepository.selectSelfTenants(params);
+        List<TenantDTO> tenantDTOS = tenantC7nMapper.listVisibleTentant(params);
         // 过滤hzero平台组织
         if (CollectionUtils.isEmpty(tenantDTOS)) {
             return new ArrayList<>();

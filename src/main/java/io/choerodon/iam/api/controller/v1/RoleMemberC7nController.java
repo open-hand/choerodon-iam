@@ -180,7 +180,7 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                       @RequestParam(name = "role_name", required = false) String roleName,
                                                                       @RequestParam(name = "role_code", required = false) String roleCode,
-                                                                      @RequestParam(name = "label_name") String labelName,
+                                                                      @RequestParam(name = "label_name", required = false) String labelName,
                                                                       @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                               Boolean onlySelectEnable) {
         return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable), HttpStatus.OK);

@@ -126,6 +126,7 @@
         fp.code,
         fp.organization_id,
         fo.tenant_name AS organization_name,
+        fo.tenant_num AS organization_code,
         fp.is_enabled,
         ir.id AS role_id,
         ir.name AS role_name,

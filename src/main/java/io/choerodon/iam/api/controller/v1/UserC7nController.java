@@ -100,6 +100,7 @@ public class UserC7nController extends BaseController {
         user.setLdap(queryInfo.getLdap());
         user.setOrganizationId(queryInfo.getOrganizationId());
         user.setLoginName(queryInfo.getLoginName());
+        user.setLocked(queryInfo.getLocked());
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 

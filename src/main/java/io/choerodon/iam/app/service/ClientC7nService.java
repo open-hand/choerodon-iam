@@ -1,13 +1,13 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
-import org.hzero.iam.domain.entity.Client;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.domain.entity.Client;
+
+import java.util.List;
 
 
 /**
@@ -23,7 +23,6 @@ public interface ClientC7nService {
     Client queryByName(Long orgId, String clientName);
 
     /**
-     *
      * @param pageRequest
      * @param resourceType
      * @param sourceId
@@ -47,4 +46,5 @@ public interface ClientC7nService {
      */
     void assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
 
+    ClientVO create(ClientVO clientVO);
 }

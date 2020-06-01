@@ -310,7 +310,7 @@
         group by ir.id
     </select>
     <select id="listByLabelNames" resultMap="RoleMap">
-        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/  >
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE" />
         SELECT ir.*
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id

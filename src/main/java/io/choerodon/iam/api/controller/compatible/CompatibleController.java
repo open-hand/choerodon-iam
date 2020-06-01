@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.controller.compatible;
 
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -17,6 +18,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -31,6 +33,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author zmf
  * @since 2020/6/1
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_COMPATIBLE)
 @RestController
 public class CompatibleController {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompatibleController.class);

@@ -1152,13 +1152,11 @@
             ELSE
             iu.email
             end as login_name
-            FROM iam_member_role imr
+            FROM iam_user iu
+            LEFT JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.source_id = #{organizationId} AND imr.source_type = 'organization'
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
-            LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
-            LEFT JOIN iam_label il ON il.id = hlr.label_id
-            INNER JOIN iam_user iu ON iu.id = imr.member_id
             <where>
-                imr.source_id = #{organizationId} AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
+                iu.organization_id = #{organizationId,jdbcType=BIGINT}
                 <if test="roleName != null">
                     AND ir.name LIKE concat(concat('%',#{roleName}),'%')
                 </if>
@@ -1176,13 +1174,12 @@
         ) iut
         <where>
             <if test="loginName != null">
-                AND iut.login_name LIKE concat(concat('%',#{loginName},'%')
+                AND iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="params != null">
                 and (
                 iut.login_name LIKE concat(concat('%',#{params}),'%') OR
-                iut.real_name LIKE concat(concat('%',#{params}),'%') OR
-                ir.name LIKE concat(concat('%',#{params}),'%')
+                iut.real_name LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>

@@ -166,14 +166,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User createUserWithRoles(Long fromUserId, User user) {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
         List<Role> userRoles = user.getRoles();
-        // 将role转为memberRole， memberId不用给
-        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
-
         // 允许邮箱和手机号登录
         user.setEmailCheckFlag(BaseConstants.Flag.YES);
         user.setPhoneCheckFlag(BaseConstants.Flag.YES);
 
+        List<Role> roles = user.getRoles();
+        user.setRoles(null);
         User result = userService.createUserInternal(user);
+        if (!CollectionUtils.isEmpty(roles)) {
+            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
+        }
         if (devopsMessage) {
             sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         }
@@ -191,18 +193,19 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userAssertHelper.emailExisted(user.getEmail());
         user.setLoginName(randomInfoGenerator.randomLoginName());
         List<Role> userRoles = user.getRoles();
+        // 避免hzero-iam又处理了
+        user.setRoles(null);
         // 将role转为memberRole， memberId不用给
-        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
-        if (devopsMessage) {
-            user = userService.createUserInternal(user);
-            sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
-        } else {
-            user = userService.createUser(user);
+        user = userService.createUserInternal(user);
+        if (!CollectionUtils.isEmpty(userRoles)) {
+            // hzero-iam未处理角色分配, 这块加上
+            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), user.getRoles()));
         }
+         sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         return user;
     }
 
-    private List<MemberRole> role2MemberRole(Long organizationId, List<Role> roles) {
+    private List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
         return roles.stream().map(role -> {
                     MemberRole memberRole = new MemberRole();
                     memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
@@ -210,6 +213,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
                     memberRole.setSourceId(organizationId);
                     memberRole.setRoleId(role.getId());
+                    memberRole.setMemberId(userId);
                     memberRole.setMemberType(HiamMemberType.USER.value());
                     return memberRole;
                 }

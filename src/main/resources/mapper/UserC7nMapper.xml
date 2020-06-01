@@ -1156,7 +1156,7 @@
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
             LEFT JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
             LEFT JOIN iam_label il ON il.id = hlr.label_id
-            LEFT JOIN iam_user iu ON iu.id = imr.member_id
+            INNER JOIN iam_user iu ON iu.id = imr.member_id
             <where>
                 imr.source_id = #{organizationId} AND imr.source_type = 'organization' AND il.name = 'TENANT_ROLE'
                 <if test="roleName != null">

@@ -1,13 +1,14 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.vo.UserRoleVO;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.UserRoleVO;
 
 /**
  * @author scp
@@ -86,4 +87,7 @@ public interface RoleC7nMapper {
 
     List<Role> listProjectRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                    @Param("userId") Long userId);
+
+    List<Role> listByLabelNames(@Param("tenantId") Long tenantId,
+                                @Param("labelName") String labelName);
 }

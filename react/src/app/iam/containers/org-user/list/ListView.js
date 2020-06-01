@@ -257,13 +257,15 @@ export default withRouter(observer((props) => {
             service={['choerodon.code.organization.manager.user.ps.update']}
             defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
           >
-            <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+            <React.Fragment>
+              <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+              <div className="org-user-external-user">
+                <span className="org-user-external-user-text">
+                  外部人员
+                </span>
+              </div>
+            </React.Fragment>
           </Permission>
-          <div className="org-user-external-user">
-            <span className="org-user-external-user-text">
-              外部人员
-            </span>
-          </div>
         </span>
       );
     }

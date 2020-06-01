@@ -1,9 +1,12 @@
 package io.choerodon.iam.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.choerodon.iam.infra.utils.StringUtil;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Objects;
 
 /**
@@ -19,6 +22,20 @@ public class TimeZoneWorkCalendarRefCreateVO extends AuditDomain {
 
     @ApiModelProperty(value = "状态，0为放假，1为补班")
     private Integer status;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Transient
+    @XmlTransient
+    private String __status;
+
+    public String get__status() {
+        return __status;
+    }
+
+    public TimeZoneWorkCalendarRefCreateVO set__status(String __status) {
+        this.__status = __status;
+        return this;
+    }
 
     public Long getCalendarId() {
         return calendarId;

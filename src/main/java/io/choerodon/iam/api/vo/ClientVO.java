@@ -1,15 +1,15 @@
 package io.choerodon.iam.api.vo;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import io.swagger.annotations.ApiModelProperty;
-
 /**
- * wanghao
+ * @author wanghao
  */
 public class ClientVO {
 
@@ -57,6 +57,9 @@ public class ClientVO {
 
     @ApiModelProperty(value = "自动授权域/非必填")
     private String autoApprove;
+
+    @ApiModelProperty(value = "授权角色")
+    private String accessRoles;
 
     @ApiModelProperty(value = "资源id")
     @NotNull(message = "error.sourceId.null")
@@ -177,5 +180,14 @@ public class ClientVO {
 
     public Long getSourceId() {
         return sourceId;
+    }
+
+    public String getAccessRoles() {
+        return accessRoles;
+    }
+
+    public ClientVO setAccessRoles(String accessRoles) {
+        this.accessRoles = accessRoles;
+        return this;
     }
 }

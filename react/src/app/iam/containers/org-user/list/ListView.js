@@ -291,7 +291,7 @@ export default withRouter(observer((props) => {
     // 外部人员的处理
     if (record.get('organizationId').toString() !== organizationId) {
       actionDatas = [{
-        service: [],
+        service: ['choerodon.code.organization.manager.user.ps.delete'],
         text: '删除',
         action: () => handleDeleteUser(record),
       }];
@@ -312,7 +312,7 @@ export default withRouter(observer((props) => {
     }
     if (record.get('locked')) {
       actionDatas.push({
-        service: [],
+        service: ['choerodon.code.organization.manager.user.ps.unlock'],
         text: <FormattedMessage id={`${intlPrefix}.action.unlock`} />,
         action: () => handleUnLock(record),
       });

@@ -42,7 +42,7 @@ function PermissionInfo(props) {
   }
   // 缺少项目层
 
-  function getRedirectURL({ id, name, level, projName, organizationId }) {
+  function getRedirectURL({ id, name, level, projName, tenantId: organizationId }) {
     // console.log(MenuStore);
     switch (level) {
       case 'site':

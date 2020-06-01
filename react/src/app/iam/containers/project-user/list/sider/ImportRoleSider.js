@@ -34,6 +34,11 @@ export default observer(() => {
    *  application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 2010
    */
   function getUploadProps() {
+    const str = window.location.hash.split('?')[1];
+    const urlSearchParam = new URLSearchParams(str);
+    const type = urlSearchParam.get('type');
+    const orgId = urlSearchParam.get('organizationId');
+    const id = !type || type === 'site' ? 0 : orgId || 0;
     return {
       multiple: false,
       name: 'file',
@@ -42,6 +47,7 @@ export default observer(() => {
       action: projectId && `${window._env_.API_HOST || process.env.API_HOST}/iam/choerodon/v1/projects/${projectId}/role_members/batch_import`,
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
+        'H-Tenant-Id': id,
       },
       showUploadList: false,
       onChange: ({ file }) => {

@@ -5,7 +5,7 @@ export default ({ organizationId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/hmnt/choerodon/v1/${organizationId}/site/audit/operational/logs?size=8`,
+      url: `/hmnt/choerodon/v1/${organizationId}/organization/audit/operational/logs?size=8`,
       method: 'get',
       transformResponse: (data) => {
         const arr = JSON.parse(data);

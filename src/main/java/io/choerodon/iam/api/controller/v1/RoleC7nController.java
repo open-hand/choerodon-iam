@@ -1,7 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,4 +65,23 @@ public class RoleC7nController {
         return new ResponseEntity<>(roleC7nService.pagingSearch(pageRequest,tenantId, name, code, roleLevel, builtIn, enabled, params), HttpStatus.OK);
     }
 
+    /**
+     * 根据标签查询角色
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据标签查询角色")
+    @GetMapping(value = "/roles/search_by_label")
+    public ResponseEntity<List<Role>> listByLabelName(@RequestParam(value = "tenantId") Long tenantId,
+                                                       @RequestParam(value = "labelName") String labelName) {
+        return ResponseEntity.ok(roleC7nService.listByLabelNames(tenantId, labelName));
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据code查询平台层角色")
+    @GetMapping(value = "/roles/site/search_by_code")
+    public ResponseEntity<Role> getSiteRoleByCode(@RequestParam(value = "code") String code) {
+        return ResponseEntity.ok(roleC7nService.getSiteRoleByCode(code));
+    }
 }

@@ -1,15 +1,16 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Role;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Role;
-
-import java.util.List;
 
 
 /**
@@ -63,4 +64,8 @@ public interface RoleC7nService {
     List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
 
 
+    List<Role> listByLabelNames(Long tenantId, String labelName);
+
+
+    Role getSiteRoleByCode(String code);
 }

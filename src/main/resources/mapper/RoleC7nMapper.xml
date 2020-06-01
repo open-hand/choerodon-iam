@@ -309,4 +309,16 @@
         </where>
         group by ir.id
     </select>
+    <select id="listByLabelNames" resultMap="RoleMap">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/  >
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        <where>
+            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId}
+            AND il.type = 'ROLE'
+           AND il.name = #{labelName}
+         </where>
+    </select>
 </mapper>

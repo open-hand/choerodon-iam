@@ -196,8 +196,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         SecurityTokenHelper.clear();
 
 
-        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,labelNames);
-        Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
+        List<Menu> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,null);
+        Set<Long> psIds = rolePermissions.stream().map(Menu::getId).collect(Collectors.toSet());
         // 查询权限集
         Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());
         List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);

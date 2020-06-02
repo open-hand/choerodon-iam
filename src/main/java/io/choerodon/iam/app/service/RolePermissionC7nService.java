@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 
 /**
@@ -28,5 +29,5 @@ public interface RolePermissionC7nService {
      */
     void batchDelete(Long roleId, Set<Long> deletePermissionIds);
 
-    List<RolePermission> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames);
+    List<Menu> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames);
 }

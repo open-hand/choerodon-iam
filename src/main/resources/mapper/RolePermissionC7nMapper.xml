@@ -16,8 +16,8 @@
         <result property="type" column="type"/>
         <result property="type" column="type"/>
     </resultMap>
-    <select id="listRolePermissionByRoleIdAndLabels" resultMap="rolePermissionMap">
-        SELECT irp.*
+    <select id="listRolePermissionByRoleIdAndLabels" resultType="org.hzero.iam.domain.entity.Menu">
+        SELECT im.*
         FROM iam_role_permission irp
         JOIN iam_menu im ON im.id = irp.permission_id AND im.type = 'ps'
         <if test="labelNames != null and labelNames.size > 0">
@@ -34,5 +34,6 @@
                 </foreach>
             </if>
         </where>
+        GROUP BY im.id
     </select>
 </mapper>

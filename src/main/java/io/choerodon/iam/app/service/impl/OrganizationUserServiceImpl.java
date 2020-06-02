@@ -1,12 +1,32 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -34,31 +54,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.constant.MessageCodeConstants;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -199,24 +198,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             // hzero-iam未处理角色分配, 这块加上
             memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), user.getRoles()));
         }
-         sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
+        sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         return user;
-    }
-
-    private List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
-        return roles.stream().map(role -> {
-                    MemberRole memberRole = new MemberRole();
-                    memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-                    memberRole.setAssignLevelValue(organizationId);
-                    memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
-                    memberRole.setSourceId(organizationId);
-                    memberRole.setRoleId(role.getId());
-                    memberRole.setMemberId(userId);
-                    memberRole.setMemberType(HiamMemberType.USER.value());
-                    return memberRole;
-                }
-        ).collect(Collectors.toList());
-
     }
 
     @Override
@@ -544,5 +527,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         .withSourceId(organizationId),
                 builder -> {
                 });
+    }
+
+    public static List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
+        return roles.stream().map(role -> {
+                    MemberRole memberRole = new MemberRole();
+                    memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setAssignLevelValue(organizationId);
+                    memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setSourceId(organizationId);
+                    memberRole.setRoleId(role.getId());
+                    memberRole.setMemberId(userId);
+                    memberRole.setMemberType(HiamMemberType.USER.value());
+                    return memberRole;
+                }
+        ).collect(Collectors.toList());
     }
 }

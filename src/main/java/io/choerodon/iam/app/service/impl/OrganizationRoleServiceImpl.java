@@ -11,6 +11,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.constant.HiamMenuType;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.LabelRelMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
@@ -92,6 +93,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         } else if (ResourceLevel.ORGANIZATION.value().equals(roleVO.getRoleLevel())) {
             Label label = labelC7nService.selectByName(RoleLabelEnum.TENANT_ROLE.value());
             roleVO.getRoleLabels().add(label);
+
         }
         // 创建角色
         CustomUserDetails details = UserUtils.getUserDetails();
@@ -99,6 +101,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         adminUser.setId(details.getUserId());
         roleVO.setTenantId(organizationId);
         Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
+
 
         // 分配权限集
         // 默认分配个人信息权限集
@@ -185,7 +188,12 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             }
         }
         SecurityTokenHelper.close();
-        List<Menu> menus = menuC7nService.listMenuByLabelAndType(labelNames, null);
+        Set<String> typeNames = new HashSet<>();
+        typeNames.add(HiamMenuType.ROOT.value());
+        typeNames.add(HiamMenuType.DIR.value());
+        typeNames.add(HiamMenuType.MENU.value());
+        typeNames.add(HiamMenuType.PS.value());
+        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
         SecurityTokenHelper.clear();
 
         List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,labelNames);

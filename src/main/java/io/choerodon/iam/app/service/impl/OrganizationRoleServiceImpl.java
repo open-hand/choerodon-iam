@@ -192,19 +192,24 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         typeNames.add(HiamMenuType.ROOT.value());
         typeNames.add(HiamMenuType.DIR.value());
         typeNames.add(HiamMenuType.MENU.value());
-        typeNames.add(HiamMenuType.PS.value());
         List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
         SecurityTokenHelper.clear();
 
+
         List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,labelNames);
         Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-        menus.stream().filter(menu -> "ps".equals(menu.getType())).forEach(ps -> {
+        // 查询权限集
+        Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());
+        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        permissionSetList.forEach(ps -> {
             if (psIds.contains(ps.getId())) {
                 ps.setCheckedFlag("Y");
             } else {
                 ps.setCheckedFlag("N");
             }
         });
+        menus.addAll(permissionSetList);
+
         roleVO.setMenuList(menus);
         return roleVO;
     }

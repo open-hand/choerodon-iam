@@ -392,5 +392,7 @@ public interface UserC7nMapper {
 
     List<UserDTO> listProjectUsersByRoleId(@Param("roleId") Long roleId,
                                            @Param("projectId") Long projectId);
+
+    UserDTO queryPersonalInfo(@Param("userId") Long userId);
 }
 

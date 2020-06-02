@@ -69,6 +69,14 @@
         <result property="imageUrl" column="image_url"/>
         <result property="email" column="email"/>
     </resultMap>
+    <resultMap id="UserDTOMap" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true">
+          <result property="enabled" column="is_enabled"/>
+            <result property="locked" column="is_locked"/>
+            <result property="email" column="email"/>
+            <result property="ldap" column="is_ldap"/>
+            <result property="organizationName" column="tenant_name"/>
+            <result property="organizationCode" column="tenant_num"/>
+    </resultMap>
 
     <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
         SELECT *,is_ldap as ldap
@@ -1231,5 +1239,11 @@
         INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND ir.id = #{roleId} and fpu.PROJECT_ID = #{projectId}
+    </select>
+    <select id="queryPersonalInfo" resultMap="UserDTOMap">
+        SELECT iu.*, ht.tenant_name, ht.tenant_num
+        FROM iam_user iu
+        LEFT JOIN hpfm_tenant ht ON iu.organization_id = ht.tenant_id
+        WHERE iu.id = #{userId}
     </select>
 </mapper>

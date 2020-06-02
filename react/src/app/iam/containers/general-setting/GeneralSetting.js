@@ -14,6 +14,7 @@ const GeneralSetting = observer(() => {
   const { store, AppState, intl: { formatMessage }, intlPrefix, prefixCls, history } = useContext(GeneralSettingContext);
   const [editing, setEditing] = useState(false);
   const [categoryEnabled, setCategoryEnabled] = useState(false);
+  const [isOPERATIONS, setIsOPERATIONS] = useState(false);
   const { id: projectId, name: projectName, organizationId } = AppState.currentMenuType;
   const loadEnableCategory = () => {
     axios.get('/iam/choerodon/v1/system/setting/enable_category')
@@ -42,6 +43,10 @@ const GeneralSetting = observer(() => {
   };
 
   useEffect(() => {
+    const pattern = new URLSearchParams(window.location.hash);
+    if (pattern.get('category') === 'OPERATIONS') {
+      setIsOPERATIONS(true);
+    }
     loadEnableCategory();
     loadProject();
     loadProjectTypes();
@@ -179,22 +184,28 @@ const GeneralSetting = observer(() => {
               </div>
             </section>
           </div>
-          <Divider />
-          <section className={`${prefixCls}-section`}>
-            <div className={`${prefixCls}-section-title`}>
-              {formatMessage({ id: `${intlPrefix}.otherSetting` })}
-            </div>
-            <div className={`${prefixCls}-section-content`}>
-              <div className={`${prefixCls}-section-item`}>
-                <div className={`${prefixCls}-section-item-title`}>
-                  {formatMessage({ id: `${intlPrefix}.agile.prefix` })}
-                </div>
-                <div className={`${prefixCls}-section-item-content`}>
-                  {agileProjectCode}
-                </div>
-              </div>
-            </div>
-          </section>
+          {
+            !isOPERATIONS && (
+              <React.Fragment>
+                <Divider />
+                <section className={`${prefixCls}-section`}>
+                  <div className={`${prefixCls}-section-title`}>
+                    {formatMessage({ id: `${intlPrefix}.otherSetting` })}
+                  </div>
+                  <div className={`${prefixCls}-section-content`}>
+                    <div className={`${prefixCls}-section-item`}>
+                      <div className={`${prefixCls}-section-item-title`}>
+                        {formatMessage({ id: `${intlPrefix}.agile.prefix` })}
+                      </div>
+                      <div className={`${prefixCls}-section-item-content`}>
+                        {agileProjectCode}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </React.Fragment>
+            )
+          }
         </div>
         <Edit
           visible={editing}

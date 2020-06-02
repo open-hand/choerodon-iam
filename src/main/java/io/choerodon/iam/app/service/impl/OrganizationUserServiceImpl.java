@@ -15,6 +15,7 @@ import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
@@ -530,6 +531,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     public static List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         return roles.stream().map(role -> {
                     MemberRole memberRole = new MemberRole();
                     memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
@@ -539,6 +542,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     memberRole.setRoleId(role.getId());
                     memberRole.setMemberId(userId);
                     memberRole.setMemberType(HiamMemberType.USER.value());
+                    memberRole.setAdditionalParams(additionalParams);
                     return memberRole;
                 }
         ).collect(Collectors.toList());

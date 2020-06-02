@@ -99,7 +99,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         Set<String> labels = new HashSet<>();
         if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.TENANT_MENU.value());
-            labels.add(MenuLabelEnum.KNOWLEDGE_MENU.value());
+            labels.add(MenuLabelEnum.TENANT_GENERAL.value());
         }
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.GENERAL_MENU.value());
@@ -109,12 +109,16 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         }
 //        menuParams.setLabels(labels);
         SecurityTokenHelper.close();
-        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labels, null);
+        Set<String> typeNames = new HashSet<>();
+        typeNames.add(MenuType.ROOT.value());
+        typeNames.add(MenuType.MENU.value());
+        typeNames.add(MenuType.DIR.value());
+        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labels, typeNames);
         SecurityTokenHelper.clear();
 
-//        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
-//        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
-//        menus.addAll(permissionSetList);
+        Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());
+        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        menus.addAll(permissionSetList);
 
         return menus;
 
@@ -172,8 +176,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
     @Override
     public List<Menu> listMenuByLabelAndType(Set<String> labelNames, String type) {
-
-        return menuC7nMapper.listMenuByLabelAndType(labelNames, type);
+        Set<String> typeNames = new HashSet<>();
+        typeNames.add(type);
+        return menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
     }
 
 
@@ -197,7 +202,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         if (ResourceLevel.USER.value().equals(code)) {
             labelNames.add(MenuLabelEnum.USER_MENU.value());
         }
-        return menuC7nMapper.listMenuByLabelAndType(labelNames, MenuType.MENU.value());
+        Set<String> typeNames = new HashSet<>();
+        typeNames.add(MenuType.MENU.value());
+        return menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
     }
 
     @Override

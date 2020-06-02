@@ -95,6 +95,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     TenantConfigC7nMapper tenantConfigMapper;
     @Autowired
     private IamTenantRepository iamTenantRepository;
+    @Autowired
+    private MemberRoleC7nMapper memberRoleC7nMapper;
 
 
     @Override
@@ -404,6 +406,15 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     tenantVO.setInto(true);
                 }
             });
+            // 有菜单的角色也能访问
+            Set<Long> hasMenuOrg = roleC7nMapper.listOrgByUserIdAndTenantIds(userId, orgIds);
+            hasMenuOrg.forEach(orgId -> {
+                TenantVO tenantVO = tenantVOMap.get(orgId);
+                if (tenantVO != null) {
+                    tenantVO.setInto(true);
+                }
+            });
+
         }
         return tenantVOS;
     }

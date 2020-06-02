@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -90,4 +91,7 @@ public interface RoleC7nMapper {
 
     List<Role> listByLabelNames(@Param("tenantId") Long tenantId,
                                 @Param("labelName") String labelName);
+
+    Set<Long> listOrgByUserIdAndTenantIds(@Param("userId") Long userId,
+                                          @Param("orgIds") Set<Long> orgIds);
 }

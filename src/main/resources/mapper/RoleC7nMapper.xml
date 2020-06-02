@@ -329,4 +329,19 @@
            AND il.name = #{labelName}
          </where>
     </select>
+    <select id="listOrgByUserIdAndTenantIds" resultType="java.lang.Long">
+          SELECT imr.source_id
+          FROM iam_member_role imr
+          INNER JOIN iam_role_permission irp ON imr.role_id = irp.role_id
+          INNER JOIN iam_menu im ON im.id = irp.permission_id
+          INNER JOIN hiam_label_rel hlr ON (hlr.data_type = 'MENU' AND hlr.data_id = im.id)
+          INNER JOIN iam_label il ON il.id = hlr.label_id
+          WHERE il.name = 'TENANT_MENU' AND imr.member_type = 'user' AND imr.member_id = #{userId}
+          AND imr.source_type = 'organization' AND imr.source_id IN
+          <foreach collection="orgIds" item="orgId" open="(" close=")" separator=",">
+              #{orgId}
+          </foreach>
+          GROUP BY imr.source_id
+    </select>
+
 </mapper>

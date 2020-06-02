@@ -193,7 +193,7 @@
             group by fp.id
 
         </if>
-        )
+        ) user_role
         ORDER BY sort asc
     </select>
 

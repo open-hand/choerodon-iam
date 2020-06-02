@@ -84,7 +84,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
         List<RoleC7nDTO> roleDTOList = new ArrayList<>();
 
-        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
+        Page<UserRoleVO> result = PageHelper.doPage(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);

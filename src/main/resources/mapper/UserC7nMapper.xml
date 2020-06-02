@@ -1163,7 +1163,8 @@
             LEFT JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.source_id = #{organizationId} AND imr.source_type = 'organization'
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
             <where>
-                iu.organization_id = #{organizationId,jdbcType=BIGINT}
+                iu.organization_id = #{organizationId}
+                OR (imr.id IS NOT NULL)
                 <if test="roleName != null">
                     AND ir.name LIKE concat(concat('%',#{roleName}),'%')
                 </if>

@@ -14,9 +14,10 @@ const GeneralSetting = observer(() => {
   const { store, AppState, intl: { formatMessage }, intlPrefix, prefixCls, history } = useContext(GeneralSettingContext);
   const [editing, setEditing] = useState(false);
   const [categoryEnabled, setCategoryEnabled] = useState(false);
+  const [isOPERATIONS, setIsOPERATIONS] = useState(false);
   const { id: projectId, name: projectName, organizationId } = AppState.currentMenuType;
   const loadEnableCategory = () => {
-    axios.get('/base/v1/system/setting/enable_category')
+    axios.get('/iam/choerodon/v1/system/setting/enable_category')
       .then((response) => {
         setCategoryEnabled(response);
       });
@@ -42,6 +43,10 @@ const GeneralSetting = observer(() => {
   };
 
   useEffect(() => {
+    const pattern = new URLSearchParams(window.location.hash);
+    if (pattern.get('category') === 'OPERATIONS') {
+      setIsOPERATIONS(true);
+    }
     loadEnableCategory();
     loadProject();
     loadProjectTypes();
@@ -66,7 +71,7 @@ const GeneralSetting = observer(() => {
       content: formatMessage({ id: 'project.info.disable.content' }, { name: projectName }),
       onOk: async () => {
         try {
-          const result = await axios.put(`/base/v1/organizations/${organizationId}/projects/${projectId}/disable`);
+          const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
           if (result.failed) {
             throw result.message;
           } else {
@@ -86,15 +91,12 @@ const GeneralSetting = observer(() => {
   return (
     <Page
       service={[
-        'base-service.project.query',
-        'base-service.project.update',
-        'base-service.project.disableProject',
-        'base-service.project.list',
+        'choerodon.code.project.setting.general-setting.ps.info',
       ]}
     >
       <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
 
-        <Permission service={['base-service.project.update']}>
+        <Permission service={['choerodon.code.project.setting.general-setting.ps.update']}>
           <Button
             icon="mode_edit"
             onClick={handleEditClick}
@@ -102,7 +104,7 @@ const GeneralSetting = observer(() => {
             <FormattedMessage id="modify" />
           </Button>
         </Permission>
-        <Permission service={['base-service.project.disableProject']}>
+        <Permission service={['choerodon.code.project.setting.general-setting.ps.disable']}>
           <Button
             icon="remove_circle_outline"
             onClick={handleDisable}
@@ -138,7 +140,7 @@ const GeneralSetting = observer(() => {
                     {formatMessage({ id: `${intlPrefix}.category` })}
                   </div>
                   <div className={`${prefixCls}-section-item-content`}>
-                    {categories.map(c => c.name).join(',')}
+                    {(categories || []).map(c => c.name).join(',')}
                   </div>
                 </div>
                 <div className={`${prefixCls}-section-item`}>
@@ -171,7 +173,7 @@ const GeneralSetting = observer(() => {
                         className="c7n-iam-generalsetting-avatar-wrap"
                         style={{
                           backgroundColor: '#c5cbe8',
-                          backgroundImage: imageUrl ? `url(${Choerodon.fileServer(imageUrl)})` : '',
+                          backgroundImage: imageUrl ? `url('${Choerodon.fileServer(imageUrl)}')` : '',
                         }}
                       >
                         {!imageUrl && name && name.charAt(0)}
@@ -182,26 +184,32 @@ const GeneralSetting = observer(() => {
               </div>
             </section>
           </div>
-          <Divider />
-          <section className={`${prefixCls}-section`}>
-            <div className={`${prefixCls}-section-title`}>
-              {formatMessage({ id: `${intlPrefix}.otherSetting` })}
-            </div>
-            <div className={`${prefixCls}-section-content`}>
-              <div className={`${prefixCls}-section-item`}>
-                <div className={`${prefixCls}-section-item-title`}>
-                  {formatMessage({ id: `${intlPrefix}.agile.prefix` })}
-                </div>
-                <div className={`${prefixCls}-section-item-content`}>
-                  {agileProjectCode}
-                </div>
-              </div>
-            </div>
-          </section>
+          {
+            !isOPERATIONS && (
+              <React.Fragment>
+                <Divider />
+                <section className={`${prefixCls}-section`}>
+                  <div className={`${prefixCls}-section-title`}>
+                    {formatMessage({ id: `${intlPrefix}.otherSetting` })}
+                  </div>
+                  <div className={`${prefixCls}-section-content`}>
+                    <div className={`${prefixCls}-section-item`}>
+                      <div className={`${prefixCls}-section-item-title`}>
+                        {formatMessage({ id: `${intlPrefix}.agile.prefix` })}
+                      </div>
+                      <div className={`${prefixCls}-section-item-content`}>
+                        {agileProjectCode}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </React.Fragment>
+            )
+          }
         </div>
         <Edit
           visible={editing}
-          onCancel={handleCancel} 
+          onCancel={handleCancel}
           categoryEnabled={categoryEnabled}
         />
       </Content>

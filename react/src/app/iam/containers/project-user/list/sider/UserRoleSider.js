@@ -35,9 +35,9 @@ export default observer((props) => {
   const handleDeleteRoleRecord = async (isDelete) => {
     if (isDelete) {
       const requestData = current.toJSONData();
-      requestData.roles = requestData.roles.filter((v) => v).map((v) => ({ id: v }));
+      requestData.roles = requestData.roles.filter((v) => v);
       // if (requestData.roles.length === 0) return false;
-      const result = await axios.put(`/base/v1/projects/${projectId}/users/${current.toData().id}/assign_roles`, requestData.roles);
+      const result = await axios.put(`/iam/choerodon/v1/projects/${projectId}/users/${current.toData().id}/assign_roles`, requestData.roles);
       if (!result.failed) {
         await orgUserRoleDataSet.reset();
         await onOk();

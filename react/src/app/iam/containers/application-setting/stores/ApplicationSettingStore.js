@@ -13,7 +13,7 @@ class ApplicationSettingStore {
   @computed get getImageUrl() {
     return this.imageUrl;
   }
-  
+
   @action setApplicationInfo(data) {
     this.projectInfo = data;
   }
@@ -23,11 +23,11 @@ class ApplicationSettingStore {
   }
 
   axiosGetApplicationInfo(id) {
-    return axios.get(`/base/v1/projects/${id}/applications/singleton`);
+    return axios.get(`/iam/choerodon/v1/projects/${id}/applications/singleton`);
   }
 
   axiosSaveApplicationInfo(projectId, id, data) {
-    return axios.put(`/base/v1/projects/${projectId}/applications/${id}`, data);
+    return axios.put(`/iam/choerodon/v1/projects/${projectId}/applications/${id}`, data);
   }
 }
 

@@ -5,6 +5,7 @@ import { Modal as OldModal } from 'choerodon-ui';
 import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
 import { useContext } from 'react';
 import { FormattedMessage } from 'react-intl';
+import forEach from 'lodash/forEach';
 import Store from './store';
 import { StoreProvider } from './store';
 import EditRecord from './editRecord';
@@ -14,7 +15,7 @@ import EditRole from './editRole';
 const { Column } = Table;
 
 const Client = observer(() => {
-  const { clientDataSet, optionsDataSet, orgId } = useContext(Store);
+  const { clientDataSet, optionsDataSet, orgId, clientStore } = useContext(Store);
   const [editModal, setEditModal] = useState(false);
   const [createModal, setCreateModal] = useState(false);
   const [editRoleModal, setEditRoleModal] = useState(false);
@@ -23,7 +24,7 @@ const Client = observer(() => {
     setEditModal(true);
   }
   async function openCreateRecordModal() {
-    const initData = await axios.get(`/base/v1/organizations/${orgId}/clients/createInfo`);
+    const initData = await axios.get(`/iam/choerodon/v1/organizations/${orgId}/clients/createInfo`);
     initData.accessTokenValidity = 3600;
     initData.refreshTokenValidity = 3600;
     initData.autoApprove = 'default';
@@ -36,8 +37,15 @@ const Client = observer(() => {
   }
   async function openRoleManageModal(record) {
     clientDataSet.current = record;
-    const roleData = await axios.get(`/base/v1/organizations/${orgId}/clients/${record.get('id')}`);
-    await record.set('roles', roleData.roles.map(({ id }) => id));
+    const roleData = await axios.get(`/iam/v1/${orgId}/clients/${record.get('id')}`);
+    if (roleData) {
+      forEach(roleData, (value, key) => {
+        if (key !== 'authorizedGrantTypes' && (key !== 'scope' || value)) {
+          record.init(key, value);
+        }
+      });
+    }
+    await record.set('roles', roleData.memberRoleList || []);
     setEditRoleModal(true);
   }
   function handleRowClick(record) {
@@ -48,9 +56,10 @@ const Client = observer(() => {
       className: 'c7n-iam-confirm-modal',
       title: '确认删除客户端',
       content: `确认删除客户端"${record.get('name')}"吗？`,
+      maskClosable: false,
       onOk: async () => {
         try {
-          await axios.delete(`/base/v1/organizations/${orgId}/clients/${record.get('id')}`);
+          await axios.delete(`/iam/choerodon/v1/organizations/${orgId}/clients/${record.get('id')}`);
           await clientDataSet.query();
         } catch (err) {
           message.prompt(err);
@@ -64,11 +73,11 @@ const Client = observer(() => {
 
   function renderAction({ record }) {
     const actionDatas = [{
-      service: ['base-service.client.delete'],
+      service: ['choerodon.code.organization.setting.client.ps.delete'],
       text: <FormattedMessage id="organization.client.delete.title" />,
       action: () => handleDelete(record),
     }, {
-      service: ['base-service.client.update'],
+      service: ['choerodon.code.organization.setting.client.ps.role'],
       text: '角色分配',
       action: () => handleRoleClick(record),
     }];
@@ -79,7 +88,10 @@ const Client = observer(() => {
   }
   function renderName({ text, record }) {
     return (
-      <Permission service={['base-service.client.update']} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{text}</span>)}>
+      <Permission
+        service={['choerodon.code.organization.setting.client.ps.update']}
+        defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{text}</span>)}
+      >
         <span className="link" onClick={() => handleRowClick(record)}>
           {text}
         </span>
@@ -87,9 +99,9 @@ const Client = observer(() => {
     );
   }
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.organization.setting.client.ps.default']}>
       <Header>
-        <Permission service={['base-service.client.create']}>
+        <Permission service={['choerodon.code.organization.setting.client.ps.add']}>
           <Button color="blue" onClick={openCreateRecordModal}><Icon type="playlist_add" /> 添加客户端</Button>
         </Permission>
       </Header>
@@ -100,7 +112,7 @@ const Client = observer(() => {
           <Column width={50} renderer={renderAction} />
           <Column name="authorizedGrantTypes" width={500} />
         </Table>
-        {editModal && <EditRecord onOk={() => setEditModal(false)} onCancel={() => setEditModal(false)} dataSet={clientDataSet} record={clientDataSet.current} />}
+        {editModal && <EditRecord onOk={() => setEditModal(false)} onCancel={() => setEditModal(false)} dataSet={clientDataSet} record={clientDataSet.current} clientStore={clientStore} />}
         {createModal && <CreateRecord onOk={() => setCreateModal(false)} onCancel={() => setCreateModal(false)} dataSet={clientDataSet} />}
         {editRoleModal && <EditRole optionsDataSet={optionsDataSet} organizationId={orgId} onOk={() => setEditRoleModal(false)} onCancel={() => setEditRoleModal(false)} ds={clientDataSet} dataSet={optionsDataSet} record={clientDataSet.current} />}
       </Content>

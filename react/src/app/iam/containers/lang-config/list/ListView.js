@@ -25,7 +25,7 @@ export default function ListView(props) {
   };
   async function handleDelete(record) {
     try {
-      await axios.delete(`/base/v1/prompt/${record.get('id')}`);
+      await axios.delete(`/iam/choerodon/v1/prompt/${record.get('id')}`);
       const result = await langListDataSet.query();
       if (result.failed) {
         throw result.message;
@@ -59,7 +59,7 @@ export default function ListView(props) {
     openModal('modify');
   }
   function handleCreate() {
-    openModal('create'); 
+    openModal('create');
   }
   function renderAction({ record }) {
     const actionDatas = [

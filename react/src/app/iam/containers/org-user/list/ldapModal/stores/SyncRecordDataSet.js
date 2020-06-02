@@ -4,7 +4,7 @@ export default ({ orgId, ldapId }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${orgId}/ldaps/latest_history`,
+      url: `/iam/v1/${orgId}/ldaps/${ldapId}/latest-history`,
       method: 'get',
     },
   },

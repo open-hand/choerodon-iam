@@ -16,7 +16,7 @@ const LdapTestForm = observer(({ userInfo, modal, dataSet, orgId }) => {
   function postData() {
     changeStatus(false);
     changeLoadingStatus(true);
-    axios.post(`/base/v1/organizations/${orgId}/ldaps/test_connect`, userInfo).then((res) => {
+    axios.post(`/iam/v1/${orgId}/ldaps/${ldapId}/test-connect`, userInfo).then((res) => {
       if (res) {
         changeLoadingStatus(false);
         changeConnectStatus(res.canConnectServer);

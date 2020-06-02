@@ -18,7 +18,7 @@ export default function useStore() {
     async initThingPerformChartData(date) {
       const data = await axios({
         method: 'GET',
-        url: 'asgard/v1/sagas/instances/statistics/failure',
+        url: 'hagd/v1/sagas/instances/statistics/failure',
         params: {
           date,
         },

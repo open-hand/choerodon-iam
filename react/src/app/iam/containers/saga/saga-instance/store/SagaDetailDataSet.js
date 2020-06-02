@@ -2,7 +2,7 @@ export default function SagaDetailDataSet(id) {
   return {
     transport: {
       read: {
-        url: `asgard/v1/sagas/instances/${id}/details`,
+        url: `hagd/v1/sagas/instances/${id}/details`,
         method: 'get',
       },
     },

@@ -27,9 +27,9 @@ export default observer(() => {
     });
   }
   return (
-    <TabPage service={['base-service.system-setting.updatePasswordPolicy']}>
+    <TabPage service={['choerodon.code.site.setting.security.ps.password-policy']}>
       <Header>
-        <Permission service={['base-service.system-setting.updatePasswordPolicy']}>
+        <Permission service={['choerodon.code.site.setting.security.ps.password-policy.update']}>
           <Button color="blue" onClick={openPasswordModal}><Icon type="mode_edit" />修改密码策略</Button>
         </Permission>
       </Header>

@@ -3,7 +3,7 @@ export default (langOptionDs, serviceOptionsDataSet) => ({
   selection: false,
   transport: {
     create: {
-      url: '/base/v1/prompt',
+      url: '/iam/choerodon/v1/prompt',
       method: 'post',
       transformRequest: (([data]) => JSON.stringify(data)),
     },

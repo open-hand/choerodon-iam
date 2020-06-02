@@ -30,10 +30,10 @@ const ViewVersionDetail = observer((props) => {
   const apiReducer = (type) => {
     switch (type) {
       case 'submit':
-        viewAndEditVersionDetailDataSet.submitUrl = `base/v1/projects/${projectId}/publish_version_infos?organization_id=${organizationId}&apply=true`;
+        viewAndEditVersionDetailDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_version_infos?organization_id=${organizationId}&apply=true`;
         break;
       case 'save':
-        viewAndEditVersionDetailDataSet.submitUrl = `base/v1/projects/${projectId}/publish_version_infos?organization_id=${organizationId}&apply=false`;
+        viewAndEditVersionDetailDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_version_infos?organization_id=${organizationId}&apply=false`;
         break;
       default:
         break;
@@ -99,7 +99,7 @@ const ViewVersionDetail = observer((props) => {
           <Panel header={(<span style={{ marginLeft: '0.1rem' }}>包含的应用服务</span>)} key="1">
             <p className={`${cssPrefix}-serviceInfo`}>
               <Icon type="info" className={`${cssPrefix}-service-serviceInfo-icon`} />
-              <span>如果您想修改应用服务及应用服务版本，请前去<Link to={`/base/application-management${history.location.search}`}>应用管理</Link>进行编辑，修改后的数据将会在此同步更新
+              <span>如果您想修改应用服务及应用服务版本，请前去<Link to={`/iam/application-management${history.location.search}`}>应用管理</Link>进行编辑，修改后的数据将会在此同步更新
               </span>
             </p>
             <Table dataSet={serviceTableDataSet} queryBar="none" className={`${cssPrefix}-table`}>

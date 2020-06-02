@@ -29,7 +29,7 @@ const statusNameMap = new Map([
 const apiReducer = (action, current, projectId, organizationId) => {
   switch (action) {
     case 'publishNewVersion':
-      return `/base/v1/projects/${projectId}/publish_applications/${current.get('id')}/new_version`;
+      return `/iam/choerodon/v1/projects/${projectId}/publish_applications/${current.get('id')}/new_version`;
     default:
   }
 };

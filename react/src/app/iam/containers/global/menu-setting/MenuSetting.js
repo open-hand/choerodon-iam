@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
@@ -6,7 +7,6 @@ import { Output, Form as ProForm, IconPicker } from 'choerodon-ui/pro';
 import { axios, Content, Header, Page, Permission, stores, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import _ from 'lodash';
-import { RESOURCES_LEVEL } from '@choerodon/master/lib/containers/common/constants';
 import { adjustSort, canDelete, defineLevel, deleteNode, findParent, hasDirChild, isChild, normalizeMenus } from './util';
 import './MenuSetting.scss';
 import '../../../common/ConfirmModal.scss';
@@ -57,11 +57,11 @@ const formItemLayout = {
 
 function findFirstLevel() {
   return ['site', 'organization', 'project', 'user']
-    .find(l => RESOURCES_LEVEL.indexOf(l) !== -1);
+    .find(l => Choerodon.RESOURCES_LEVEL.indexOf(l) !== -1);
 }
 
 function hasLevel(level) {
-  return RESOURCES_LEVEL.indexOf(level) !== -1;
+  return Choerodon.RESOURCES_LEVEL.indexOf(level) !== -1;
 }
 
 @Form.create({})
@@ -110,7 +110,7 @@ export default class MenuSetting extends Component {
     type = type || typeState;
     const newPrevMenuGroup = prevMenuGroup;
     this.setState({ loading: true });
-    axios.get(`/base/v1/menus/menu_config?code=choerodon.code.top.${type}`)
+    axios.get(`/iam/choerodon/v1/menus/menu_config?code=choerodon.code.top.${type}`)
       .then((res) => {
         const value = res.subMenus;
         menuGroup[type] = normalizeMenus(value);
@@ -209,7 +209,7 @@ export default class MenuSetting extends Component {
     if (tempDirs.find(({ code }) => code === value)) {
       callback(errorMsg);
     } else {
-      axios.post('/base/v1/menus/check', JSON.stringify({ code: value, level: type, type: 'menu' }))
+      axios.post('/iam/choerodon/v1/menus/check', JSON.stringify({ code: value, level: type, type: 'menu' }))
         .then((mes) => {
           if (mes.failed) {
             callback(errorMsg);
@@ -486,14 +486,14 @@ export default class MenuSetting extends Component {
   checkDroppable(record) {
     const { dragData } = this.state;
     // console.log(record, 'dragData', dragData, (this.checkDropIn(record) || this.checkDropBesides(record)) && !isChild(dragData, record));
-    return dragData && dragData !== record 
+    return dragData && dragData !== record
       && (this.checkDropIn(record) || this.checkDropBesides(record)) && !isChild(dragData, record);
   }
 
   // 判断是否能拖入
   checkDropIn(record) {
     const { dragData } = this.state;
-    return dragData && (record.type !== 'menu_item' && record.type !== 'tab') && dragData.type !== 'root' && !hasDirChild(dragData) 
+    return dragData && (record.type !== 'menu_item' && record.type !== 'tab') && dragData.type !== 'root' && !hasDirChild(dragData)
       // eslint-disable-next-line no-underscore-dangle
       && record.__level__ < (dragData.type === 'menu' ? 1 : 2);
   }
@@ -632,7 +632,7 @@ export default class MenuSetting extends Component {
     const newPrevMenuGroup = prevMenuGroup;
     if (JSON.stringify(prevMenuGroup) !== JSON.stringify(menuGroup)) {
       this.setState({ submitting: true });
-      axios.post(`/base/v1/menus/menu_config?code=choerodon.code.top.${type}`, JSON.stringify(adjustSort(menuGroup[type])))
+      axios.post(`/iam/choerodon/v1/menus/menu_config?code=choerodon.code.top.${type}`, JSON.stringify(adjustSort(menuGroup[type])))
         .then((menus) => {
           this.setState({ submitting: false });
           if (menus.failed) {

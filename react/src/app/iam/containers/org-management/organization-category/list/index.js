@@ -33,7 +33,7 @@ export default observer(() => {
         content: `确认删除组织类型"${record.get('name')}"吗？`,
         onOk: async () => {
           try {
-            await axios.delete(`/base/v1/categories/org/${record.get('id')}`);
+            await axios.delete(`/iam/choerodon/v1/categories/org/${record.get('id')}`);
             await dataSet.query();
           } catch (e) {
             return false;

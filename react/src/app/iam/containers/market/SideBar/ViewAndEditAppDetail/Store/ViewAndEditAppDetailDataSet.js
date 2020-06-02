@@ -23,7 +23,7 @@ export default function (projectId, appId, mobxStore, status, editReleased, cate
     if (/^\s|\s$/.test(value)) {
       return '不能以空格开头或结束';
     }
-    const nameValidator = await axios.get(`base/v1/projects/${projectId}/publish_applications/check_name`, {
+    const nameValidator = await axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/check_name`, {
       params: {
         name: value,
       },
@@ -49,7 +49,7 @@ export default function (projectId, appId, mobxStore, status, editReleased, cate
       return '不能以空格开头或结束';
     }
     try {
-      const res = await axios.get(`base/v1/projects/${projectId}/publish_applications/app_categories/check`, {
+      const res = await axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/app_categories/check`, {
         params: {
           category_name: value,
         },
@@ -150,7 +150,7 @@ export default function (projectId, appId, mobxStore, status, editReleased, cate
     ],
     transport: {
       read: () => ({
-        url: `base/v1/projects/${projectId}/publish_applications/${appId}/detail`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/detail`,
         method: 'get',
         transformResponse: (data) => ({
           ...JSON.parse(data),

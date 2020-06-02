@@ -8,7 +8,7 @@ export default function (projectId, appId) {
     selection: 'multiple',
     transport: {
       read: () => ({
-        url: `/base/v1/projects/${projectId}/applications/${appId}/services`,
+        url: `/iam/choerodon/v1/projects/${projectId}/applications/${appId}/services`,
         method: 'get',
         transformResponse(data) {
           return JSON.parse(data).list.map((item) => ({

@@ -8,8 +8,12 @@ export default ({ id = 0, intl, intlPrefix }) => {
     selection: false,
     transport: {
       read: {
-        url: '/base/v1/users/admin',
+        url: '/iam/choerodon/v1/users/admin',
         method: 'get',
+        transformResponse: (data) => ({
+          list: JSON.parse(data).content,
+          ...JSON.parse(data),
+        }),
       },
     },
     fields: [

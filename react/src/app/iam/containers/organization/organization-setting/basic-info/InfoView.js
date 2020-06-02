@@ -50,14 +50,11 @@ const InfoView = observer(() => {
   }
   return (
     <TabPage
-      service={[
-        'base-service.organization.queryOrgLevel',
-        'base-service.organization.updateOnOrganizationLevel',
-      ]}
+      service={['choerodon.code.organization.setting.general-setting.ps.info']}
     >
-      
+
       <Header>
-        <Permission service={['base-service.organization.updateOnOrganizationLevel']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.update.info']}>
           <Button
             type="primary"
             funcType="flat"
@@ -81,14 +78,14 @@ const InfoView = observer(() => {
           labelAlign="left"
           columns={3}
         >
-          <Output name="name" colSpan={1} />
+          <Output name="tenantName" colSpan={1} />
 
           <div colSpan={1} rowSpan={3} className="c7n-organization-formImg" label="组织LOGO">
-            {imageUrl ? <img src={imageUrl} alt="图片" /> 
+            {imageUrl ? <img src={imageUrl} alt="图片" />
               : <div className="c7n-organization-formImg-wrapper">{orgName[0]}</div>}
 
           </div>
-          <Output name="code" newLine />
+          <Output name="tenantNum" newLine />
           <Output name="address" newLine renderer={({ text }) => (text || '无')} />
           <Output
             name="homePage"

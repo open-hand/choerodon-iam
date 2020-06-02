@@ -3,11 +3,11 @@ export default (serviceOptionsDataSet, langOptionsDs) => ({
   selection: false,
   transport: {
     read: {
-      url: '/base/v1/prompt',
+      url: '/iam/choerodon/v1/prompt',
       method: 'get',
     },
     update: ({ data: editData }) => ({
-      url: `/base/v1/prompt/${editData[0].id}`,
+      url: `/iam/choerodon/v1/prompt/${editData[0].id}`,
       method: 'put',
       transformRequest: (([data]) => JSON.stringify(data)),
     }),

@@ -11,7 +11,7 @@ export default function (projectId, versionOptionDataSet) {
       return '文本内容限制 30 字符，请重新输入';
     }
     try {
-      const res = await axios.get(`/base/v1/projects/${projectId}/applications/${versionOptionDataSet.queryDataSet.current.get('applicationId')}/versions/check`, {
+      const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${versionOptionDataSet.queryDataSet.current.get('applicationId')}/versions/check`, {
         params: {
           version: value,
         },

@@ -27,7 +27,7 @@ export default function (type, projectId, versionOptionDataSet) {
     selection: type === 'new' ? 'multiple' : false,
     transport: {
       read: ({ data: { applicationId, versionId } }) => ({
-        url: type === 'exist' ? `base/v1/projects/${projectId}/applications/${applicationId}/versions/${versionId}/svc_versions` : `base/v1/projects/${projectId}/applications/${applicationId}/services`,
+        url: type === 'exist' ? `iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/versions/${versionId}/svc_versions` : `iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services`,
         method: 'get',
         data: {},
         transformResponse: (data) => setSelectedVersion(data),

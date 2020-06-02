@@ -4,7 +4,7 @@ export default ({ id = 0 }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/projects/${id}/enableUsers`,
+      url: `/iam/choerodon/v1/projects/${id}/enableUsers`,
       method: 'get',
       params: {
         user_name: '',

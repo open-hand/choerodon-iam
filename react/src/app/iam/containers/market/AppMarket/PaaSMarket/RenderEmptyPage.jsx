@@ -10,12 +10,12 @@ const RenderEmptyPage = (props) => {
 
   // 搜索事件
   const search = (value) => {
-    console.log('欢迎来到Choerodon应用市场！');
+    window.console.log('欢迎来到Choerodon应用市场！');
   };
 
   // 应用卡片点击 ， 查看应用详情事件
   const changePage = () => {
-    context.history.push('/base/safe/token');
+    context.history.push('/iam/safe/token');
   };
 
   const searchInput = (
@@ -39,6 +39,7 @@ const RenderEmptyPage = (props) => {
         </div>
       </div>
       <div className="empty-main-content">
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <img className="empty-main-content-img" src={emptyImg} />
         <div className="empty-main-content-info">
           <p className="empty-main-content-info-1">您未配置远程token或者现有token已失效</p>

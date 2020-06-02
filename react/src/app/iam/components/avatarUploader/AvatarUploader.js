@@ -65,11 +65,13 @@ export default class AvatarUploader extends Component {
       startY: round(startY * scale),
       endX: round(size * scale),
       endY: round(size * scale),
+      bucketName: 'hzero-iam',
     });
     const data = new FormData();
+    const { AppState: { currentMenuType: { organizationId } } } = this.props;
     data.append('file', file);
     this.setState({ submitting: true });
-    axios.post(`/file/v1/cut_image?${qs}`, data)
+    axios.post(`/hfle/choerodon/v1/${organizationId}/cut_image?${qs}`, data)
       .then((res) => {
         if (res.failed) {
           Choerodon.prompt(res.message);
@@ -348,7 +350,7 @@ export default class AvatarUploader extends Component {
       multiple: false,
       name: 'file',
       accept: 'image/jpeg, image/png, image/jpg',
-      action: id && `${window._env_.API_HOST}/base/v1/users/${id}/upload_photo`, // eslint-disable-line
+      action: id && `${window._env_.API_HOST}/iam/choerodon/v1/users/${id}/upload_photo`, // eslint-disable-line
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
       },

@@ -15,12 +15,12 @@ export default ({ orgId, name }) => {
     autoQuery: true,
     transport: {
       read: {
-        url: `/base/v1/organizations/${orgId}/ldaps`,
+        url: `/iam/v1/${orgId}/ldaps`,
         method: 'get',
         dataKey: null,
       },
       submit: ({ data: [ldap] }) => ({
-        url: `/base/v1/organizations/${orgId}/ldaps`,
+        url: `/iam/v1/${orgId}/ldaps`,
         method: 'put',
         dataKey: null,
         data: ldap,
@@ -33,12 +33,12 @@ export default ({ orgId, name }) => {
       { name: 'serverAddress', type: 'string', label: '主机名', required: true }, // 必填
       { name: 'useSSL', type: 'boolean', label: '是否使用SSL', defaultValue: false },
       { name: 'port', type: 'number', label: '端口号', required: true }, // 必填
-      { name: 'enabled', type: 'boolean' }, 
+      { name: 'enabled', type: 'boolean' },
       { name: 'sagaBatchSize', type: 'number', label: '同步用户saga发送用户数量', min: 1, step: 1, defaultValue: 500, required: true }, // 必填
       { name: 'connectionTimeout', type: 'number', label: 'ldap服务器连接超时时间', min: 0, defaultValue: 10, required: true },
       { name: 'baseDn', type: 'string', label: '基准DN', help: 'LDAP目录树的最顶部的根，从根节点搜索用户。例如：cn=users,dc=example,dc=com' },
       { name: 'account', type: 'string', label: '管理员登录名', help: '用户登录到 LDAP。例如：user@domain.name 或 cn =用户, dc =域、dc =名称', required: true }, // 必填
-      { name: 'password', type: 'string', label: '管理员密码', required: true }, // 必填
+      { name: 'ldapPassword', type: 'string', label: '管理员密码', required: true }, // 必填
       { name: 'objectClass', type: 'string', label: '用户对象类', help: '支持多个objectclass，使用逗号分隔', required: true }, // 多个objectClass以逗号分割/非必填
       { name: 'loginNameField', type: 'string', label: '登录名属性', required: true },
       { name: 'emailField', type: 'string', label: '邮箱属性', required: true },

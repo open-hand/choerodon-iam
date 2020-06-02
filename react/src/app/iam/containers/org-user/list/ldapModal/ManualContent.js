@@ -34,6 +34,7 @@ const manualContent = observer((props) => {
     modal,
     ldapStore,
     AppState: { currentMenuType: { organizationId: orgId } },
+    ldapId,
   } = useLdapStore();
 
   const record = syncRecordDs.current;
@@ -53,7 +54,7 @@ const manualContent = observer((props) => {
         clearInterval(intervalId);
         return;
       }
-      if (!syncRecordDs.current || (syncRecordDs.current && syncRecordDs.current.get('syncEndTime'))) {
+      if (!id || !syncRecordDs.current || (syncRecordDs.current && syncRecordDs.current.get('syncEndTime'))) {
         setDelay(false);
         modal.update({ okProps: { color: 'primary', loading: false }, okText: '手动同步' });
         changeIsStop(false);
@@ -78,7 +79,7 @@ const manualContent = observer((props) => {
       pollHistory();
       modal.handleOk(async () => {
         if (!isStop) {
-          const result = await ldapStore.syncUsers(orgId);
+          const result = await ldapStore.syncUsers(orgId, ldapId);
           if (!result.failed) {
             pollHistory();
             setDelay(3000);
@@ -89,7 +90,7 @@ const manualContent = observer((props) => {
         } else {
           clearInterval(intervalId);
           setDelay(false);
-          const result = await ldapStore.stopSyncUsers(orgId);
+          const result = await ldapStore.stopSyncUsers(orgId, ldapId);
           if (!result.failed) {
             syncRecordDs.query();
           } else {

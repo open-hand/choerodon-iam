@@ -11,7 +11,7 @@ export default function (projectId) {
     ],
     transport: {
       read: {
-        url: `base/v1/projects/${projectId}/applications/brief_info`,
+        url: `iam/choerodon/v1/projects/${projectId}/applications/brief_info`,
         method: 'get',
       },
     },

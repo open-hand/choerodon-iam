@@ -16,7 +16,7 @@ export default function useStore() {
     async initPlatformPeopleChartData(startTime, endTime) {
       const data = await axios({
         method: 'GET',
-        url: '/base/v1/users/count_by_date',
+        url: '/iam/choerodon/v1/users/count_by_date',
         params: {
           start_time: startTime,
           end_time: endTime,

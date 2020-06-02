@@ -11,7 +11,7 @@ const { Option } = Select;
 export default function CreateView() {
   const { intl, context, appServiceVersionDataSet, modal, status, history, projectId, applicationId } = useContext(Store);
   const { versionCreateDataSet, versionDataSet } = context;
-  
+
   async function handleOk() {
     if (status !== 'published') {
       versionCreateDataSet.current.set('appServiceDetailsVOS', appServiceVersionDataSet.selected.map(record => ({
@@ -23,7 +23,7 @@ export default function CreateView() {
         ],
       })));
     }
-    
+
     try {
       if (await versionCreateDataSet.submit()) {
         versionDataSet.query();
@@ -41,7 +41,7 @@ export default function CreateView() {
   });
   async function createAndGoToPublish() {
     if (await handleOk()) {
-      history.push(`/base/market-publish${history.location.search}`);
+      history.push(`/iam/market-publish${history.location.search}`);
     }
   }
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function CreateView() {
 
   // 搜索请求防抖
   const queryAppServiceVersions = _.debounce(async (e, record) => {
-    const res = await axios.get(`/base/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
+    const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
     record.set('allAppServiceVersions', res);
   }, 500);
   function debounceQuery(e, record) {
@@ -81,7 +81,7 @@ export default function CreateView() {
   }
 
   // async function queryAppServiceVersions(e, record) {
-  //   const res = await axios.get(`/base/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
+  //   const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
   //   record.set('allAppServiceVersions', res);
   // }
   function getServiceTable(dataSet) {
@@ -105,7 +105,7 @@ export default function CreateView() {
       </Table>
     );
   }
-  
+
   function renderService() {
     return (
       <React.Fragment>
@@ -129,7 +129,7 @@ export default function CreateView() {
       </div>
     );
   }
-  
+
   return (
     <React.Fragment>
       <div style={{ padding: '0 .2rem' }} className="form-content"> {getForm()} </div>

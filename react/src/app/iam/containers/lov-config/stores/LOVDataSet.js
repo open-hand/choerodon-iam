@@ -13,7 +13,7 @@ export default function ({ intl, queryFieldDataSet, gridFieldsDataSet, booleanDs
         type: 'string',
         label: 'API',
         required: true,
-        dynamicProps: ({ record }) => ({ lookupUrl: `/base/v1/lov/api?level=${record.get('resourceLevel') || 'SITE'}` }),
+        dynamicProps: ({ record }) => ({ lookupUrl: `/iam/choerodon/v1/lov/api?level=${record.get('resourceLevel') || 'SITE'}` }),
         textField: 'code',
         valueField: 'code' },
       { name: 'valueField', type: 'string', label: 'Value Field', required: true },
@@ -24,31 +24,31 @@ export default function ({ intl, queryFieldDataSet, gridFieldsDataSet, booleanDs
       { name: 'height', type: 'number', label: 'LOV模态框高度', required: true, min: 1, defaultValue: 500 },
       { name: 'width', type: 'number', label: 'LOV模态框宽度', required: true, min: 1, defaultValue: 500 },
       { name: 'treeFlag', type: 'boolean', label: '是否为树形结构', default: false, options: booleanDs },
-      { 
+      {
         name: 'idField',
         type: 'string',
         label: '子字段',
         dynamicProps: ({ record }) => ({
           required: record.get('treeFlag'),
-        }), 
+        }),
       },
-      { 
+      {
         name: 'parentField',
         type: 'string',
         label: '父字段',
         dynamicProps: ({ record }) => ({
           required: record.get('treeFlag'),
-        }), 
+        }),
       },
       { name: 'pageFlag', type: 'boolean', label: '是否分页', defaultValue: true, options: booleanDs },
-      { 
+      {
         name: 'pageSize',
         type: 'number',
         label: '每页记录数',
         defaultValue: 10,
         dynamicProps: ({ record }) => ({
           required: record.get('pageFlag'),
-        }), 
+        }),
       },
     ],
     queryFields: [
@@ -56,17 +56,17 @@ export default function ({ intl, queryFieldDataSet, gridFieldsDataSet, booleanDs
     ],
     transport: {
       read: {
-        url: '/base/v1/lov/list',
+        url: '/iam/choerodon/v1/lov/list',
         method: 'get',
       },
       update: data => ({
-        url: `/base/v1/lov/${data.data[0].id}`,
+        url: `/iam/choerodon/v1/lov/${data.data[0].id}`,
         method: 'put',
         data,
         transformRequest: req => JSON.stringify(req.data[0]),
       }),
       create: data => ({
-        url: '/base/v1/lov',
+        url: '/iam/choerodon/v1/lov',
         method: 'post',
         data,
         transformRequest: req => {

@@ -8,7 +8,7 @@ const modalKey = Modal.key();
 const { Option } = Select;
 const InfoForm = observer(({ dataSet, modal, orgId }) => {
   const account = dataSet.current && dataSet.current.get('account');
-  const password = dataSet.current && dataSet.current.get('password');
+  const ldapPassword = dataSet.current && dataSet.current.get('ldapPassword');
   const loginNameField = dataSet.current && dataSet.current.get('loginNameField');
   const emailField = dataSet.current && dataSet.current.get('emailField');
   const realNameField = dataSet.current && dataSet.current.get('realNameField');
@@ -17,7 +17,7 @@ const InfoForm = observer(({ dataSet, modal, orgId }) => {
   const useSSL = dataSet.current && dataSet.current.get('useSSL');
   const prevCountRef = useRef();
   const userInfo = {
-    account, password, loginNameField, emailField, realNameField, phoneField, uuidField,
+    account, ldapPassword, loginNameField, emailField, realNameField, phoneField, uuidField,
   };
   function testAgain() {
     return true;
@@ -112,7 +112,7 @@ const InfoForm = observer(({ dataSet, modal, orgId }) => {
         <TextField label="基准DN" name="baseDn" showHelp="tooltip" required />
         <TextField label="管理员登录名*" name="account" showHelp="tooltip" required />
         <input type="password" style={{ position: 'absolute', top: '-999px' }} />
-        <Password label="管理员密码*" name="password" required />
+        <Password label="管理员密码*" name="ldapPassword" required />
       </Form>
       <Form dataSet={dataSet} labelLayout="float" header="用户属性设置">
         <TextField label="用户对象类*" name="objectClass" showHelp="tooltip" required />

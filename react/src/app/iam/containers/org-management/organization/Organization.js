@@ -136,7 +136,7 @@ export default class Organization extends Component {
       return;
     }
     try {
-      const res = await axios.post('/base/v1/domain/check', { url: homepage });
+      const res = await axios.post('/iam/choerodon/v1/domain/check', { url: homepage });
       if (res) {
         callback();
       } else {

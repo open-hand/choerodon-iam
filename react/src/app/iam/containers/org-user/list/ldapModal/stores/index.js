@@ -18,12 +18,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       AppState: { currentMenuType: { organizationId: orgId } },
       children,
+      ldapId,
     } = props;
 
     const ldapStore = useStore();
-    const syncRecordDs = useMemo(() => new DataSet(SyncRecordDataSet({ orgId })), [orgId]);
+    const syncRecordDs = useMemo(() => new DataSet(SyncRecordDataSet({ orgId, ldapId })), [orgId]);
     const syncFormDs = useMemo(() => new DataSet(SyncFormDataSet({ orgId })), [orgId]);
-    const recordTableDs = useMemo(() => new DataSet(SyncRecordTableDataSet({ orgId })), [orgId]);
+    const recordTableDs = useMemo(() => new DataSet(SyncRecordTableDataSet({ orgId, ldapId })), [orgId]);
 
     useEffect(() => {
       if (!syncFormDs.current) {

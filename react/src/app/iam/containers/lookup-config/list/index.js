@@ -26,7 +26,7 @@ export default observer(() => {
       children: <Sider context={context} />,
     });
     if (!isCreate) {
-      const result = await axios.get(`/base/v1/lookups/${lookupDataSet.current.get('id')}`);
+      const result = await axios.get(`/iam/choerodon/v1/lookups/${lookupDataSet.current.get('id')}`);
       lookupDataSet.children.lookupValues.loadData(result.lookupValues);
     }
   }
@@ -37,7 +37,7 @@ export default observer(() => {
       children: `确认删除快码"${record.get('code')}"吗？`,
       onOk: async () => {
         try {
-          const res = await axios.delete(`/base/v1/lookups/${record.get('id')}`);
+          const res = await axios.delete(`/iam/choerodon/v1/lookups/${record.get('id')}`);
           if (res.failed) {
             throw res.message;
           } else {

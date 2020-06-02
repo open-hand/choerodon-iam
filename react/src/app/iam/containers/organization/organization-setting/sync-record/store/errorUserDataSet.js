@@ -5,7 +5,7 @@ export default (id => ({
   selection: false,
   transport: {
     read: () => ({
-      url: `/base/v1/organizations/2/ldap_histories/${id}/error_users?__id=`,
+      url: `/iam/choerodon/v1/organizations/2/ldap_histories/${id}/error_users?__id=`,
       method: 'get',
     }),
   },

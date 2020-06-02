@@ -10,7 +10,7 @@ export default function ({ intl, intlPrefix, lookupValueDataSet, CODE_REGULAR_EX
       return true;
     }
     try {
-      const res = await axios.get(`/base/v1/lookups/check?code=${value}`);
+      const res = await axios.get(`/iam/choerodon/v1/lookups/check?code=${value}`);
       if (res.failed) {
         throw res.message;
       }
@@ -30,23 +30,23 @@ export default function ({ intl, intlPrefix, lookupValueDataSet, CODE_REGULAR_EX
     ],
     transport: {
       read: {
-        url: '/base/v1/lookups',
+        url: '/iam/choerodon/v1/lookups',
         method: 'get',
       },
       update: data => ({
-        url: `/base/v1/lookups/${data.data[0].id}`,
+        url: `/iam/choerodon/v1/lookups/${data.data[0].id}`,
         method: 'put',
         data,
         transformRequest: req => JSON.stringify(req.data[0]),
       }),
       create: data => ({
-        url: '/base/v1/lookups',
+        url: '/iam/choerodon/v1/lookups',
         method: 'post',
         data,
         transformRequest: req => JSON.stringify(req.data[0]),
       }),
       submit: data => ({
-        url: `/base/v1/lookups/${data.data[0].id}`,
+        url: `/iam/choerodon/v1/lookups/${data.data[0].id}`,
         method: 'put',
         data,
         transformRequest: req => JSON.stringify(req.data[0]),

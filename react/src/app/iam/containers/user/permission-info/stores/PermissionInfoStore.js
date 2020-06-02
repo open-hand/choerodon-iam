@@ -39,7 +39,7 @@ class PermissionInfoStore {
     const { id } = this.role;
     this.loading = true;
     this.params = params;
-    return axios.get(`/base/v1/users/${id}/roles?${queryString.stringify({
+    return axios.get(`/iam/choerodon/v1/users/${id}/roles?${queryString.stringify({
       page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),

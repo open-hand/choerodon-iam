@@ -15,10 +15,10 @@ const modalKey = Modal.key();
 const LdapView = observer(() => {
   const {
     orgId,
-    ldapDataSet, 
-    ldapTestDataSet, 
-    ldapLoadClientDataSet, 
-    match, 
+    ldapDataSet,
+    ldapTestDataSet,
+    ldapLoadClientDataSet,
+    match,
     history,
     intl,
   } = useContext(Store);
@@ -83,7 +83,7 @@ const LdapView = observer(() => {
   }
   async function handleDisableLdap() {
     try {
-      await axios.put(`/base/v1/organizations/${orgId}/ldaps/disable`);
+      await axios.put(`/iam/v1/${orgId}/ldaps/disable`, currentRecord ? JSON.stringify(currentRecord.toData()) : null);
       await ldapDataSet.query();
     } catch (e) {
       Choerodon.prompt(e);
@@ -103,7 +103,7 @@ const LdapView = observer(() => {
   }
   async function handleEnableLdap() {
     try {
-      const result = await axios.put(`/base/v1/organizations/${orgId}/ldaps/enable`);
+      const result = await axios.put(`/iam/v1/${orgId}/ldaps/enable`, currentRecord ? JSON.stringify(currentRecord.toData()) : null);
       if (result.failed) {
         throw result.message;
       }
@@ -114,33 +114,25 @@ const LdapView = observer(() => {
   }
   return (
     <TabPage
-      service={[
-        'base-service.ldap.queryByOrgId',
-        'base-service.ldap.update',
-        'base-service.ldap.disableLdap',
-        'base-service.ldap.enableLdap',
-        'base-service.ldap.testConnect',
-        'base-service.ldap.syncUsers',
-        'base-service.ldap.pagingQueryHistories',
-      ]}
+      service={['choerodon.code.organization.setting.general-setting.ps.ldap']}
     >
       <Header>
-        <Permission service={['base-service.ldap.update']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.update.ldap']}>
           <Button type="primary" funcType="flat" icon="mode_edit" onClick={modifyInfo}>修改</Button>
         </Permission>
-        <Permission service={['base-service.ldap.disableLdap']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.disable']}>
           {currentRecord && currentRecord.getPristineValue('enabled') ? <Button type="primary" funcType="flat" icon="remove_circle_outline" onClick={handleDisable}>停用</Button> : ''}
         </Permission>
-        <Permission service={['base-service.ldap.enableLdap']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.enable']}>
           {currentRecord && !currentRecord.getPristineValue('enabled') ? <Button type="primary" funcType="flat" icon="check_circle" onClick={handleEnableLdap}>启用</Button> : ''}
         </Permission>
-        <Permission service={['base-service.ldap.testConnect']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.test']}>
           <Button type="primary" funcType="flat" icon="low_priority" onClick={testLinks}>测试连接</Button>
         </Permission>
-        <Permission service={['base-service.ldap.syncUsers']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.sync']}>
           <Button type="primary" funcType="flat" icon="sync_user" onClick={loaderClient}>同步用户</Button>
         </Permission>
-        <Permission service={['base-service.ldap.pagingQueryHistories']}>
+        <Permission service={['choerodon.code.organization.setting.general-setting.ps.ldap.records']}>
           <Button type="primary" funcType="flat" icon="sync_records" onClick={goToHistory}>同步记录</Button>
         </Permission>
       </Header>
@@ -167,7 +159,7 @@ const LdapView = observer(() => {
             <Output name="baseDn" showHelp="none" />
             <Output name="account" showHelp="none" />
             <Output
-              name="password"
+              name="ldapPassword"
               renderer={({ text }) => (text ? <span style={{ fontWeight: 700 }}>··················</span> : <span>此用户暂未设置密码</span>)}
             />
           </Form>

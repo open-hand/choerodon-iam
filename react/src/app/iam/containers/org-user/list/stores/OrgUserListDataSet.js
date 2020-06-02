@@ -13,7 +13,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     const organizationId = record.get('organizationId');
     if (value === record.getPristineValue(name) || !value) return;
     try {
-      const result = await axios.post(`/base/v1/organizations/${organizationId}/users/check`, JSON.stringify({ organizationId, [name]: value }));
+      const result = await axios.post(`/iam/choerodon/v1/organizations/${organizationId}/users/check`, JSON.stringify({ organizationId, [name]: value }));
       if (result.failed) {
         return intl.formatMessage({ id: result.message });
       }
@@ -38,16 +38,16 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/organizations/${id}/users/search`,
+        url: `/iam/choerodon/v1/organizations/${id}/users/search`,
         method: 'get',
       },
       create: {
-        url: `/base/v1/organizations/${id}/users`,
+        url: `/iam/choerodon/v1/organizations/${id}/users`,
         method: 'post',
         transformRequest: (([data]) => JSON.stringify(data)),
       },
       update: ({ data: editData }) => ({
-        url: `/base/v1/organizations/${id}/users/${editData[0].id}`,
+        url: `/iam/choerodon/v1/organizations/${id}/users/${editData[0].id}`,
         method: 'put',
         transformRequest: (([data]) => JSON.stringify(data)),
       }),
@@ -56,7 +56,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
       { name: 'realName', type: 'string', label: username, required: true, validator: checkRealname },
       { name: 'loginName', type: 'string', label: loginName, unique: true },
       { name: 'enabled', type: 'boolean', label: status, textField: 'text', valueField: 'value', options: statusOptionDs },
-      { name: 'roles', type: 'string', label: '角色', maxTagTextLength: 1, multiple: true, textField: 'name', valueField: 'id' },
+      { name: 'roles', type: 'object', label: '角色', maxTagTextLength: 1, multiple: true, textField: 'name', valueField: 'id' },
       { name: 'locked', type: 'boolean', label: safeStatus, textField: 'text', valueField: 'value', options: safeOptionDs },
       { name: 'email', type: 'email', label: '邮箱', validator: check, required: true },
       { name: 'password', type: 'string', label: '密码' },

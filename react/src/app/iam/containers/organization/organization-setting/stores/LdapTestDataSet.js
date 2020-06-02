@@ -13,7 +13,7 @@ function handleRequestData(data) {
 export default ({ orgId }) => ({
   transport: {
     create: ({ dataSet, data: [ldap] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/test_connect`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/test_connect`,
       method: 'post',
       transformRequest: ((data) => handleRequestData(data, dataSet)),
       transformResponse: ((data) => ({
@@ -21,7 +21,7 @@ export default ({ orgId }) => ({
       })),
     }),
     update: ({ dataSet, data: [ldap] }) => ({
-      url: `/base/v1/organizations/${orgId}/ldaps/test_connect`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/ldaps/test_connect`,
       method: 'post',
       transformRequest: ((data, headers) => handleRequestData(data, dataSet)),
       transformResponse: ((data, headers) => ({
@@ -31,7 +31,7 @@ export default ({ orgId }) => ({
   },
   fields: [
     { name: 'account', type: 'string', label: '管理员登录名', defaultValue: '', required: true},
-    { name: 'password', type: 'string', label: '管理员密码', defaultValue: '', required: true}, // 必填
+    { name: 'ldapPassword', type: 'string', label: '管理员密码', defaultValue: '', required: true}, // 必填
     { name: 'canLogin', type: 'boolean', label: 'LDAP登录' },
     { name: 'canConnectServer', type: 'boolean', label: '基础链接' },
     { name: 'matchAttribute', type: 'boolean', label: '用户属性链接' },

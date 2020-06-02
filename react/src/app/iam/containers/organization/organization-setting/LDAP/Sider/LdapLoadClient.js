@@ -41,7 +41,7 @@ export function extractFieldValueFromDataSet(dataSet, fieldName) {
 }
 
 const LdapLoadClient = observer(() => {
-  const { orgId, ldapLoadClientDataSet, modal } = useContext(Store);
+  const { orgId, ldapLoadClientDataSet, modal, ldapId } = useContext(Store);
   const [delay, setDelay] = useState(false);
   const newUserCount = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('newUserCount');
   const syncBeginTime = ldapLoadClientDataSet.current && ldapLoadClientDataSet.current.get('syncBeginTime');
@@ -56,7 +56,7 @@ const LdapLoadClient = observer(() => {
   async function pollHistory() {
     try {
       await ldapLoadClientDataSet.query();
-      if (ldapLoadClientDataSet.current.get('syncEndTime')) {
+      if (!id || ldapLoadClientDataSet.current.get('syncEndTime')) {
         setDelay(false);
         changeIsStop(false);
         modal.update({ okProps: { color: 'primary', loading: false }, okText: '同步' });
@@ -77,7 +77,7 @@ const LdapLoadClient = observer(() => {
 
   modal.handleOk(async () => {
     if (!isStop) {
-      const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/sync_users`);
+      const result = await axios.post(`/iam/v1/${orgId}/ldaps/${ldapId}/sync-users`);
       if (!result.failed) {
         pollHistory();
         setDelay(3000);
@@ -87,7 +87,7 @@ const LdapLoadClient = observer(() => {
       return false;
     } else {
       clearInterval(intervalId);
-      axios.put(`/base/v1/organizations/${orgId}/ldaps/stop`);
+      axios.put(`/iam/v1/${orgId}/ldaps/${ldapId}/stop`);
       return false;
     }
   });

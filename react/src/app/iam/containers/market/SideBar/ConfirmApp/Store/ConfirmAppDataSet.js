@@ -49,7 +49,7 @@ export default function (projectId, appId, versionId, serviceTableDataSet, mobxS
     },
     transport: {
       read: () => ({
-        url: `base/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm`,
         method: 'get',
       }),
       update: ({ data, dataSet }) => ({

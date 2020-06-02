@@ -17,7 +17,7 @@ export default function (projectId, appOptionDataSet) {
     ],
     transport: {
       read: ({ data: { refAppId } }) => ({
-        url: `base/v1/projects/${projectId}/applications/${refAppId.id}/versions/brief_info`,
+        url: `iam/choerodon/v1/projects/${projectId}/applications/${refAppId.id}/versions/brief_info`,
         method: 'get',
         data: {},
       }),

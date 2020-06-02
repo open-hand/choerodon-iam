@@ -21,16 +21,17 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
     // console.log(dataSet);
     dataSet.current.set('imageUrl', url);
     changeUrl(`${url}`);
-    try {
-      if ((await dataSet.submit()) !== false) {
-        dataSet.query();
-        changeAvatarStatus(false);
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    changeAvatarStatus(false);
+    // try {
+    //   if ((await dataSet.submit()) !== false) {
+    //     dataSet.query();
+    //     changeAvatarStatus(false);
+    //   } else {
+    //     return false;
+    //   }
+    // } catch (e) {
+    //   return false;
+    // }
   }
   return (
     <div className="c7n-organization-infoForm">
@@ -39,7 +40,7 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
           <div
             className="c7n-organization-avater"
             style={{
-              backgroundImage: `url(${imageUrl})`,
+              backgroundImage: imageUrl ? `url('${imageUrl}')` : '',
             }}
           >
             {!imageUrl && (
@@ -63,8 +64,8 @@ const InfoForm = observer(({ dataSet, AppState, intl, orgName }) => {
           </div>
           <span style={{ display: 'block', textAlign: 'center', fontSize: '.13rem', color: 'rgba(0,0,0,0.54)' }}>组织Logo</span>
         </div>
-        <TextField label="组织名称*" name="name" required />
-        <TextField label="组织编码" name="code" disabled />
+        <TextField name="tenantName" required />
+        <TextField name="tenantNum" disabled />
         <TextField label="组织所在地*" name="address" required />
         <TextField label="官网地址*" name="homePage" required />
         <TextField label="所有者" name="ownerRealName" disabled />

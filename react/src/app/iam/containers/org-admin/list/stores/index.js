@@ -22,8 +22,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       prefixCls: 'base-org-admin-list',
       intlPrefix,
       permissions: [
-        'base-service.organization-administrator.createOrgAdministrator',
-        'base-service.organization-administrator.deleteOrgAdministrator',
+        'choerodon.code.organization.manager.organization-admin.ps.default',
       ],
       organizationId,
     };

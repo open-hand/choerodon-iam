@@ -32,7 +32,7 @@ const NoPermissionPage = observer(({ appReleasedDataSet = [], currentPermission,
         content: (
           <React.Fragment>
             <h4>您当前平台尚未配置远程连接或远程连接已断开</h4>
-            <h5>请联系平台管理员<Link to="/base/safe/token">配置远程连接</Link>，以便查看市场发布列表</h5>
+            <h5>请联系平台管理员<Link to="/iam/safe/token">配置远程连接</Link>，以便查看市场发布列表</h5>
           </React.Fragment>
         ),
       };

@@ -33,17 +33,17 @@ export default ({ intl, intlPrefix }) => {
     ],
     transport: {
       read: {
-        url: '/base/v1/registers',
+        url: '/iam/choerodon/v1/registers',
         method: 'get',
       },
-  
+
       /**
          * 注册审批
          * @param data
          * @returns {{method: string, data: *, transformRequest: (function(*): string), url: string}}
          */
       update: data => ({
-        url: `/base/v1/registers/approval/${data.data[0].id}`,
+        url: `/iam/choerodon/v1/registers/approval/${data.data[0].id}`,
         method: 'post',
         data,
         transformRequest: req => JSON.stringify(req.data[0]),

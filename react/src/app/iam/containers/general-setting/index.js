@@ -8,10 +8,9 @@ import GeneralSetting from './GeneralSetting';
 import ApplicationSetting from '../application-setting/ApplicationSetting';
 
 const TabIndex = () => (
-  <PageWrap noHeader={[]}>
-    <PageTab title="项目信息" tabKey="choerodon.code.project.general-info" component={withRouter(GeneralSetting)} />
+  <PageWrap noHeader={[]} cache>
+    <PageTab title="项目信息" tabKey="choerodon.code.project.general-info" component={withRouter(GeneralSetting)} alwaysShow />
     {/* <PageTab title="应用配置" tabKey="choerodon.code.project.general-application" component={withRouter(ApplicationSetting)} /> */}
-    <PageTab title="仓库" tabKey="choerodon.code.project.general-repository" />
   </PageWrap>
 );
 const Index = ({ match }) => (

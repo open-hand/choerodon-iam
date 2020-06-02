@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import java.util.List;
 import java.util.Set;
 
+import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.domain.repository.RolePermissionRepository;
 import org.hzero.iam.infra.constant.RolePermissionType;
@@ -50,7 +51,7 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
     }
 
     @Override
-    public List<RolePermission> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames) {
+    public List<Menu> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames) {
         return rolePermissionC7nMapper.listRolePermissionByRoleIdAndLabels(roleId, labelNames);
     }
 }

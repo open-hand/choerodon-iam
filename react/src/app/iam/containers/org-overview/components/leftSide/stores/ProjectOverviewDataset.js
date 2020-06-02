@@ -5,7 +5,7 @@ export default ({ organizationId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/organizations/${organizationId}/project/overview`,
+      url: `/iam/choerodon/v1/organizations/${organizationId}/project/overview`,
       method: 'get',
     },
   },

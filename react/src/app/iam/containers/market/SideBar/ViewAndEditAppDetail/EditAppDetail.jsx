@@ -36,9 +36,9 @@ const EditAppDetail = observer((props) => {
       case 'save':
         // 编辑应用接口
         if (editReleased) {
-          viewAndEditAppDetailDataSet.submitUrl = `base/v1/projects/${projectId}/publish_applications/published_apps/${appId}`;
+          viewAndEditAppDetailDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_applications/published_apps/${appId}`;
         } else {
-          viewAndEditAppDetailDataSet.submitUrl = `base/v1/projects/${projectId}/publish_applications/unpublish_apps/${appId}`;
+          viewAndEditAppDetailDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_applications/unpublish_apps/${appId}`;
         }
         break;
       default:
@@ -91,7 +91,7 @@ const EditAppDetail = observer((props) => {
                 'required-title': editReleased,
               })}
             >
-            应用介绍
+              应用介绍
             </span>
           </p>
           <span className="required-message" style={{ display: viewAndEditAppDetailDataSet.current && getCustomValidateMsg('overview') ? 'inline-block' : 'none' }}>{viewAndEditAppDetailDataSet.current && getCustomValidateMsg('overview')}</span>

@@ -33,7 +33,7 @@ class MemberLabel extends Component {
   };
 
   searchMemberId(loginName) {
-    return axios.get(`/base/v1/users?login_name=${loginName}`);
+    return axios.get(`/iam/choerodon/v1/users?login_name=${loginName}`);
   }
 
   validateMember = (rule, value, callback) => {
@@ -153,7 +153,8 @@ class MemberLabel extends Component {
             allowClear
           />,
         )}
-      </FormItem>);
+      </FormItem>
+    );
   }
 }
 

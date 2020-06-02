@@ -72,7 +72,7 @@ export default function (intl, projectId) {
     ],
     transport: {
       read: ({ data, params }) => ({
-        url: `base/v1/projects/${projectId}/publish_applications`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications`,
         method: 'get',
         params: {
           ...params,

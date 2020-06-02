@@ -112,7 +112,7 @@ export default function ListView(props) {
         title: '删除用户',
         content: `确认删除用户"${record.get('realName')}"在本项目下的全部角色吗?`,
         onOk: async () => {
-          const result = await axios.post(`/base/v1/projects/${projectId}/role_members/delete`, JSON.stringify(postData));
+          const result = await axios.post(`/iam/choerodon/v1/projects/${projectId}/users/${record.get('id')}/role_members/delete`, JSON.stringify(postData));
           if (!result.failed) {
             await orgUserRoleDataSet.reset();
             dataSet.query();
@@ -146,7 +146,12 @@ export default function ListView(props) {
     ) : null;
     return (
       <Fragment>
-        <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+        <Permission
+          service={['choerodon.code.project.cooperation.team-member.ps.update']}
+          defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+        >
+          <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+        </Permission>
         {label}
         {programLabel}
       </Fragment>
@@ -155,6 +160,7 @@ export default function ListView(props) {
 
   function renderAction({ record }) {
     const actionDatas = [{
+      service: ['choerodon.code.project.cooperation.team-member.ps.delete'],
       text: '删除',
       action: () => handleDeleteUser(record),
     }];
@@ -177,12 +183,26 @@ export default function ListView(props) {
   }
 
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.project.cooperation.team-member.ps.default']}>
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Button icon="person_add" onClick={handleCreate}>添加团队成员</Button>
-        <Button icon="archive" onClick={handleImportRole}>导入团队成员</Button>
+        <Permission service={['choerodon.code.project.cooperation.team-member.ps.add']}>
+          <Button
+            icon="person_add"
+            onClick={handleCreate}
+          >
+            添加团队成员
+          </Button>
+        </Permission>
+        <Permission service={['choerodon.code.project.cooperation.team-member.ps.import']}>
+          <Button
+            icon="archive"
+            onClick={handleImportRole}
+          >
+            导入团队成员
+          </Button>
+        </Permission>
         {getInitialButton()}
       </Header>
       <Breadcrumb />

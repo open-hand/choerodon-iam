@@ -16,7 +16,7 @@ export default function (projectId, organizationId, categoryTypeOption) {
       return '不能以空格开头或结束';
     }
     try {
-      const res = await axios.get(`base/v1/projects/${projectId}/publish_applications/check_name`, {
+      const res = await axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/check_name`, {
         params: {
           name: value,
         },
@@ -46,7 +46,7 @@ export default function (projectId, organizationId, categoryTypeOption) {
       return '不能以空格开头或结束';
     }
     try {
-      const res = await axios.get(`base/v1/projects/${projectId}/publish_applications/app_categories/check`, {
+      const res = await axios.get(`iam/choerodon/v1/projects/${projectId}/publish_applications/app_categories/check`, {
         params: {
           category_name: value,
         },

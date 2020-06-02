@@ -14,7 +14,7 @@ export default ({ id = 0, organizationId, intl, intlPrefix }) => {
     ],
     transport: {
       create: ({ data, dataSet }) => ({
-        url: '/base/v1/users/admin',
+        url: '/iam/choerodon/v1/users/admin',
         method: 'post',
         data: undefined,
         params: {

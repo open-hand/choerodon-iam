@@ -21,7 +21,7 @@ export default ({ id = 0, hasRegister }) => {
     autoQuery: true,
     transport: {
       read: {
-        url: '/base/v1/system/setting',
+        url: '/iam/choerodon/v1/system/setting',
         method: 'get',
         dataKey: null,
         transformResponse: (data) => {
@@ -44,7 +44,7 @@ export default ({ id = 0, hasRegister }) => {
         },
       },
       update: ({ data, dataSet }) => ({
-        url: '/base/v1/system/setting',
+        url: '/iam/choerodon/v1/system/setting',
         method: 'post',
         data: data[0],
       }),

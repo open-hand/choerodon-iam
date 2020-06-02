@@ -1,7 +1,7 @@
 export default function (orgId) {
   return {
     selection: 'multiple',
-    queryUrl: `/base/v1/organizations/${orgId}/role_members/clients/count`,
+    queryUrl: `/iam/choerodon/v1/organizations/${orgId}/role_members/clients/count`,
     autoQuery: true,
-  };  
+  };
 }

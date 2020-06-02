@@ -7,8 +7,8 @@ import './index.less';
 function Index(props) {
   return (
     <StoreProvider {...props}>
-      <PageWrap noHeader={[]}>
-        <PageTab title="密码策略" tabKey="choerodon.code.organization.security-password" component={Password} />
+      <PageWrap cache noHeader={[]}>
+        <PageTab alwaysShow title="密码策略" tabKey="choerodon.code.organization.security-password" component={Password} />
       </PageWrap>
     </StoreProvider>
   );

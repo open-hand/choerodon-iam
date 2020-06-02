@@ -4,7 +4,7 @@ export default ({ orgId, year }) => ({
   paging: false,
   transport: {
     read: () => ({
-      url: `/base/v1/organizations/${orgId}/work_calendar_holiday_refs?year=${year}`,
+      url: `/iam/choerodon/v1/organizations/${orgId}/work_calendar_holiday_refs?year=${year}`,
       method: 'get',
     }),
   },

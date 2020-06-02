@@ -22,11 +22,11 @@ function TokenManager(props) {
   function deleteRecords(records) {
     const currentToken = Choerodon.getAccessToken().split(' ')[1];
     const recordTokens = records.map(v => v.get('tokenId'));
-    return axios.delete(`/base/v1/token/batch?currentToken=${currentToken}`, { data: recordTokens });
+    return axios.delete(`/iam/choerodon/v1/token/batch?currentToken=${currentToken}`, { data: recordTokens });
   }
   function deleteTokenById(tokenId) {
     const currentToken = Choerodon.getAccessToken().split(' ')[1];
-    return axios.delete(`/base/v1/token?tokenId=${tokenId}&currentToken=${currentToken}`);
+    return axios.delete(`/iam/choerodon/v1/token?tokenId=${tokenId}&currentToken=${currentToken}`);
   }
   const handleDelete = (record) => {
     Modal.confirm({
@@ -125,7 +125,7 @@ function TokenManager(props) {
   );
   function render() {
     const { permissions } = context;
-   
+
     return (
       <Page
         service={permissions}

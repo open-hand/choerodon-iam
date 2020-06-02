@@ -1,14 +1,38 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
+import { inject } from 'mobx-react';
 import { NumberField, Form, SelectBox, TextArea, TextField, Password } from 'choerodon-ui/pro';
 import { Modal } from 'choerodon-ui';
+import forEach from 'lodash/forEach';
+import { Choerodon } from '@choerodon/boot';
 
 const { Option } = SelectBox;
 const { Sidebar } = Modal;
-export default observer(({ dataSet, onOk, onCancel }) => {
+export default inject('AppState')(observer(({ dataSet, onOk, onCancel, clientStore, AppState, record }) => {
   const { current } = dataSet;
+  const { currentMenuType: { organizationId } } = AppState;
+
+  useEffect(() => {
+    async function getClientDetail() {
+      try {
+        const res = await clientStore.loadClientDetail(organizationId, record.get('id'));
+        if (res) {
+          forEach(res, (value, key) => {
+            if (key !== 'authorizedGrantTypes' && (key !== 'scope' || value)) {
+              record.init(key, value);
+            }
+          });
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    }
+    getClientDetail();
+  }, []);
+
   function handleCancel() {
     onCancel();
+    record.reset();
     dataSet.reset();
   }
   async function handleOk() {
@@ -51,4 +75,4 @@ export default observer(({ dataSet, onOk, onCancel }) => {
       </Form>
     </Sidebar>
   );
-});
+}));

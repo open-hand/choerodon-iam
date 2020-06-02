@@ -21,7 +21,7 @@ export default function useStore() {
 
     async checkCreate(organizationId) {
       try {
-        const res = await axios.get(`base/v1/organizations/${organizationId}/users/check_enable_create`);
+        const res = await axios.get(`iam/choerodon/v1/organizations/${organizationId}/users/check_enable_create`);
         this.setCanCreate(res && !res.failed);
       } catch (e) {
         this.setCanCreate(false);
@@ -30,7 +30,7 @@ export default function useStore() {
 
     async loadEmailSuffix(organizationId) {
       try {
-        const res = await axios.get(`base/v1/organizations/${organizationId}/email_suffix`);
+        const res = await axios.get(`iam/choerodon/v1/organizations/${organizationId}/email_suffix`);
         if (res && !res.failed) {
           this.setEmailSuffix(res);
         } else {

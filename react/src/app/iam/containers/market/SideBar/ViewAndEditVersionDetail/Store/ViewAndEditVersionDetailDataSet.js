@@ -43,7 +43,7 @@ export default function (projectId, versionId, serviceTableDataSet, mobxStore) {
     },
     transport: {
       read: () => ({
-        url: `base/v1/projects/${projectId}/publish_applications/versions/${versionId}/detail`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/versions/${versionId}/detail`,
         method: 'get',
       }),
       update: ({ data, dataSet }) => ({

@@ -29,7 +29,7 @@ export default function (projectId, organizationId, appId, versionId, serviceTab
     },
     transport: {
       read: () => ({
-        url: `base/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}`,
         method: 'get',
         transformResponse: (data) => ({
           ...JSON.parse(data),
@@ -37,7 +37,7 @@ export default function (projectId, organizationId, appId, versionId, serviceTab
         }),
       }),
       update: ({ data, dataSet }) => ({
-        url: `base/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}`,
         method: 'put',
         params: {
           organization_id: organizationId,

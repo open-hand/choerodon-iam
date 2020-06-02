@@ -22,11 +22,11 @@ const modalStyle = {
 const { Column } = Table;
 export default withRouter(observer((props) => {
   const { intlPrefix,
-    permissions, 
+    permissions,
     intl: { formatMessage },
     AppState,
-    orgUserListDataSet: dataSet, 
-    organizationId, 
+    orgUserListDataSet: dataSet,
+    organizationId,
     orgUserCreateDataSet,
     orgUserRoleDataSet,
     orgRoleDataSet,
@@ -64,7 +64,7 @@ export default withRouter(observer((props) => {
   };
   async function handleDisable(record) {
     try {
-      await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/disable`);
+      await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/disable`);
       const result = await dataSet.query();
       if (result.failed) {
         throw result.message;
@@ -75,7 +75,7 @@ export default withRouter(observer((props) => {
   }
   async function handleEnable(record) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/enable`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/enable`);
       if (result.failed) {
         throw result.message;
       }
@@ -86,7 +86,7 @@ export default withRouter(observer((props) => {
   }
   async function handleUnLock(record) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.get('id')}/unlock`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.get('id')}/unlock`);
       if (result.failed) {
         throw result.message;
       }
@@ -97,7 +97,7 @@ export default withRouter(observer((props) => {
   }
   async function resetPassword(userId) {
     try {
-      const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${userId}/reset`);
+      const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${userId}/reset`);
       if (!result.failed) {
         await dataSet.query();
       } else {
@@ -166,7 +166,7 @@ export default withRouter(observer((props) => {
     openModal('create');
   }
   function handleRoleAssignment() {
-    openModal('roleAssignment'); 
+    openModal('roleAssignment');
   }
   function handleImportUser() {
     openModal('importUser');
@@ -180,7 +180,7 @@ export default withRouter(observer((props) => {
       title: '删除用户',
       content: `确认删除用户"${record.get('realName')}"在本组织下的全部角色吗?`,
       onOk: async () => {
-        const result = await axios.put(`/base/v1/organizations/${organizationId}/users/${record.toData().id}/assign_roles`, []);
+        const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/users/${record.toData().id}/assign_roles`, []);
         if (!result.failed) {
           await orgUserRoleDataSet.reset();
           dataSet.query();
@@ -199,10 +199,11 @@ export default withRouter(observer((props) => {
         search,
       },
     } = props;
-    history.push(`/base/organization-setting/ldap${search}`);
+    history.push(`/iam/organization-setting/ldap${search}`);
   }
 
-  function handleSyncSetting() {
+  async function handleSyncSetting() {
+    const res = await axios.get(`/iam/v1/${organizationId}/ldaps`);
     Modal.open({
       key: syncModalKey,
       style: modalStyle,
@@ -215,7 +216,7 @@ export default withRouter(observer((props) => {
           </Tooltip>
         </div>
       ),
-      children: <LdapModal />,
+      children: <LdapModal ldapId={res.id} />,
       okText: '手动同步',
       cancelText: '关闭',
       footer: (okBtn, cancelBtn) => (
@@ -234,8 +235,16 @@ export default withRouter(observer((props) => {
     });
   }
 
+  function renderLoginName({ value }) {
+    return (
+      <Tooltip title={value}>
+        {value}
+      </Tooltip>
+    );
+  }
+
   function renderLocked({ value }) {
-    return value ? '锁定' : '';
+    return value ? '锁定' : '未锁定';
   }
   function rednerEnabled({ value }) {
     return <StatusTag name={value ? '启用' : '停用'} colorCode={value ? 'COMPLETED' : 'DEFAULT'} />;
@@ -244,19 +253,24 @@ export default withRouter(observer((props) => {
     if (record.get('organizationId').toString() !== organizationId) {
       return (
         <span>
-          <Permission service={[permissions[6]]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
-            <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+          <Permission
+            service={['choerodon.code.organization.manager.user.ps.update']}
+            defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+          >
+            <React.Fragment>
+              <span onClick={() => handleUserRole(record)} className="link">{value}</span>
+              <div className="org-user-external-user">
+                <span className="org-user-external-user-text">
+                  外部人员
+                </span>
+              </div>
+            </React.Fragment>
           </Permission>
-          <div className="org-user-external-user">
-            <span className="org-user-external-user-text">
-              外部人员
-            </span>
-          </div>
         </span>
       );
     }
     return (
-      <Permission service={[permissions[1]]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
+      <Permission service={[]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
         <span onClick={() => handleModify(record)} className="link">{value}</span>
       </Permission>
     );
@@ -272,14 +286,14 @@ export default withRouter(observer((props) => {
   }
   function renderAction({ record }) {
     let actionDatas = [{
-      service: [permissions[3]],
+      service: ['choerodon.code.organization.manager.user.ps.reset.password'],
       text: <FormattedMessage id={`${intlPrefix}.action.reset`} />,
       action: () => handleResetPassword(record),
     }];
     // 外部人员的处理
     if (record.get('organizationId').toString() !== organizationId) {
       actionDatas = [{
-        service: [permissions[8]],
+        service: ['choerodon.code.organization.manager.user.ps.delete'],
         text: '删除',
         action: () => handleDeleteUser(record),
       }];
@@ -287,20 +301,20 @@ export default withRouter(observer((props) => {
     }
     if (record.get('enabled')) {
       actionDatas.push({
-        service: [permissions[5]],
+        service: ['choerodon.code.organization.manager.user.ps.disable'],
         text: <FormattedMessage id={`${intlPrefix}.action.disable`} />,
         action: () => handleDisable(record),
       });
     } else {
       actionDatas.push({
-        service: [permissions[4]],
+        service: ['choerodon.code.organization.manager.user.ps.enable'],
         text: <FormattedMessage id={`${intlPrefix}.action.enable`} />,
         action: () => handleEnable(record),
       });
     }
     if (record.get('locked')) {
       actionDatas.push({
-        service: [permissions[2]],
+        service: ['choerodon.code.organization.manager.user.ps.unlock'],
         text: <FormattedMessage id={`${intlPrefix}.action.unlock`} />,
         action: () => handleUnLock(record),
       });
@@ -319,33 +333,48 @@ export default withRouter(observer((props) => {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Tooltip
-          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
-          placement="bottom"
-        >
-          <Button
-            icon="playlist_add"
-            disabled={!getCanCreate}
-            onClick={handleCreate}
+        <Permission service={['choerodon.code.organization.manager.user.ps.create']}>
+          <Tooltip
+            title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+            placement="bottom"
           >
-            <FormattedMessage id={`${intlPrefix}.button.create-user`} />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
-          placement="bottom"
-        >
-          <Button
-            icon="archive"
-            disabled={!getCanCreate}
-            onClick={handleImportUser}
+            <Button
+              icon="playlist_add"
+              disabled={!getCanCreate}
+              onClick={handleCreate}
+            >
+              <FormattedMessage id={`${intlPrefix}.button.create-user`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.import']}>
+          <Tooltip
+            title={getCanCreate ? '' : formatMessage({ id: `${intlPrefix}.button.create.disabled` })}
+            placement="bottom"
           >
-            <FormattedMessage id={`${intlPrefix}.button.import-user`} />
+            <Button
+              icon="archive"
+              disabled={!getCanCreate}
+              onClick={handleImportUser}
+            >
+              <FormattedMessage id={`${intlPrefix}.button.import-user`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.add.user']}>
+          <Button
+            icon="person_add"
+            onClick={handleRoleAssignment}
+          >
+            添加组织用户
           </Button>
-        </Tooltip>
-        <Button icon="person_add" onClick={handleRoleAssignment}>添加组织用户</Button>
-        <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
-        <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.import.user']}>
+          <Button icon="archive" onClick={handleImportRole}>导入组织用户</Button>
+        </Permission>
+        <Permission service={['choerodon.code.organization.manager.user.ps.ldap']}>
+          <Button icon="compare_arrows" onClick={handleSyncSetting}>LDAP同步设置</Button>
+        </Permission>
       </Header>
       <Breadcrumb />
       <Content
@@ -354,7 +383,7 @@ export default withRouter(observer((props) => {
         <Table queryFields={getQueryFields()} queryFieldsLimit={3} labelLayout="float" pristine dataSet={dataSet}>
           <Column renderer={renderUserName} name="realName" />
           <Column renderer={renderAction} width={50} align="right" />
-          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" />
+          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" renderer={renderLoginName} />
           <Column renderer={rednerEnabled} name="enabled" align="left" />
           <Column minWidth={320} width={320} renderer={expandMoreColumn} className="org-user-roles" name="myRoles" />
           <Column renderer={renderSource} name="ldap" style={{ color: 'rgba(0, 0, 0, 0.65)' }} align="left" />

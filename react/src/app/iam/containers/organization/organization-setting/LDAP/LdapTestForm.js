@@ -8,7 +8,7 @@ import './OrganizationLdap.less';
 const LdapTestForm = observer(({ ldapDataSet, ldapTestDataSet, modal, orgId }) => {
   const [isPanelShow, showPanel] = useState(false);
   const { current } = ldapTestDataSet;
-  const password = current && current.get('password');
+  const ldapPassword = current && current.get('ldapPassword');
   const account = current && current.get('account');
   const ldapId = ldapDataSet.current && ldapDataSet.current.get('id');
 
@@ -27,7 +27,7 @@ const LdapTestForm = observer(({ ldapDataSet, ldapTestDataSet, modal, orgId }) =
     }
     if (ldapTestDataSet.current.validate()) {
       try {
-        const result = await axios.post(`/base/v1/organizations/${orgId}/ldaps/test_connect`, { account, password });
+        const result = await axios.post(`/iam/v1/${orgId}/ldaps/${ldapId}/test-connect`, { account, ldapPassword });
         if (result) {
           showPanel(true);
         }
@@ -67,7 +67,7 @@ const LdapTestForm = observer(({ ldapDataSet, ldapTestDataSet, modal, orgId }) =
       <Form dataSet={ldapTestDataSet} labelLayout="float" className="hidden-password">
         <input type="password" style={{ position: 'absolute', top: '-999px' }} />
         <TextField label="管理员登录名" name="account" required />
-        <Password label="管理员密码" name="password" required />
+        <Password label="管理员密码" name="ldapPassword" required />
       </Form>
       <div style={{ display: isPanelShow ? 'block' : 'none' }} className="c7n-organization-LdapTest-panel">
         <div className="c7n-organization-LdapTest-panel-content">

@@ -15,7 +15,7 @@ class GeneralSettingStore {
   @computed get getImageUrl() {
     return this.imageUrl;
   }
-  
+
   @action setProjectInfo(data) {
     this.projectInfo = data;
   }
@@ -33,18 +33,18 @@ class GeneralSettingStore {
   }
 
   axiosGetProjectInfo(id) {
-    return axios.get(`/base/v1/projects/${id}`);
+    return axios.get(`/iam/choerodon/v1/projects/${id}`);
   }
 
   axiosSaveProjectInfo(data) {
-    return axios.put(`/base/v1/projects/${data.id}`, data);
+    return axios.put(`/iam/choerodon/v1/projects/${data.id}`, data);
   }
 
   disableProject(proId) {
-    return axios.put(`/base/v1/projects/${proId}/disable`);
+    return axios.put(`/iam/choerodon/v1/projects/${proId}/disable`);
   }
 
-  loadProjectTypes = () => axios.get('/base/v1/projects/types');
+  loadProjectTypes = () => axios.get('/iam/choerodon/v1/projects/types');
 }
 
 

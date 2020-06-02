@@ -2,17 +2,17 @@
 export default ({ id = 0, intl, intlPrefix, applicationId }) => {
   const name = intl.formatMessage({ id: 'name' });
   const description = intl.formatMessage({ id: 'description' });
-  
+
   return {
     autoQuery: true,
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/projects/${id}/applications/${applicationId}/services/paging/app`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${applicationId}/services/paging/app`,
         method: 'get',
       },
       create: ({ data: [data] }) => ({
-        url: `/base/v1/projects/${id}/applications/${data.id}/services?service_ids=${data.serviceIds.join(',')}`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${data.id}/services?service_ids=${data.serviceIds.join(',')}`,
         method: 'post',
         data,
       }),

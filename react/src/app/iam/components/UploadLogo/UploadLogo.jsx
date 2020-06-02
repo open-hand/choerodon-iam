@@ -26,7 +26,7 @@ export default class UploadLogo extends Component {
       listType: 'picture-card',
       className: cssPrefix,
       accept: 'image/jpeg, image/png, image/jpg',
-      action: `${Choerodon.API_HOST}/base/v1/projects/${projectId}/publish_applications/cut_image`,
+      action: `${Choerodon.API_HOST}/iam/choerodon/v1/projects/${projectId}/publish_applications/cut_image`,
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
       },

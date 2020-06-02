@@ -82,7 +82,7 @@ const ListView = ({ context, level, modal, base }) => {
   async function loadRole() {
     const record = dataSet.current;
     if (status !== 'add') {
-      const res = await axios.get(`base/v1/roles/${record.get('id')}`);
+      const res = await axios.get(`iam/choerodon/v1/roles/${record.get('id')}`);
       edit.current = !res.builtIn;
       setPermissionsArr(res.permissions.map((p) => p.code));
       record.set('labels', map(res.labels || [], 'id'));
@@ -96,7 +96,7 @@ const ListView = ({ context, level, modal, base }) => {
       }
     }
     if (base && base.length) {
-      const res = await axios.post('/base/v1/permissions', base);
+      const res = await axios.post('/iam/choerodon/v1/permissions', base);
       setPermissionsArr([...new Set(res.map((p) => p.code))]);
     }
   }
@@ -127,9 +127,9 @@ const ListView = ({ context, level, modal, base }) => {
       };
       let res;
       if (status === 'add') {
-        res = await axios.post('base/v1/roles', role);
+        res = await axios.post('iam/choerodon/v1/roles', role);
       } else {
-        res = await axios.put(`/base/v1/roles/${roleObj.id}`, role);
+        res = await axios.put(`/iam/choerodon/v1/roles/${roleObj.id}`, role);
       }
       if (res && !res.failed) {
         message.success(status === 'add' ? '创建成功' : '修改成功');

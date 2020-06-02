@@ -98,7 +98,7 @@ const NewCreateType = observer(() => {
 
   const queryAppServiceVersions = _.debounce(async (e, record) => {
     // if (e.target.value !== '') {
-    const res = await axios.get(`/base/v1/projects/${projectId}/applications/${versionOptionDataSet.queryDataSet.current.get('applicationId')}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
+    const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${versionOptionDataSet.queryDataSet.current.get('applicationId')}/services/${record.get('id')}/with_all_version?version=${e.target.value}`);
     record.set('allAppServiceVersions', res);
     // }
   }, 500);

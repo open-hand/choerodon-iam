@@ -10,7 +10,7 @@ export default ({ id = 0, intl, intlPrefix }) => {
       return '应用名称只能由汉字、字母、数字、"_"、"."、"-"、"——"和空格组成。';
     }
     try {
-      const result = await axios.get(`/base/v1/projects/${id}/applications/check/${value}`);
+      const result = await axios.get(`/iam/choerodon/v1/projects/${id}/applications/check/${value}`);
       if (!result) {
         return '该名称已被使用。';
       }
@@ -18,22 +18,22 @@ export default ({ id = 0, intl, intlPrefix }) => {
       Choerodon.prompt(e);
     }
   }
-  
+
   return {
     autoQuery: true,
     selection: false,
     transport: {
       read: {
-        url: `/base/v1/projects/${id}/applications/pagingByOptions?type=custom`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/pagingByOptions?type=custom`,
         method: 'get',
       },
       create: ({ data: [data] }) => ({
-        url: `/base/v1/projects/${id}/applications`,
+        url: `/iam/choerodon/v1/projects/${id}/applications`,
         method: 'post',
         data,
       }),
       update: ({ data: [data] }) => ({
-        url: `/base/v1/projects/${id}/applications/${data.id}`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${data.id}`,
         method: 'put',
         data,
       }),

@@ -4,7 +4,7 @@ export default () => ({
   selection: 'single',
   transport: {
     read: {
-      url: '/base/v1/organizations/listByName',
+      url: '/iam/choerodon/v1/organizations/listByName',
       method: 'get',
       params: {
         organization_name: '',

@@ -17,7 +17,7 @@ export default function useStore() {
     async initEmailSendByDate(startTime, endTime) {
       const data = await axios({
         method: 'GET',
-        url: '/notify/v1/mails/records/count_by_date',
+        url: '/hmsg/choerodon/v1/mails/records/count_by_date',
         params: {
           start_time: startTime,
           end_time: endTime,

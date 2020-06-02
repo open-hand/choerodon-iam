@@ -4,7 +4,7 @@ export default function (projectId, marketAppDataSet) {
     paging: false,
     transport: {
       read: {
-        url: `base/v1/projects/${projectId}/publish_applications/app_categories/list/enable`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/app_categories/list/enable`,
         method: 'get',
         transformResponse: (data) => [...JSON.parse(data).list.map((item) => ({
           ...item,

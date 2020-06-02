@@ -62,7 +62,7 @@ export default observer((props) => {
           {((itemProps) => {
             const result = orgAllRoleDataSet.find(item => item.get('id') === itemProps.value);
             return (
-              <Select 
+              <Select
                 {...itemProps}
                 labelLayout="float"
                 renderer={renderOption}

@@ -57,7 +57,7 @@ export default class AvatarUploader extends Component {
     const data = new FormData();
     data.append('file', file);
     this.setState({ submitting: true });
-    axios.post(`/base/v1/users/${id}/save_photo?${qs}`, data)
+    axios.post(`/iam/choerodon/v1/users/${id}/save_photo?${qs}`, data)
       .then((res) => {
         if (res.failed) {
           Choerodon.prompt(res.message);
@@ -329,7 +329,7 @@ export default class AvatarUploader extends Component {
       multiple: false,
       name: 'file',
       accept: 'image/jpeg, image/png, image/jpg',
-      action: id && `${process.env.API_HOST}/base/v1/users/${id}/upload_photo`,
+      action: id && `${process.env.API_HOST}/iam/choerodon/v1/users/${id}/upload_photo`,
       headers: {
         Authorization: `bearer ${Choerodon.getCookie('access_token')}`,
       },

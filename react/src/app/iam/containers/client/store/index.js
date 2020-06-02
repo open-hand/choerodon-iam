@@ -5,6 +5,7 @@ import { injectIntl } from 'react-intl';
 import { useLocalStore } from 'mobx-react-lite';
 import ClientDataSet from './ClientDataSet';
 import OptionsDataSet from './OptionsDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 export default Store;
@@ -14,6 +15,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { id, type, organizationId } }, children, intl } = props;
     const intlPrefix = 'organization.pwdpolicy';
     const orgId = type === 'organization' ? id : organizationId;
+    const clientStore = useStore();
     const optionsDataSet = useMemo(() => new DataSet(OptionsDataSet(orgId)), [orgId]);
     const clientDataSet = useMemo(() => new DataSet(ClientDataSet(orgId, optionsDataSet)), [orgId]);
 
@@ -35,6 +37,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       remoteMobxStore,
       intl,
       intlPrefix,
+      clientStore,
     };
     return (
       <Store.Provider value={value}>

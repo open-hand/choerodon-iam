@@ -61,7 +61,7 @@ const RenderMainPage = (props) => {
   };
 
   // 查询下载应用需要更新的数量
-  const fetchUpdateCount = () => axios.get(`/base/v1/paas_app_market/newVersionNum?organizationId=${organizationId}`)
+  const fetchUpdateCount = () => axios.get(`/iam/choerodon/v1/paas_app_market/newVersionNum?organizationId=${organizationId}`)
     .then((record) => {
       if (!record.failed) {
         setUpdateCount(record);
@@ -100,7 +100,7 @@ const RenderMainPage = (props) => {
 
   // 应用卡片点击 ， 查看应用详情事件
   const appDetail = (id) => {
-    context.history.push(`/base/app-market/${id}${history.location.search}`);
+    context.history.push(`/iam/app-market/${id}${history.location.search}`);
   };
 
   const resetMenu = () => {

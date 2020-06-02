@@ -5,7 +5,7 @@ export default {
   selection: false,
   transport: {
     read: {
-      url: '/asgard/v1/sagas',
+      url: '/hagd/v1/sagas',
       method: 'get',
     },
   },

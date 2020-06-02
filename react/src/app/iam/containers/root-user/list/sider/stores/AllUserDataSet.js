@@ -6,7 +6,7 @@ export default {
   paging: false,
   transport: {
     read: (props) => ({
-      url: '/base/v1/all/users',
+      url: '/iam/choerodon/v1/all/users',
       method: 'get',
       params: {
         organization_id: '0',

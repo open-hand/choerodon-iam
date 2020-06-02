@@ -40,7 +40,7 @@ export default function ListView(props) {
   };
   async function handleDisable(record) {
     try {
-      await axios.put(`/base/v1/users/${record.get('id')}/disable`);
+      await axios.put(`/iam/choerodon/v1/users/${record.get('id')}/disable`);
       const result = await dataSet.query();
       if (result.failed) {
         throw result.message;
@@ -51,7 +51,7 @@ export default function ListView(props) {
   }
   async function handleEnable(record) {
     try {
-      await axios.put(`/base/v1/users/${record.get('id')}/enable`);
+      await axios.put(`/iam/choerodon/v1/users/${record.get('id')}/enable`);
       await dataSet.query();
     } catch (err) {
       Choerodon.prompt(err);
@@ -59,7 +59,7 @@ export default function ListView(props) {
   }
   async function handleUnLock(record) {
     try {
-      await axios.put(`/base/v1/users/${record.get('id')}/unlock`);
+      await axios.put(`/iam/choerodon/v1/users/${record.get('id')}/unlock`);
       await dataSet.query();
     } catch (err) {
       Choerodon.prompt(err);

@@ -25,7 +25,7 @@ const DeleteRoleModal = ({ deleteRoleRecord, handleCancel, projectId }) => {
         return item.id;
       }
     });
-    await axios.post(`/base/v1/projects/${projectId}/role_members/delete?sync_all=${deleteRoleAll}`, {
+    await axios.post(`/iam/choerodon/v1/projects/${projectId}/users/${deleteRoleRecord.get('id')}/role_members/delete?sync_all=${deleteRoleAll}`, {
       memberType: 'user',
       view: 'userView',
       sourceId: Number(projectId),

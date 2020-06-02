@@ -48,22 +48,22 @@ export default observer(({ record, dataSet, projectId, applicationId }) => {
   }
   function getAddButton() {
     const addBtn = (
-      <Button 
-        colSpan={1} 
+      <Button
+        colSpan={1}
         icon="add"
         style={{ marginTop: '.04rem', width: 'auto' }}
         color="primary"
         onClick={showSelect}
         // disabled={record.allAppServiceVersions.length === 0}
       >
-      添加应用服务版本
+        添加应用服务版本
       </Button>
     );
     return record.allAppServiceVersions && record.allAppServiceVersions.length === 0 ? (<Tooltip placement="top" title="当前无版本可用">{addBtn}</Tooltip>) : addBtn;
   }
   // 搜索请求防抖
   const queryAppServiceVersions = _.debounce(async (e) => {
-    const res = await axios.get(`/base/v1/projects/${projectId}/applications/${applicationId}/services/${record.id}/with_all_version?version=${e.target.value}`);
+    const res = await axios.get(`/iam/choerodon/v1/projects/${projectId}/applications/${applicationId}/services/${record.id}/with_all_version?version=${e.target.value}`);
     record.allAppServiceVersions = observable(res);
   }, 500);
   function debounceQuery(e) {
@@ -73,18 +73,18 @@ export default observer(({ record, dataSet, projectId, applicationId }) => {
   return (
     <div style={{ display: 'flex' }}>
       <Form columns={2}>
-        <Select 
-          value={record.id} 
+        <Select
+          value={record.id}
           disabled
           colSpan={1}
           label="应用服务"
         >
           <Option value={record.id}>{record.name}</Option>
         </Select>
-        {isButton 
+        {isButton
           ? getAddButton()
           : (
-            <Select 
+            <Select
               value={record.appServiceVersions[0] && record.appServiceVersions[0].id}
               onChange={handleSelectChange}
               onInput={debounceQuery}
@@ -99,7 +99,7 @@ export default observer(({ record, dataSet, projectId, applicationId }) => {
           )}
       </Form>
       {!isButton ? (
-        <Button 
+        <Button
           icon="delete"
           style={{ marginTop: '.1rem', width: 'auto', padding: '0 .05rem' }}
           onClick={handleDelete}

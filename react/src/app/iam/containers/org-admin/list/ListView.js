@@ -21,7 +21,7 @@ export default function ListView() {
       content: `确认删除组织管理员"${record.get('userName')}"吗？`,
       onOk: async () => {
         try {
-          const result = await axios.delete(`/base/v1/organizations/${organizationId}/org_administrator/${record.get('id')}`);
+          const result = await axios.delete(`/iam/choerodon/v1/organizations/${organizationId}/org_administrator/${record.get('id')}`);
           if (result.failed) {
             throw result.message;
           }
@@ -36,7 +36,7 @@ export default function ListView() {
 
   function renderAction(record) {
     const actionDatas = [{
-      service: [permissions[1]],
+      service: ['choerodon.code.organization.manager.organization-admin.ps.delete'],
       text: <FormattedMessage id={`${intlPrefix}.action.delete`} />,
       action: () => handleDelete(record),
     }];
@@ -91,7 +91,7 @@ export default function ListView() {
       <Header
         title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
       >
-        <Permission service={[permissions[0]]}>
+        <Permission service={['choerodon.code.organization.manager.organization-admin.ps.add']}>
           <Button icon="playlist_add" onClick={handleCreate}><FormattedMessage id={`${intlPrefix}.button.add`} /></Button>
         </Permission>
       </Header>

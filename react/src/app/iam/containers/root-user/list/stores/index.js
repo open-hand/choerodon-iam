@@ -15,11 +15,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const intlPrefix = 'global.root-user.list';
     const adminListDataSet = useMemo(() => new DataSet(AdminListDataSet({ id, intl, intlPrefix })), [id]);
     const adminCreateDataSet = useMemo(() => new DataSet(AdminCreateDataSet({ id, organizationId, intl, intlPrefix })), [id]);
-    const permissions = [
-      'base-service.user.pagingQueryAdminUsers',
-      'base-service.user.addDefaultUsers',
-      'base-service.user.deleteDefaultUser',
-    ];
+    const permissions = ['choerodon.code.site.manager.root-user.ps.default'];
     const value = {
       ...props,
       adminListDataSet,

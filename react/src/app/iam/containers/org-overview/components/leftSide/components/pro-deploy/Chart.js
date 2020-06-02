@@ -39,10 +39,10 @@ const Charts = observer(() => {
       legend: {
         right: 0,
         itemHeight: 10,
-        data: projectDataList.map(p => ({
+        data: projectDataList ? projectDataList.map(p => ({
           name: p.name,
           icon: 'circle',
-        })),
+        })) : [],
         textStyle: {
           color: '#3A345FA6',
         },
@@ -106,7 +106,7 @@ const Charts = observer(() => {
           },
         },
       },
-      series: projectDataList.map(p => ({
+      series: projectDataList ? projectDataList.map(p => ({
         name: p.name,
         type: 'bar',
         data: p.data,
@@ -115,7 +115,7 @@ const Charts = observer(() => {
         },
         barWidth: 6,
         barGap: '50%',
-      })),
+      })) : [],
     };
   };
   return !resizeIf ? (

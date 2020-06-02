@@ -5,7 +5,7 @@ const taskDataSet = {
   selection: false,
   transport: {
     read: {
-      url: 'asgard/v1/sagas/tasks/instances',
+      url: 'hagd/v1/sagas/tasks/instances',
       method: 'get',
     },
   },

@@ -16,7 +16,7 @@ export default function useStore() {
     async initOrgPeopleDataByDate(orgId, startTime, endTime) {
       const data = await axios({
         method: 'GET',
-        url: `/base/v1/organizations/${orgId}/users/count_by_date`,
+        url: `/iam/choerodon/v1/organizations/${orgId}/users/count_by_date`,
         params: {
           start_time: startTime,
           end_time: endTime,

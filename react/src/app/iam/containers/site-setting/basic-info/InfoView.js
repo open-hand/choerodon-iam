@@ -83,7 +83,7 @@ const InfoView = observer(() => {
       content: intl.formatMessage({ id: `${intlPrefix}.reset.confirm.content` }),
       onOk: async () => {
         try {
-          await axios.delete('/base/v1/system/setting');
+          await axios.delete('/iam/choerodon/v1/system/setting');
           await window.location.reload(true);
         } catch (e) {
           return false;
@@ -97,11 +97,17 @@ const InfoView = observer(() => {
     );
   }
   return (
-    <TabPage>
+    <TabPage service={['choerodon.code.site.setting.general-setting.ps.default']}>
       <Header>
-        <Button type="primary" funcType="flat" icon="mode_edit" onClick={openModal}> 修改信息 </Button>
-        <Button type="primary" funcType="flat" icon="mode_edit" onClick={openThemeColorModal}> 修改主题色 </Button>
-        <Button type="primary" funcType="flat" icon="swap_horiz" onClick={handleReset}> 重置 </Button>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.update']}>
+          <Button type="primary" funcType="flat" icon="mode_edit" onClick={openModal}> 修改信息 </Button>
+        </Permission>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.update.theme']}>
+          <Button type="primary" funcType="flat" icon="mode_edit" onClick={openThemeColorModal}> 修改主题色 </Button>
+        </Permission>
+        <Permission service={['choerodon.code.site.setting.general-setting.ps.reset']}>
+          <Button type="primary" funcType="flat" icon="swap_horiz" onClick={handleReset}> 重置 </Button>
+        </Permission>
       </Header>
 
       <Breadcrumb />
@@ -121,14 +127,14 @@ const InfoView = observer(() => {
             <Output name="systemName" colSpan={1} />
 
             <div colSpan={1} rowSpan={3} className="c7n-system-setting-formImg" label="平台LOGO">
-              {favicon ? <img src={favicon} alt="图片" /> 
+              {favicon ? <img src={favicon} alt="图片" />
                 : <div className="c7n-system-setting-formImg-wrapper default-favicon" />}
             </div>
             <Output name="systemTitle" newLine />
             <Output renderer={() => '简体中文'} name="defaultLanguage" newLine />
             <Output renderer={() => (dataSet.current && dataSet.current.getPristineValue('resetGitlabPasswordUrl')) || '无'} name="resetGitlabPasswordUrl" />
             <div colSpan={1} rowSpan={3} className="c7n-system-setting-formImg" label="平台导航栏图形标">
-              {systemLogo ? <img src={systemLogo} alt="图片" /> 
+              {systemLogo ? <img src={systemLogo} alt="图片" />
                 : <div className="c7n-system-setting-formImg-wrapper default-logo" />}
             </div>
             {hasRegister && (
@@ -143,7 +149,7 @@ const InfoView = observer(() => {
         <div className="c7n-system-setting-form">
           <h3>主题色</h3>
           <div className="divider" />
-          <Form 
+          <Form
             pristine
             labelWidth={180}
             dataSet={dataSet}

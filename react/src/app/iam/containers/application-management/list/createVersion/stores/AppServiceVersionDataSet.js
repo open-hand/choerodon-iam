@@ -3,13 +3,13 @@ import { runInAction } from 'mobx';
 
 export default ({ id = 0, intl, intlPrefix, applicationId }) => {
   const name = intl.formatMessage({ id: 'name' });
-  
+
   return {
     autoQuery: true,
     // selection: false,
     transport: {
       read: {
-        url: `/base/v1/projects/${id}/applications/${applicationId}/services`,
+        url: `/iam/choerodon/v1/projects/${id}/applications/${applicationId}/services`,
         method: 'get',
         transformResponse: (data) => {
           data = JSON.parse(data);
@@ -26,13 +26,13 @@ export default ({ id = 0, intl, intlPrefix, applicationId }) => {
       { name: 'appServiceVersions',
         type: 'string',
         label: '应用服务版本',
-        dynamicProps: ({ record }) => ({ 
+        dynamicProps: ({ record }) => ({
           options: new DataSet({
             paging: false,
             data: record.get('allAppServiceVersions'),
             selection: 'single',
           }),
-        }), 
+        }),
         textField: 'version',
         valueField: 'id',
       },

@@ -3,6 +3,7 @@ import { axios } from '@choerodon/boot';
 
 class SagaStore {
   @observable data = [];
+
   @observable tasks = [];
 
   @action
@@ -26,7 +27,7 @@ class SagaStore {
   }
 
   loadDetailData = async (id) => {
-    const res = await axios.get(`/asgard/v1/sagas/${id}`);
+    const res = await axios.get(`/hagd/v1/sagas/${id}`);
     action(() => {
       this.data = res;
       this.tasks = res.tasks;

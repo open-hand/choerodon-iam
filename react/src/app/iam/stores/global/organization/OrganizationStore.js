@@ -79,7 +79,7 @@ class OrganizationStore {
     return this.usersData;
   }
 
-  checkCode = value => axios.post('/base/v1/organizations/check', JSON.stringify({ code: value }));
+  checkCode = value => axios.post('/iam/choerodon/v1/organizations/check', JSON.stringify({ code: value }));
 
   @action
   createOrUpdateOrg({ code, name, address, userId, homePage }, modify, imgUrl = null, HeaderStore) {
@@ -93,7 +93,7 @@ class OrganizationStore {
       let body;
       let method;
       if (isCreate) {
-        url = '/base/v1/organizations';
+        url = '/iam/choerodon/v1/organizations';
         body = {
           name,
           code,
@@ -113,7 +113,7 @@ class OrganizationStore {
 
         method = 'post';
       } else {
-        url = `/base/v1/organizations/${id}`;
+        url = `/iam/choerodon/v1/organizations/${id}`;
         body = {
           name,
           homePage,
@@ -147,11 +147,11 @@ class OrganizationStore {
     }
   }
 
-  getOrgById = organizationId => axios.get(`/base/v1/organizations/${organizationId}`);
+  getOrgById = organizationId => axios.get(`/iam/choerodon/v1/organizations/${organizationId}`);
 
-  getOrgByIdOrgLevel = organizationId => axios.get(`/base/v1/organizations/${organizationId}/org_level`);
+  getOrgByIdOrgLevel = organizationId => axios.get(`/iam/choerodon/v1/organizations/${organizationId}/org_level`);
 
-  getRolesById = (organizationId, userId) => axios.get(`/base/v1/organizations/${organizationId}/role_members/users/${userId}`);
+  getRolesById = (organizationId, userId) => axios.get(`/iam/choerodon/v1/organizations/${organizationId}/role_members/users/${userId}`);
 
   loadMyData(organizationId, userId) {
     axios.all([
@@ -165,7 +165,7 @@ class OrganizationStore {
       .catch(Choerodon.handleResponseError);
   }
 
-  loadOrgDetail = id => axios.get(`/base/v1/organizations/${id}`).then((data) => {
+  loadOrgDetail = id => axios.get(`/iam/choerodon/v1/organizations/${id}`).then((data) => {
     if (data.failed) {
       return data.message;
     } else {
@@ -175,10 +175,10 @@ class OrganizationStore {
   }).catch(Choerodon.handleResponseError);
 
   toggleDisable(id, enabled) {
-    return axios.put(`/base/v1/organizations/${id}/${enabled ? 'disable' : 'enable'}`);
+    return axios.put(`/iam/choerodon/v1/organizations/${id}/${enabled ? 'disable' : 'enable'}`);
   }
 
-  loadUsers = (queryObj = { sort: 'id' }) => axios.get(`/base/v1/all/users?${queryString.stringify(queryObj)}`);
+  loadUsers = (queryObj = { sort: 'id' }) => axios.get(`/iam/choerodon/v1/all/users?${queryString.stringify(queryObj)}`);
 }
 
 export default new OrganizationStore();

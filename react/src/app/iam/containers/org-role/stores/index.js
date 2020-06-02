@@ -3,7 +3,6 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import ListDataSet from './ListDataSet';
-import LabelTipDataSet from './LabelTipDataSet';
 
 const Store = createContext();
 
@@ -13,16 +12,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { type, id, organizationId } }, intl, children } = props;
     const intlPrefix = 'organization.role.list';
-    const [level, setLevel] = useState('site');
-    const listDataSet = useMemo(() => new DataSet(ListDataSet({ level })), [id, level]);
-    const labelTipDataSet = useMemo(() => new DataSet(LabelTipDataSet({ level })), [id, level]);
+    const [level, setLevel] = useState('organization');
+    const listDataSet = useMemo(() => new DataSet(ListDataSet({ level, organizationId })), [id, level]);
     const value = {
       ...props,
       listDataSet,
-      labelTipDataSet,
       prefixCls: 'base-org-role-list',
       intlPrefix,
-      permissions: [],
+      permissions: [
+        'choerodon.code.organization.manager.role.ps.default',
+      ],
       level,
       setLevel,
     };

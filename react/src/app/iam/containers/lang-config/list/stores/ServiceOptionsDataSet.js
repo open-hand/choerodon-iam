@@ -4,7 +4,7 @@ export default () => ({
   selection: 'single',
   transport: {
     read: {
-      url: '/base/v1/instances',
+      url: '/iam/choerodon/v1/instances',
       method: 'get',
       dataKey: null,
       transformResponse: ((data) => {

@@ -31,7 +31,7 @@ function UserInfo(props) {
   };
 
   const loadEnablePwd = () => {
-    axios.get('/base/v1/system/setting/enable_resetPassword')
+    axios.get('/iam/choerodon/v1/system/setting/enable_resetPassword')
       .then((response) => {
         setEnablePwd(response);
       });
@@ -266,17 +266,7 @@ function UserInfo(props) {
   const render = () => {
     const user = UserInfoStore.getUserInfo;
     return (
-      <Page
-        service={[
-          'base-service.user.query',
-          'base-service.user.check',
-          'base-service.user.querySelf',
-          'base-service.user.queryInfo',
-          'base-service.user.updateInfo',
-          'base-service.user.uploadPhoto',
-          'base-service.user.queryProjects',
-        ]}
-      >
+      <Page>
         <Header className={`${prefixCls}-header`}>
           <Button
             className={`${prefixCls}-header-btn`}

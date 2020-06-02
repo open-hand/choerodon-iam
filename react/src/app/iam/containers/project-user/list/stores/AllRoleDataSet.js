@@ -4,7 +4,7 @@ export default ({ id = 0, intl, intlPrefix }) => ({
   paging: false,
   transport: {
     read: {
-      url: `/base/v1/projects/${id}/roles?role_name=&only_select_enable=false`,
+      url: `/iam/choerodon/v1/projects/${id}/roles?role_name=&only_select_enable=false`,
       method: 'get',
       dataKey: null,
     },

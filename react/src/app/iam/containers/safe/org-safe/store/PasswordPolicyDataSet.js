@@ -42,20 +42,21 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
   return {
     autoQuery: true,
     dataKey: null,
+    paging: false,
     transport: {
       read: {
-        url: `/base/v1/organizations/${organizationId}/password_policies`,
+        url: `/iam/v1/${organizationId}/password-policies`,
         method: 'get',
       },
       submit: (record) => {
         if (record.data[0].id) {
           return {
-            url: `/base/v1/organizations/${organizationId}/password_policies/${record.data[0].id}`,
-            method: 'post',
+            url: `/iam/v1/${organizationId}/password-policies`,
+            method: 'put',
             transformRequest: (([data]) => {
               Object.keys(data).forEach((key) => {
                 const field = fields.find((v) => v.name === key);
-                if ((data[key] === null || data[key] === undefined) && field.type === 'number') {
+                if ((data[key] === null || data[key] === undefined) && field && field.type === 'number') {
                   data[key] = 0;
                 }
               });

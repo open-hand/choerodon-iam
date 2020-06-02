@@ -49,10 +49,10 @@ const ConfirmApp = observer((props) => {
   const apiReducer = (type) => {
     switch (type) {
       case 'submit':
-        confirmAppDataSet.submitUrl = `base/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm?organization_id=${organizationId}&publish=true`;
+        confirmAppDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm?organization_id=${organizationId}&publish=true`;
         break;
       case 'save':
-        confirmAppDataSet.submitUrl = `base/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm?organization_id=${organizationId}&publish=false`;
+        confirmAppDataSet.submitUrl = `iam/choerodon/v1/projects/${projectId}/publish_applications/${appId}/versions/${versionId}/confirm?organization_id=${organizationId}&publish=false`;
         break;
       default:
         break;

@@ -15,7 +15,7 @@ export default function (intl, projectId) {
     ],
     transport: {
       read: {
-        url: `base/v1/projects/${projectId}/publish_applications/verifyPermissions`,
+        url: `iam/choerodon/v1/projects/${projectId}/publish_applications/verifyPermissions`,
         method: 'get',
       },
     },

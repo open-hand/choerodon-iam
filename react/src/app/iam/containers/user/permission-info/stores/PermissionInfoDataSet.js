@@ -1,6 +1,6 @@
 import { DataSet } from 'choerodon-ui/pro/lib';
 
-export default (userId, intl, intlPrefix) => {
+export default (userId, intl, intlPrefix, orgId) => {
   const name = intl.formatMessage({ id: `${intlPrefix}.name` });
   const code = intl.formatMessage({ id: `${intlPrefix}.code` });
   const level = intl.formatMessage({ id: 'level' });
@@ -50,8 +50,12 @@ export default (userId, intl, intlPrefix) => {
 
     transport: {
       read: () => ({
-        url: `/base/v1/users/${userId}/roles`,
+        url: `/iam/choerodon/v1/${orgId}/roles/self/roles`,
         method: 'get',
+        transformResponse: (data) => ({
+          list: JSON.parse(data).content,
+          ...JSON.parse(data),
+        }),
       }),
     },
   };

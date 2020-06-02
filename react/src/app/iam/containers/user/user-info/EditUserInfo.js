@@ -150,7 +150,7 @@ function EditUserInfo(props) {
       >
         {!avatar && realName && realName.charAt(0)}
         <Permission
-          service={['base-service.user.uploadPhoto']}
+          service={[]}
           type="site"
         >
           <Button className="user-info-avatar-button" onClick={openAvatorUploader}>

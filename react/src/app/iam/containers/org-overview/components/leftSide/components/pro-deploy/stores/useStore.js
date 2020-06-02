@@ -32,15 +32,15 @@ export default function useStore() {
     },
 
     initData(orgId, projectIds) {
-      const startTime = moment().subtract(this.chosenDay, 'days').format('YYYY/MM/DD');
-      const endTime = moment().format('YYYY/MM/DD');
+      const startTime = moment().subtract(this.chosenDay, 'days').format('YYYY-MM-DD HH:mm:ss');
+      const endTime = moment().format('YYYY-MM-DD HH:mm:ss');
       this.initChartData(orgId, projectIds, startTime, endTime);
     },
 
     async initChartData(orgId, projectIds, startTime, endTime) {
       const data = await axios({
         method: 'POST',
-        url: `/base/v1/organizations/${orgId}/projects/deploy_records`,
+        url: `/iam/choerodon/v1/organizations/${orgId}/projects/deploy_records`,
         data: projectIds,
         params: {
           start_time: startTime,

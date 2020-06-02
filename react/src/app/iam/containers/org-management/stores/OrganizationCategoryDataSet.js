@@ -11,10 +11,10 @@ export default (intl, intlPrefix) => ({
   ],
   transport: {
     read: {
-      url: '/base/v1/categories/org',
+      url: '/iam/choerodon/v1/categories/org',
       method: 'get',
       paramsSerializer: (params) => querystring.stringify(params, { arrayFormat: 'brackets' }),
     },
-    
+
   },
 });

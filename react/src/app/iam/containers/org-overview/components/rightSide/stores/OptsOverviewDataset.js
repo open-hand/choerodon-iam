@@ -5,10 +5,11 @@ export default ({ organizationId }) => ({
   selection: false,
   transport: {
     read: {
-      url: `/base/v1/organization/${organizationId}/operate/log?size=8`,
+      url: `/hmnt/choerodon/v1/${organizationId}/organization/audit/operational/logs?size=8`,
       method: 'get',
       transformResponse: (data) => {
         const arr = JSON.parse(data);
+        arr.list = arr.content;
         arr.list = arr.list.map((item) => {
           item.display = 'none';
           return item;

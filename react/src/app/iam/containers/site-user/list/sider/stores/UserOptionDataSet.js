@@ -3,7 +3,7 @@ export default () => ({
   selection: 'single',
   transport: {
     read: {
-      url: '/base/v1/site/enableUsers',
+      url: '/iam/choerodon/v1/site/enableUsers',
       method: 'get',
       params: {
         user_name: '',

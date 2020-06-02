@@ -176,6 +176,7 @@
         im.parent_id,
         im.type,
         im.sort,
+        im.icon,
         im.h_permission_type,
         im.h_controller_type,
         im.h_level_path,

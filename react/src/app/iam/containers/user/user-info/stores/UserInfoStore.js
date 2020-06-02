@@ -42,5 +42,9 @@ class UserInfoStore {
   resetPassword = (userId) => (
     axios.put(`/devops/v1/users/${userId}/git_password`)
   );
+
+  loadUserInfo = () => (
+    axios.get('/iam/choerodon/v1/users/personal')
+  )
 }
 export default UserInfoStore;

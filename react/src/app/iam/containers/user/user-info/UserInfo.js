@@ -23,9 +23,9 @@ function UserInfo(props) {
   const [avatar, setAvatar] = useState('');
   const modalRef = React.createRef();
   const loadUserInfo = () => {
-    AppState.loadUserInfo().then(data => {
-      AppState.setUserInfo(data);
-      UserInfoStore.setUserInfo(AppState.getUserInfo);
+    UserInfoStore.loadUserInfo().then(data => {
+      // AppState.setUserInfo(data);
+      UserInfoStore.setUserInfo(data);
       setAvatar(UserInfoStore.getAvatar);
     });
   };

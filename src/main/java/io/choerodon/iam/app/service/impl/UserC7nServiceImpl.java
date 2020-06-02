@@ -67,10 +67,7 @@ import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.asserts.RoleAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -1166,5 +1163,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         registrantInfoDTO.setOrganizationName(tenant.getTenantName());
         registrantInfoDTO.setAdminId(adminUser.getId());
         return registrantInfoDTO;
+    }
+
+    @Override
+    public UserDTO queryPersonalInfo() {
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
+        Long userId = customUserDetails.getUserId();
+        UserDTO userDTO = userC7nMapper.queryPersonalInfo(userId);
+        return userDTO;
     }
 }

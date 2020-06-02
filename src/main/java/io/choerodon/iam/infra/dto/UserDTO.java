@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.dto;
 
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.mybatis.domian.SecurityToken;
-
-import javax.persistence.Transient;
 
 /**
  * @author zmf
@@ -20,7 +20,9 @@ public class UserDTO extends User {
     @Transient
     @ApiModelProperty("组织code")
     private String organizationCode;
-
+    @Transient
+    @ApiModelProperty(value = "组织名称/非必填")
+    private String organizationName;
     @JsonIgnore
     @Transient
     private String originalPassword;
@@ -68,5 +70,13 @@ public class UserDTO extends User {
     @Override
     public Class<? extends SecurityToken> associateEntityClass() {
         return User.class;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
     }
 }

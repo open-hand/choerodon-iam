@@ -1,33 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.constant.MessageCodeConstants;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -55,10 +34,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.ExceptionUtil;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 @RefreshScope
@@ -171,7 +173,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         user.setPhoneCheckFlag(BaseConstants.Flag.YES);
 
         List<Role> roles = user.getRoles();
-        user.setRoles(null);
         User result = userService.createUserInternal(user);
         if (!CollectionUtils.isEmpty(roles)) {
             memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
@@ -493,17 +494,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
             errorUserFlag = true;
         }
-        //导入成功过后，通知成员
-        users.forEach(e -> {
-            Map<String, String> params = new HashMap<>();
-            Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
-            params.put("organizationName", organizationDTO.getTenantName());
-            params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
-            params.put("userList", JSON.toJSONString(insertUsers));
-            params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
-            params.put("addCount", String.valueOf(insertUsers.size()));
-            userC7nService.sendNotice(Collections.singletonList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
-        });
+
+        // 发通知不影响业务逻辑
+        ExceptionUtil.doWithTryCatchAndLog(
+                LOGGER,
+                () -> {
+                    //导入成功过后，通知成员
+                    users.forEach(e -> {
+                        Map<String, String> params = new HashMap<>();
+                        Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
+                        params.put("organizationName", organizationDTO.getTenantName());
+                        params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
+                        params.put("userList", JSON.toJSONString(insertUsers));
+                        params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
+                        params.put("addCount", String.valueOf(insertUsers.size()));
+                        userC7nService.sendNotice(Collections.singletonList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
+                    });
+                },
+                ex -> LOGGER.info("Failed to send notices after batchCreateUsersOnExcel due to the ex", ex)
+        );
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
         LOGGER.info("Batch insert {} users into tenant with id {} processed...", insertUsers.size(), organizationId);

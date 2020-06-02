@@ -193,9 +193,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userAssertHelper.emailExisted(user.getEmail());
         user.setLoginName(randomInfoGenerator.randomLoginName());
         List<Role> userRoles = user.getRoles();
-        // 避免hzero-iam又处理了
         user.setRoles(null);
-        // 将role转为memberRole， memberId不用给
         user = userService.createUserInternal(user);
         if (!CollectionUtils.isEmpty(userRoles)) {
             // hzero-iam未处理角色分配, 这块加上

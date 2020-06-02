@@ -626,8 +626,6 @@ public class ExcelImportUserTask {
             if (StringUtils.isEmpty(user.getPassword())) {
                 user.setPassword(USER_DEFAULT_PWD);
             }
-            //加密
-            user.setPassword(ENCODER.encode(user.getPassword()));
             // 自动生成登录名
             user.setLoginName(randomInfoGenerator.randomLoginName());
             user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));

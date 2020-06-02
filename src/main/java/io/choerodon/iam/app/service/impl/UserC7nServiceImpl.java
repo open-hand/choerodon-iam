@@ -619,7 +619,13 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<Label> labels = new ArrayList<>();
             roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
             List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
-            return labelNameLists.contains(RoleLabelEnum.GITLAB_OWNER.value());
+            if (ResourceLevel.PROJECT.value().equals(level)) {
+                return labelNameLists.contains(RoleLabelEnum.GITLAB_OWNER.value());
+            }
+            if (ResourceLevel.ORGANIZATION.value().equals(level)) {
+                return labelNameLists.contains(RoleLabelEnum.TENANT_ADMIN.value());
+            }
+
         }
         return false;
     }

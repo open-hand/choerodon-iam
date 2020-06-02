@@ -17,41 +17,4 @@
         ORDER BY id DESC
         limit 1
     </select>
-
-    <select id="latestHistory" databaseId="mysql" resultType="io.choerodon.iam.infra.dto.UploadHistoryDTO">
-        SELECT *
-        FROM iam_upload_history
-        WHERE user_id = #{userId}
-        AND type = #{type}
-        <if test="sourceId != null">
-            AND source_id = #{sourceId}
-        </if>
-        <if test="sourceType != null">
-            AND source_type = #{sourceType}
-        </if>
-        ORDER BY id DESC
-        limit 1
-    </select>
-
-    <select id="latestHistory" databaseId="oracle" resultType="io.choerodon.iam.infra.dto.UploadHistoryDTO">
-        SELECT t.*
-        FROM
-        (
-        SELECT *
-        FROM iam_upload_history
-        WHERE user_id = #{userId}
-        AND type = #{type}
-        <if test="sourceId != null">
-            AND source_id = #{sourceId}
-        </if>
-        <if test="sourceType != null">
-            AND source_type = #{sourceType}
-        </if>
-        ORDER BY id DESC
-        ) t
-        <![CDATA[
-        WHERE ROWNUM <= 1
-        ]]>
-    </select>
-
 </mapper>

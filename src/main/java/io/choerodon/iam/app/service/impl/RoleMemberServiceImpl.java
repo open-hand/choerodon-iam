@@ -724,7 +724,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                         .withRefType("user")
                         .withSourceId(sourceId)
                         .withLevel(level)
-                        .withSagaCode(MEMBER_ROLE_UPDATE)
+                        .withSagaCode(MEMBER_ROLE_DELETE)
                         .withPayloadAndSerialize(userMemberEventPayloads),
                 builder -> {
                 });

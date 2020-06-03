@@ -9,13 +9,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_client_resource.groovy') {
             column(name: 'client_id', type: 'BIGINT UNSIGNED', remarks: '客户端id') {
                 constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_OAUTH_CLIENT_U1')
             }
-            column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '资源id') {
-                constraints(nullable: false)
-            }
-            column(name: 'source_type', type: 'VARCHAR(10)', remarks: '资源类型') {
-                constraints(nullable: false)
-            }
-
+            column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '资源id')
+            column(name: 'source_type', type: 'VARCHAR(10)', remarks: '资源类型')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)
             }

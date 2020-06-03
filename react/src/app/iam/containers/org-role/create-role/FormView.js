@@ -10,6 +10,9 @@ import LoadingBar from '../../../components/loadingBar';
 import './index.less';
 
 const { Column } = Table;
+const tableStyle = {
+  height: '3.6rem',
+};
 
 const ListView = () => {
   const {
@@ -107,22 +110,24 @@ const ListView = () => {
       <div className={`${prefixCls}-menu`}>
         <span className={`${prefixCls}-menu-text`}>菜单分配</span>
       </div>
-      <Table
-        dataSet={menuDs}
-        queryBar="none"
-        mode="tree"
-        buttons={[
-          ['collapseAll', { icon: 'expand_less', children: '全部收起' }],
-          ['expandAll', { icon: 'expand_more', children: '全部展开' }],
-        ]}
-        expandIconColumnIndex={1}
-        className={`${prefixCls}-table`}
-        style={{ height: '3.6rem' }}
-      >
-        <Column name="isChecked" editor width={50} />
-        <Column name="name" renderer={renderName} width={400} />
-        <Column name="permissionType" renderer={renderType} />
-      </Table>
+      <div className={`${prefixCls}-table-wrap-${level}`}>
+        <Table
+          dataSet={menuDs}
+          queryBar="none"
+          mode="tree"
+          buttons={[
+            ['collapseAll', { icon: 'expand_less', children: '全部收起' }],
+            ['expandAll', { icon: 'expand_more', children: '全部展开' }],
+          ]}
+          expandIconColumnIndex={1}
+          className={`${prefixCls}-table`}
+          autoHeight={{ type: 'maxHeight', diff: 50 }}
+        >
+          <Column name="isChecked" editor width={50} />
+          <Column name="name" renderer={renderName} width={400} />
+          <Column name="permissionType" renderer={renderType} />
+        </Table>
+      </div>
     </div>
   );
 };

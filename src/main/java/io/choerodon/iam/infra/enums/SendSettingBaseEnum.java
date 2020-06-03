@@ -8,15 +8,15 @@ import java.util.Map;
  * Date: 2020/3/23
  */
 public enum SendSettingBaseEnum {
-    DISABLE_ORGANIZATION("disableOrganization"),
-    ENABLE_ORGANIZATION("enableOrganization"),
-    ADD_MEMBER("addMember"),
-    STOP_USER("stopUser"),
-    CREATE_PROJECT("createProject"),
-    ENABLE_PROJECT("enableProject"),
-    DISABLE_PROJECT("disableProject"),
-    PROJECT_ADD_USER("projectAddUser"),
-    DELETE_USER_ROLES("deleteUserRoles");
+    DISABLE_ORGANIZATION("DISABLEORGANIZATION"),
+    ENABLE_ORGANIZATION("ENABLEORGANIZATION"),
+    ADD_MEMBER("ADDMEMBER"),
+    STOP_USER("STOPUSER"),
+    CREATE_PROJECT("CREATEPROJECT"),
+    ENABLE_PROJECT("ENABLEPROJECT"),
+    DISABLE_PROJECT("DISABLEPROJECT"),
+    PROJECT_ADD_USER("PROJECTADDUSER"),
+    DELETE_USER_ROLES("DELETEUSERROLES");
 
 
     private String sendSettingCode;

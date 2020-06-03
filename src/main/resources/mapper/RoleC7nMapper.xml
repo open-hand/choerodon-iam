@@ -313,7 +313,7 @@
         INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
         <where>
             imr.member_type = 'user' AND imr.member_id =#{userId}
-            AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ADMIN'
+            AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ROLE'
         </where>
         group by ir.id
     </select>

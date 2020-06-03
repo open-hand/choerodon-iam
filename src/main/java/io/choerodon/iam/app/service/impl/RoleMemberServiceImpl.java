@@ -891,6 +891,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             allRoleIds.removeAll(roleIds);
             userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(allRoleIds));
         }
+        userMemberEventPayloads.add(userMemberEventMsg);
         deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
 

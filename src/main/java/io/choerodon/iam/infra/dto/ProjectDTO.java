@@ -117,7 +117,7 @@ public class ProjectDTO extends AuditDomain {
 
     @Transient
     @ApiModelProperty("是否有编辑权限，默认为false")
-    private Boolean editFlag = true;
+    private Boolean editFlag = false;
 
     public Long getId() {
         return id;

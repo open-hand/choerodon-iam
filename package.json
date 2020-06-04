@@ -8,8 +8,8 @@
     "lib"
   ],
   "peerDependencies": {
-    "@choerodon/boot": "0.21.0",
-    "@choerodon/master": "0.22.0-hzero"
+    "@choerodon/boot": "0.21.2",
+    "@choerodon/master": "0.22.0"
   },
   "dependencies": {
     "universal-cookie": "2.2.0",
@@ -26,8 +26,8 @@
     "rxjs-compat": "^6.5.3"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.21.0",
-    "@choerodon/master": "0.22.0-hzero"
+    "@choerodon/boot": "0.21.2",
+    "@choerodon/master": "0.22.0"
   },
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",

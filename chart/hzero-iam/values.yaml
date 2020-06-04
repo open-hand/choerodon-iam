@@ -86,7 +86,8 @@ env:
     MANAGEMENT_SERVER_PORT: 8031
 
     # 注册服务地址
-    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server:8000/eureka/
+    EUREKA_DEFAULT_ZONE: http://register-server:8000/eureka/
+    EUREKA_INSTANCE_PREFER_IP_ADDRESS: true
 
     # 网关地址
     CHOERODON_GATEWAY_URL: http://api.example.com

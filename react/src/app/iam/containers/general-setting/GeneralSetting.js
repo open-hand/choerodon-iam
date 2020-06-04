@@ -65,10 +65,21 @@ const GeneralSetting = observer(() => {
   };
 
   function handleDisable() {
+    const { category } = store.getProjectInfo;
+    const content = (
+      <div>
+        <span>{formatMessage({ id: 'project.info.disable.content' }, { name: projectName })}</span>
+        {category === 'PROGRAM' ? (
+          <div className="c7n-projects-enable-tips">
+            {formatMessage({ id: 'project.info.disable.content.tips' })}
+          </div>
+        ) : null}
+      </div>
+    );
     OldModal.confirm({
       className: 'c7n-iam-confirm-modal',
       title: formatMessage({ id: 'project.info.disable.title' }),
-      content: formatMessage({ id: 'project.info.disable.content' }, { name: projectName }),
+      content,
       onOk: async () => {
         try {
           const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);

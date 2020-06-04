@@ -1748,6 +1748,7 @@ const zh_CN = {
   // 项目信息
   'project.info.disable.title': '停用项目',
   'project.info.disable.content': '确定要停用项目"{name}"吗？停用后，您和项目下其他成员将无法进入此项目。',
+  'project.info.disable.content.tips': '警告：项目群停用后，ART将自动停止，子项目和项目群的关联也将自动停用。请谨慎操作！',
   'project.info.header.title': '项目信息',
   'project.info.setting': '项目设置',
   'project.info.otherSetting': '其他设置',

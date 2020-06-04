@@ -105,7 +105,7 @@ const ListView = () => {
       >
         <TextField name="code" disabled={isModify} />
         <TextField name="name" />
-        {level === 'project' && <Select name="roleLabels" />}
+        {level === 'project' && <Select name="roleLabels" disabled={isModify} />}
       </Form>
       <div className={`${prefixCls}-menu`}>
         <span className={`${prefixCls}-menu-text`}>菜单分配</span>

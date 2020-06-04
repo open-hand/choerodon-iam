@@ -110,7 +110,7 @@ export default observer(({ name, optionDataSetConfig, optionDataSet, record, chi
     if (InviteModal && recordd.get('programOwner')) {
       const { roles } = orgUserListDataSet.toData().find(d => d.id === recordd.get('id'));
       const item = roles.find(i => i.id === v);
-      if (item && item.origin && item.code === 'role/project/default/project-member') {
+      if (item && item.origin && item.projectMemberFlag) {
         return true;
       }
     }

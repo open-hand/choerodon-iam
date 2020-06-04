@@ -63,7 +63,7 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
               fields.forEach((v) => {
                 if (v.type === 'number' && data[v.name] === undefined) {
                   data[v.name] = 0;
-                } else if (data[v.name] === undefined || data[v.name] === null) {
+                } else if ((data[v.name] === undefined || data[v.name] === null) && v.name !== 'regularExpression') {
                   data[v.name] = '';
                 }
               });

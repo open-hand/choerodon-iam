@@ -94,4 +94,6 @@ public interface RoleC7nMapper {
 
     Set<Long> listOrgByUserIdAndTenantIds(@Param("userId") Long userId,
                                           @Param("orgIds") Set<Long> orgIds);
+
+    List<Role> listByTenantId(@Param("tenantId") Long tenantId);
 }

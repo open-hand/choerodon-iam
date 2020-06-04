@@ -197,7 +197,7 @@
         ORDER BY sort asc
     </select>
 
-    <select id="fuzzySearchRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
+    <select id="fuzzySearchRolesByName" resultType="io.choerodon.iam.api.vo.RoleVO">
         SELECT
         ir.*
         FROM

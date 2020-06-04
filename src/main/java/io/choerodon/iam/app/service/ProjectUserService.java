@@ -8,6 +8,7 @@ import org.hzero.iam.api.dto.RoleDTO;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -92,7 +93,7 @@ public interface ProjectUserService {
 
     Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId);
 
-    List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
+    List<RoleVO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
     void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
 

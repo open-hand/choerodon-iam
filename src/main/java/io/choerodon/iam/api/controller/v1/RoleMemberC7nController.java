@@ -1,21 +1,8 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ClientRoleQueryVO;
-import io.choerodon.iam.api.vo.SimplifiedUserVO;
-import io.choerodon.iam.api.vo.agile.RoleVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dto.RoleC7nDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.enums.ExcelSuffix;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -33,8 +20,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import java.util.List;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.SimplifiedUserVO;
+import io.choerodon.iam.api.vo.agile.RoleVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -140,9 +141,9 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
-    public ResponseEntity<List<RoleDTO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                 @RequestParam(name = "role_name") String roleName,
-                                                                 @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
+    public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                                        @RequestParam(name = "role_name") String roleName,
+                                                                                        @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                          Boolean onlySelectEnable) {
         return new ResponseEntity<>(projectUserService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
     }

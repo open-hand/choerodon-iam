@@ -32,6 +32,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -45,7 +46,6 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -126,23 +126,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
                     null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result = PageUtils.buildPage(page, size, users.size(), users);
-        }
-        List<UserDTO> userDTOList = result.getContent();
-        if (!CollectionUtils.isEmpty(userDTOList)) {
-            Set<Long> roleIds = userDTOList.stream().flatMap(v -> v.getRoles().stream()).map(Role::getId).collect(Collectors.toSet());
-            Map<Long, List<LabelDTO>> labelMap = new HashMap<>();
-            roleIds.forEach(id -> {
-                List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
-                labelMap.put(id, labelDTOS);
-            });
-
-            userDTOList.forEach(user -> {
-                user.getRoles().forEach(role -> {
-                    List<LabelDTO> labelDTOS = labelMap.get(role.getId());
-                    List<Label> labels = ConvertUtils.convertList(labelDTOS, Label.class);
-                    role.setRoleLabels(labels);
-                });
-            });
         }
 
         return result;
@@ -245,9 +228,26 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
 
     @Override
-    public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
+    public List<RoleVO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
-        return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+        List<RoleVO> roleVOS = roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+        Set<Long> roleIds = roleVOS.stream().map(Role::getId).collect(Collectors.toSet());
+        Map<Long, List<LabelDTO>> labelMap = new HashMap<>();
+        roleIds.forEach(id -> {
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+            labelMap.put(id, labelDTOS);
+        });
+        roleVOS.forEach(role -> {
+            List<LabelDTO> labelDTOS = labelMap.get(role.getId());
+            if (labelDTOS.stream().anyMatch(labelDTO -> RoleLabelEnum.PROJECT_ADMIN.value().equals(labelDTO.getName()))) {
+                role.setProjectAdminFlag(true);
+            }
+            if (labelDTOS.stream().anyMatch(labelDTO -> RoleLabelEnum.PROJECT_MEMBER.value().equals(labelDTO.getName()))) {
+                role.setProjectMemberFlag(true);
+            }
+        });
+
+        return roleVOS;
     }
 
     @Override

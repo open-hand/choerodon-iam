@@ -60,11 +60,11 @@ public interface RoleC7nMapper {
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
 
-    List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,
-                                         @Param("sourceId") Long sourceId,
-                                         @Param("sourceType") String sourceType,
-                                         @Param("labelName") String labelName,
-                                         @Param("onlySelectEnable") Boolean onlySelectEnable);
+    List<io.choerodon.iam.api.vo.RoleVO> fuzzySearchRolesByName(@Param("roleName") String roleName,
+                                                                @Param("sourceId") Long sourceId,
+                                                                @Param("sourceType") String sourceType,
+                                                                @Param("labelName") String labelName,
+                                                                @Param("onlySelectEnable") Boolean onlySelectEnable);
 
 
     List<io.choerodon.iam.api.vo.RoleVO> fulltextSearch(@Param("tenantId") Long tenantId,

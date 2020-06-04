@@ -343,5 +343,10 @@
           </foreach>
           GROUP BY imr.source_id
     </select>
+    <select id="listByTenantId" resultMap="RoleMap">
+        SELECT *
+        FROM iam_role ir
+        WHERE ir.h_tenant_id = #{tenantId}
+    </select>
 
 </mapper>

@@ -67,8 +67,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
 
@@ -176,10 +174,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (!CollectionUtils.isEmpty(roles)) {
             memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
         }
-        System.out.println("=================devopsMessage=================\n" + devopsMessage + "\n=================devopsMessage=================");
-        if (devopsMessage) {
-            sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
-        }
+        sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
     }
 
@@ -237,19 +232,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Long userId = userDTO.getId();
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         if (!CollectionUtils.isEmpty(userRoles)) {
-            if (devopsMessage) {
-                UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
-                userMemberEventMsg.setResourceId(organizationId);
-                userMemberEventMsg.setUserId(userId);
-                userMemberEventMsg.setResourceType(value);
-                userMemberEventMsg.setUsername(userDTO.getLoginName());
-                Set<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toSet())).orElse(Collections.emptySet());
+            UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+            userMemberEventMsg.setResourceId(organizationId);
+            userMemberEventMsg.setUserId(userId);
+            userMemberEventMsg.setResourceType(value);
+            userMemberEventMsg.setUsername(userDTO.getLoginName());
+            Set<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toSet())).orElse(Collections.emptySet());
 
-                if (!ownRoleIds.isEmpty()) {
-                    userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
-                }
-                userMemberEventPayloads.add(userMemberEventMsg);
+            if (!ownRoleIds.isEmpty()) {
+                userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
             }
+            userMemberEventPayloads.add(userMemberEventMsg);
         }
         return userMemberEventPayloads;
     }
@@ -408,24 +401,22 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User enableUser(Long organizationId, Long userId) {
         userService.unfrozenUser(userId, organizationId);
         User user = query(organizationId, userId);
-        if (devopsMessage) {
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setUsername(user.getLoginName());
-            userEventPayload.setId(userId.toString());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(organizationId)
-                                .withRefType("user")
-                                .withRefId(userId.toString())
-                                .withJson(input)
-                                .withSagaCode(USER_ENABLE),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.enableUser.event", e);
-            }
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setUsername(user.getLoginName());
+        userEventPayload.setId(userId.toString());
+        try {
+            String input = mapper.writeValueAsString(userEventPayload);
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withLevel(ResourceLevel.ORGANIZATION)
+                            .withSourceId(organizationId)
+                            .withRefType("user")
+                            .withRefId(userId.toString())
+                            .withJson(input)
+                            .withSagaCode(USER_ENABLE),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.organizationUserService.enableUser.event", e);
         }
         return user;
     }
@@ -436,24 +427,22 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User disableUser(Long organizationId, Long userId) {
         userService.frozenUser(userId, organizationId);
         User user = query(organizationId, userId);
-        if (devopsMessage) {
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setUsername(user.getLoginName());
-            userEventPayload.setId(userId.toString());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(organizationId)
-                                .withRefType("user")
-                                .withRefId(userId.toString())
-                                .withJson(input)
-                                .withSagaCode(USER_DISABLE),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.disableUser.event", e);
-            }
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setUsername(user.getLoginName());
+        userEventPayload.setId(userId.toString());
+        try {
+            String input = mapper.writeValueAsString(userEventPayload);
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withLevel(ResourceLevel.ORGANIZATION)
+                            .withSourceId(organizationId)
+                            .withRefType("user")
+                            .withRefId(userId.toString())
+                            .withJson(input)
+                            .withSagaCode(USER_DISABLE),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.organizationUserService.disableUser.event", e);
         }
         // 发送停用用户json
         messageSendService.sendDisableUserMsg(user, organizationId);
@@ -486,7 +475,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 errorUserFlag = false;
             }
             boolean userEnabled = userDTO != null && userDTO.getEnabled();
-            if (devopsMessage && userEnabled) {
+            if (userEnabled) {
                 generateUserEventPayload(payloads, userDTO);
             }
             if (errorUserFlag) {

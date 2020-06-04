@@ -45,6 +45,7 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -126,6 +127,24 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                     null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
             result = PageUtils.buildPage(page, size, users.size(), users);
         }
+        List<UserDTO> userDTOList = result.getContent();
+        if (!CollectionUtils.isEmpty(userDTOList)) {
+            Set<Long> roleIds = userDTOList.stream().flatMap(v -> v.getRoles().stream()).map(Role::getId).collect(Collectors.toSet());
+            Map<Long, List<LabelDTO>> labelMap = new HashMap<>();
+            roleIds.forEach(id -> {
+                List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+                labelMap.put(id, labelDTOS);
+            });
+
+            userDTOList.forEach(user -> {
+                user.getRoles().forEach(role -> {
+                    List<LabelDTO> labelDTOS = labelMap.get(role.getId());
+                    List<Label> labels = ConvertUtils.convertList(labelDTOS, Label.class);
+                    role.setRoleLabels(labels);
+                });
+            });
+        }
+
         return result;
     }
 

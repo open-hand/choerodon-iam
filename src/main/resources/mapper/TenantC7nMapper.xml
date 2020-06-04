@@ -62,6 +62,15 @@
         WHERE imr.SOURCE_TYPE='organization'
         GROUP BY imr.source_id
         ) f ON org.tenant_id= f.source_id
+
+        <if test="homePage != null and homePage != ''">
+            LEFT JOIN hpfm_tenant_config htc ON htc.tenant_id = org.tenant_id AND htc.config_key = 'homePage'
+        </if>
+        <if test="ownerRealName != null and ownerRealName != ''">
+            LEFT JOIN hpfm_tenant_config owner ON owner.tenant_id = org.tenant_id AND owner.config_key = 'userId'
+            LEFT JOIN iam_user iu ON owner.config_value = iu.id
+        </if>
+
         <where>
             <if test="name != null">
                 AND org.tenant_name LIKE concat(concat('%',#{name}),'%')
@@ -72,15 +81,19 @@
             <if test="enabled != null">
                 AND org.enabled_flag = #{enabled}
             </if>
+            <if test="homePage != null and homePage != ''">
+                AND htc.config_value LIKE concat(concat('%', #{homePage}), '%')
+            </if>
+            <if test="ownerRealName != null and ownerRealName != ''">
+                AND iu.real_name LIKE concat(concat('%', #{ownerRealName}), '%')
+            </if>
             <if test="params != null">
                 AND (
                 org.tenant_name LIKE concat(concat('%', #{params}), '%') OR
                 org.tenant_num LIKE concat(concat('%', #{params}), '%')
                 )
             </if>
-
         </where>
-         order by org.creation_date DESC
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.api.vo.TenantVO">

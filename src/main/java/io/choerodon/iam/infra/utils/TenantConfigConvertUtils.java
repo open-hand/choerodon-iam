@@ -45,8 +45,10 @@ public class TenantConfigConvertUtils {
                     break;
                 case REMOTE_TOKEN_ENABLED:
                     tenantConfigVO.setRemoteTokenEnabled(Boolean.valueOf(t.getConfigValue()));
+                    break;
                 case CATEGORY:
                     tenantConfigVO.setCategory(t.getConfigValue());
+                    break;
             }
         });
         return tenantConfigVO;

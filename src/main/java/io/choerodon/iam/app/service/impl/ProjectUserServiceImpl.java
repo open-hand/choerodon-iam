@@ -31,6 +31,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
@@ -128,8 +129,38 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             result = PageUtils.buildPage(page, size, users.size(), users);
         }
 
+        setRoleIsMember(result);
         return result;
     }
+
+    /**
+     * 设置角色是否是项目成员
+     *
+     * @param result 用户结果
+     */
+    private void setRoleIsMember(Page<UserDTO> result) {
+        List<UserDTO> userDTOList = result.getContent();
+        if (!CollectionUtils.isEmpty(userDTOList)) {
+            Set<Long> roleIds = userDTOList.stream().flatMap(v -> v.getRoles().stream()).map(Role::getId).collect(Collectors.toSet());
+            Map<Long, Boolean> roleIsMember = new HashMap<>();
+            roleIds.forEach(id -> {
+                List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+                roleIsMember.put(id, labelDTOS.stream().anyMatch(l -> RoleLabelEnum.PROJECT_MEMBER.value().equals(l.getName())));
+            });
+
+            userDTOList.forEach(user -> {
+                List<Role> userRoles = user.getRoles();
+                List<Role> newResult = userRoles.stream().map(u -> {
+                    RoleVO roleVO = ConvertUtils.convertObject(u, RoleVO.class);
+                    roleVO.setProjectAdminFlag(null);
+                    roleVO.setProjectMemberFlag(roleIsMember.get(roleVO.getId()));
+                    return roleVO;
+                }).collect(Collectors.toList());
+                user.setRoles(newResult);
+            });
+        }
+    }
+
 
     @Override
     public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
@@ -208,7 +239,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId) {
         Page<UserDTO> userList = PageHelper.doPage(pageRequest, () -> projectUserMapper.listProjectUser(projectId, roleAssignmentSearchDTO));
-        if (userList == null && userList.size() < 1) {
+        if (userList == null || userList.size() < 1) {
             return userList;
         }
         Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
@@ -253,7 +284,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
         Map<Long, List<ProjectUserDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectUserDTO::getMemberId));
-        map.forEach((k,v) -> {
+        map.forEach((k, v) -> {
             addProjectRolesForUser(projectId, k, v.stream().map(ProjectUserDTO::getRoleId).collect(Collectors.toSet()));
         });
 

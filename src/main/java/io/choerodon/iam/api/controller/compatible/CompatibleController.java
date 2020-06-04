@@ -78,7 +78,7 @@ public class CompatibleController {
         LOGGER.debug("CompatibleController: API project_roles is called...");
         Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params));
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("CompatibleController: API project_roles is called successfully. And the rawResult size is {}...", (rawResult == null) ? null : (rawResult.getContent() == null ? null : 0));
+            LOGGER.debug("CompatibleController: API project_roles is called successfully. And the rawResult size is {}...", (rawResult == null) ? null : (rawResult.getContent() == null ? null : rawResult.getContent().size()));
         }
         return ResponseEntity.ok(new PageInfoVO<>(rawResult == null ? null : rawResult.getContent()));
     }

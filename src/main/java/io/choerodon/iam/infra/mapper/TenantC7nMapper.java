@@ -21,6 +21,7 @@ public interface TenantC7nMapper {
             @Param("code") String code,
             @Param("ownerRealName") String ownerRealName,
             @Param("enabled") Boolean enabled,
+            @Param("homePage") String homePage,
             @Param("params") String params);
 
     Set<TenantVO> selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,

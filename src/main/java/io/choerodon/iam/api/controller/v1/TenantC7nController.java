@@ -138,8 +138,9 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) String tenantNum,
                                                       @RequestParam(required = false) String ownerRealName,
                                                       @RequestParam(required = false) Boolean enabledFlag,
+                                                      @RequestParam(required = false) String homePage,
                                                       @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, params), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})

@@ -11,7 +11,6 @@ import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.IamTenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
@@ -19,7 +18,6 @@ import org.hzero.iam.saas.domain.entity.Tenant;
 import org.hzero.iam.saas.domain.entity.TenantConfig;
 import org.hzero.iam.saas.domain.repository.TenantConfigRepository;
 import org.hzero.iam.saas.domain.repository.TenantRepository;
-import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
@@ -38,13 +36,13 @@ import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -56,10 +54,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
-    public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
-    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
 
     @Autowired
@@ -84,20 +80,25 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     protected MessageClient messageClient;
     @Autowired
-    private TenantMapper tenantMapper;
-    @Autowired
     private UserMapper userMapper;
     @Autowired
     private TenantConfigRepository tenantConfigRepository;
     @Autowired
-    private UserC7nService userC7nService;
-    @Autowired
     TenantConfigC7nMapper tenantConfigMapper;
-    @Autowired
-    private IamTenantRepository iamTenantRepository;
-    @Autowired
-    private MemberRoleC7nMapper memberRoleC7nMapper;
 
+    /**
+     * 前端传入的排序字段和Mapper文件中的字段名的映射
+     */
+    private static final Map<String, String> orderByFieldMap;
+
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("projectCount", "t.project_count");
+        map.put("userCount", "f.user_count");
+        map.put("id", "org.tenant_id");
+        map.put("tenant_id", "org.tenant_id");
+        orderByFieldMap = Collections.unmodifiableMap(map);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -187,8 +188,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPage(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
+    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage,  String params) {
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params));
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)

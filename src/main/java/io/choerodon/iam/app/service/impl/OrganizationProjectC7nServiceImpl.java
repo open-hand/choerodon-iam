@@ -607,7 +607,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             }
             list.add(field + " " + t.getDirection());
         }
-        return list.stream().collect(Collectors.joining(","));
+        return String.join(",", list);
     }
 
 }

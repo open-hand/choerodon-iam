@@ -16,6 +16,9 @@ export default ({ id = 0, intl, orgRoleDataSet, userStore }) => {
       }
     } catch (e) {
       // Choerodon.prompt(e.message);
+      if (e && e.message) {
+        return e.message;
+      }
       return '邮箱校验失败，请稍后再试';
     }
   }

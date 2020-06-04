@@ -18,7 +18,11 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
         return intl.formatMessage({ id: result.message });
       }
     } catch (e) {
-      Choerodon.prompt(e);
+      // Choerodon.prompt(e);
+      if (e && e.message) {
+        return e.message;
+      }
+      return false;
     }
   }
   function checkPhone(value, name, record) {

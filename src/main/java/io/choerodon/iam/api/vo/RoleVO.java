@@ -16,9 +16,10 @@ import org.hzero.mybatis.domian.SecurityToken;
  * @since 2020/4/22 14:09
  */
 public class RoleVO extends Role {
-
+    @ApiModelProperty("角色是否是项目管理员/true表示是,false表示不是")
     private Boolean projectAdminFlag = false;
 
+    @ApiModelProperty("角色是否是项目成员/true表示是,false表示不是")
     private Boolean projectMemberFlag = false;
 
     @ApiModelProperty("角色层级organization，project")

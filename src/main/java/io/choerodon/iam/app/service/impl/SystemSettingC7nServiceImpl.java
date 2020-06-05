@@ -35,11 +35,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
 
     private SysSettingMapper sysSettingMapper;
 
-
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
-
     public SystemSettingC7nServiceImpl(FileClient fileClient,
                                        @Value("${choerodon.category.enabled:false}")
                                                Boolean enableCategory,

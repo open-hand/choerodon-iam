@@ -1,28 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.hzero.iam.saas.domain.entity.Tenant;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -59,6 +37,27 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.LabelMapper;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -72,9 +71,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
     public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
-
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
 
     @Value("${spring.application.name:default}")
     private String serviceName;
@@ -180,12 +176,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
         ProjectDTO res;
-        if (devopsMessage) {
-            res = sendCreateProjectEvent(projectDTO);
-        } else {
-            res = create(projectDTO);
-            initMemberRole(projectDTO);
-        }
+        res = sendCreateProjectEvent(projectDTO);
         insertProjectMapCategory(projectCategoryDTO.getId(), res.getId());
         //创建项目成功发送webhook
         Map<String, String> params = new HashMap<>();
@@ -294,29 +285,25 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO.setCategory(null);
         Tenant organizationDTO = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
         ProjectDTO dto;
-        if (devopsMessage) {
-            dto = new ProjectDTO();
-            CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
-            User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
-            ProjectEventPayload projectEventMsg = new ProjectEventPayload();
-            projectEventMsg.setUserName(details.getUsername());
-            projectEventMsg.setUserId(user.getId());
-            projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
-            projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
-            ProjectDTO newProjectDTO = updateSelective(projectDTO);
-            projectEventMsg.setProjectId(newProjectDTO.getId());
-            projectEventMsg.setProjectCode(newProjectDTO.getCode());
-            projectEventMsg.setProjectName(newProjectDTO.getName());
-            projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
-            BeanUtils.copyProperties(newProjectDTO, dto);
-            try {
-                String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
-            } catch (Exception e) {
-                throw new CommonException("error.organizationProjectService.updateProject.event", e);
-            }
-        } else {
-            dto = updateSelective(projectDTO);
+        dto = new ProjectDTO();
+        CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
+        User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
+        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+        projectEventMsg.setUserName(details.getUsername());
+        projectEventMsg.setUserId(user.getId());
+        projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
+        projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
+        ProjectDTO newProjectDTO = updateSelective(projectDTO);
+        projectEventMsg.setProjectId(newProjectDTO.getId());
+        projectEventMsg.setProjectCode(newProjectDTO.getCode());
+        projectEventMsg.setProjectName(newProjectDTO.getName());
+        projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
+        BeanUtils.copyProperties(newProjectDTO, dto);
+        try {
+            String input = mapper.writeValueAsString(projectEventMsg);
+            sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
+        } catch (Exception e) {
+            throw new CommonException("error.organizationProjectService.updateProject.event", e);
         }
         return dto;
     }
@@ -394,23 +381,22 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
      */
     private void sendEvent(String consumerType, boolean enabled, Long userId, Long programId, ProjectDTO projectDTO) {
         Long projectId = projectDTO.getId();
-        if (devopsMessage) {
-            ProjectEventPayload payload = new ProjectEventPayload();
-            payload.setProjectId(projectId);
-            payload.setProjectCategory(projectDTO.getCategory());
-            payload.setProgramId(programId);
-            //saga
-            try {
-                String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDTO.getOrganizationId()));
-            } catch (Exception e) {
-                throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
-            }
-            if (!enabled) {
-                //给asgard发送禁用定时任务通知
+        ProjectEventPayload payload = new ProjectEventPayload();
+        payload.setProjectId(projectId);
+        payload.setProjectCategory(projectDTO.getCategory());
+        payload.setProgramId(programId);
+        //saga
+        try {
+            String input = mapper.writeValueAsString(payload);
+            sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDTO.getOrganizationId()));
+        } catch (Exception e) {
+            throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
+        }
+        if (!enabled) {
+            //给asgard发送禁用定时任务通知
 //                asgardFeignClient.disableProj(projectId);
-            }
-            // 给项目下所有用户发送通知
+        }
+        // 给项目下所有用户发送通知
 //            List<Long> userIds = projectMapper.listUserIds(projectId);
 //            Map<String, Object> params = new HashMap<>();
 //            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
@@ -440,11 +426,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 //                );
 //                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
 //            }
-        }
     }
 
     @Override
-    public Boolean  check(ProjectDTO projectDTO) {
+    public Boolean check(ProjectDTO projectDTO) {
         boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
             return false;

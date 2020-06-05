@@ -886,18 +886,17 @@ public class UserC7nServiceImpl implements UserC7nService {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
                     p.setInto(false);
-                    return;
-                }
-                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
-                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
-                    p.setInto(false);
+                } else {
+                    // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                    if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                        p.setInto(false);
+                    }
                 }
 
                 // 计算用户是否有编辑权限
                 if (isAdmin || isOrgAdmin || pids.contains(p.getId())) {
                     p.setEditFlag(true);
                 }
-
             });
         }
     }

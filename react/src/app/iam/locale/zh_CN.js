@@ -1747,8 +1747,10 @@ const zh_CN = {
   'project.application-management.list.button.add': '创建应用',
   // 项目信息
   'project.info.disable.title': '停用项目',
+  'project.info.disable.program.title': '停用项目群',
   'project.info.disable.content': '确定要停用项目"{name}"吗？停用后，您和项目下其他成员将无法进入此项目。',
-  'project.info.disable.content.tips': '警告：项目群停用后，ART将自动停止，子项目和项目群的关联也将自动停用。请谨慎操作！',
+  'project.info.disable.program.tips': '警告：项目群停用后，ART将自动停止，子项目和项目群的关联也将自动停用，子项目的迭代节奏、迭代规划不再受到ART的统一管理。ART下进行中的PI将直接完成，未完成的PI将会删除，未完成的特性将会移动至待办。子项目进行中的迭代会直接完成，未开始的冲刺将会删除，未完成的问题将会移动至待办。请谨慎操作！',
+  'project.info.disable.subProject.tips': '警告：子项目停用后，与项目群相关的冲刺将发生变动，进行中的冲刺会直接完成，未开始的冲刺将会删除，未完成的问题将会移动至待办。请谨慎操作！',
   'project.info.header.title': '项目信息',
   'project.info.setting': '项目设置',
   'project.info.otherSetting': '其他设置',

@@ -8,6 +8,10 @@ public enum RoleLabelEnum {
     /**
      * 项目层角色标签
      */
+    TENANT_ROLE_TPL("TENANT_ROLE_TPL"),
+    /**
+     * 项目层角色标签
+     */
     PROJECT_ROLE("PROJECT_ROLE"),
 
     /**

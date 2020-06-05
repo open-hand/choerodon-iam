@@ -96,4 +96,6 @@ public interface RoleC7nMapper {
                                           @Param("orgIds") Set<Long> orgIds);
 
     List<Role> listByTenantId(@Param("tenantId") Long tenantId);
+
+    List<Role> listChildRoleByTplRoleId(@Param("roleId") Long roleId);
 }

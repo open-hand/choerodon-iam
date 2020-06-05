@@ -348,5 +348,10 @@
         FROM iam_role ir
         WHERE ir.h_tenant_id = #{tenantId}
     </select>
+    <select id="listChildRoleByTplRoleId" resultMap="RoleMap">
+          SELECT ir.*
+          FROM iam_role ir
+          WHERE ir.h_inherit_role_id = #{roleId}
+    </select>
 
 </mapper>

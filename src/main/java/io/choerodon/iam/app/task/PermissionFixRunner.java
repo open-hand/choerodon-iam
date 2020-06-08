@@ -87,7 +87,11 @@ public class PermissionFixRunner implements CommandLineRunner {
                     delPsIds = childPsIds;
                 } else {
                     addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)).collect(Collectors.toSet());
-                    delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)).collect(Collectors.toSet());
+                    delPsIds = childPs.stream().filter(ps -> !tplPsIds.contains(ps.getPermissionSetId())
+                            || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))
+                            .map(RolePermission::getPermissionSetId)
+                            .collect(Collectors.toSet());
+//                    delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)).collect(Collectors.toSet());
                 }
 
                 // 删除子角色权限

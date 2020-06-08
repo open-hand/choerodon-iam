@@ -3,9 +3,11 @@ package io.choerodon.iam.app.task;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
+import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.RolePermissionMapper;
 import org.slf4j.Logger;
@@ -104,7 +106,8 @@ public class PermissionFixRunner implements CommandLineRunner {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
                         rolePermission.setCreateFlag(tplPsMap.get(id).getCreateFlag());
-                        rolePermission.setInheritFlag(tplPsMap.get(id).getInheritFlag());
+                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+                        rolePermission.setInheritFlag(inheritFlag);
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);
                         rolePermission.setType(RolePermissionType.PS.name());

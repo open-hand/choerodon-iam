@@ -105,8 +105,9 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (!CollectionUtils.isEmpty(addPsIds)) {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
-                        rolePermission.setCreateFlag(tplPsMap.get(id).getCreateFlag());
+                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
                         String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+                        rolePermission.setCreateFlag(createFlag);
                         rolePermission.setInheritFlag(inheritFlag);
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.iam.api.dto.MenuTreeQueryDTO;
+import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
@@ -33,13 +34,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.MenuType;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
+import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.*;
 
 /**
  * 〈功能简述〉
@@ -67,6 +69,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private UserRepository userRepository;
     private MenuMapper menuMapper;
     private MemberRoleC7nMapper memberRoleC7nMapper;
+    private RoleC7nMapper roleC7nMapper;
+    private ProjectUserMapper projectUserMapper;
+    private ProjectC7nService projectC7nService;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               @Lazy OrganizationRoleC7nService organizationRoleC7nService,
@@ -76,7 +81,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 //                              RoleC7nService roleC7nService,
                               MenuMapper menuMapper,
                               UserRepository userRepository,
-                              MemberRoleC7nMapper memberRoleC7nMapper) {
+                              MemberRoleC7nMapper memberRoleC7nMapper,
+                              RoleC7nMapper roleC7nMapper,
+                              ProjectUserMapper projectUserMapper,
+                              ProjectC7nService projectC7nService) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -86,6 +94,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         this.menuMapper = menuMapper;
         this.userRepository = userRepository;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
+        this.roleC7nMapper = roleC7nMapper;
+        this.projectUserMapper = projectUserMapper;
+        this.projectC7nService = projectC7nService;
     }
 
     @Override
@@ -129,17 +140,41 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         if (labels == null && projectId == null) {
             throw new CommonException("error.menu.params");
         }
+        String finalLang = LanguageHelper.language();
+        // 查询项目层菜单，（可以考虑单独抽出一个新接口）
         if (projectId != null) {
-            labels = new HashSet<>();
+            ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
+            // 查询用户在项目下的角色
+            Long userId = DetailsHelper.getUserDetails().getUserId();
+            List<RoleDTO> roleDTOS = projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
+            if (CollectionUtils.isEmpty(roleDTOS)) {
+                throw new CommonException("error.not.project.member");
+            }
+            List<Long> roleIds = roleDTOS.stream().map(RoleDTO::getId).collect(Collectors.toList());
+            // 添加项目类型
+
             List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);
             if (CollectionUtils.isEmpty(list)) {
                 throw new CommonException("error.project.category");
             }
-            for (ProjectCategoryDTO t : list) {
-                labels.add(t.getLabelCode());
-            }
+
+            // 查询角色的菜单
+            Set<String> finalLabels1 = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
+            CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
+                SecurityTokenHelper.close();
+                List<Menu> menus = this.menuMapper.selectRoleMenus(roleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true);
+                SecurityTokenHelper.clear();
+                return menus;
+            }, SELECT_MENU_POOL);
+            CompletableFuture<List<Menu>> cf = f1
+                    // 转换成树形结构
+                    .thenApply((menus) -> HiamMenuUtils.formatMenuListToTree(menus, Boolean.FALSE))
+                    .exceptionally((e) -> {
+                        LOGGER.warn("select menus error, ex = {}", e.getMessage(), e);
+                        return Collections.emptyList();
+                    });
+            return cf.join();
         }
-        String finalLang = LanguageHelper.language();
 
         if (labels.contains(USER_MENU)) {
             CompletableFuture<List<Menu>> f1;
@@ -154,6 +189,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                     });
             return cf.join();
         } else {
+            // 组织平台层菜单调用
             MenuTreeQueryDTO menuTreeQueryDTO = new MenuTreeQueryDTO();
             menuTreeQueryDTO.setLabels(labels);
             menuTreeQueryDTO.setLang(finalLang);

@@ -61,7 +61,7 @@ const ListView = () => {
         return false;
       }
     } catch (e) {
-      Choerodon.handleResponseError(e);
+      // Choerodon.handleResponseError(e);
       return false;
     }
   }, [menuDs.selected]);

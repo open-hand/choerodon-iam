@@ -1,7 +1,7 @@
-import React, { Component, useState, useContext, useEffect } from 'react';
+import React, { Component, useState, useContext, useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Form, Icon, Input, Modal, Modal as OldModal, Divider } from 'choerodon-ui';
-import { message } from 'choerodon-ui/pro';
+import { Button, Divider } from 'choerodon-ui';
+import { message, Modal, TextField } from 'choerodon-ui/pro';
 import { axios, Content, Header, TabPage as Page, Breadcrumb, Permission, Choerodon } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import GeneralSettingContext, { ContextProvider } from './stores';
@@ -65,36 +65,116 @@ const GeneralSetting = observer(() => {
   };
 
   function handleDisable() {
-    const { category } = store.getProjectInfo;
-    const content = (
-      <div>
-        <span>{formatMessage({ id: 'project.info.disable.content' }, { name: projectName })}</span>
-        {category === 'PROGRAM' ? (
-          <div className="c7n-projects-enable-tips">
-            {formatMessage({ id: 'project.info.disable.content.tips' })}
-          </div>
-        ) : null}
-      </div>
-    );
-    OldModal.confirm({
-      className: 'c7n-iam-confirm-modal',
-      title: formatMessage({ id: 'project.info.disable.title' }),
-      content,
-      onOk: async () => {
-        try {
-          const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
-          if (result.failed) {
-            throw result.message;
-          } else {
-            message.info('停用成功');
-            history.push('/projects');
-          }
-        } catch (err) {
-          message.error(err);
-          return false;
-        }
+    const { category, categories, name } = store.getProjectInfo;
+    const isSubProject = categories.some(c => c.code === 'PROGRAM_PROJECT');
+    const okProps = {
+      disabled: true,
+      color: 'red',
+      style: {
+        width: '100%', border: '1px solid rgba(27,31,35,.2)', height: 36, marginTop: -26,
       },
-    });
+    };
+    const ModalContent = ({ modal }) => {
+      let extraMessage;
+      if (category === 'PROGRAM') {
+        extraMessage = (
+          <Fragment>
+            <div className="c7n-projects-enable-tips">
+              {formatMessage({ id: 'project.info.disable.program.tips' })}
+            </div>
+            <div style={{ marginTop: 10 }}>
+              请输入
+              {' '}
+              <span style={{ fontWeight: 600 }}>{name}</span>
+              {' '}
+              来确认停用。
+            </div>
+            <TextField
+              style={{ width: '100%', marginTop: 10 }}
+              autoFocus
+              onInput={(e) => {
+                modal.update({
+                  okProps: {
+                    ...okProps,
+                    disabled: e.target.value !== name,
+                  },
+                });
+              }}
+            />
+          </Fragment>
+        );
+      } else if (isSubProject) {
+        extraMessage = (
+          <div className="c7n-projects-enable-tips">
+            {formatMessage({ id: 'project.info.disable.subProject.tips' })}
+          </div>
+        );
+      }
+      const content = (
+        <div style={{ marginTop: -10 }}>
+          {category === 'PROGRAM' && (
+            <p style={{
+              marginBottom: 14,
+              background: '#fffbdd',
+              padding: '15px 26px',
+              border: '1px solid rgba(27,31,35,.15)',
+              width: 'calc(100% + 49px)',
+              marginLeft: -25,
+            }}
+            >
+              请仔细阅读下列事项！
+            </p>
+          )}
+          <span>{formatMessage({ id: 'project.info.disable.content' }, { name: projectName })}</span>
+          {extraMessage}
+        </div>
+      );
+      return content;
+    };
+    if (category === 'PROGRAM') {
+      Modal.open({
+        className: 'c7n-iam-confirm-modal',
+        title: formatMessage({ id: 'project.info.disable.program.title' }),
+        children: <ModalContent />,
+        okProps,
+        okText: '我已经知道后果，停用此项目',
+        closable: true,
+        footer: okBtn => okBtn,
+        onOk: async () => {
+          try {
+            const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
+            if (result.failed) {
+              throw result.message;
+            } else {
+              message.info('停用成功');
+              history.push('/projects');
+            }
+          } catch (err) {
+            return false;
+          }
+        },
+      });
+    } else {
+      Modal.open({
+        className: 'c7n-iam-confirm-modal',
+        title: formatMessage({ id: 'project.info.disable.title' }),
+        children: <ModalContent />,
+        onOk: async () => {
+          try {
+            const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
+            if (result.failed) {
+              throw result.message;
+            } else {
+              message.info('停用成功');
+              history.push('/projects');
+            }
+          } catch (err) {
+            message.error(err);
+            return false;
+          }
+        },
+      });
+    }
   }
 
   const { enabled, name, code, agileProjectCode, categories = [], creationDate, createUserName } = store.getProjectInfo;

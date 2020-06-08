@@ -177,9 +177,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
 
     @Override
-    public List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId) {
+    public List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId, Boolean enable) {
         List<RoleC7nDTO> roles = ConvertUtils.convertList(
-                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), false),
+                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), enable),
                 RoleC7nDTO.class);
         String param = ParamUtils.arrToStr(clientRoleQueryVO.getParam());
         roles.forEach(r -> {

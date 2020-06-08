@@ -251,9 +251,10 @@ public class RoleMemberC7nController extends BaseController {
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
     public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnOrganizationLevel(
             @PathVariable(name = "organization_id") Long sourceId,
+            @RequestParam(required = false, name = "enable", defaultValue = "true") Boolean enable,
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnOrganizationLevel(
-                clientRoleQueryVO, sourceId), HttpStatus.OK);
+                clientRoleQueryVO, sourceId, enable), HttpStatus.OK);
     }
 
     /**

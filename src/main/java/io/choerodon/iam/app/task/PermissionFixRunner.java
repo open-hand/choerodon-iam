@@ -3,9 +3,11 @@ package io.choerodon.iam.app.task;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
+import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.RolePermissionMapper;
 import org.slf4j.Logger;
@@ -50,10 +52,10 @@ public class PermissionFixRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-
+            LOGGER.info("start fix role permission");
             // 修复子角色权限（保持和模板角色权限一致）
             fixChildPermission();
-
+            LOGGER.info("start fix role permission");
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }
@@ -68,7 +70,7 @@ public class PermissionFixRunner implements CommandLineRunner {
             // 查询模板角色拥有的权限
             List<RolePermission> tplPs = rolePermissionC7nMapper.listRolePermissionIds(tplRole.getId());
             Set<Long> tplPsIds = tplPs.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-
+            Map<Long, RolePermission> tplPsMap = tplPs.stream().collect(Collectors.toMap(RolePermission::getPermissionSetId, v -> v));
             // 查询模板子角色
             List<Role> childRoles = roleC7nMapper.listChildRoleByTplRoleId(tplRole.getId());
 
@@ -103,8 +105,10 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (!CollectionUtils.isEmpty(addPsIds)) {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
-                        rolePermission.setCreateFlag("N");
-                        rolePermission.setInheritFlag("Y");
+                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
+                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+                        rolePermission.setCreateFlag(createFlag);
+                        rolePermission.setInheritFlag(inheritFlag);
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);
                         rolePermission.setType(RolePermissionType.PS.name());

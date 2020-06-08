@@ -116,6 +116,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         memberRole.setRoleId(roleId);
         memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
         memberRole.setSourceId(organizationId);
+        memberRole.setAssignLevelValue(organizationId);
         return memberRole;
     }
 

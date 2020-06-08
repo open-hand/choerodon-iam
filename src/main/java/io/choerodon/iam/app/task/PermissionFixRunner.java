@@ -50,10 +50,10 @@ public class PermissionFixRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-
+            LOGGER.info("start fix role permission");
             // 修复子角色权限（保持和模板角色权限一致）
             fixChildPermission();
-
+            LOGGER.info("start fix role permission");
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }
@@ -68,7 +68,7 @@ public class PermissionFixRunner implements CommandLineRunner {
             // 查询模板角色拥有的权限
             List<RolePermission> tplPs = rolePermissionC7nMapper.listRolePermissionIds(tplRole.getId());
             Set<Long> tplPsIds = tplPs.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-
+            Map<Long, RolePermission> tplPsMap = tplPs.stream().collect(Collectors.toMap(RolePermission::getPermissionSetId, v -> v));
             // 查询模板子角色
             List<Role> childRoles = roleC7nMapper.listChildRoleByTplRoleId(tplRole.getId());
 
@@ -103,8 +103,8 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (!CollectionUtils.isEmpty(addPsIds)) {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
-                        rolePermission.setCreateFlag("N");
-                        rolePermission.setInheritFlag("Y");
+                        rolePermission.setCreateFlag(tplPsMap.get(id).getCreateFlag());
+                        rolePermission.setInheritFlag(tplPsMap.get(id).getInheritFlag());
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);
                         rolePermission.setType(RolePermissionType.PS.name());

@@ -1,9 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -72,6 +69,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private RoleC7nMapper roleC7nMapper;
     private ProjectUserMapper projectUserMapper;
     private ProjectC7nService projectC7nService;
+    private UserC7nMapper userC7nMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               @Lazy OrganizationRoleC7nService organizationRoleC7nService,
@@ -84,7 +82,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               MemberRoleC7nMapper memberRoleC7nMapper,
                               RoleC7nMapper roleC7nMapper,
                               ProjectUserMapper projectUserMapper,
-                              ProjectC7nService projectC7nService) {
+                              ProjectC7nService projectC7nService,
+                              UserC7nMapper userC7nMapper) {
         this.menuC7nMapper = menuC7nMapper;
         this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -97,6 +96,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         this.roleC7nMapper = roleC7nMapper;
         this.projectUserMapper = projectUserMapper;
         this.projectC7nService = projectC7nService;
+        this.userC7nMapper = userC7nMapper;
     }
 
     @Override
@@ -145,12 +145,20 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         if (projectId != null) {
             ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
             // 查询用户在项目下的角色
-            Long userId = DetailsHelper.getUserDetails().getUserId();
-            List<RoleDTO> roleDTOS = projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
-            if (CollectionUtils.isEmpty(roleDTOS)) {
-                throw new CommonException("error.not.project.member");
+            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+            List<Long> roleIds = new ArrayList<>();
+
+            if (Boolean.TRUE.equals(userDetails.getAdmin())
+                    || Boolean.TRUE.equals(userC7nMapper.isOrgAdministrator(projectDTO.getOrganizationId(), userDetails.getUserId()))) {
+                Role tenantAdminRole = roleC7nMapper.getTenantAdminRole(projectDTO.getOrganizationId());
+                roleIds.add(tenantAdminRole.getId());
+            } else {
+                List<RoleDTO> roleDTOS = projectUserMapper.listRolesByProjectIdAndUserId(projectId, userDetails.getUserId());
+                if (CollectionUtils.isEmpty(roleDTOS)) {
+                    throw new CommonException("error.not.project.member");
+                }
+                roleIds = roleDTOS.stream().map(RoleDTO::getId).collect(Collectors.toList());
             }
-            List<Long> roleIds = roleDTOS.stream().map(RoleDTO::getId).collect(Collectors.toList());
             // 添加项目类型
 
             List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);
@@ -160,9 +168,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
             // 查询角色的菜单
             Set<String> finalLabels1 = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
+            List<Long> finalRoleIds = roleIds;
             CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
                 SecurityTokenHelper.close();
-                List<Menu> menus = this.menuMapper.selectRoleMenus(roleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true);
+                List<Menu> menus = this.menuMapper.selectRoleMenus(finalRoleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true);
                 SecurityTokenHelper.clear();
                 return menus;
             }, SELECT_MENU_POOL);

@@ -85,11 +85,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserAssertHelper userAssertHelper;
     private final UserC7nMapper userC7nMapper;
     private final UserC7nService userC7nService;
-    private final UserMapper userMapper;
     private final UserPasswordService userPasswordService;
     private final UserRepository userRepository;
     private final UserService userService;
-    private final MemberRoleRepository memberRoleRepository;
     private final MessageClient messageClient;
     private final MessageSendService messageSendService;
 
@@ -104,13 +102,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        UserAssertHelper userAssertHelper,
                                        UserC7nMapper userC7nMapper,
                                        UserC7nService userC7nService,
-                                       UserMapper userMapper,
                                        UserPasswordService userPasswordService,
                                        UserRepository userRepository,
                                        MemberRoleService memberRoleService,
                                        RoleMemberService roleMemberService,
                                        UserService userService,
-                                       MemberRoleRepository memberRoleRepository,
                                        MessageClient messageClient,
                                        MessageSendService messageSendService) {
         this.labelC7nMapper = labelC7nMapper;
@@ -126,11 +122,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userAssertHelper = userAssertHelper;
         this.userC7nMapper = userC7nMapper;
         this.userC7nService = userC7nService;
-        this.userMapper = userMapper;
         this.userPasswordService = userPasswordService;
         this.userRepository = userRepository;
         this.userService = userService;
-        this.memberRoleRepository = memberRoleRepository;
         this.messageClient = messageClient;
         this.messageSendService = messageSendService;
     }

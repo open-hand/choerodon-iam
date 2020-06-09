@@ -2,8 +2,6 @@ package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.Column;
-
 /**
  * @author scp
  * @date 2020/4/27

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.infra.constant.Constants;
@@ -35,27 +34,29 @@ public class PermissionFixRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionFixRunner.class);
 
     @Autowired
-    private RoleService roleService;
-    @Autowired
     private RoleC7nMapper roleC7nMapper;
     @Autowired
     private RolePermissionC7nMapper rolePermissionC7nMapper;
     @Autowired
     private RolePermissionMapper rolePermissionMapper;
 
-    @Value("${fix.data.page.size:200}")
+    @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;
 
-    @Value("${fix.data.page.sleep.time: 500}")
+    @Value("${choerodon.fix.data.page.sleep.time: 500}")
     private Integer sleepTime;
+    @Value("${choerodon.fix.data.flag: true}")
+    private Boolean fixDataFlag;
 
     @Override
     public void run(String... strings) {
         try {
-            LOGGER.info("start fix role permission");
             // 修复子角色权限（保持和模板角色权限一致）
-            fixChildPermission();
-            LOGGER.info("start fix role permission");
+            if (Boolean.TRUE.equals(fixDataFlag)) {
+                LOGGER.info("start fix role permission");
+                fixChildPermission();
+                LOGGER.info("start fix role permission");
+            }
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }
@@ -82,12 +83,14 @@ public class PermissionFixRunner implements CommandLineRunner {
 
                 Set<Long> addPsIds = new HashSet<>();
                 Set<Long> delPsIds = new HashSet<>();
-                List<RolePermission> updateRolePsList = new ArrayList<>();
+//                List<RolePermission> updateRolePsList = new ArrayList<>();
 
                 if (CollectionUtils.isEmpty(tplPsIds)) {
                     delPsIds = childPsIds;
                 } else {
-                    addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)).collect(Collectors.toSet());
+                    addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)
+                            && StringUtils.equals(Constants.YesNoFlag.YES, tplPsMap.get(id).getCreateFlag()))
+                            .collect(Collectors.toSet());
                     delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)
                             || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
                             .collect(Collectors.toSet());
@@ -128,10 +131,10 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (!CollectionUtils.isEmpty(addPsIds)) {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
-                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
-                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
-                        rolePermission.setCreateFlag(createFlag);
-                        rolePermission.setInheritFlag(inheritFlag);
+//                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
+//                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+                        rolePermission.setCreateFlag(Constants.YesNoFlag.NO);
+                        rolePermission.setInheritFlag(Constants.YesNoFlag.YES);
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);
                         rolePermission.setType(RolePermissionType.PS.name());

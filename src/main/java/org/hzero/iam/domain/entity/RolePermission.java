@@ -5,20 +5,15 @@
 
 package org.hzero.iam.domain.entity;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.infra.constant.RolePermissionType;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
 
 @ApiModel("角色权限关系")
 @ModifyAudit

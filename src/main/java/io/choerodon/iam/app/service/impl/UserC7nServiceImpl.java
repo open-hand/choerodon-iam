@@ -22,6 +22,7 @@ import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
@@ -86,11 +87,11 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
-    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
-    private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -1167,5 +1168,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         Long userId = customUserDetails.getUserId();
         UserDTO userDTO = userC7nMapper.queryPersonalInfo(userId);
         return userDTO;
+    }
+
+    @Override
+    public WebHookUser getWebHookUser(Long userId) {
+        User userDTO = userRepository.selectByPrimaryKey(userId);
+        if (ObjectUtils.isEmpty(userDTO) || StringUtils.isEmpty(userDTO.getLoginName())) {
+            return new WebHookUser("0", "unknown");
+        } else {
+            return new WebHookUser(userDTO.getLoginName(), userDTO.getRealName());
+        }
     }
 }

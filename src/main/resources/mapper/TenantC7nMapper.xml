@@ -233,12 +233,23 @@
         <where>
             imr.member_type = 'user' AND imr.member_id = #{params.userId} AND imr.source_type = 'organization'
             <if test="params.tenantName != null">
-                 AND ht.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')
+                AND ht.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')
             </if>
             <if test="params.tenantNum != null">
-                 AND ht.tenant_num LIKE concat(concat('%', #{param1.tenantNum}), '%')
+                AND ht.tenant_num LIKE concat(concat('%', #{param1.tenantNum}), '%')
             </if>
         </where>
         GROUP BY ht.tenant_id
+    </select>
+
+    <select id="listMemberIds" resultType="org.hzero.iam.domain.entity.User">
+        SELECT
+	      iu.*
+        FROM
+	      iam_member_role imr
+	    INNER JOIN iam_user iu ON imr.member_id = iu.id
+        WHERE
+          imr.source_id = #{tenantId}
+	    AND imr.source_type = 'organization'
     </select>
 </mapper>

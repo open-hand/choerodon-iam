@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -11,9 +12,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
@@ -21,6 +20,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
@@ -80,10 +80,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String PROJECT_MEMBERROLE_TEMPLATES_PATH = "/templates/projectMemberRoleTemplates";
     private static final String DOT_SEPARATOR = ".";
     private static final String SITE_ROOT = "role/site/default/administrator";
-    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
-    private static final String USER_BUSINESS_TYPE_CODE = "siteAddUser";
-    private static final String BUSINESS_TYPE_CODE = "addMember";
-    private static final String PROJECT_ADD_USER = "projectAddUser";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
+    private static final String USER_BUSINESS_TYPE_CODE = "SITEADDUSER";
+    private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
+    private static final String PROJECT_ADD_USER = "PROJECTADDUSER";
     private TenantMapper tenantMapper;
     private ProjectMapper projectMapper;
 
@@ -124,6 +124,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private MemberRoleRepository memberRoleRepository;
     private MessageClient messageClient;
     private MessageSendService messageSendService;
+    private UserC7nService userC7nService;
+    private ProjectC7nService projectC7nService;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
@@ -148,7 +150,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  TransactionalProducer producer,
                                  MessageClient messageClient,
                                  MemberRoleRepository memberRoleRepository,
-                                 MessageSendService messageSendService) {
+                                 MessageSendService messageSendService,
+                                 UserC7nService userC7nService,
+                                 ProjectC7nService projectC7nService) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
@@ -172,6 +176,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.messageSendService = messageSendService;
+        this.userC7nService = userC7nService;
+        this.projectC7nService = projectC7nService;
     }
 
 
@@ -511,59 +517,37 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     // TODO notify-service
-
     private void snedMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {
-//        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-//        Role roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
-//        Map<String, Object> params = new HashMap<>();
-//        if (ResourceLevel.SITE.value().equals(sourceType)) {
-//            if (SITE_ROOT.equals(roleDTO.getCode())) {
-//                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), ROOT_BUSINESS_TYPE_CODE, Collections.EMPTY_MAP, sourceId);
-//            } else {
-//                params.put("roleName", roleDTO.getName());
-//                userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), USER_BUSINESS_TYPE_CODE, params, sourceId);
-//            }
-//        }
-//        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
-//            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
-//            params.put("organizationName", organizationDTO.getName());
-//            params.put("roleName", roleDTO.getName());
-//            //webhook json
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("organizationId", organizationDTO.getId());
-//            jsonObject.put("addCount", 1);
-//            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
-//            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
-//
-//            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                    SendSettingBaseEnum.ADD_MEMBER.value(),
-//                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.ADD_MEMBER.value()),
-//                    jsonObject,
-//                    new Date(),
-//                    userService.getWebHookUser(fromUserId)
-//            );
-//            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), BUSINESS_TYPE_CODE, params, sourceId, webHookJsonSendDTO);
-//        }
-//        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-//            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(sourceId);
-//            params.put("projectName", projectDTO);
-//            params.put("roleName", roleDTO.getName());
-//
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("organizationId", projectDTO.getOrganizationId());
-//            jsonObject.put("addCount", 1);
-//            WebHookJsonSendDTO.User webHookUser = userService.getWebHookUser(memberRoleDTO.getMemberId());
-//            jsonObject.put("userList", JSON.toJSONString(Arrays.asList(webHookUser)));
-//
-//            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                    SendSettingBaseEnum.PROJECT_ADDUSER.value(),
-//                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.PROJECT_ADDUSER.value()),
-//                    jsonObject,
-//                    new Date(),
-//                    userService.getWebHookUser(fromUserId)
-//            );
-//            userService.sendNotice(fromUserId, Arrays.asList(memberRoleDTO.getMemberId()), PROJECT_ADD_USER, params, sourceId, webHookJsonSendDTO);
-//        }
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Role roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+        Map<String, String> params = new HashMap<>();
+        if (ResourceLevel.SITE.value().equals(sourceType)) {
+            if (SITE_ROOT.equals(roleDTO.getCode())) {
+                messageSendService.sendSiteAddRoot(ROOT_BUSINESS_TYPE_CODE, memberRoleDTO.getMemberId());
+            } else {
+                User user = userC7nService.queryInfo(memberRoleDTO.getMemberId());
+                messageSendService.sendSiteAddUserMsg(user, roleDTO.getName());
+            }
+        }
+        if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
+            Tenant tenant = tenantMapper.selectTenantDetails(sourceId);
+            List<WebHookUser> webHookUsers = new ArrayList<>();
+            params.put("organizationName", tenant.getTenantName());
+            params.put("roleName", roleDTO.getName());
+            params.put("organizationId", String.valueOf(tenant.getTenantId()));
+            params.put("addCount", String.valueOf(1));
+            params.put("userList", JSON.toJSONString(userC7nService.getWebHookUser(memberRoleDTO.getMemberId())));
+            messageSendService.sendAddMemberMsg(tenant, params, BUSINESS_TYPE_CODE, DetailsHelper.getUserDetails().getUserId());
+        }
+        if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            ProjectDTO projectDTO = projectC7nService.queryProjectById(sourceId);
+            params.put("projectName", projectDTO.getName());
+            params.put("roleName", roleDTO.getName());
+            params.put("organizationId", String.valueOf(projectDTO.getOrganizationId()));
+            params.put("addCount", String.valueOf(1));
+            params.put("userList", JSON.toJSONString(userC7nService.getWebHookUser(memberRoleDTO.getMemberId())));
+            messageSendService.sendProjectAddUserMsg(projectDTO,params,PROJECT_ADD_USER,DetailsHelper.getUserDetails().getUserId());
+        }
     }
 
     private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads, String code) {

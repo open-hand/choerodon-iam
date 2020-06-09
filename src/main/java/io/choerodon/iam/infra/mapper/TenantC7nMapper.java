@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
@@ -80,8 +81,17 @@ public interface TenantC7nMapper {
 
     /**
      * 查询用户可以看到的组织列表
+     *
      * @param params params.userId必填
      * @return
      */
     List<TenantDTO> listVisibleTentant(@Param("params") TenantDTO params);
+
+    /**
+     * 查询组织下的所有用户
+     *
+     * @param tenantId
+     * @return
+     */
+    List<User> listMemberIds(@Param("tenantId") Long tenantId);
 }

@@ -4,7 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -188,7 +190,7 @@ public interface UserC7nService {
     void sendNotice(List<Long> userIds, String code,
                     Map<String, String> params, Long sourceId, ResourceLevel resourceLevel);
     // TODO notify-service
-//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
+//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
 //
 //    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
 //    /**
@@ -307,5 +309,6 @@ public interface UserC7nService {
 
     UserDTO queryPersonalInfo();
 
+    WebHookUser getWebHookUser(Long userId);
 
 }

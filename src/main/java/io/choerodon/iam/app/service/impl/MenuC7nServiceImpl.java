@@ -15,7 +15,6 @@ import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MenuRepository;
-import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
@@ -23,7 +22,6 @@ import org.hzero.iam.infra.mapper.MenuMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -33,7 +31,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MenuC7nService;
-import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -50,7 +47,6 @@ import io.choerodon.iam.infra.mapper.*;
 @Service
 public class MenuC7nServiceImpl implements MenuC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MenuC7nServiceImpl.class);
-    private static final String CHOERODON_MENU = "CHOERODON_MENU";
     private static final String USER_MENU = "USER_MENU";
 
     // 查询菜单的线程池
@@ -58,11 +54,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("C7n-selMenuPool-%d").build());
 
     private MenuC7nMapper menuC7nMapper;
-    private OrganizationRoleC7nService organizationRoleC7nService;
-    private RoleRepository roleRepository;
     private MenuRepository menuRepository;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
-//    private RoleC7nService roleC7nService;
     private UserRepository userRepository;
     private MenuMapper menuMapper;
     private MemberRoleC7nMapper memberRoleC7nMapper;
@@ -72,11 +65,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private UserC7nMapper userC7nMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
-                              @Lazy OrganizationRoleC7nService organizationRoleC7nService,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
                               MenuRepository menuRepository,
-                              RoleRepository roleRepository,
-//                              RoleC7nService roleC7nService,
                               MenuMapper menuMapper,
                               UserRepository userRepository,
                               MemberRoleC7nMapper memberRoleC7nMapper,
@@ -85,11 +75,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               ProjectC7nService projectC7nService,
                               UserC7nMapper userC7nMapper) {
         this.menuC7nMapper = menuC7nMapper;
-        this.organizationRoleC7nService = organizationRoleC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
-        this.roleRepository = roleRepository;
         this.menuRepository = menuRepository;
-//        this.roleC7nService = roleC7nService;
         this.menuMapper = menuMapper;
         this.userRepository = userRepository;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
@@ -112,7 +99,6 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labels.add(MenuLabelEnum.PROGRAM_MENU.value());
             labels.add(MenuLabelEnum.OPERATIONS_MENU.value());
         }
-//        menuParams.setLabels(labels);
         SecurityTokenHelper.close();
         Set<String> typeNames = new HashSet<>();
         typeNames.add(MenuType.ROOT.value());

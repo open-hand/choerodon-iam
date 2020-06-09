@@ -42,6 +42,6 @@ public class OrganizationResourceLimitServiceImpl implements OrganizationResourc
 
     @Override
     public void checkEnableCreateUserOrThrowE(Long organizationId, int userNum) {
-
+        // do nothing
     }
 }

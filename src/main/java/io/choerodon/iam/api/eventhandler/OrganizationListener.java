@@ -1,25 +1,22 @@
 package io.choerodon.iam.api.eventhandler;
 
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.io.IOException;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.iam.app.service.LdapC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.hzero.iam.app.service.LdapService;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.List;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.CREATE_LDAP_AUTO;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.TASK_CREATE_LDAP_AUTO;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.TASK_PROJECT_IMPORT_USER;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 
 /**

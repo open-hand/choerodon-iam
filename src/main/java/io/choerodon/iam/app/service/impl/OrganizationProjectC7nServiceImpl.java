@@ -1,6 +1,25 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -37,27 +56,6 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
-import org.hzero.iam.saas.domain.entity.Tenant;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -80,10 +78,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private SagaClient sagaClient;
 
-    private UserService userService;
     private UserC7nService userC7nService;
-
-//    private AsgardFeignClient asgardFeignClient;
 
     private DevopsFeignClient devopsFeignClient;
 
@@ -93,13 +88,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectCategoryMapper projectCategoryMapper;
 
-    private ProjectUserMapper projectUserMapper;
-
     private LabelC7nMapper labelC7nMapper;
 
     private RoleC7nMapper roleC7nMapper;
-
-    private LabelMapper labelMapper;
 
     private ProjectAssertHelper projectAssertHelper;
 
@@ -107,14 +98,12 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private UserAssertHelper userAssertHelper;
 
-    private MemberRoleService memberRoleService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private TenantC7nService tenantC7nService;
     private C7nTenantConfigService c7nTenantConfigService;
 
     private OrganizationResourceLimitService organizationResourceLimitService;
@@ -123,20 +112,15 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
-                                             UserService userService,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
                                              ProjectMapper projectMapper,
                                              ProjectAssertHelper projectAssertHelper,
                                              ProjectCategoryMapper projectCategoryMapper,
                                              OrganizationAssertHelper organizationAssertHelper,
                                              UserAssertHelper userAssertHelper,
-                                             ProjectUserMapper projectUserMapper,
-                                             LabelMapper labelMapper,
-                                             MemberRoleService memberRoleService,
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
-                                             TenantC7nService tenantC7nService,
                                              UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
@@ -144,7 +128,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectUserService projectUserService,
                                              OrganizationResourceLimitService organizationResourceLimitService) {
         this.sagaClient = sagaClient;
-        this.userService = userService;
         this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
@@ -152,13 +135,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.organizationAssertHelper = organizationAssertHelper;
         this.projectCategoryMapper = projectCategoryMapper;
         this.userAssertHelper = userAssertHelper;
-        this.projectUserMapper = projectUserMapper;
-        this.labelMapper = labelMapper;
-        this.memberRoleService = memberRoleService;
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
-        this.tenantC7nService = tenantC7nService;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;

@@ -1,15 +1,10 @@
 package io.choerodon.iam.app.task;
 
-import io.choerodon.asgard.schedule.annotation.JobParam;
-import io.choerodon.asgard.schedule.annotation.JobTask;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.app.service.impl.LdapC7nServiceImpl;
-import io.choerodon.iam.infra.constant.LdapSyncC7nType;
-import io.choerodon.iam.infra.enums.LdapType;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+
 import org.hzero.iam.api.dto.LdapConnectionDTO;
-import org.hzero.iam.app.service.LdapService;
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.LdapHistory;
 import org.hzero.iam.domain.repository.LdapHistoryRepository;
@@ -24,9 +19,14 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
+import io.choerodon.asgard.schedule.annotation.JobParam;
+import io.choerodon.asgard.schedule.annotation.JobTask;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.app.service.impl.LdapC7nServiceImpl;
+import io.choerodon.iam.infra.constant.LdapSyncC7nType;
+import io.choerodon.iam.infra.enums.LdapType;
 
 /**
  * @author dengyouquan
@@ -45,7 +45,6 @@ public class LdapSyncUserC7nQuartzTask {
 
     public LdapSyncUserC7nQuartzTask(LdapConnectService ldapConnectService,
                                      LdapC7nService ldapC7nService,
-                                     LdapService ldapService,
                                      TenantMapper tenantMapper,
                                      LdapSyncUserTask ldapSyncUserTask,
                                      LdapHistoryRepository ldapHistoryRepository) {

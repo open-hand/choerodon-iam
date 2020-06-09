@@ -24,7 +24,6 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.DemoRegisterService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -43,16 +42,13 @@ import io.choerodon.swagger.annotation.Permission;
 public class TenantC7nController extends BaseController {
 
     private TenantC7nService tenantC7nService;
-    private UserC7nService userC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;
     private DemoRegisterService demoRegisterService;
 
     public TenantC7nController(TenantC7nService tenantC7nService,
-                               UserC7nService userC7nService,
                                DemoRegisterService demoRegisterService,
                                OrganizationResourceLimitService organizationResourceLimitService) {
         this.tenantC7nService = tenantC7nService;
-        this.userC7nService = userC7nService;
         this.demoRegisterService = demoRegisterService;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }

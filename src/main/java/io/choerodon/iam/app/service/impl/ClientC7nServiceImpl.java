@@ -18,7 +18,9 @@ import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.constant.Constants;
+import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.ClientMapper;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.beans.BeanUtils;
@@ -48,6 +50,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     private ClientC7nMapper clientC7nMapper;
     @Autowired
     private ClientAssertHelper clientAssertHelper;
+    @Autowired
+    private RoleRepository roleRepository;
     @Autowired
     private MemberRoleMapper memberRoleMapper;
     @Autowired
@@ -83,10 +87,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
 
     @Override
     public void assignRoles(Long organizationId, Long clientId, List<Long> newRoleIds) {
-        MemberRole queryDTO = new MemberRole();
-        queryDTO.setSourceType(Constants.MemberType.CLIENT);
-        queryDTO.setSourceId(clientId);
-        List<Long> existingRoleIds = memberRoleMapper.select(queryDTO).stream().map(MemberRole::getRoleId).collect(Collectors.toList());
+        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
         //交集，传入的roleId与数据库里存在的roleId相交
         List<Long> intersection = existingRoleIds.stream().filter(newRoleIds::contains).collect(Collectors.toList());
         //传入的roleId与交集的差集为要插入的roleId

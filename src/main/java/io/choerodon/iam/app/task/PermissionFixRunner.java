@@ -81,7 +81,7 @@ public class PermissionFixRunner implements CommandLineRunner {
 
                 Set<Long> addPsIds = new HashSet<>();
                 Set<Long> delPsIds = new HashSet<>();
-                List<RolePermission> updateRolePsList = new ArrayList<>();
+//                List<RolePermission> updateRolePsList = new ArrayList<>();
 
                 if (CollectionUtils.isEmpty(tplPsIds)) {
                     delPsIds = childPsIds;
@@ -90,17 +90,17 @@ public class PermissionFixRunner implements CommandLineRunner {
                     delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)
                             || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
                             .collect(Collectors.toSet());
-                    updateRolePsList = childPs.stream()
-                            .filter(ps -> !StringUtils.equals(ps.getInheritFlag(), tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))
-                            .map(ps -> {
-                                RolePermission rolePermission = ConvertUtils.convertObject(ps, RolePermission.class);
-                                String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
-                                String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
-                                rolePermission.setCreateFlag(createFlag);
-                                rolePermission.setInheritFlag(inheritFlag);
-                                return rolePermission;
-                            })
-                            .collect(Collectors.toList());
+//                    updateRolePsList = childPs.stream()
+//                            .filter(ps -> !StringUtils.equals(ps.getInheritFlag(), tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))
+//                            .map(ps -> {
+//                                RolePermission rolePermission = ConvertUtils.convertObject(ps, RolePermission.class);
+//                                String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
+//                                String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+//                                rolePermission.setCreateFlag(createFlag);
+//                                rolePermission.setInheritFlag(inheritFlag);
+//                                return rolePermission;
+//                            })
+//                            .collect(Collectors.toList());
                 }
 
                 // 删除子角色权限
@@ -115,12 +115,12 @@ public class PermissionFixRunner implements CommandLineRunner {
                 }
 
                 // 更新子角色权限
-                if (!CollectionUtils.isEmpty(updateRolePsList)) {
-                    // 要删除的role-permission-id
-                    updateRolePsList.forEach(ps -> {
-                        rolePermissionMapper.updateByPrimaryKeySelective(ps);
-                    });
-                }
+//                if (!CollectionUtils.isEmpty(updateRolePsList)) {
+//                    // 要删除的role-permission-id
+//                    updateRolePsList.forEach(ps -> {
+//                        rolePermissionMapper.updateByPrimaryKeySelective(ps);
+//                    });
+//                }
 
                 // 新增子角色权限
                 List<RolePermission> rolePermissionList = new ArrayList<>();

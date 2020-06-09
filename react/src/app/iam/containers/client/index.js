@@ -5,7 +5,6 @@ import { Modal as OldModal } from 'choerodon-ui';
 import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
 import { useContext } from 'react';
 import { FormattedMessage } from 'react-intl';
-import forEach from 'lodash/forEach';
 import Store from './store';
 import { StoreProvider } from './store';
 import EditRecord from './editRecord';
@@ -37,15 +36,9 @@ const Client = observer(() => {
   }
   async function openRoleManageModal(record) {
     clientDataSet.current = record;
-    const roleData = await axios.get(`/iam/v1/${orgId}/clients/${record.get('id')}`);
-    if (roleData) {
-      forEach(roleData, (value, key) => {
-        if (key !== 'authorizedGrantTypes' && (key !== 'scope' || value)) {
-          record.init(key, value);
-        }
-      });
-    }
-    await record.set('roles', roleData.memberRoleList || []);
+    const roleData = await clientStore.loadClientRoles(record.get('id'));
+    const roleIds = (roleData || []).map(({ id: roleId }) => roleId);
+    await record.set('roles', roleIds || []);
     setEditRoleModal(true);
   }
   function handleRowClick(record) {

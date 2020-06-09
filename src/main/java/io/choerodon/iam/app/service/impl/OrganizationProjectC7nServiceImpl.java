@@ -50,6 +50,7 @@ import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
@@ -79,6 +80,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private SagaClient sagaClient;
 
     private UserC7nService userC7nService;
+
+    private AsgardFeignClient asgardFeignClient;
 
     private DevopsFeignClient devopsFeignClient;
 
@@ -110,6 +113,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectUserService projectUserService;
 
+    private MessageSendService messageSendService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -126,7 +131,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
                                              ProjectUserService projectUserService,
-                                             OrganizationResourceLimitService organizationResourceLimitService) {
+                                             OrganizationResourceLimitService organizationResourceLimitService,
+                                             AsgardFeignClient asgardFeignClient,
+                                             MessageSendService messageSendService) {
         this.sagaClient = sagaClient;
         this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -143,6 +150,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.labelC7nMapper = labelC7nMapper;
         this.projectUserService = projectUserService;
         this.roleC7nMapper = roleC7nMapper;
+        this.asgardFeignClient = asgardFeignClient;
+        this.messageSendService = messageSendService;
     }
 
 
@@ -373,38 +382,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
         if (!enabled) {
             //给asgard发送禁用定时任务通知
-//                asgardFeignClient.disableProj(projectId);
+            asgardFeignClient.disableProj(projectId);
         }
-        // 给项目下所有用户发送通知
-//            List<Long> userIds = projectMapper.listUserIds(projectId);
-//            Map<String, Object> params = new HashMap<>();
-//            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
-//            params.put("projectName", dto.getName());
-//            if (PROJECT_DISABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.DISABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
-//            } else if (PROJECT_ENABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.ENABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
-//            }
+        messageSendService.sendDisableOrEnableProject(projectDTO, consumerType, enabled, userId);
     }
 
     @Override

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.infra.constant.Constants;
@@ -23,7 +22,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.RolePermissionC7nMapper;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
-import io.choerodon.iam.infra.utils.ConvertUtils;
 
 
 /**
@@ -90,7 +88,9 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (CollectionUtils.isEmpty(tplPsIds)) {
                     delPsIds = childPsIds;
                 } else {
-                    addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)).collect(Collectors.toSet());
+                    addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)
+                            && StringUtils.equals(Constants.YesNoFlag.YES, tplPsMap.get(id).getCreateFlag()))
+                            .collect(Collectors.toSet());
                     delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)
                             || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
                             .collect(Collectors.toSet());
@@ -131,10 +131,10 @@ public class PermissionFixRunner implements CommandLineRunner {
                 if (!CollectionUtils.isEmpty(addPsIds)) {
                     addPsIds.forEach(id -> {
                         RolePermission rolePermission = new RolePermission();
-                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
-                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
-                        rolePermission.setCreateFlag(createFlag);
-                        rolePermission.setInheritFlag(inheritFlag);
+//                        String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
+//                        String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+                        rolePermission.setCreateFlag(Constants.YesNoFlag.NO);
+                        rolePermission.setInheritFlag(Constants.YesNoFlag.YES);
                         rolePermission.setRoleId(childRole.getId());
                         rolePermission.setPermissionSetId(id);
                         rolePermission.setType(RolePermissionType.PS.name());

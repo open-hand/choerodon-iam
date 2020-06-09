@@ -101,12 +101,6 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
     @Override
     public List<Menu> listPermissionSetTree(Long tenantId, String menuLevel) {
-        // 查询组织下的组织管理员账户
-//        Role tenantAdminRole = roleC7nService.getTenantAdminRole(tenantId);
-//        MenuSearchDTO menuParams = new MenuSearchDTO();
-//        menuParams.setTenantId(tenantId);
-//        menuParams.setupOrganizationQueryLevel();
-//        menuParams.setRoleId(tenantAdminRole.getId());
         Set<String> labels = new HashSet<>();
         if (ResourceLevel.ORGANIZATION.value().equals(menuLevel)) {
             labels.add(MenuLabelEnum.TENANT_MENU.value());

@@ -42,19 +42,24 @@ public class PermissionFixRunner implements CommandLineRunner {
     @Autowired
     private RolePermissionMapper rolePermissionMapper;
 
-    @Value("${fix.data.page.size:200}")
+    @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;
 
-    @Value("${fix.data.page.sleep.time: 500}")
+    @Value("${choerodon.fix.data.page.sleep.time: 500}")
     private Integer sleepTime;
+    @Value("${choerodon.fix.data.flag: true}")
+    private Boolean fixDataFlag;
 
     @Override
     public void run(String... strings) {
         try {
-            LOGGER.info("start fix role permission");
+
             // 修复子角色权限（保持和模板角色权限一致）
-            fixChildPermission();
-            LOGGER.info("start fix role permission");
+            if (Boolean.TRUE.equals(fixDataFlag)) {
+                LOGGER.info("start fix role permission");
+                fixChildPermission();
+                LOGGER.info("start fix role permission");
+            }
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }

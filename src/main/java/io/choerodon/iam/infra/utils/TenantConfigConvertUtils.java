@@ -123,6 +123,13 @@ public class TenantConfigConvertUtils {
             token.setTenantId(tenantId);
             tenantConfigs.add(token);
         }
+        if (!Objects.isNull(tenantConfigVO.getImageUrl())) {
+            TenantConfig image = new TenantConfig();
+            image.setConfigKey(TenantConfigEnum.IMAGE_URL.value());
+            image.setConfigValue(tenantConfigVO.getImageUrl());
+            image.setTenantId(tenantId);
+            tenantConfigs.add(image);
+        }
         return tenantConfigs;
     }
 }

@@ -55,7 +55,7 @@ public class PermissionFixRunner implements CommandLineRunner {
         try {
             LOGGER.info("start fix role permission");
             // 修复子角色权限（保持和模板角色权限一致）
-            fixChildPermission();
+//            fixChildPermission();
             LOGGER.info("start fix role permission");
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);

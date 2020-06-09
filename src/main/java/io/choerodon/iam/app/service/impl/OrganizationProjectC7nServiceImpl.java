@@ -22,6 +22,7 @@ import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
@@ -31,6 +32,7 @@ import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
@@ -38,6 +40,8 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import org.apache.commons.collections.CollectionUtils;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
@@ -83,7 +87,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private UserService userService;
     private UserC7nService userC7nService;
 
-//    private AsgardFeignClient asgardFeignClient;
+    private AsgardFeignClient asgardFeignClient;
 
     private DevopsFeignClient devopsFeignClient;
 
@@ -121,6 +125,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectUserService projectUserService;
 
+    private MessageSendService messageSendService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              UserService userService,
@@ -142,7 +148,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
                                              ProjectUserService projectUserService,
-                                             OrganizationResourceLimitService organizationResourceLimitService) {
+                                             OrganizationResourceLimitService organizationResourceLimitService,
+                                             AsgardFeignClient asgardFeignClient,
+                                             MessageSendService messageSendService) {
         this.sagaClient = sagaClient;
         this.userService = userService;
         this.userC7nService = userC7nService;
@@ -164,6 +172,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.labelC7nMapper = labelC7nMapper;
         this.projectUserService = projectUserService;
         this.roleC7nMapper = roleC7nMapper;
+        this.asgardFeignClient = asgardFeignClient;
+        this.messageSendService = messageSendService;
     }
 
 
@@ -394,38 +404,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
         if (!enabled) {
             //给asgard发送禁用定时任务通知
-//                asgardFeignClient.disableProj(projectId);
+            asgardFeignClient.disableProj(projectId);
         }
-        // 给项目下所有用户发送通知
-//            List<Long> userIds = projectMapper.listUserIds(projectId);
-//            Map<String, Object> params = new HashMap<>();
-//            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
-//            params.put("projectName", dto.getName());
-//            if (PROJECT_DISABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.DISABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
-//            } else if (PROJECT_ENABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.ENABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
-//            }
+        messageSendService.sendDisableOrEnableProject(projectDTO, consumerType, enabled, userId);
     }
 
     @Override

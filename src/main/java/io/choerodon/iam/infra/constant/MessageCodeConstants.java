@@ -15,4 +15,9 @@ public class MessageCodeConstants {
     public static final String STOP_USER = "STOPUSER";
     public static final String RESET_ORGANIZATION_USER_PASSWORD = "RESETORGANIZATIONUSERPASSWORD";
 
+    //停用项目
+    public static final String DISABLEPROJECT = "DISABLEPROJECT";
+    //启用项目
+    public static final String ENABLEPROJECT = "ENABLEPROJECT";
+
 }

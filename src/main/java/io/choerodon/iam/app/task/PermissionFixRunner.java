@@ -23,7 +23,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.RolePermissionC7nMapper;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
-import io.choerodon.iam.infra.utils.ConvertUtils;
 
 
 /**
@@ -55,7 +54,7 @@ public class PermissionFixRunner implements CommandLineRunner {
         try {
             LOGGER.info("start fix role permission");
             // 修复子角色权限（保持和模板角色权限一致）
-//            fixChildPermission();
+            fixChildPermission();
             LOGGER.info("start fix role permission");
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
@@ -89,18 +88,20 @@ public class PermissionFixRunner implements CommandLineRunner {
                     delPsIds = childPsIds;
                 } else {
                     addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)).collect(Collectors.toSet());
-                    delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)).collect(Collectors.toSet());
-                    updateRolePsList = childPs.stream()
-                            .filter(ps -> !StringUtils.equals(ps.getInheritFlag(), tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))
-                            .map(ps -> {
-                                RolePermission rolePermission = ConvertUtils.convertObject(ps, RolePermission.class);
-                                String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
-                                String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
-                                rolePermission.setCreateFlag(createFlag);
-                                rolePermission.setInheritFlag(inheritFlag);
-                                return rolePermission;
-                            })
-                            .collect(Collectors.toList());
+                    delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)
+                            || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
+                            .collect(Collectors.toSet());
+//                    updateRolePsList = childPs.stream()
+//                            .filter(ps -> !StringUtils.equals(ps.getInheritFlag(), tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))
+//                            .map(ps -> {
+//                                RolePermission rolePermission = ConvertUtils.convertObject(ps, RolePermission.class);
+//                                String createFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.NO;
+//                                String inheritFlag = StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(ps.getId()).getCreateFlag()) ? Constants.YesNoFlag.DELETE : Constants.YesNoFlag.YES;
+//                                rolePermission.setCreateFlag(createFlag);
+//                                rolePermission.setInheritFlag(inheritFlag);
+//                                return rolePermission;
+//                            })
+//                            .collect(Collectors.toList());
                 }
 
                 // 删除子角色权限
@@ -115,12 +116,12 @@ public class PermissionFixRunner implements CommandLineRunner {
                 }
 
                 // 更新子角色权限
-                if (!CollectionUtils.isEmpty(updateRolePsList)) {
-                    // 要删除的role-permission-id
-                    updateRolePsList.forEach(ps -> {
-                        rolePermissionMapper.updateByPrimaryKeySelective(ps);
-                    });
-                }
+//                if (!CollectionUtils.isEmpty(updateRolePsList)) {
+//                    // 要删除的role-permission-id
+//                    updateRolePsList.forEach(ps -> {
+//                        rolePermissionMapper.updateByPrimaryKeySelective(ps);
+//                    });
+//                }
 
                 // 新增子角色权限
                 List<RolePermission> rolePermissionList = new ArrayList<>();

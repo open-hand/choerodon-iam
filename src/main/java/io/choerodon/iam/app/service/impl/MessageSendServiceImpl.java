@@ -80,7 +80,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setReceiverAddressList(receiverList);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            LOGGER.info("Send Add site user Msg failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>Send Add site user Msg failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
         }
     }
 
@@ -109,7 +109,7 @@ public class MessageSendServiceImpl implements MessageSendService {
 
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            LOGGER.info("Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>Stop User failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
         }
     }
 
@@ -155,7 +155,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setReceiverAddressList(receiverList);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            LOGGER.info("Send Add project user failed. userList : {}", userList);
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>Send Add project user failed. userList : {}", JSON.toJSONString(userList));
         }
     }
 
@@ -207,7 +207,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            LOGGER.info("Send add member msg failed. roleName : {}, userList : {}", roleName, userList);
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>send add member msg failed. roleName : {}, userList : {}", roleName, JSON.toJSONString(userList));
         }
     }
 
@@ -259,7 +259,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Disable Or Enable Project projectDTO: {}, consumerType:{},userId:{}", JSON.toJSONString(projectDTO), consumerType, userId);
         }
     }
 
@@ -313,7 +313,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Disable Or Enable Tenant: {}, consumerType:{},userId:{}", JSON.toJSONString(tenant), consumerType, userId);
         }
     }
 
@@ -340,7 +340,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             receiverList.add(receiver);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Site Add Root rootBusinessTypeCode: {}, userId:{}", rootBusinessTypeCode, userId);
         }
     }
 
@@ -373,7 +373,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Add Member Msg tenant: {}, userId:{}", JSON.toJSONString(tenant), userId);
         }
     }
 
@@ -406,7 +406,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Project Add User Msg projectDTO: {},params:{},projectAddUser:{} userId:{}", JSON.toJSONString(projectDTO), params, projectAddUser, userId);
         }
     }
 }

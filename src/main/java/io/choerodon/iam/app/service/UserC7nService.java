@@ -189,21 +189,6 @@ public interface UserC7nService {
      */
     void sendNotice(List<Long> userIds, String code,
                     Map<String, String> params, Long sourceId, ResourceLevel resourceLevel);
-    // TODO notify-service
-//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
-//
-//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
-//    /**
-//     * 单独发送webhook
-//     *
-//     * @param code
-//     * @param sourceId
-//     * @param webHookJsonSendDTO
-//     * @return
-//     */
-//    Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
-//
-//    Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
 
     /**
      * 校验用户是否是组织Root用户
@@ -214,8 +199,6 @@ public interface UserC7nService {
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
 
-    // TODO notifyservice
-//    WebHookJsonSendDTO.User getWebHookUser(Long userId);
 
     /**
      * 创建用户角色.

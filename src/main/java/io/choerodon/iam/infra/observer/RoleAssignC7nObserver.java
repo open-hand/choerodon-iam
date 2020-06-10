@@ -56,7 +56,6 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 }
             }
             projectUserService.assignUsersProjectRolesEvent(memberRoleList.get(0).getSourceId(), ResourceLevel.ORGANIZATION, userRoleLabelsMap);
-            // todo 发消息
 
         }
     }
@@ -72,7 +71,6 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
             userMemberEventMsg.setUsername(user.getLoginName());
             userMemberEventMsg.setUserId(user.getId());
             roleMemberService.deleteMemberRoleForSaga(user.getId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, memberRoleList.get(0).getSourceId());
-            // todo 消息
 
         }
     }

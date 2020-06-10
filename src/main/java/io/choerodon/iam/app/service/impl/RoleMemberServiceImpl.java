@@ -516,7 +516,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         messageClient.async().sendMessage(messageSender);
     }
 
-    // TODO notify-service
     private void snedMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         Role roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());

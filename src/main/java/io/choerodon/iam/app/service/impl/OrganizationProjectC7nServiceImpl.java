@@ -16,6 +16,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.saas.domain.entity.Tenant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -130,7 +131,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
-                                             ProjectUserService projectUserService,
+                                             @Lazy ProjectUserService projectUserService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              MessageSendService messageSendService) {

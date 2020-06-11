@@ -1179,4 +1179,12 @@ public class UserC7nServiceImpl implements UserC7nService {
             return new WebHookUser(userDTO.getLoginName(), userDTO.getRealName());
         }
     }
+
+    @Override
+    public List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.emptyList();
+        }
+        return userC7nMapper.listRoleLabelsForUserInTheProject(userId, projectIds);
+    }
 }

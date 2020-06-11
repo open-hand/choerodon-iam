@@ -19,6 +19,7 @@ import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -66,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -625,6 +627,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        Assert.notNull(projectId, ResourceCheckConstants.ERROR_PROJECT_IS_NULL);
         return userC7nMapper.doesUserHaveLabelInProject(id, RoleLabelEnum.PROJECT_ADMIN.value(), projectId);
     }
 

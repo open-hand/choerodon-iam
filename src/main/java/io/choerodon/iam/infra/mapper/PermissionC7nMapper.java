@@ -5,8 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Permission;
 
-import io.choerodon.mybatis.common.BaseMapper;
-
 /**
  * @author scp
  * @date 2020/4/16

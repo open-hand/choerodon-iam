@@ -15,8 +15,6 @@ public interface ProjectC7nService {
 
     ProjectDTO queryProjectById(Long projectId);
 
-//    Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, Pageable Pageable, String param);
-
     ProjectDTO update(ProjectDTO projectDTO);
 
     ProjectDTO disableProject(Long id);

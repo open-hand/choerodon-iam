@@ -63,7 +63,7 @@ import io.choerodon.iam.infra.valitador.RoleValidator;
 @Component
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
-    private static final String ADD_USER = "addUser";
+    private static final String ADD_USER = "ADDUSER";
     private static final String USER_DEFAULT_PWD = "abcd1234";
 
     private RoleMemberService roleMemberService;

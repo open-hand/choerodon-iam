@@ -66,9 +66,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private ProjectAssertHelper projectAssertHelper;
     private MemberRoleRepository memberRoleRepository;
     private RoleC7nMapper roleC7nMapper;
-    private ProjectMapper projectMapper;
-    private OrganizationResourceLimitService organizationResourceLimitService;
-
     private RoleMapper roleMapper;
     private LabelC7nMapper labelC7nMapper;
     private RoleMemberService roleMemberService;
@@ -83,8 +80,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   MemberRoleRepository memberRoleRepository,
                                   ProjectAssertHelper projectAssertHelper,
                                   @Lazy ProjectC7nService projectC7nService,
-                                  ProjectMapper projectMapper,
-                                  OrganizationResourceLimitService organizationResourceLimitService,
                                   RoleMapper roleMapper,
                                   TransactionalProducer producer,
                                   LabelC7nMapper labelC7nMapper,
@@ -97,8 +92,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.projectC7nService = projectC7nService;
         this.roleC7nMapper = roleC7nMapper;
         this.projectAssertHelper = projectAssertHelper;
-        this.projectMapper = projectMapper;
-        this.organizationResourceLimitService = organizationResourceLimitService;
         this.roleMapper = roleMapper;
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -284,9 +277,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
         Map<Long, List<ProjectUserDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectUserDTO::getMemberId));
-        map.forEach((k, v) -> {
-            addProjectRolesForUser(projectId, k, v.stream().map(ProjectUserDTO::getRoleId).collect(Collectors.toSet()));
-        });
+        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectUserDTO::getRoleId).collect(Collectors.toSet())));
 
     }
 

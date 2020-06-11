@@ -42,7 +42,7 @@ public class JuheWorkCalendarServiceImpl implements WorkCalendarService {
     private static final String INSERT_ERROR = "error.WorkCalendarHolidayRef.create";
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkCalendarHolidayRefJobs.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JuheWorkCalendarServiceImpl.class);
 
     private WorkCalendarHolidayProperties workCalendarHolidayProperties;
 

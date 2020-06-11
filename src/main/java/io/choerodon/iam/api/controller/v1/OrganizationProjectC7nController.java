@@ -27,7 +27,6 @@ import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
-import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -42,14 +41,11 @@ import io.choerodon.swagger.annotation.Permission;
 public class OrganizationProjectC7nController extends BaseController {
 
     private OrganizationProjectC7nService organizationProjectC7nService;
-    private ProjectValidator projectValidator;
     private OrganizationResourceLimitService organizationResourceLimitService;
 
     public OrganizationProjectC7nController(OrganizationProjectC7nService organizationProjectC7nService,
-                                            ProjectValidator projectValidator,
                                             OrganizationResourceLimitService organizationResourceLimitService) {
         this.organizationProjectC7nService = organizationProjectC7nService;
-        this.projectValidator = projectValidator;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
 

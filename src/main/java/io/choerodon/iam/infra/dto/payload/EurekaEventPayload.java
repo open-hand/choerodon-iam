@@ -1,10 +1,10 @@
 package io.choerodon.iam.infra.dto.payload;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.netflix.appinfo.InstanceInfo;
-
 import java.util.Date;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.netflix.appinfo.InstanceInfo;
 
 public class EurekaEventPayload {
     private static final String VERSION_STR = "version";
@@ -26,7 +26,7 @@ public class EurekaEventPayload {
         this.id = instanceInfo.getId();
         this.status = instanceInfo.getStatus().name();
         this.appName = instanceInfo.getAppName().toLowerCase();
-        this.version = (String) instanceInfo.getMetadata().get("version");
+        this.version = instanceInfo.getMetadata().get("version");
         this.version = this.version == null ? "unknown" : this.version;
         this.instanceAddress = instanceInfo.getIPAddr() + ":" + instanceInfo.getPort();
         this.createTime = new Date();

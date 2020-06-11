@@ -11,14 +11,12 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.LabelMapper;
 import org.hzero.iam.saas.domain.entity.Tenant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -53,6 +51,7 @@ import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
@@ -73,9 +72,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public static final String PROJECT = "project";
     public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
 
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
     @Value("${spring.application.name:default}")
     private String serviceName;
 
@@ -84,10 +80,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private SagaClient sagaClient;
 
-    private UserService userService;
     private UserC7nService userC7nService;
 
-//    private AsgardFeignClient asgardFeignClient;
+    private AsgardFeignClient asgardFeignClient;
 
     private DevopsFeignClient devopsFeignClient;
 
@@ -97,13 +92,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private ProjectCategoryMapper projectCategoryMapper;
 
-    private ProjectUserMapper projectUserMapper;
-
     private LabelC7nMapper labelC7nMapper;
 
     private RoleC7nMapper roleC7nMapper;
-
-    private LabelMapper labelMapper;
 
     private ProjectAssertHelper projectAssertHelper;
 
@@ -111,44 +102,40 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private UserAssertHelper userAssertHelper;
 
-    private MemberRoleService memberRoleService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private TenantC7nService tenantC7nService;
     private C7nTenantConfigService c7nTenantConfigService;
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
     private ProjectUserService projectUserService;
 
+    private MessageSendService messageSendService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
-                                             UserService userService,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
                                              ProjectMapper projectMapper,
                                              ProjectAssertHelper projectAssertHelper,
                                              ProjectCategoryMapper projectCategoryMapper,
                                              OrganizationAssertHelper organizationAssertHelper,
                                              UserAssertHelper userAssertHelper,
-                                             ProjectUserMapper projectUserMapper,
-                                             LabelMapper labelMapper,
-                                             MemberRoleService memberRoleService,
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
-                                             TenantC7nService tenantC7nService,
                                              UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
-                                             ProjectUserService projectUserService,
-                                             OrganizationResourceLimitService organizationResourceLimitService) {
+                                             @Lazy ProjectUserService projectUserService,
+                                             OrganizationResourceLimitService organizationResourceLimitService,
+                                             AsgardFeignClient asgardFeignClient,
+                                             MessageSendService messageSendService) {
         this.sagaClient = sagaClient;
-        this.userService = userService;
         this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
@@ -156,18 +143,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.organizationAssertHelper = organizationAssertHelper;
         this.projectCategoryMapper = projectCategoryMapper;
         this.userAssertHelper = userAssertHelper;
-        this.projectUserMapper = projectUserMapper;
-        this.labelMapper = labelMapper;
-        this.memberRoleService = memberRoleService;
         this.projectValidator = projectValidator;
         this.producer = producer;
         this.devopsFeignClient = devopsFeignClient;
-        this.tenantC7nService = tenantC7nService;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
         this.projectUserService = projectUserService;
         this.roleC7nMapper = roleC7nMapper;
+        this.asgardFeignClient = asgardFeignClient;
+        this.messageSendService = messageSendService;
     }
 
 
@@ -180,12 +165,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
         ProjectDTO res;
-        if (devopsMessage) {
-            res = sendCreateProjectEvent(projectDTO);
-        } else {
-            res = create(projectDTO);
-            initMemberRole(projectDTO);
-        }
+        res = sendCreateProjectEvent(projectDTO);
         insertProjectMapCategory(projectCategoryDTO.getId(), res.getId());
         //创建项目成功发送webhook
         Map<String, String> params = new HashMap<>();
@@ -294,29 +274,25 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO.setCategory(null);
         Tenant organizationDTO = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
         ProjectDTO dto;
-        if (devopsMessage) {
-            dto = new ProjectDTO();
-            CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
-            User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
-            ProjectEventPayload projectEventMsg = new ProjectEventPayload();
-            projectEventMsg.setUserName(details.getUsername());
-            projectEventMsg.setUserId(user.getId());
-            projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
-            projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
-            ProjectDTO newProjectDTO = updateSelective(projectDTO);
-            projectEventMsg.setProjectId(newProjectDTO.getId());
-            projectEventMsg.setProjectCode(newProjectDTO.getCode());
-            projectEventMsg.setProjectName(newProjectDTO.getName());
-            projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
-            BeanUtils.copyProperties(newProjectDTO, dto);
-            try {
-                String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
-            } catch (Exception e) {
-                throw new CommonException("error.organizationProjectService.updateProject.event", e);
-            }
-        } else {
-            dto = updateSelective(projectDTO);
+        dto = new ProjectDTO();
+        CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
+        User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
+        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+        projectEventMsg.setUserName(details.getUsername());
+        projectEventMsg.setUserId(user.getId());
+        projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
+        projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
+        ProjectDTO newProjectDTO = updateSelective(projectDTO);
+        projectEventMsg.setProjectId(newProjectDTO.getId());
+        projectEventMsg.setProjectCode(newProjectDTO.getCode());
+        projectEventMsg.setProjectName(newProjectDTO.getName());
+        projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
+        BeanUtils.copyProperties(newProjectDTO, dto);
+        try {
+            String input = mapper.writeValueAsString(projectEventMsg);
+            sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
+        } catch (Exception e) {
+            throw new CommonException("error.organizationProjectService.updateProject.event", e);
         }
         return dto;
     }
@@ -394,57 +370,26 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
      */
     private void sendEvent(String consumerType, boolean enabled, Long userId, Long programId, ProjectDTO projectDTO) {
         Long projectId = projectDTO.getId();
-        if (devopsMessage) {
-            ProjectEventPayload payload = new ProjectEventPayload();
-            payload.setProjectId(projectId);
-            payload.setProjectCategory(projectDTO.getCategory());
-            payload.setProgramId(programId);
-            //saga
-            try {
-                String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDTO.getOrganizationId()));
-            } catch (Exception e) {
-                throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
-            }
-            if (!enabled) {
-                //给asgard发送禁用定时任务通知
-//                asgardFeignClient.disableProj(projectId);
-            }
-            // 给项目下所有用户发送通知
-//            List<Long> userIds = projectMapper.listUserIds(projectId);
-//            Map<String, Object> params = new HashMap<>();
-//            ProjectDTO dto = projectMapper.selectByPrimaryKey(projectId);
-//            params.put("projectName", dto.getName());
-//            if (PROJECT_DISABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.DISABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "disableProject", params, projectId, webHookJsonSendDTO);
-//            } else if (PROJECT_ENABLE.equals(consumerType)) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("projectId", dto.getId());
-//                jsonObject.put("enabled", dto.getEnabled());
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.ENABLE_PROJECT.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_PROJECT.value()),
-//                        jsonObject,
-//                        projectDTO.getLastUpdateDate(),
-//                        userService.getWebHookUser(userId)
-//                );
-//                userService.sendNotice(userId, userIds, "enableProject", params, projectId, webHookJsonSendDTO);
-//            }
+        ProjectEventPayload payload = new ProjectEventPayload();
+        payload.setProjectId(projectId);
+        payload.setProjectCategory(projectDTO.getCategory());
+        payload.setProgramId(programId);
+        //saga
+        try {
+            String input = mapper.writeValueAsString(payload);
+            sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDTO.getOrganizationId()));
+        } catch (Exception e) {
+            throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
         }
+        if (!enabled) {
+            //给asgard发送禁用定时任务通知
+            asgardFeignClient.disableProj(projectId);
+        }
+        messageSendService.sendDisableOrEnableProject(projectDTO, consumerType, enabled, userId);
     }
 
     @Override
-    public Boolean  check(ProjectDTO projectDTO) {
+    public Boolean check(ProjectDTO projectDTO) {
         boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
             return false;

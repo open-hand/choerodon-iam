@@ -8,7 +8,6 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.UserMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -20,13 +19,6 @@ import java.util.List;
  */
 @Component
 public class DemoRegisterServiceImpl implements DemoRegisterService {
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
-    public void setDevopsMessage(boolean devopsMessage) {
-        this.devopsMessage = devopsMessage;
-    }
-
     private UserMapper userMapper;
 
     private UserC7nMapper userC7nMapper;

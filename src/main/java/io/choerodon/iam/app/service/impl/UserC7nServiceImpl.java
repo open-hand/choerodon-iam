@@ -1,16 +1,36 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.EmptyParamException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.asserts.*;
+import io.choerodon.iam.infra.constant.TenantConstants;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.valitador.RoleValidator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -42,7 +62,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,35 +70,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.asserts.*;
-import io.choerodon.iam.infra.constant.TenantConstants;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.*;
-import io.choerodon.iam.infra.valitador.RoleValidator;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -88,11 +87,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
-    private static final String ROOT_BUSINESS_TYPE_CODE = "siteAddRoot";
+    private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
-    private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -146,9 +145,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private TenantConfigMapper tenantConfigMapper;
 
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
     @Autowired
     private OrganizationAssertHelper organizationAssertHelper;
     @Autowired
@@ -194,28 +190,24 @@ public class UserC7nServiceImpl implements UserC7nService {
             checkLoginUser(user.getId());
         }
         User dto;
-        if (devopsMessage) {
-            UserEventPayload userEventPayload = new UserEventPayload();
-            dto = userService.updateUser(user);
-            userEventPayload.setEmail(dto.getEmail());
-            userEventPayload.setId(dto.getId().toString());
-            userEventPayload.setName(dto.getRealName());
-            userEventPayload.setUsername(dto.getLoginName());
-            BeanUtils.copyProperties(dto, dto);
-            try {
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_UPDATE)
-                                .withPayloadAndSerialize(userEventPayload)
-                                .withRefId(dto.getId() + "")
-                                .withRefType("user"),
-                        builder -> {
-                        }
-                );
-            } catch (Exception e) {
-                throw new CommonException("error.UserService.updateInfo.event", e);
-            }
-        } else {
-            dto = userService.updateUser(user);
+        UserEventPayload userEventPayload = new UserEventPayload();
+        dto = userService.updateUser(user);
+        userEventPayload.setEmail(dto.getEmail());
+        userEventPayload.setId(dto.getId().toString());
+        userEventPayload.setName(dto.getRealName());
+        userEventPayload.setUsername(dto.getLoginName());
+        BeanUtils.copyProperties(dto, dto);
+        try {
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withSagaCode(USER_UPDATE)
+                            .withPayloadAndSerialize(userEventPayload)
+                            .withRefId(dto.getId() + "")
+                            .withRefType("user"),
+                    builder -> {
+                    }
+            );
+        } catch (Exception e) {
+            throw new CommonException("error.UserService.updateInfo.event", e);
         }
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
@@ -886,18 +878,17 @@ public class UserC7nServiceImpl implements UserC7nService {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
                     p.setInto(false);
-                    return;
-                }
-                // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
-                if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
-                    p.setInto(false);
+                } else {
+                    // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                    if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                        p.setInto(false);
+                    }
                 }
 
                 // 计算用户是否有编辑权限
                 if (isAdmin || isOrgAdmin || pids.contains(p.getId())) {
                     p.setEditFlag(true);
                 }
-
             });
         }
     }
@@ -1177,5 +1168,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         Long userId = customUserDetails.getUserId();
         UserDTO userDTO = userC7nMapper.queryPersonalInfo(userId);
         return userDTO;
+    }
+
+    @Override
+    public WebHookUser getWebHookUser(Long userId) {
+        User userDTO = userRepository.selectByPrimaryKey(userId);
+        if (ObjectUtils.isEmpty(userDTO) || StringUtils.isEmpty(userDTO.getLoginName())) {
+            return new WebHookUser("0", "unknown");
+        } else {
+            return new WebHookUser(userDTO.getLoginName(), userDTO.getRealName());
+        }
     }
 }

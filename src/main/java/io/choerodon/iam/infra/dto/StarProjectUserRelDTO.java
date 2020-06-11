@@ -7,6 +7,8 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -16,6 +18,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @since 2020/6/11 10:04
  */
+@VersionAudit
+@ModifyAudit
 @Table(name = "fd_star_project_user_rel")
 public class StarProjectUserRelDTO extends AuditDomain {
     @Id

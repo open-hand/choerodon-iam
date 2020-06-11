@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.QuickLinkMapper">
+
+     <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO" autoMapping="true">
+        <association property="user" javaType="org.hzero.iam.domain.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="loginName" column="login_name"/>
+            <result property="realName" column="real_name"/>
+            <result property="imageUrl" column="image_url"/>
+        </association>
+      </resultMap>
+    <select id="query" resultMap="quickLinkMap">
+        SELECT
+          fql.*,
+          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url
+        FROM fd_quick_link fql
+        INNER JOIN fd_project fp ON fp.id = fql.project_id
+        INNER JOIN iam_user iu ON iu.id = fql.create_user_id
+        <where>
+            <if test="projectId == null">
+                 fp.ORGANIZATION_ID = #{organizationId} OR fql.create_user_id = #{userId}
+            </if>
+            <if test="projectId == null">
+                 fql.project_id = #{projectId} OR fql.create_user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

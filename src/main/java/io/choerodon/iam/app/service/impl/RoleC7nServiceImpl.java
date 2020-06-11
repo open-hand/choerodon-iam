@@ -1,5 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.hzero.core.exception.NotLoginException;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -19,21 +31,6 @@ import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.hzero.core.exception.NotLoginException;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -87,7 +84,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
         List<RoleC7nDTO> roleDTOList = new ArrayList<>();
 
-        Page<UserRoleVO> result = PageHelper.doPageAndSort(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
+        Page<UserRoleVO> result = PageHelper.doPage(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);
@@ -146,8 +143,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, Boolean onlySelectEnable) {
-        return roleC7nMapper.listRolesByName(organizationId, roleName, onlySelectEnable);
+    public List<RoleDTO> listRolesByName(Long organizationId, String roleName, String roleCode, String labelName, Boolean onlySelectEnable) {
+        return roleC7nMapper.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable);
     }
 
     @Override
@@ -180,9 +177,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
 
     @Override
-    public List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId) {
+    public List<RoleC7nDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQueryVO clientRoleQueryVO, Long sourceId, Boolean enable) {
         List<RoleC7nDTO> roles = ConvertUtils.convertList(
-                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), false),
+                roleC7nMapper.fuzzySearchRolesByName(clientRoleQueryVO.getRoleName(), sourceId, ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.TENANT_ROLE.value(), enable),
                 RoleC7nDTO.class);
         String param = ParamUtils.arrToStr(clientRoleQueryVO.getParam());
         roles.forEach(r -> {
@@ -198,5 +195,20 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         List<Role> roles = roleC7nMapper.selectRolesByLabelNameAndType(labelName, labelType, null);
         return roles.stream().map(Role::getId).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Role> listByLabelNames(Long tenantId, String labelName) {
+        return  roleC7nMapper.listByLabelNames(tenantId, labelName);
+    }
+
+    @Override
+    public Role getSiteRoleByCode(String code) {
+        Role role = new Role();
+        role.setCode(code);
+        role.setBuiltIn(true);
+        role.setLevel(ResourceLevel.SITE.value());
+        return roleMapper.selectOne(role);
+    }
+
 
 }

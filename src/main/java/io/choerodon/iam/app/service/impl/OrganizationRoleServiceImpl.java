@@ -1,5 +1,23 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.hzero.iam.app.service.RoleService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
+import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.constant.HiamMenuType;
+import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -10,24 +28,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
-import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.RoleRepository;
-import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.constant.RolePermissionType;
-import org.hzero.iam.infra.mapper.LabelRelMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.mybatis.helper.SecurityTokenHelper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -49,10 +49,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private RoleC7nMapper roleC7nMapper;
     private RoleC7nService roleC7nService;
     private RoleMapper roleMapper;
-    private RoleRepository roleRepository;
     private MenuC7nService menuC7nService;
     private MenuC7nMapper menuC7nMapper;
-    private LabelRelMapper labelRelMapper;
 
     public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
                                        RoleService roleService,
@@ -61,10 +59,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                                        RoleC7nMapper roleC7nMapper,
                                        RoleC7nService roleC7nService,
                                        RoleMapper roleMapper,
-                                       RoleRepository roleRepository,
                                        MenuC7nService menuC7nService,
-                                       MenuC7nMapper menuC7nMapper,
-                                       LabelRelMapper labelRelMapper) {
+                                       MenuC7nMapper menuC7nMapper) {
         this.roleCreateInternalService = roleCreateInternalService;
         this.roleService = roleService;
         this.labelC7nService = labelC7nService;
@@ -72,10 +68,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         this.roleC7nMapper = roleC7nMapper;
         this.roleC7nService = roleC7nService;
         this.roleMapper = roleMapper;
-        this.roleRepository = roleRepository;
         this.menuC7nService = menuC7nService;
         this.menuC7nMapper = menuC7nMapper;
-        this.labelRelMapper = labelRelMapper;
     }
 
     @Override
@@ -91,6 +85,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         } else if (ResourceLevel.ORGANIZATION.value().equals(roleVO.getRoleLevel())) {
             Label label = labelC7nService.selectByName(RoleLabelEnum.TENANT_ROLE.value());
             roleVO.getRoleLabels().add(label);
+
         }
         // 创建角色
         CustomUserDetails details = UserUtils.getUserDetails();
@@ -98,6 +93,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         adminUser.setId(details.getUserId());
         roleVO.setTenantId(organizationId);
         Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
+
 
         // 分配权限集
         // 默认分配个人信息权限集
@@ -184,43 +180,30 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             }
         }
         SecurityTokenHelper.close();
-        List<Menu> menus = menuC7nService.listMenuByLabelAndType(labelNames, null);
+        Set<String> typeNames = new HashSet<>();
+        typeNames.add(HiamMenuType.ROOT.value());
+        typeNames.add(HiamMenuType.DIR.value());
+        typeNames.add(HiamMenuType.MENU.value());
+        List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
         SecurityTokenHelper.clear();
 
-        List<RolePermission> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,labelNames);
-        Set<Long> psIds = rolePermissions.stream().map(RolePermission::getPermissionSetId).collect(Collectors.toSet());
-        menus.stream().filter(menu -> "ps".equals(menu.getType())).forEach(ps -> {
+
+        List<Menu> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,null);
+        Set<Long> psIds = rolePermissions.stream().map(Menu::getId).collect(Collectors.toSet());
+        // 查询权限集
+        Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());
+        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        permissionSetList.forEach(ps -> {
             if (psIds.contains(ps.getId())) {
                 ps.setCheckedFlag("Y");
             } else {
                 ps.setCheckedFlag("N");
             }
         });
+        menus.addAll(permissionSetList);
+
         roleVO.setMenuList(menus);
         return roleVO;
-    }
-
-    private void fixPsMenuRel() {
-//        List<Menu> menus = menuC7nService.listMenuByLabel(labelNames);
-//        Set<Long> ids = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
-//        List<Menu> psList = menuC7nMapper.listPermissionSetByParentIds(ids);
-//        psList.forEach(ps -> {
-//            LabelRel labelRel = new LabelRel();
-//            labelRel.setDataType("MENU");
-//            labelRel.setDataId(ps.getParentId());
-//            List<LabelRel> labelRelList = labelRelMapper.select(labelRel);
-//            labelRelList.forEach(labelRel1 -> {
-//                LabelRel pslabelRel = new LabelRel();
-//                pslabelRel.setDataType("MENU");
-//                pslabelRel.setDataId(ps.getId());
-//                pslabelRel.setLabelId(labelRel1.getLabelId());
-//                pslabelRel.setAssignType("A");
-//                if (labelRelMapper.selectOne(pslabelRel) == null) {
-//                    labelRelMapper.insertSelective(pslabelRel);
-//                }
-//
-//            });
-//        });
     }
 
     /**

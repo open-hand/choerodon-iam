@@ -1,25 +1,51 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserEventPayload;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.ExceptionUtil;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.saas.app.service.TenantService;
+import org.hzero.iam.saas.domain.entity.Tenant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -30,32 +56,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserValidator;
-import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.asserts.UserAssertHelper;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -63,8 +67,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
 
@@ -83,11 +85,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserAssertHelper userAssertHelper;
     private final UserC7nMapper userC7nMapper;
     private final UserC7nService userC7nService;
-    private final UserMapper userMapper;
     private final UserPasswordService userPasswordService;
     private final UserRepository userRepository;
     private final UserService userService;
-    private final MemberRoleRepository memberRoleRepository;
+    private final MessageClient messageClient;
+    private final MessageSendService messageSendService;
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -100,13 +102,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        UserAssertHelper userAssertHelper,
                                        UserC7nMapper userC7nMapper,
                                        UserC7nService userC7nService,
-                                       UserMapper userMapper,
                                        UserPasswordService userPasswordService,
                                        UserRepository userRepository,
                                        MemberRoleService memberRoleService,
                                        RoleMemberService roleMemberService,
                                        UserService userService,
-                                       MemberRoleRepository memberRoleRepository) {
+                                       MessageClient messageClient,
+                                       MessageSendService messageSendService) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -120,11 +122,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userAssertHelper = userAssertHelper;
         this.userC7nMapper = userC7nMapper;
         this.userC7nService = userC7nService;
-        this.userMapper = userMapper;
         this.userPasswordService = userPasswordService;
         this.userRepository = userRepository;
         this.userService = userService;
-        this.memberRoleRepository = memberRoleRepository;
+        this.messageClient = messageClient;
+        this.messageSendService = messageSendService;
     }
 
     @Override
@@ -157,12 +159,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User createUserWithRoles(Long fromUserId, User user) {
         organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
         List<Role> userRoles = user.getRoles();
-        // 将role转为memberRole， memberId不用给
-        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
+        // 允许邮箱和手机号登录
+        user.setEmailCheckFlag(BaseConstants.Flag.YES);
+        user.setPhoneCheckFlag(BaseConstants.Flag.YES);
+
+        List<Role> roles = user.getRoles();
         User result = userService.createUserInternal(user);
-        if (devopsMessage) {
-            sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
+        if (!CollectionUtils.isEmpty(roles)) {
+            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
         }
+        sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
     }
 
@@ -177,30 +183,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userAssertHelper.emailExisted(user.getEmail());
         user.setLoginName(randomInfoGenerator.randomLoginName());
         List<Role> userRoles = user.getRoles();
-        // 将role转为memberRole， memberId不用给
-        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), user.getRoles()));
-        if (devopsMessage) {
-            user = userService.createUserInternal(user);
-            sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
-        } else {
-            user = userService.createUser(user);
+        user.setRoles(null);
+        user = userService.createUserInternal(user);
+        if (!CollectionUtils.isEmpty(userRoles)) {
+            // hzero-iam未处理角色分配, 这块加上
+            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), user.getRoles()));
         }
+        sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         return user;
-    }
-
-    private List<MemberRole> role2MemberRole(Long organizationId, List<Role> roles) {
-        return roles.stream().map(role -> {
-                    MemberRole memberRole = new MemberRole();
-                    memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
-                    memberRole.setAssignLevelValue(organizationId);
-                    memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
-                    memberRole.setSourceId(organizationId);
-                    memberRole.setRoleId(role.getId());
-                    memberRole.setMemberType(HiamMemberType.USER.value());
-                    return memberRole;
-                }
-        ).collect(Collectors.toList());
-
     }
 
     @Override
@@ -236,19 +226,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Long userId = userDTO.getId();
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         if (!CollectionUtils.isEmpty(userRoles)) {
-            if (devopsMessage) {
-                UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
-                userMemberEventMsg.setResourceId(organizationId);
-                userMemberEventMsg.setUserId(userId);
-                userMemberEventMsg.setResourceType(value);
-                userMemberEventMsg.setUsername(userDTO.getLoginName());
-                List<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toList())).orElse(Collections.emptyList());
+            UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+            userMemberEventMsg.setResourceId(organizationId);
+            userMemberEventMsg.setUserId(userId);
+            userMemberEventMsg.setResourceType(value);
+            userMemberEventMsg.setUsername(userDTO.getLoginName());
+            Set<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toSet())).orElse(Collections.emptySet());
 
-                if (!ownRoleIds.isEmpty()) {
-                    userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
-                }
-                userMemberEventPayloads.add(userMemberEventMsg);
+            if (!ownRoleIds.isEmpty()) {
+                userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
             }
+            userMemberEventPayloads.add(userMemberEventMsg);
         }
         return userMemberEventPayloads;
     }
@@ -295,6 +283,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
+            user.setEmailCheckFlag(BaseConstants.Flag.YES);
+            user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setEmail(user.getEmail());
@@ -333,16 +323,48 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
         userService.resetUserPassword(userId, organizationId);
 
-        // send siteMsg
-        Map<String, String> paramsMap = new HashMap<>();
-        paramsMap.put("userName", user.getRealName());
-        paramsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
-        List<Long> userIds = Collections.singletonList(userId);
-        userC7nService.sendNotice(userIds, "resetOrganizationUserPassword", paramsMap, organizationId, ResourceLevel.ORGANIZATION);
-
+        // 发送重置密码消息
+        sendResetOrganizationUserPassword(organizationId, user);
         return user;
     }
 
+    private void sendResetOrganizationUserPassword(Long organizationId, User user) {
+        try {
+            // 构建消息对象
+            MessageSender messageSender = new MessageSender();
+            // 消息code
+            messageSender.setMessageCode(MessageCodeConstants.RESET_ORGANIZATION_USER_PASSWORD);
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            // 消息参数 消息模板中${projectName}
+            Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+            messageSender.setArgs(argsMap);
+
+            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+            Map<String, Object> objectMap = new HashMap<>();
+            //发送组织层和项目层消息时必填 当前组织id
+            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), organizationId);
+            messageSender.setAdditionalInformation(objectMap);
+
+            // 接收者
+            List<Receiver> receiverList = new ArrayList<>();
+            Receiver receiver = new Receiver();
+            receiver.setUserId(user.getId());
+            // 发送邮件消息时 必填
+            receiver.setEmail(user.getEmail());
+            // 发送短信消息 必填
+            receiver.setPhone(user.getPhone());
+            // 必填
+            receiver.setTargetUserTenantId(organizationId);
+            receiverList.add(receiver);
+            messageSender.setReceiverAddressList(receiverList);
+            messageClient.sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info("Send Reset Organization User Password failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
+        }
+    }
 
     @Override
     public User query(Long organizationId, Long id) {
@@ -365,24 +387,22 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User enableUser(Long organizationId, Long userId) {
         userService.unfrozenUser(userId, organizationId);
         User user = query(organizationId, userId);
-        if (devopsMessage) {
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setUsername(user.getLoginName());
-            userEventPayload.setId(userId.toString());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(organizationId)
-                                .withRefType("user")
-                                .withRefId(userId.toString())
-                                .withJson(input)
-                                .withSagaCode(USER_ENABLE),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.enableUser.event", e);
-            }
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setUsername(user.getLoginName());
+        userEventPayload.setId(userId.toString());
+        try {
+            String input = mapper.writeValueAsString(userEventPayload);
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withLevel(ResourceLevel.ORGANIZATION)
+                            .withSourceId(organizationId)
+                            .withRefType("user")
+                            .withRefId(userId.toString())
+                            .withJson(input)
+                            .withSagaCode(USER_ENABLE),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.organizationUserService.enableUser.event", e);
         }
         return user;
     }
@@ -393,44 +413,28 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public User disableUser(Long organizationId, Long userId) {
         userService.frozenUser(userId, organizationId);
         User user = query(organizationId, userId);
-        if (devopsMessage) {
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setUsername(user.getLoginName());
-            userEventPayload.setId(userId.toString());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(organizationId)
-                                .withRefType("user")
-                                .withRefId(userId.toString())
-                                .withJson(input)
-                                .withSagaCode(USER_DISABLE),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.disableUser.event", e);
-            }
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setUsername(user.getLoginName());
+        userEventPayload.setId(userId.toString());
+        try {
+            String input = mapper.writeValueAsString(userEventPayload);
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withLevel(ResourceLevel.ORGANIZATION)
+                            .withSourceId(organizationId)
+                            .withRefType("user")
+                            .withRefId(userId.toString())
+                            .withJson(input)
+                            .withSagaCode(USER_DISABLE),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.organizationUserService.disableUser.event", e);
         }
-        if (!Objects.isNull(user)) {
-            // TODO 禁用成功后还要发送webhook json消息
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("loginName", user.getLoginName());
-//            jsonObject.put("userName", user.getRealName());
-//            jsonObject.put("enabled", user.getEnabled());
-//            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                    SendSettingBaseEnum.STOP_USER.value(),
-//                    SendSettingBaseEnum.map.get(SendSettingBaseEnum.STOP_USER.value()),
-//                    jsonObject,
-//                    user.getLastUpdateDate(),
-//                    userService.getWebHookUser(DetailsHelper.getUserDetails().getUserId())
-//            );
-//            Map<String, Object> params = new HashMap<>();
-//
-//            userService.sendNotice(DetailsHelper.getUserDetails().getUserId(), Arrays.asList(userId), SendSettingBaseEnum.STOP_USER.value(), params, organizationId, webHookJsonSendDTO);
-        }
+        // 发送停用用户json
+        messageSendService.sendDisableUserMsg(user, organizationId);
         return user;
     }
+
 
     @Override
     public List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
@@ -457,7 +461,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 errorUserFlag = false;
             }
             boolean userEnabled = userDTO != null && userDTO.getEnabled();
-            if (devopsMessage && userEnabled) {
+            if (userEnabled) {
                 generateUserEventPayload(payloads, userDTO);
             }
             if (errorUserFlag) {
@@ -465,17 +469,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             }
             errorUserFlag = true;
         }
-        //导入成功过后，通知成员
-        users.forEach(e -> {
-            Map<String, String> params = new HashMap<>();
-            Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
-            params.put("organizationName", organizationDTO.getTenantName());
-            params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
-            params.put("userList", JSON.toJSONString(insertUsers));
-            params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
-            params.put("addCount", String.valueOf(insertUsers.size()));
-            userC7nService.sendNotice(Collections.singletonList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
-        });
+
+        // 发通知不影响业务逻辑
+        ExceptionUtil.doWithTryCatchAndLog(
+                LOGGER,
+                () -> {
+                    //导入成功过后，通知成员
+                    users.forEach(e -> {
+                        Map<String, String> params = new HashMap<>();
+                        Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
+                        params.put("organizationName", organizationDTO.getTenantName());
+                        params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
+                        params.put("userList", JSON.toJSONString(insertUsers));
+                        params.put("organizationId", String.valueOf(organizationDTO.getTenantId()));
+                        params.put("addCount", String.valueOf(insertUsers.size()));
+                        userC7nService.sendNotice(Collections.singletonList(e.getId()), BUSINESS_TYPE_CODE, params, e.getOrganizationId(), ResourceLevel.ORGANIZATION);
+                    });
+                },
+                ex -> LOGGER.info("Failed to send notices after batchCreateUsersOnExcel due to the ex", ex)
+        );
 
         sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
         LOGGER.info("Batch insert {} users into tenant with id {} processed...", insertUsers.size(), organizationId);
@@ -500,5 +512,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         .withSourceId(organizationId),
                 builder -> {
                 });
+    }
+
+    public static List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        return roles.stream().map(role -> {
+                    MemberRole memberRole = new MemberRole();
+                    memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setAssignLevelValue(organizationId);
+                    memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
+                    memberRole.setSourceId(organizationId);
+                    memberRole.setRoleId(role.getId());
+                    memberRole.setMemberId(userId);
+                    memberRole.setMemberType(HiamMemberType.USER.value());
+                    memberRole.setAdditionalParams(additionalParams);
+                    return memberRole;
+                }
+        ).collect(Collectors.toList());
     }
 }

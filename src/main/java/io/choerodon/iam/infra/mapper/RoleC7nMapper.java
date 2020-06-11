@@ -1,15 +1,15 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.vo.UserRoleVO;
+import java.util.List;
+import java.util.Set;
 
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.UserRoleVO;
 
 /**
  * @author scp
@@ -60,22 +60,21 @@ public interface RoleC7nMapper {
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
 
-
-    List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName,
-                                         @Param("sourceId") Long sourceId,
-                                         @Param("sourceType") String sourceType,
-                                         @Param("labelName") String labelName,
-                                         @Param("onlySelectEnable") Boolean onlySelectEnable);
+    List<io.choerodon.iam.api.vo.RoleVO> fuzzySearchRolesByName(@Param("roleName") String roleName,
+                                                                @Param("sourceId") Long sourceId,
+                                                                @Param("sourceType") String sourceType,
+                                                                @Param("labelName") String labelName,
+                                                                @Param("onlySelectEnable") Boolean onlySelectEnable);
 
 
     List<io.choerodon.iam.api.vo.RoleVO> fulltextSearch(@Param("tenantId") Long tenantId,
-                                 @Param("name") String name,
-                                 @Param("code") String code,
-                                 @Param("level") String level,
-                                 @Param("builtIn") Boolean builtIn,
-                                 @Param("enabled") Boolean enabled,
-                                 @Param("labelName") String labelName,
-                                 @Param("params") String params);
+                                                        @Param("name") String name,
+                                                        @Param("code") String code,
+                                                        @Param("level") String level,
+                                                        @Param("builtIn") Boolean builtIn,
+                                                        @Param("enabled") Boolean enabled,
+                                                        @Param("labelName") String labelName,
+                                                        @Param("params") String params);
 
     Role getTenantAdminRole(Long organizationId);
 
@@ -83,5 +82,20 @@ public interface RoleC7nMapper {
 
     List<RoleDTO> listRolesByName(@Param("tenantId") Long tenantId,
                                   @Param("name") String name,
+                                  @Param("code") String code,
+                                  @Param("labelName") String labelName,
                                   @Param("enabled") Boolean enabled);
+
+    List<Role> listProjectRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                   @Param("userId") Long userId);
+
+    List<Role> listByLabelNames(@Param("tenantId") Long tenantId,
+                                @Param("labelName") String labelName);
+
+    Set<Long> listOrgByUserIdAndTenantIds(@Param("userId") Long userId,
+                                          @Param("orgIds") Set<Long> orgIds);
+
+    List<Role> listByTenantId(@Param("tenantId") Long tenantId);
+
+    List<Role> listChildRoleByTplRoleId(@Param("roleId") Long roleId);
 }

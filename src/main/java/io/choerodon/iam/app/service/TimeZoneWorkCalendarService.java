@@ -1,9 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.infra.dto.TimeZoneWorkCalendarDTO;
+
+import java.util.List;
 
 /**
  * @author dinghuang123@gmail.com
@@ -38,7 +38,7 @@ public interface TimeZoneWorkCalendarService {
      */
     void deleteTimeZoneWorkCalendarRef(Long organizationId, Long calendarId);
 
-//    List<TimeZoneWorkCalendarRefVO> batchUpdateTimeZoneWorkCalendarRef(Long organizationId, Long timeZoneId, List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList);
+    List<TimeZoneWorkCalendarRefVO> batchUpdateTimeZoneWorkCalendarRef(Long organizationId, Long timeZoneId, List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList);
 
     /**
      * 查询时区信息

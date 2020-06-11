@@ -1,37 +1,24 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import io.choerodon.iam.app.service.MessageSendService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.app.service.TenantService;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.TenantConfig;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.TenantConfigRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.saas.app.service.TenantService;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.entity.TenantConfig;
+import org.hzero.iam.saas.domain.repository.TenantConfigRepository;
+import org.hzero.iam.saas.domain.repository.TenantRepository;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
@@ -41,11 +28,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -54,10 +55,8 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
  */
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
-    public static final String ORGANIZATION_DOES_NOT_EXIST_EXCEPTION = "error.organization.does.not.exist";
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
-    public static final String ORGANIZATION_LIMIT_DATE = "2020-03-24";
 
 
     @Autowired
@@ -82,17 +81,27 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     protected MessageClient messageClient;
     @Autowired
-    private TenantMapper tenantMapper;
-    @Autowired
     private UserMapper userMapper;
     @Autowired
     private TenantConfigRepository tenantConfigRepository;
     @Autowired
-    private UserC7nService userC7nService;
+    private TenantConfigC7nMapper tenantConfigMapper;
     @Autowired
-    TenantConfigC7nMapper tenantConfigMapper;
+    private MessageSendService messageSendService;
 
-    private TenantConfigC7nMapper tenantConfigC7nMapper;
+    /**
+     * 前端传入的排序字段和Mapper文件中的字段名的映射
+     */
+    private static final Map<String, String> orderByFieldMap;
+
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("projectCount", "t.project_count");
+        map.put("userCount", "f.user_count");
+        map.put("id", "org.tenant_id");
+        map.put("tenant_id", "org.tenant_id");
+        orderByFieldMap = Collections.unmodifiableMap(map);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -115,9 +124,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 if (tenantConfigRepository.insert(tenantConfig) != 1) {
                     throw new CommonException("error.tenant.update");
                 }
+            } else {
+                selectOne.setConfigValue(tenantConfig.getConfigValue());
+                tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
             }
-            selectOne.setConfigValue(tenantConfig.getConfigValue());
-            tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
         }
     }
 
@@ -159,7 +169,18 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
         List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
-        dto.setTenantConfigVO(TenantConfigConvertUtils.configDTOToVO((configList)));
+        TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO((configList));
+        dto.setTenantConfigVO(tenantConfigVO);
+        //添加组织所有者信息
+        if (!Objects.isNull(tenantConfigVO.getUserId())) {
+            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+            if (!Objects.isNull(user)) {
+                dto.setOwnerRealName(user.getRealName());
+                dto.setOwnerLoginName(user.getLoginName());
+                dto.setOwnerPhone(user.getPhone());
+                dto.setOwnerEmail(user.getEmail());
+            }
+        }
         List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, tenantId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());
@@ -170,8 +191,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(pageRequest, () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, params));
+    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params) {
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params));
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -240,12 +261,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public void check(TenantVO tenantVO) {
+    public Boolean check(TenantVO tenantVO) {
         Boolean checkCode = !StringUtils.isEmpty(tenantVO.getTenantNum());
         if (!checkCode) {
-            throw new CommonException("error.organization.code.empty");
+            return false;
         } else {
-            checkCode(tenantVO);
+            return checkCode(tenantVO);
         }
     }
 
@@ -361,8 +382,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
         Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);
         Assert.notNull(params.getUserId(), ERROR_TENANT_USERID_IS_NULL);
-        List<TenantDTO> tenantDTOS = tenantMapper.selectUserTenant(params);
-
+        List<TenantDTO> tenantDTOS = tenantC7nMapper.listVisibleTentant(params);
+        // 过滤hzero平台组织
+        if (CollectionUtils.isEmpty(tenantDTOS)) {
+            return new ArrayList<>();
+        }
+        tenantDTOS = tenantDTOS.stream().filter(tenantDTO -> tenantDTO.getTenantId() != 0).collect(Collectors.toList());
         User user = userMapper.selectByPrimaryKey(params.getUserId());
         return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
     }
@@ -385,99 +410,43 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     tenantVO.setInto(true);
                 }
             });
+            // 有菜单的角色也能访问
+            Set<Long> hasMenuOrg = roleC7nMapper.listOrgByUserIdAndTenantIds(userId, orgIds);
+            hasMenuOrg.forEach(orgId -> {
+                TenantVO tenantVO = tenantVOMap.get(orgId);
+                if (tenantVO != null) {
+                    tenantVO.setInto(true);
+                }
+            });
+
         }
         return tenantVOS;
     }
 
-    private void checkCode(TenantVO tenantVO) {
+    private Boolean checkCode(TenantVO tenantVO) {
         Boolean createCheck = StringUtils.isEmpty(tenantVO.getTenantId());
         Tenant tenant = getTenant(tenantVO);
         if (createCheck) {
             Boolean existed = tenantRepository.selectOne(tenant) != null;
             if (existed) {
-                throw new CommonException("error.organization.code.exist");
+                return false;
             }
         } else {
             Long id = tenantVO.getTenantId();
             Tenant dto = tenantRepository.selectOne(tenant);
             Boolean existed = dto != null && !id.equals(dto.getTenantId());
             if (existed) {
-                throw new CommonException("error.organization.code.exist");
+                return false;
             }
         }
+        return true;
     }
 
     private Tenant updateAndSendEvent(Tenant tenant, String consumerType, Long userId) {
         Tenant organizationDTO = doUpdate(tenant);
-
         //给asgard发送禁用定时任务通知
         asgardFeignClient.disableOrg(tenant.getTenantId());
-
-        // todo webhook消息发送
-        // 给组织下所有用户发送通知
-//
-//        // 准备消息发送的messageSender
-//        MessageSender messageSender=new MessageSender();
-//        // 消息code
-//        messageSender.setMessageCode(MessageCodeConstants.DISABLE_ORGANIZATION);
-//        // 默认为0L,都填0L,可不填写
-//        messageSender.setTenantId(0L);
-//
-//        // 消息参数 消息模板中${projectName}
-//        Map<String,String> argsMap=new HashMap<>();
-//        argsMap.put("projectName","testProject");
-//        argsMap.put("orgCode","testOrganization");
-//        argsMap.put("orgName","测试组织");
-//        messageSender.setArgs(argsMap);
-//
-//        //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
-//        Map<String,Object> objectMap=new HashMap<>();
-//        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),1L);
-//        objectMap.put(MessageAdditionalType.PARAM_ENV_ID.getTypeName(),1L);
-//        objectMap.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(),"service");
-//        messageSender.setAdditionalInformation(objectMap);
-//
-//        // 接收者
-//        List<Receiver> receiverList=new ArrayList<>();
-//        Receiver receiver=new Receiver();
-//        receiver.setUserId(1L);
-//        // 发送邮件消息时 必填
-//        receiver.setEmail("xxx.qq.com");
-//        // 发送短信消息 必填
-//        receiver.setPhone("176666");
-//        receiverList.add(receiver);
-//        messageSender.setReceiverAddressList(receiverList);
-//
-//        messageClient.async().sendMessage(messageSender);
-//        List<Long> userIds = tenantC7nMapper.listMemberIds(tenant.getTenantId(), "organization");
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("organizationName", organizationDTO.getTenantName());
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("organizationId", organizationDTO.getTenantId());
-//        jsonObject.put("code", organizationDTO.getTenantNum());
-//        jsonObject.put("name", organizationDTO.getTenantName());
-//        jsonObject.put("enabled", organizationDTO.getEnabledFlag());
-//        if (ORG_DISABLE.equals(consumerType)) {
-//
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.DISABLE_ORGANIZATION.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.DISABLE_ORGANIZATION.value()),
-//                        jsonObject
-//                        organizationDTO.getCreationDate(),
-//                        userService.getWebHookUser(organizationDTO.getCreatedBy())
-//                );
-//                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId(), webHookJsonSendDTO);
-//        } else if (ORG_ENABLE.equals(consumerType)) {
-//
-//                WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
-//                        SendSettingBaseEnum.ENABLE_ORGANIZATION.value(),
-//                        SendSettingBaseEnum.map.get(SendSettingBaseEnum.ENABLE_ORGANIZATION.value()),
-//                        jsonObject,
-//                        organizationDTO.getCreationDate(),
-//                        userService.getWebHookUser(organizationDTO.getCreatedBy())
-//                );
-//                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId(), webHookJsonSendDTO);
-//        }
+        messageSendService.sendDisableOrEnableTenant(tenant, consumerType, userId);
         return organizationDTO;
     }
 

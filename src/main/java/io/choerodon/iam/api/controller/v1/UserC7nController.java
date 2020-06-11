@@ -23,10 +23,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.OrganizationProjectVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -73,16 +70,15 @@ public class UserC7nController extends BaseController {
                 .orElseThrow(NotFoundException::new);
     }
 
-
-//    @Permission(permissionWithin = true)
-//    @ApiOperation(value = "获取组织注册信息")
-//    @GetMapping(value = "/registrant")
-//    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
-//            @RequestParam(value = "org_code") String orgCode) {
-//        return Optional.ofNullable(userService.queryRegistrantInfoAndAdmin(orgCode))
-//                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-//                .orElseThrow(NotFoundException::new);
-//    }
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "获取组织注册信息")
+    @GetMapping(value = "/registrant")
+    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
+            @RequestParam(value = "org_code") String orgCode) {
+        return Optional.ofNullable(userC7nService.queryRegistrantInfoAndAdmin(orgCode))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(NotFoundException::new);
+    }
 
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -104,6 +100,7 @@ public class UserC7nController extends BaseController {
         user.setLdap(queryInfo.getLdap());
         user.setOrganizationId(queryInfo.getOrganizationId());
         user.setLoginName(queryInfo.getLoginName());
+        user.setLocked(queryInfo.getLocked());
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 
@@ -226,6 +223,14 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<List<User>> listUsersByLoginNames(@RequestBody String[] loginNames,
                                                             @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
         return new ResponseEntity<>(userC7nService.listUsersByLoginNames(loginNames, onlyEnabled), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据realName集合批量查询用户信息列表")
+    @PostMapping(value = "/real_names")
+    public ResponseEntity<List<User>> listUsersByRealNames(@RequestBody Set<String> realNames,
+                                                           @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
+        return new ResponseEntity<>(userC7nService.listUsersByRealNames(realNames, onlyEnabled), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -402,5 +407,14 @@ public class UserC7nController extends BaseController {
             @RequestParam(name = "label_name") String labelName,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "批量根据项目id查询用户在这个项目下拥有的角色标签, 如果在某个项目下没有角色, 不会包含该项目的纪录")
+    @PostMapping(value = "/{user_id}/project_role_labels")
+    public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
+            @PathVariable("user_id") Long userId,
+            @RequestBody Set<Long> projectIds) {
+        return ResponseEntity.ok(userC7nService.listRoleLabelsForUserInTheProject(userId, projectIds));
     }
 }

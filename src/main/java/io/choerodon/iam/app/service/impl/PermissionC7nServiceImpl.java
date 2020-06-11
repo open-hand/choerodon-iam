@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.PermissionC7nMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
@@ -36,6 +38,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private MenuC7nMapper menuC7nMapper;
     @Autowired
     private ProjectAssertHelper projectAssertHelper;
+    @Autowired
+    private UserC7nService userC7nService;
 
 
     @Override
@@ -51,6 +55,12 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     @Override
     public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId) {
         CustomUserDetails self = UserUtils.getUserDetails();
-        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), c));
+        Boolean isOrgRoot = false;
+        if (projectId != null) {
+            ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+            isOrgRoot = userC7nService.checkIsOrgRoot(projectDTO.getOrganizationId(), self.getUserId());
+        }
+        Boolean finalIsOrgRoot = isOrgRoot;
+        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), finalIsOrgRoot, c));
     }
 }

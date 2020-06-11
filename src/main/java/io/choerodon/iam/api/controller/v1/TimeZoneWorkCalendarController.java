@@ -1,8 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.TimeZoneWorkCalendarDTO;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -11,16 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.TimeZoneWorkCalendarRefDetailVO;
-import io.choerodon.iam.api.vo.TimeZoneWorkCalendarRefVO;
-import io.choerodon.iam.api.vo.TimeZoneWorkCalendarUpdateVO;
-import io.choerodon.iam.api.vo.TimeZoneWorkCalendarVO;
-import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.TimeZoneWorkCalendarDTO;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author dinghuang123@gmail.com
@@ -59,17 +55,17 @@ public class TimeZoneWorkCalendarController {
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarController.updateTimeZoneWorkCalendar"));
     }
 
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation("批量创建或删除时区工作日历")
-//    @PutMapping("/ref/batch/{timeZoneId}")
-//    public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> batchUpdateTimeZoneWorkCalendarRef(@ApiParam(value = "组织id", required = true)
-//                                                                                              @PathVariable(name = "organization_id") Long organizationId,
-//                                                                                              @ApiParam(value = "时区id", required = true)
-//                                                                                              @PathVariable(name = "timeZoneId") Long timeZoneId,
-//                                                                                              @ApiParam(value = "日期列表", required = true)
-//                                                                                              @RequestBody List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList) {
-//        return new ResponseEntity<>(timeZoneWorkCalendarService.batchUpdateTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVOList), HttpStatus.OK);
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("批量创建或删除时区工作日历")
+    @PutMapping("/ref/batch/{timeZoneId}")
+    public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> batchUpdateTimeZoneWorkCalendarRef(@ApiParam(value = "组织id", required = true)
+                                                                                              @PathVariable(name = "organization_id") Long organizationId,
+                                                                                              @ApiParam(value = "时区id", required = true)
+                                                                                              @PathVariable(name = "timeZoneId") Long timeZoneId,
+                                                                                              @ApiParam(value = "日期列表", required = true)
+                                                                                              @RequestBody List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList) {
+        return new ResponseEntity<>(timeZoneWorkCalendarService.batchUpdateTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVOList), HttpStatus.OK);
+    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("获取时区工作日历")

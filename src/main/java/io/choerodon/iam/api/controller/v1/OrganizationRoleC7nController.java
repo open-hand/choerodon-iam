@@ -49,6 +49,7 @@ public class OrganizationRoleC7nController {
         organizationRoleC7nService.update(organizationId, roleId, roleVO);
         return ResponseEntity.noContent().build();
     }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询角色信息")
     @GetMapping("/{role_id}")

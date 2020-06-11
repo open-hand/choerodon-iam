@@ -85,7 +85,8 @@
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
         <where>
-            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type = 'ROLE'
+            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId} AND il.name = #{labelName} AND il.type
+            = 'ROLE'
             <!-- 模糊匹配role.name -->
             <if test="param != null and param.name != null">
                 AND ir.name LIKE concat(concat('%', #{param.name}), '%')
@@ -106,7 +107,10 @@
     </select>
 
     <select id="selectRoles" resultMap="UserRoleVO">
-        <if test="level == null or level == 'site'">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
+        SELECT *
+        FROM (
+          <if test="level == null or level == 'site'">
             SELECT
             0 AS id,
             'Choerodon' AS name,
@@ -115,7 +119,8 @@
             imr.source_type,
             GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
             'site' as image_url,
-            null AS proj_name
+            null AS proj_name,
+            0 as sort
             FROM iam_member_role imr
             INNER JOIN iam_role ir ON imr.role_id = ir.id
             WHERE imr.member_type = 'user' AND imr.source_type = 'site' AND imr.member_id = #{userId}
@@ -139,12 +144,15 @@
             imr.source_type,
             GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
             'organization' as image_url,
-            null AS proj_name
+            null AS proj_name,
+            1 as sort
             FROM iam_member_role imr
             INNER JOIN iam_role ir ON imr.role_id = ir.id
+            inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} and hlr.data_id = ir.id)
+            inner join iam_label il on il.id = hlr.label_id
             INNER JOIN hpfm_tenant fo ON imr.source_id = fo.tenant_id
             WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
-            fo.enabled_flag = 1
+            fo.enabled_flag = 1 AND il.name = 'TENANT_ROLE'
             <if test="name != null">
                 AND fo.tenant_name LIKE concat(concat('%', #{name}), '%')
             </if>
@@ -162,16 +170,20 @@
             CONCAT(fo.tenant_name, CONCAT(' / ', fp.name)) AS name,
             fp.code,
             fp.is_enabled,
-            imr.source_type,
+            'project' as source_type,
             GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
             fp.image_url,
-            fp.name AS proj_name
+            fp.name AS proj_name,
+            2 as sort
             FROM iam_member_role imr
+            inner join fd_project_user fpu on fpu.MEMBER_ROLE_ID = imr.id
+            INNER JOIN fd_project fp ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_role ir ON imr.role_id = ir.id
-            INNER JOIN fd_project fp ON imr.source_id = fp.id
+            inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
+            inner join iam_label il on il.id = hlr.label_id
             INNER JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
-            WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId} AND
-            fp.is_enabled = 1
+            WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
+            fp.is_enabled = 1 AND il.name = 'PROJECT_ROLE'
             <if test="name != null">
                 AND fp.name LIKE concat(concat('%', #{name}), '%')
             </if>
@@ -179,27 +191,30 @@
                 AND fp.name LIKE concat(concat('%', #{params}), '%')
             </if>
             group by fp.id
+
         </if>
+        ) user_role
+        ORDER BY sort asc
     </select>
 
-    <select id="fuzzySearchRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
-    SELECT
-    ir.*
-    FROM
-    iam_role ir
-    inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
-    INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
-    WHERE
-    ir.fd_level = #{sourceType}
-    <if test="sourceType == 'organization' and sourceId != null">
-        AND ir.h_tenant_id =#{sourceId}
-    </if>
-    <if test="roleName != null">
-        AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
-    </if>
-    <if test="onlySelectEnable">
-        AND ir.is_enabled = 1
-    </if>
+    <select id="fuzzySearchRolesByName" resultType="io.choerodon.iam.api.vo.RoleVO">
+        SELECT
+        ir.*
+        FROM
+        iam_role ir
+        inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
+        INNER JOIN iam_label il on il.id=hlr.label_id and il.name=#{labelName}
+        WHERE
+        ir.fd_level = #{sourceType}
+        <if test="sourceType == 'organization' and sourceId != null">
+            AND ir.h_tenant_id =#{sourceId}
+        </if>
+        <if test="roleName != null">
+            AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
+        </if>
+        <if test="onlySelectEnable">
+            AND ir.is_enabled = 1
+        </if>
     </select>
 
 
@@ -211,7 +226,7 @@
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
         INNER JOIN iam_label il on il.id=hlr.label_id
         <where>
-            ir.fd_level = #{level} AND  ir.h_tenant_id =#{tenantId}
+            ir.fd_level = #{level} AND ir.h_tenant_id =#{tenantId}
             <if test="name != null">
                 and ir.name like concat(concat('%',#{name}), '%')
             </if>
@@ -245,7 +260,8 @@
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
         INNER JOIN iam_label il ON hlr.label_id = il.id
-        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ADMIN' AND ir.id not in
+        WHERE ir.h_tenant_id = #{organizationId} AND hlr.data_type = 'ROLE' AND il.`name` = 'TENANT_ADMIN' AND ir.id not
+        in
         (SELECT ir.id
         FROM iam_role ir
         LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
@@ -261,20 +277,81 @@
 
     <select id="listRolesByName" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT
-            ir.*
+        ir.*
         FROM
-            iam_role ir
-            INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
-            INNER JOIN iam_label il ON il.id = hlr.label_id
-            AND il. NAME = 'TENANT_ROLE'
+        iam_role ir
+        INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        <choose>
+            <when test="labelName!=null ">
+                AND il. NAME = #{labelName}
+            </when>
+            <otherwise>
+                AND il. NAME = 'TENANT_ROLE'
+            </otherwise>
+        </choose>
         WHERE
-            ir.fd_level = 'organization'
-            AND ir.h_tenant_id = #{tenantId}
+        ir.fd_level = 'organization'
+        AND ir.h_tenant_id = #{tenantId}
         <if test="name != null">
             and ir.name like concat(concat('%',#{name}), '%')
+        </if>
+        <if test="code!=null">
+            AND ir.code like concat(concat('%',#{code}), '%')
         </if>
         <if test="enabled != null">
             and ir.is_enabled = #{enabled}
         </if>
     </select>
+    <select id="listProjectRoleByProjectIdAndUserId" resultMap="RoleMap">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
+        SELECT ir.*
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON ir.id = imr.role_id
+        INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{roleLabelDataType} AND data_id = ir.id
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        <where>
+            imr.member_type = 'user' AND imr.member_id =#{userId}
+            AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ROLE'
+        </where>
+        group by ir.id
+    </select>
+    <select id="listByLabelNames" resultMap="RoleMap">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE" />
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        <where>
+            hlr.data_type = #{roleLabelDataType} AND ir.h_tenant_id = #{tenantId}
+            AND il.type = 'ROLE'
+           AND il.name = #{labelName}
+         </where>
+    </select>
+    <select id="listOrgByUserIdAndTenantIds" resultType="java.lang.Long">
+          SELECT imr.source_id
+          FROM iam_member_role imr
+          INNER JOIN iam_role_permission irp ON imr.role_id = irp.role_id
+          INNER JOIN iam_menu im ON im.id = irp.permission_id
+          INNER JOIN hiam_label_rel hlr ON (hlr.data_type = 'MENU' AND hlr.data_id = im.id)
+          INNER JOIN iam_label il ON il.id = hlr.label_id
+          WHERE il.name = 'TENANT_MENU' AND imr.member_type = 'user' AND imr.member_id = #{userId}
+          AND imr.source_type = 'organization' AND imr.source_id IN
+          <foreach collection="orgIds" item="orgId" open="(" close=")" separator=",">
+              #{orgId}
+          </foreach>
+          GROUP BY imr.source_id
+    </select>
+    <select id="listByTenantId" resultMap="RoleMap">
+        SELECT *
+        FROM iam_role ir
+        WHERE ir.h_tenant_id = #{tenantId}
+    </select>
+    <select id="listChildRoleByTplRoleId" resultMap="RoleMap">
+          SELECT ir.*
+          FROM iam_role ir
+          WHERE ir.h_inherit_role_id = #{roleId}
+    </select>
+
 </mapper>

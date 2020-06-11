@@ -160,7 +160,7 @@ hzero:
       field-permission: ${HZERO_START_INIT_FIELD_PERMISSION:true}
   resource:
     # 匹配的资源才会解析JwtToken便于得到UserDetails
-    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/*}
+    pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/v1/*}
   export:
     enable-async: true
   audit:
@@ -184,8 +184,9 @@ choerodon:
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
   category:
     enabled: true
-  devops:
-    message: true
+  fix:
+    data:
+      flag: true
 logging:
   level:
     org.apache.ibatis: ${LOG_LEVEL:debug}

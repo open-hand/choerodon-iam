@@ -1,11 +1,12 @@
 package io.choerodon.iam.infra.dto;
 
-import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 
-import java.util.List;
+import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 
 /**
  * @author scp
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class RoleC7nDTO extends Role {
     private List<Label> labels;
+    private String projName;
 
     @ApiModelProperty(value = "角色列表")
     private List<RoleNameAndEnabledVO> roles;
@@ -32,5 +34,13 @@ public class RoleC7nDTO extends Role {
 
     public void setRoles(List<RoleNameAndEnabledVO> roles) {
         this.roles = roles;
+    }
+
+    public String getProjName() {
+        return projName;
+    }
+
+    public void setProjName(String projName) {
+        this.projName = projName;
     }
 }

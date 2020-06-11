@@ -3,7 +3,8 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
-import org.hzero.iam.domain.entity.Tenant;
+
+import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -13,8 +14,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface ProjectC7nService {
 
     ProjectDTO queryProjectById(Long projectId);
-
-//    Page<User> pagingQueryTheUsersOfProject(Long id, Long userId, String email, Pageable Pageable, String param);
 
     ProjectDTO update(ProjectDTO projectDTO);
 

@@ -1,13 +1,14 @@
 package io.choerodon.iam.infra.utils;
 
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.infra.enums.TenantConfigEnum;
-import org.hzero.iam.domain.entity.TenantConfig;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import org.hzero.iam.saas.domain.entity.TenantConfig;
+
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 
 public class TenantConfigConvertUtils {
 
@@ -44,8 +45,10 @@ public class TenantConfigConvertUtils {
                     break;
                 case REMOTE_TOKEN_ENABLED:
                     tenantConfigVO.setRemoteTokenEnabled(Boolean.valueOf(t.getConfigValue()));
+                    break;
                 case CATEGORY:
                     tenantConfigVO.setCategory(t.getConfigValue());
+                    break;
             }
         });
         return tenantConfigVO;
@@ -119,6 +122,13 @@ public class TenantConfigConvertUtils {
             token.setConfigValue(String.valueOf(CONSTANT_ONE));
             token.setTenantId(tenantId);
             tenantConfigs.add(token);
+        }
+        if (!Objects.isNull(tenantConfigVO.getImageUrl())) {
+            TenantConfig image = new TenantConfig();
+            image.setConfigKey(TenantConfigEnum.IMAGE_URL.value());
+            image.setConfigValue(tenantConfigVO.getImageUrl());
+            image.setTenantId(tenantId);
+            tenantConfigs.add(image);
         }
         return tenantConfigs;
     }

@@ -16,7 +16,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;

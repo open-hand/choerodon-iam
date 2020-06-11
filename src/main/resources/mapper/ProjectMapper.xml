@@ -89,11 +89,15 @@
     </select>
 
     <select id="selectUserProjectsUnderOrg" resultMap="projectDTO">
-        SELECT DISTINCT fp.*
-        FROM fd_project fp
-        INNER JOIN iam_member_role imr
-        ON imr.source_id = fp.id
-        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId}
+        SELECT DISTINCT
+        fp.*
+        FROM
+        fd_project fp
+        INNER JOIN hzero_platform.iam_member_role imr ON imr.source_id = fp.ORGANIZATION_ID
+        INNER JOIN hzero_platform.fd_project_user pu ON pu.MEMBER_ROLE_ID = imr.id
+        WHERE imr.member_id = #{userId}
+        AND fp.organization_id = #{orgId}
+        AND fp.id = pu.PROJECT_ID
         <if test="isEnabled != null">
             AND is_enabled = #{isEnabled}
         </if>
@@ -122,6 +126,7 @@
         fp.code,
         fp.organization_id,
         fo.tenant_name AS organization_name,
+        fo.tenant_num AS organization_code,
         fp.is_enabled,
         ir.id AS role_id,
         ir.name AS role_name,
@@ -355,7 +360,7 @@
             </if>
         </if>
         order by
-        <if test="orderBy != null AND orderBy != ''">
+        <if test="orderBy != null and orderBy != ''">
             ${orderBy},
         </if>
         fp.id desc
@@ -364,10 +369,11 @@
     <select id="selectProjectsByUserId" resultMap="projectDTO">
         select distinct fp.*
         from fd_project fp
-        INNER JOIN fd_project_user fpu on (fp.id = fpu.PROJECT_ID)
-        INNER JOIN iam_role ir on (ir.id = fpu.role_id AND ir.is_enabled = 1)
+        INNER JOIN fd_project_user fpu ON (fp.id = fpu.PROJECT_ID)
+        INNER JOIN iam_member_role imr ON (imr.id = fpu.MEMBER_ROLE_ID)
         <where>
-            fpu.member_id = #{userId}
+            imr.member_id = #{userId}
+            AND imr.member_type = 'user'
             <if test="projectDTO != null">
                 <if test="projectDTO.organizationId != null">
                     AND fp.organization_id = #{projectDTO.organizationId}
@@ -401,5 +407,18 @@
         <if test="limit != null">
             limit #{limit}
         </if>
+    </select>
+    <select id="listUserManagedProjectInOrg" resultType="java.lang.Long">
+        <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
+        SELECT fpu.PROJECT_ID
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON ir.id = imr.role_id
+        INNER JOIN hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        <where>
+            imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization'
+            AND imr.source_id = #{organizationId} AND il.name = 'PROJECT_ADMIN'
+        </where>
     </select>
 </mapper>

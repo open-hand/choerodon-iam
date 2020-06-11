@@ -1,7 +1,6 @@
 package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomClientDetails;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 

@@ -22,7 +22,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
@@ -142,9 +141,9 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
-    public ResponseEntity<List<RoleDTO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                 @RequestParam(name = "role_name") String roleName,
-                                                                 @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
+    public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                                                        @RequestParam(name = "role_name") String roleName,
+                                                                                        @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                          Boolean onlySelectEnable) {
         return new ResponseEntity<>(projectUserService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
     }
@@ -180,10 +179,12 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "组织层查询角色列表")
     @GetMapping(value = "/organizations/{organization_id}/roles")
     public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-                                                                      @RequestParam(name = "role_name") String roleName,
+                                                                      @RequestParam(name = "role_name", required = false) String roleName,
+                                                                      @RequestParam(name = "role_code", required = false) String roleCode,
+                                                                      @RequestParam(name = "label_name", required = false) String labelName,
                                                                       @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                               Boolean onlySelectEnable) {
-        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, onlySelectEnable), HttpStatus.OK);
+        return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)
@@ -250,9 +251,10 @@ public class RoleMemberC7nController extends BaseController {
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
     public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnOrganizationLevel(
             @PathVariable(name = "organization_id") Long sourceId,
+            @RequestParam(required = false, name = "enable", defaultValue = "true") Boolean enable,
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnOrganizationLevel(
-                clientRoleQueryVO, sourceId), HttpStatus.OK);
+                clientRoleQueryVO, sourceId, enable), HttpStatus.OK);
     }
 
     /**
@@ -285,12 +287,12 @@ public class RoleMemberC7nController extends BaseController {
                 clientRoleQueryVO, sourceId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查项目层的历史")
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
                                                                    @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService. latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
 
@@ -300,7 +302,7 @@ public class RoleMemberC7nController extends BaseController {
      * @param projectId
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
@@ -320,10 +322,31 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "组织层更新用户角色")
     @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
     public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-                                                                      @PathVariable(name = "user_id") Long userId,
-                                                                      @RequestBody @Validated List<Role> roles) {
+                                                                   @PathVariable(name = "user_id") Long userId,
+                                                                   @RequestBody @Validated List<Role> roles) {
 
         roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
         return ResponseEntity.noContent().build();
+    }
+    /**
+     * 根据角色Id分页查询该角色被分配的用户
+     *
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询角色下的用户")
+    @PostMapping(value = "/site/role_members/users")
+    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
+            @RequestParam(name = "role_id") Long roleId) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnSiteLevel(roleId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色下的用户")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users")
+    public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId) {
+        return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnOrganizationLevel(roleId, sourceId), HttpStatus.OK);
     }
 }

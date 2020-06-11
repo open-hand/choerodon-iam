@@ -141,7 +141,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
@@ -165,7 +165,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")
     public ResponseEntity assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestBody List<ProjectUserDTO> projectUserDTOList) {
+                                                         @RequestBody List<ProjectUserDTO> projectUserDTOList) {
         projectUserService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return Results.success();
     }
@@ -176,7 +176,7 @@ public class ProjectUserC7nController extends BaseController {
     public ResponseEntity updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                  @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                                  @PathVariable(name = "user_id") Long userId,
-                                                                 @RequestBody List<Long> roleIds) {
+                                                                 @RequestBody Set<Long> roleIds) {
         projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return Results.success();
     }

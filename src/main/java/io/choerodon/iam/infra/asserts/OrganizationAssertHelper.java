@@ -1,12 +1,13 @@
 package io.choerodon.iam.infra.asserts;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.AlreadyExistedException;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.infra.mapper.TenantMapper;
+import java.util.Optional;
+
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.AlreadyExistedException;
 
 /**
  * 组织断言帮助类

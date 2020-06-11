@@ -1,12 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.domain.entity.Menu;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -26,7 +25,7 @@ public interface MenuC7nMapper {
      * @param roleIds  角色合并的ID集合
      * @param tenantId 租户ID
      * @param lang     菜单语言
-     * @param labels 标签IDs
+     * @param labels   标签IDs
      * @return 经过权限检测过后的菜单树
      */
     List<Menu> selectRoleMenus(@Param("roleIds") List<Long> roleIds, @Param("tenantId") Long tenantId,
@@ -39,13 +38,13 @@ public interface MenuC7nMapper {
     List<Menu> selectUserMenus(@Param("lang") String lang,
                                @Param("labels") Set<String> labels);
 
-    List<Menu> listMenuByLabel( @Param("labels") Set<String> labels);
+    List<Menu> listMenuByLabel(@Param("labels") Set<String> labels);
 
     List<Menu> listPermissionSetByParentIds(@Param("ids") Set<Long> ids);
 
     List<Menu> listUserInfoMenuOnlyTypeMenu();
 
-    List<Menu> listMenuByLabelAndType(@Param("labelNames") Set<String> labelNames, @Param("type") String type);
+    List<Menu> listMenuByLabelAndType(@Param("labelNames") Set<String> labelNames, @Param("types") Set<String> types);
 
     /**
      * 判断是否有权限
@@ -56,6 +55,12 @@ public interface MenuC7nMapper {
     List<PermissionCheckDTO> checkPermissionSets(@Param("roleIds") List<Long> roleIds,
                                                  @Param("projectId") Long projectId,
                                                  @Param("userId") Long userId,
+                                                 @Param("isOrgRoot") Boolean isOrgRoot,
                                                  @Param("codes") List<String> codes);
 
+    List<Menu> listPermissionSetByRoleIdsAndLevel(@Param("roleIds") Set<Long> roleIds,
+                                                  @Param("level") String level);
+
+    long countPermissionSetByRoleIdsAndLevel(@Param("roleIds") Set<Long> roleIds,
+                                             @Param("level") String level);
 }

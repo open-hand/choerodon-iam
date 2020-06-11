@@ -115,6 +115,10 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("是否有权限进入项目，默认为true")
     private Boolean isInto = true;
 
+    @Transient
+    @ApiModelProperty("是否有编辑权限，默认为false")
+    private Boolean editFlag = false;
+
     public Long getId() {
         return id;
     }
@@ -310,5 +314,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setInto(Boolean into) {
         isInto = into;
+    }
+
+    public Boolean getEditFlag() {
+        return editFlag;
+    }
+
+    public void setEditFlag(Boolean editFlag) {
+        this.editFlag = editFlag;
     }
 }

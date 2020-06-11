@@ -1,20 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.modelmapper.convention.MatchingStrategies;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.validator.TimeZoneWorkCalendarValidator;
 import io.choerodon.iam.api.vo.*;
@@ -28,6 +13,22 @@ import io.choerodon.iam.infra.mapper.TimeZoneWorkCalendarRefMapper;
 import io.choerodon.iam.infra.mapper.WorkCalendarHolidayRefMapper;
 import io.choerodon.iam.infra.utils.DateUtil;
 import io.choerodon.iam.infra.valitador.WorkCalendarValidator;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.modelmapper.convention.MatchingStrategies;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+
+import javax.annotation.PostConstruct;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -37,6 +38,10 @@ import io.choerodon.iam.infra.valitador.WorkCalendarValidator;
 @Component
 @Transactional(rollbackFor = Exception.class)
 public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarService {
+
+    private static final String STATUS_ADD = "add";
+
+    private static final String STATUS_DELETE = "delete";
 
     @Autowired
     private TimeZoneWorkCalendarMapper timeZoneWorkCalendarMapper;
@@ -102,31 +107,31 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
         }
     }
 
-//    @Override
-//    @Transactional(rollbackFor = Exception.class)
-//    public List<TimeZoneWorkCalendarRefVO> batchUpdateTimeZoneWorkCalendarRef(Long organizationId, Long timeZoneId, List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList) {
-//        List<TimeZoneWorkCalendarRefVO> timeZoneWorkCalendarRefVOList = new ArrayList<>();
-//        if (!ObjectUtils.isEmpty(timeZoneWorkCalendarRefCreateVOList)) {
-//            for (TimeZoneWorkCalendarRefCreateVO timeZoneWorkCalendarRefCreateVO : timeZoneWorkCalendarRefCreateVOList) {
-//                String status = timeZoneWorkCalendarRefCreateVO.get__status();
-//                if (!ObjectUtils.isEmpty(status)) {
-//                    switch (status) {
-//                        case BaseDTO.STATUS_ADD:
-//                            timeZoneWorkCalendarValidator.verifyCreateTimeZoneWorkCalendarRef(organizationId, timeZoneId);
-//                            createTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVO);
-//                            break;
-//                        case BaseDTO.STATUS_DELETE:
-//                            timeZoneWorkCalendarValidator.verifyDeleteTimeZoneWorkCalendarRef(timeZoneWorkCalendarRefCreateVO.getCalendarId());
-//                            deleteTimeZoneWorkCalendarRef(organizationId, timeZoneWorkCalendarRefCreateVO.getCalendarId());
-//                            break;
-//                        default:
-//                            break;
-//                    }
-//                }
-//            }
-//        }
-//        return timeZoneWorkCalendarRefVOList;
-//    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<TimeZoneWorkCalendarRefVO> batchUpdateTimeZoneWorkCalendarRef(Long organizationId, Long timeZoneId, List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList) {
+        List<TimeZoneWorkCalendarRefVO> timeZoneWorkCalendarRefVOList = new ArrayList<>();
+        if (!ObjectUtils.isEmpty(timeZoneWorkCalendarRefCreateVOList)) {
+            for (TimeZoneWorkCalendarRefCreateVO timeZoneWorkCalendarRefCreateVO : timeZoneWorkCalendarRefCreateVOList) {
+                String status = timeZoneWorkCalendarRefCreateVO.get__status();
+                if (!ObjectUtils.isEmpty(status)) {
+                    switch (status) {
+                        case STATUS_ADD:
+                            timeZoneWorkCalendarValidator.verifyCreateTimeZoneWorkCalendarRef(organizationId, timeZoneId);
+                            createTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVO);
+                            break;
+                        case STATUS_DELETE:
+                            timeZoneWorkCalendarValidator.verifyDeleteTimeZoneWorkCalendarRef(timeZoneWorkCalendarRefCreateVO.getCalendarId());
+                            deleteTimeZoneWorkCalendarRef(organizationId, timeZoneWorkCalendarRefCreateVO.getCalendarId());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+        return timeZoneWorkCalendarRefVOList;
+    }
 
     @Override
     public TimeZoneWorkCalendarVO queryTimeZoneWorkCalendar(Long organizationId) {

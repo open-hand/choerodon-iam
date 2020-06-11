@@ -176,6 +176,7 @@
         im.parent_id,
         im.type,
         im.sort,
+        im.icon,
         im.h_permission_type,
         im.h_controller_type,
         im.h_level_path,
@@ -184,8 +185,11 @@
         LEFT JOIN hiam_label_rel hlr ON hlr.data_id = im.id
         LEFT JOIN iam_label il ON il.id = hlr.label_id
         <where>
-            <if test="type != null">
-                and im.type = #{type}
+            <if test="types != null and types.size > 0">
+                and im.type IN
+                <foreach collection="types" open="(" separator="," close=")" item="type">
+                    #{type}
+                </foreach>
             </if>
             <if test="labelNames != null and labelNames.size > 0">
                 and il.name IN
@@ -200,7 +204,7 @@
     <!-- 返回权限集检查状态 -->
     <select id="checkPermissionSets" resultType="org.hzero.iam.api.dto.PermissionCheckDTO">
     select
-    ps.code,
+    DISTINCT ps.code,
     ps.h_controller_type controller_type,
     1 approve
     from iam_menu ps
@@ -208,7 +212,7 @@
     <foreach collection="roleIds" open="(" separator="," close=")" item="roleId">
         #{roleId}
     </foreach>
-    <if test="projectId!=null">
+    <if test="projectId!=null and isOrgRoot==false">
         JOIN iam_member_role imr ON imr.role_id = ir.id
         AND imr.member_id = #{userId}
         JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
@@ -225,5 +229,23 @@
             or ps.code like concat('%',#{code})
         </foreach>
     </trim>
+    </select>
+    <select id="listPermissionSetByRoleIdsAndLevel" resultMap="MenuMap">
+        SELECT im.*
+        FROM iam_role_permission irp
+        JOIN iam_menu im ON im.id = irp.permission_id AND irp.type = 'PS'
+        WHERE im.fd_level = #{level} and irp.role_id in
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+            #{roleId}
+        </foreach>
+    </select>
+    <select id="countPermissionSetByRoleIdsAndLevel" resultType="long">
+        SELECT count(*)
+        FROM iam_role_permission irp
+        JOIN iam_menu im ON im.id = irp.permission_id AND irp.type = 'PS'
+        WHERE im.fd_level = #{level} and irp.role_id in
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+            #{roleId}
+        </foreach>
     </select>
 </mapper>

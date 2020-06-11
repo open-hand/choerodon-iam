@@ -35,6 +35,8 @@ public interface RoleMemberService {
      */
     void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll);
 
+    void deleteProjectRole(Long projectId, Long userId, List<Long> roleIds, Boolean syncAll);
+
     List<MemberRole> insertOrUpdateRolesOfUserByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType);
 
@@ -47,7 +49,7 @@ public interface RoleMemberService {
 
     void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName);
 
-    List<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
+    Set<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
                                                     Long memberId, String sourceType,
                                                     List<MemberRole> memberRoleList,
                                                     List<MemberRole> returnList, String memberType);

@@ -1,19 +1,40 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.*;
@@ -25,30 +46,11 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -64,14 +66,13 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private ProjectAssertHelper projectAssertHelper;
     private MemberRoleRepository memberRoleRepository;
     private RoleC7nMapper roleC7nMapper;
-    private ProjectMapper projectMapper;
-    private OrganizationResourceLimitService organizationResourceLimitService;
-
     private RoleMapper roleMapper;
     private LabelC7nMapper labelC7nMapper;
     private RoleMemberService roleMemberService;
     private MemberRoleService memberRoleService;
     private TransactionalProducer producer;
+    private MessageSendService messageSendService;
+    private UserMapper userMapper;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -79,38 +80,84 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   MemberRoleRepository memberRoleRepository,
                                   ProjectAssertHelper projectAssertHelper,
                                   @Lazy ProjectC7nService projectC7nService,
-                                  ProjectMapper projectMapper,
-                                  OrganizationResourceLimitService organizationResourceLimitService,
                                   RoleMapper roleMapper,
                                   TransactionalProducer producer,
                                   LabelC7nMapper labelC7nMapper,
                                   MemberRoleService memberRoleService,
-                                  RoleMemberService roleMemberService) {
+                                  @Lazy RoleMemberService roleMemberService,
+                                  MessageSendService messageSendService,
+                                  UserMapper userMapper) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
         this.projectC7nService = projectC7nService;
         this.roleC7nMapper = roleC7nMapper;
         this.projectAssertHelper = projectAssertHelper;
-        this.projectMapper = projectMapper;
-        this.organizationResourceLimitService = organizationResourceLimitService;
         this.roleMapper = roleMapper;
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleService = memberRoleService;
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.roleMemberService = roleMemberService;
+        this.messageSendService = messageSendService;
+        this.userMapper = userMapper;
     }
 
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, String loginName, String realName, String roleName, Boolean enabled, String params) {
-        return PageHelper.doPage(pageRequest, () -> projectUserMapper.selectUserWithRolesOnProjectLevel(
-                ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params));
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        boolean doPage = (size != 0);
+        Page<UserDTO> result;
 
+        // 因为PageHelper和Mybatis的级联映射,这里只能手写分页
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count = projectUserMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
+                    start, size, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            result = PageUtils.buildPage(page, size, count, users);
+        } else {
+            List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(
+                    null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, enabled, params);
+            result = PageUtils.buildPage(page, size, users.size(), users);
+        }
+
+        setRoleIsMember(result);
+        return result;
     }
+
+    /**
+     * 设置角色是否是项目成员
+     *
+     * @param result 用户结果
+     */
+    private void setRoleIsMember(Page<UserDTO> result) {
+        List<UserDTO> userDTOList = result.getContent();
+        if (!CollectionUtils.isEmpty(userDTOList)) {
+            Set<Long> roleIds = userDTOList.stream().flatMap(v -> v.getRoles().stream()).map(Role::getId).collect(Collectors.toSet());
+            Map<Long, Boolean> roleIsMember = new HashMap<>();
+            roleIds.forEach(id -> {
+                List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+                roleIsMember.put(id, labelDTOS.stream().anyMatch(l -> RoleLabelEnum.PROJECT_MEMBER.value().equals(l.getName())));
+            });
+
+            userDTOList.forEach(user -> {
+                List<Role> userRoles = user.getRoles();
+                List<Role> newResult = userRoles.stream().map(u -> {
+                    RoleVO roleVO = ConvertUtils.convertObject(u, RoleVO.class);
+                    roleVO.setProjectAdminFlag(null);
+                    roleVO.setProjectMemberFlag(roleIsMember.get(roleVO.getId()));
+                    return roleVO;
+                }).collect(Collectors.toList());
+                user.setRoles(newResult);
+            });
+        }
+    }
+
 
     @Override
     public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
+        List<UserDTO> users = projectUserMapper.selectUserWithRolesOnProjectLevel(null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, params);
         return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
     }
 
@@ -185,7 +232,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public Page<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long projectId) {
         Page<UserDTO> userList = PageHelper.doPage(pageRequest, () -> projectUserMapper.listProjectUser(projectId, roleAssignmentSearchDTO));
-        if (userList == null && userList.size() < 1) {
+        if (userList == null || userList.size() < 1) {
             return userList;
         }
         Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
@@ -205,9 +252,33 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
 
     @Override
-    public List<RoleDTO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
+    public List<RoleVO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
-        return roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+        List<RoleVO> roleVOS = roleC7nMapper.fuzzySearchRolesByName(roleName, projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), RoleLabelEnum.PROJECT_ROLE.value(), onlySelectEnable);
+        Set<Long> roleIds = roleVOS.stream().map(Role::getId).collect(Collectors.toSet());
+        Map<Long, List<LabelDTO>> labelMap = new HashMap<>();
+        roleIds.forEach(id -> {
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
+            labelMap.put(id, labelDTOS);
+        });
+        roleVOS.forEach(role -> {
+            List<LabelDTO> labelDTOS = labelMap.get(role.getId());
+            if (labelDTOS.stream().anyMatch(labelDTO -> RoleLabelEnum.PROJECT_ADMIN.value().equals(labelDTO.getName()))) {
+                role.setProjectAdminFlag(true);
+            }
+            if (labelDTOS.stream().anyMatch(labelDTO -> RoleLabelEnum.PROJECT_MEMBER.value().equals(labelDTO.getName()))) {
+                role.setProjectMemberFlag(true);
+            }
+        });
+
+        return roleVOS;
+    }
+
+    @Override
+    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+        Map<Long, List<ProjectUserDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectUserDTO::getMemberId));
+        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectUserDTO::getRoleId).collect(Collectors.toSet())));
+
     }
 
 
@@ -241,36 +312,49 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList) {
+    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds) {
+        Assert.notNull(projectId, "error.projectId.is.null");
+        Assert.notNull(userId, "error.userId.is.null");
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
-        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
-        projectUserDTOList.forEach(projectUserDTO -> {
-            if (projectUserDTO.getMemberId() == null || projectUserDTO.getRoleId() == null) {
-                throw new EmptyParamException("error.projectUser.insert.empty");
-            }
+
+
+        roleIds.forEach(roleId -> {
+            User user = userMapper.selectByPrimaryKey(userId);
+            Role role = roleMapper.selectByPrimaryKey(roleId);
+
+            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
             projectUserDTO.setProjectId(projectId);
+            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
             // 1. set memberRoleId
-            projectUserDTO.setMemberRoleId(getMemberRoleId(projectUserDTO.getMemberId(), projectUserDTO.getRoleId(), projectDTO.getOrganizationId()));
             if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
-            // 2.构建saga对象
-            Role role = roleMapper.selectByPrimaryKey(projectUserDTO.getRoleId());
-            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
+
+            // 发送通知
+            List<User> userList = new ArrayList<>();
+            userList.add(user);
+            messageSendService.sendProjectAddUserMsg(projectDTO, role.getName(), userList);
+        });
+
+
+        // 2.构建saga对象
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        List<Role> roleList = roleC7nMapper.listProjectRoleByProjectIdAndUserId(projectId, userId);
+        Set<Long> ownedRoleIds = roleList.stream().map(Role::getId).collect(Collectors.toSet());
+        ownedRoleIds.forEach(id -> {
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(id);
             if (!CollectionUtils.isEmpty(labelDTOS)) {
                 Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
-                Set<String> roleLabels = userRoleLabelsMap.get(projectUserDTO.getMemberId());
+                Set<String> roleLabels = userRoleLabelsMap.get(userId);
                 if (!CollectionUtils.isEmpty(roleLabels)) {
                     roleLabels.addAll(labelNames);
                 } else {
-                    userRoleLabelsMap.put(projectUserDTO.getMemberId(), labelNames);
+                    userRoleLabelsMap.put(userId, labelNames);
                 }
             }
         });
         // 3.发送saga
         assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap);
-        // 4.todo 发送notice
-
     }
 
     @Override
@@ -306,39 +390,48 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public void updateUserRoles(Long userId, Long projectId, List<Long> roleIdList, Boolean syncAll) {
+    @Transactional
+    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
-        // 1. 获取原memberRoleIds
-        List<Long> oldMemberRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId).stream().map(MemberRole::getId).collect(Collectors.toList());
-        List<Long> newMemberRoleIds = new ArrayList<>();
-        Set<String> labelNames = new HashSet<>();
 
-        // 2. 获取新memberRoleIds
-        for (Long roleId : roleIdList) {
-            ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-            projectUserDTO.setProjectId(projectId);
-            projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
-            if (projectUserMapper.selectOne(projectUserDTO) == null) {
-                if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
-                    throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+        List<MemberRole> oldMemberRoleList = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null);
+        Map<Long, Long> oldMemberRoleMap = oldMemberRoleList.stream().collect(Collectors.toMap(MemberRole::getRoleId, MemberRole::getId));
+        Set<Long> oldRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+
+
+        // 要删除的角色
+        Set<Long> deleteRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).filter(v -> !roleIdList.contains(v)).collect(Collectors.toSet());
+        // 要新增的角色
+        Set<Long> insertRoleIds = roleIdList.stream().filter(v -> !oldRoleIds.contains(v)).collect(Collectors.toSet());
+
+        Set<Long> deleteMemberRoleIds = new HashSet<>();
+        // 删除角色，不删除member-role表中的角色（可能会有并发问题）
+        if (!CollectionUtils.isEmpty(deleteRoleIds)) {
+            deleteRoleIds.forEach(v -> {
+                Long memberRoleId = oldMemberRoleMap.get(v);
+                if (memberRoleId != null) {
+                    deleteMemberRoleIds.add(memberRoleId);
                 }
-            }
-            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(roleMapper.selectByPrimaryKey(roleId).getId());
-            if (!CollectionUtils.isEmpty(labelDTOS)) {
-                labelNames.addAll(labelDTOS.stream().map(Label::getName).collect(Collectors.toSet()));
-            }
-            newMemberRoleIds.add(projectUserDTO.getMemberRoleId());
+            });
+            projectUserMapper.deleteByIds(projectId, deleteMemberRoleIds);
         }
-
-        // 3. 删除MemberRole
-        oldMemberRoleIds.forEach(aLong -> {
-            if (!newMemberRoleIds.contains(aLong)) {
-                List<ProjectUserDTO> userDTOList = projectUserMapper.select(new ProjectUserDTO().setMemberRoleId(aLong));
-                if (CollectionUtils.isEmpty(userDTOList)) {
-                    memberRoleService.batchDeleteMemberRole(projectDTO.getOrganizationId(), Arrays.asList(memberRoleRepository.selectByPrimaryKey(aLong)));
+        // 新增角色
+        if (!CollectionUtils.isEmpty(insertRoleIds)) {
+            insertRoleIds.forEach(v -> {
+                ProjectUserDTO projectUserDTO = new ProjectUserDTO();
+                projectUserDTO.setProjectId(projectId);
+                projectUserDTO.setMemberRoleId(getMemberRoleId(userId, v, projectDTO.getOrganizationId()));
+                if (projectUserMapper.selectOne(projectUserDTO) == null) {
+                    if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
+                        throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
+                    }
                 }
-            }
-        });
+            });
+        }
+        Set<String> labelNames = new HashSet<>();
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            labelNames = labelC7nMapper.selectLabelNamesInRoleIds(roleIdList);
+        }
 
         // 4. 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();

@@ -20,6 +20,7 @@ import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 
 /**
@@ -55,7 +56,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 }
             }
             projectUserService.assignUsersProjectRolesEvent(memberRoleList.get(0).getSourceId(), ResourceLevel.ORGANIZATION, userRoleLabelsMap);
-            // todo 发消息
+
         }
     }
 
@@ -70,7 +71,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
             userMemberEventMsg.setUsername(user.getLoginName());
             userMemberEventMsg.setUserId(user.getId());
             roleMemberService.deleteMemberRoleForSaga(user.getId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, memberRoleList.get(0).getSourceId());
-            // todo 消息
+
         }
     }
 
@@ -79,6 +80,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         return (CollectionUtils.isEmpty(objectMap)
                 || ObjectUtils.isEmpty(objectMap.get(MemberRoleConstants.MEMBER_TYPE))
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
+                && (memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
                 && memberRoleList.get(0).getSourceType().contains(ResourceLevel.ORGANIZATION.value());
     }
 }

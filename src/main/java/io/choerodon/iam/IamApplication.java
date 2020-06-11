@@ -1,6 +1,6 @@
 package io.choerodon.iam;
 
-import org.hzero.autoconfigure.iam.EnableHZeroIam;
+import org.hzero.autoconfigure.iam.saas.EnableHZeroIamSaas;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +11,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @EnableFeignClients("io.choerodon.iam")
-@EnableHZeroIam
+@EnableHZeroIamSaas
 @EnableDiscoveryClient
 @SpringBootApplication
 public class IamApplication {
@@ -29,4 +29,7 @@ public class IamApplication {
         executor.setCorePoolSize(4);
         return executor;
     }
+    
+    
+    
 } 

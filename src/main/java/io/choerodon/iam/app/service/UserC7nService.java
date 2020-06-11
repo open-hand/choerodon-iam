@@ -20,6 +20,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserInfoDTO;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -187,21 +188,6 @@ public interface UserC7nService {
      */
     void sendNotice(List<Long> userIds, String code,
                     Map<String, String> params, Long sourceId, ResourceLevel resourceLevel);
-    // TODO notify-service
-//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
-//
-//    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll, WebHookJsonSendDTO webHookJsonSendDTO);
-//    /**
-//     * 单独发送webhook
-//     *
-//     * @param code
-//     * @param sourceId
-//     * @param webHookJsonSendDTO
-//     * @return
-//     */
-//    Future<String> sendNotice(String code, Long sourceId, WebHookJsonSendDTO webHookJsonSendDTO);
-//
-//    Future<String> sendNotice(Long fromUserId, Map<Long, Set<Long>> longSetMap, String code, Map<String, Object> params, Long sourceId);
 
     /**
      * 校验用户是否是组织Root用户
@@ -212,8 +198,6 @@ public interface UserC7nService {
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
 
-    // TODO notifyservice
-//    WebHookJsonSendDTO.User getWebHookUser(Long userId);
 
     /**
      * 创建用户角色.
@@ -292,4 +276,29 @@ public interface UserC7nService {
     void deleteOrgAdministrator(Long organizationId, Long userId);
 
     void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS);
+
+    void switchSite();
+
+    List<User> listUsersByRealNames(Set<String> realNames, Boolean onlyEnabled);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(Long roleId);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(Long roleId, Long sourceId);
+
+    List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId);
+
+    RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
+
+    UserDTO queryPersonalInfo();
+
+    WebHookUser getWebHookUser(Long userId);
+
+    /**
+     * 批量根据项目id查询用户在这个项目下拥有的角色标签
+     *
+     * @param userId     用户id
+     * @param projectIds 项目id集合
+     * @return 项目下的用户有的角色的标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
+     */
+    List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 }

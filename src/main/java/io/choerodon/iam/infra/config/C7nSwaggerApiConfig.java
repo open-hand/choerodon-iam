@@ -36,6 +36,9 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_WORK_CALENDAR_PROJECT = "Choerodon Work Calendar Project";
     public static final String CHOERODON_WORK_CALENDAR_HOLIDAY_REF = "Choerodon Work Calendar Holiday Ref";
     public static final String CHOERODON_ORGANIZATION_ADMIN = "Choerodon Organization Admin";
+    public static final String CHOERODON_ORGANIZATION_PROJECT_CATEGORY = "Choerodon Organization Project Category";
+    public static final String CHOERODON_COMPATIBLE = "Choerodon Compatible";
+    public static final String CHOERODON_STAR_PROJECT = "Choerodon Star Project";
 
 
     @Autowired
@@ -57,8 +60,8 @@ public class C7nSwaggerApiConfig {
                 new Tag(CHOERODON_TENANT_PROJECT, "choerodon组织项目"),
                 new Tag(CHOERODON_USER_SELF, "choerodon登录用户接口 "),
                 new Tag(ORGANIZATION_USER, "choerodon组织用户"),
-                new Tag(CHOERODON_ORGANIZATION_ADMIN, "choerodon组织管理员")
-
+                new Tag(CHOERODON_ORGANIZATION_ADMIN, "choerodon组织管理员"),
+                new Tag(CHOERODON_COMPATIBLE, "choerodon对外组件向后兼容接口")
         );
     }
 }

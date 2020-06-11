@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
@@ -27,7 +27,7 @@ public interface TenantC7nService {
 
     TenantVO queryTenantWithRoleById(Long tenantId);
 
-    Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String params);
+    Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params);
 
     Page<TenantVO> getAllTenants(PageRequest pageable);
 
@@ -35,7 +35,7 @@ public interface TenantC7nService {
 
     Tenant disableOrganization(Long organizationId, Long userId);
 
-    void check(TenantVO tenantVO);
+    Boolean check(TenantVO tenantVO);
 
     Page<User> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param);
 

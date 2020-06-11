@@ -1,18 +1,22 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientVO;
+import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
+import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.repository.ClientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.ClientC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
 
 
 /**
@@ -25,11 +29,15 @@ public class ClientC7nController extends BaseController {
 
     private final ClientService clientService;
     private final ClientC7nService clientC7nService;
+    private final ClientRepository clientRepository;
 
 
-    public ClientC7nController(ClientService clientService, ClientC7nService clientC7nService) {
+    public ClientC7nController(ClientService clientService,
+                               ClientRepository clientRepository,
+                               ClientC7nService clientC7nService) {
         this.clientService = clientService;
         this.clientC7nService = clientC7nService;
+        this.clientRepository = clientRepository;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -47,6 +55,7 @@ public class ClientC7nController extends BaseController {
         Client client = new Client();
         client.setOrganizationId(organizationId);
         client.setId(clientId);
+        client.setName(clientRepository.selectByPrimaryKey(clientId).getName());
         clientService.delete(client);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -58,5 +67,22 @@ public class ClientC7nController extends BaseController {
         return new ResponseEntity<>(clientC7nService.queryByName(organizationId, clientName), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "客户端分配角色")
+    @PostMapping(value = "/{client_id}/assign_roles")
+    public ResponseEntity assignRoles(@PathVariable("organization_id") Long organizationId,
+                                      @PathVariable("client_id") Long clientId,
+                                      @RequestBody List<Long> roleIds) {
+        clientC7nService.assignRoles(organizationId, clientId, roleIds);
+        return Results.success();
+    }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "创建客户端，该接口会保存客户端关系")
+    @PostMapping
+    public ResponseEntity<ClientVO> create(@PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
+        clientVO.setOrganizationId(organizationId);
+        this.validObject(clientVO);
+        return Results.success(clientC7nService.create(clientVO));
+    }
 }

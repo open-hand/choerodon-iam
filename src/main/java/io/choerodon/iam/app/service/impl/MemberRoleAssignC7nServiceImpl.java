@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
@@ -36,6 +37,7 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
         for (MemberRole memberRole : memberRoleList) {
             List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());
             if (labelList.contains(RoleLabelEnum.PROJECT_ROLE.value())
+                    && (memberRole.getMemberType().equals(MemberType.USER.value()))
                     && (CollectionUtils.isEmpty(memberRole.getAdditionalParams())
                     || ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))
                     || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE)))) {
@@ -43,6 +45,5 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
             }
         }
         super.checkValidityAndInit(memberRoleList);
-
     }
 }

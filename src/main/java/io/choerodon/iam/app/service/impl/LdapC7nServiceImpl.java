@@ -7,7 +7,10 @@ import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.infra.asserts.LdapAssertHelper;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.LdapAutoDTO;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
@@ -17,8 +20,9 @@ import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.domain.entity.Ldap;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +48,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private static final String TASK_DESCRIPTION = "组织下自动同步LDAP用户任务";
     private static final String CRON_TRIGGER = "cron-trigger";
     private static final String STOP = "STOP";
-    private static final String ORGANIZATION_CODE = "organizationCode";
+    private static final String TENANT_CODE = "tenantNum";
     private static final String EXECUTE_METHOD = "syncLdapUserOrganization";
 
     public static final String LDAP_CONNECTION_DTO = "ldapConnectionDTO";
@@ -60,10 +64,16 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private AsgardFeignClient asgardFeignClient;
 
     @Autowired
+    private OrganizationAssertHelper organizationAssertHelper;
+
+    @Autowired
     private TenantMapper tenantMapper;
 
     @Autowired
     private TransactionalProducer producer;
+
+    @Autowired
+    private LdapAssertHelper ldapAssertHelper;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapC7nServiceImpl.class);
 
@@ -118,6 +128,19 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         return ldapAutoDTO;
     }
 
+    @Override
+    public Ldap queryByOrganizationId(Long organizationId) {
+        organizationAssertHelper.notExisted(organizationId);
+        return ldapAssertHelper.ldapNotExisted(LdapAssertHelper.WhichColumn.ORGANIZATION_ID, organizationId);
+    }
+
+    @Override
+    public Ldap validateLdap(Long organizationId, Long id) {
+        organizationAssertHelper.notExisted(organizationId);
+        Ldap ldap = ldapAssertHelper.ldapNotExisted(LdapAssertHelper.WhichColumn.ID, id);
+        LdapValidator.validate(ldap);
+        return ldap;
+    }
 
     @Override
     public LdapAutoDTO queryLdapAutoDTO(Long organizationId) {
@@ -176,7 +199,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         scheduleTaskDTO.setNotifyUser(notifyUser);
 
         Map<String, Object> mapParams = new HashMap<>();
-        mapParams.put(ORGANIZATION_CODE, tenant.getTenantNum());
+        mapParams.put(TENANT_CODE, tenant.getTenantNum());
         scheduleTaskDTO.setParams(mapParams);
 
         scheduleTaskDTO.setMethodId(getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId()).getId());
@@ -204,7 +227,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private ScheduleMethodDTO getMethodDTO(Long organizationId) {
         ResponseEntity<List<ScheduleMethodDTO>> methodsResponseEntity = null;
         try {
-            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, "base-service");
+            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, "hzero-iam");
         } catch (FeignException e) {
             throw new CommonException(e);
         }

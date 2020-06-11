@@ -21,6 +21,7 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -60,11 +61,26 @@ public class UserSelfC7nController extends BaseController {
     }
 
     @Permission(permissionLogin = true)
+    @ApiOperation(value = "个人信息页面 - 查询个人信息")
+    @GetMapping(value = "/users/personal")
+    public ResponseEntity<UserDTO> queryPersonalInfo() {
+        return Results.success(userC7nService.queryPersonalInfo());
+    }
+
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "修改密码")
     @PutMapping(value = "/users/{id}/password")
     public ResponseEntity<Void> selfUpdatePassword(@PathVariable Long id,
                                                    @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
         userC7nService.selfUpdatePassword(id, userPasswordDTO, true, true);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/switch/site")
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "组织切换到平台")
+    public ResponseEntity switchSite() {
+        userC7nService.switchSite();
+        return Results.success();
     }
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 
 /**
  * @author carllhw
@@ -24,4 +25,7 @@ public interface MemberRoleC7nMapper {
     List<MemberRole> listMemberRoleByOrgIdAndUserIdAndRoleLable(@Param("organizationId") Long organizationId,
                                                                 @Param("userId") Long userId,
                                                                 @Param("labelName") String labelName);
+
+    List<Role> listRoleByUserIdAndLevel(@Param("userId") Long userId,
+                                        @Param("level") String level);
 }

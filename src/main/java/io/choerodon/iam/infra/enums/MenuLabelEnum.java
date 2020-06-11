@@ -17,6 +17,10 @@ public enum MenuLabelEnum {
      */
     TENANT_MENU("TENANT_MENU"),
     /**
+     * 组织层菜单标签
+     */
+    TENANT_GENERAL("TENANT_GENERAL"),
+    /**
      * 个人信息菜单标签
      */
     USER_MENU("USER_MENU"),

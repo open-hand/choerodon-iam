@@ -1,5 +1,19 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+import javax.validation.Valid;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.saas.domain.entity.Tenant;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -10,26 +24,12 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.DemoRegisterService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai
@@ -42,16 +42,13 @@ import java.util.Set;
 public class TenantC7nController extends BaseController {
 
     private TenantC7nService tenantC7nService;
-    private UserC7nService userC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;
     private DemoRegisterService demoRegisterService;
 
     public TenantC7nController(TenantC7nService tenantC7nService,
-                               UserC7nService userC7nService,
                                DemoRegisterService demoRegisterService,
                                OrganizationResourceLimitService organizationResourceLimitService) {
         this.tenantC7nService = tenantC7nService;
-        this.userC7nService = userC7nService;
         this.demoRegisterService = demoRegisterService;
         this.organizationResourceLimitService = organizationResourceLimitService;
     }
@@ -137,8 +134,9 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) String tenantNum,
                                                       @RequestParam(required = false) String ownerRealName,
                                                       @RequestParam(required = false) Boolean enabledFlag,
+                                                      @RequestParam(required = false) String homePage,
                                                       @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, params), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
@@ -183,9 +181,8 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@RequestBody TenantVO organization) {
-        tenantC7nService.check(organization);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<Boolean> check(@RequestBody TenantVO organization) {
+        return ResponseEntity.ok(tenantC7nService.check(organization));
     }
 
     /**

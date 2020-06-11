@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.StarProjectMapper">
+
+    <resultMap id="projectMap" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
+        <result property="enabled" column="IS_ENABLED"/>
+
+        <collection property="categories" ofType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
+            <result property="code" column="cateory_code"/>
+            <result property="name" column="category_name"/>
+        </collection>
+    </resultMap>
+    <select id="query" resultMap="projectMap">
+        SELECT fp.*,fpc.CODE AS cateory_code, fpc.NAME as category_name
+        FROM  fd_star_project_user_rel fspur
+        INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
+        INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.ID
+        INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+        INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID
+        INNER JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        WHERE fp.ORGANIZATION_ID = #{organizationId} AND fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}
+    </select>
+</mapper>

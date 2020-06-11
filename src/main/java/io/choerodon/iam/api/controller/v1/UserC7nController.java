@@ -408,4 +408,13 @@ public class UserC7nController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "批量根据项目id查询用户在这个项目下拥有的角色标签, 如果在某个项目下没有角色, 不会包含该项目的纪录")
+    @PostMapping(value = "/{user_id}/project_role_labels")
+    public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
+            @PathVariable("user_id") Long userId,
+            @RequestBody Set<Long> projectIds) {
+        return ResponseEntity.ok(userC7nService.listRoleLabelsForUserInTheProject(userId, projectIds));
+    }
 }

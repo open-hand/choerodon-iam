@@ -78,6 +78,14 @@
             <result property="organizationCode" column="tenant_num"/>
     </resultMap>
 
+    <resultMap id="userProjectLabels" type="io.choerodon.iam.api.vo.UserProjectLabelVO">
+        <result column="PROJECT_ID" property="projectId"/>
+        <result column="member_id" property="userId"/>
+        <collection property="roleLabels" ofType="java.lang.String">
+            <result column="label_name"/>
+        </collection>
+    </resultMap>
+
     <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
         SELECT *,is_ldap as ldap
         FROM iam_user
@@ -1245,5 +1253,19 @@
         FROM iam_user iu
         LEFT JOIN hpfm_tenant ht ON iu.organization_id = ht.tenant_id
         WHERE iu.id = #{userId}
+    </select>
+
+    <select id="listRoleLabelsForUserInTheProject" resultMap="userProjectLabels">
+        SELECT fpu.PROJECT_ID, imr.member_id, il.name AS label_name
+        FROM fd_project_user fpu
+        INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id AND imr.member_type = 'user'
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN hiam_label_rel hlr on ir.id = hlr.data_id AND hlr.data_type = 'ROLE'
+        INNER JOIN iam_label il ON hlr.label_id = il.id
+        WHERE imr.member_id = #{userId,jdbcType=BIGINT}
+        AND fpu.PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId,jdbcType=BIGINT}
+        </foreach>
     </select>
 </mapper>

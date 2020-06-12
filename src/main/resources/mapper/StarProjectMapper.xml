@@ -19,7 +19,7 @@
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
         INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.ID
         INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-        INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID
+        INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.ID
         INNER JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
         INNER JOIN iam_user iu ON iu.id = fp.CREATED_BY
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}

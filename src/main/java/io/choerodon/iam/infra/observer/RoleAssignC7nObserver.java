@@ -8,6 +8,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.service.role.observer.RoleAssignObserver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -33,10 +34,13 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     @Autowired
     private LabelC7nMapper labelC7nMapper;
     @Autowired
+    @Lazy
     private ProjectUserService projectUserService;
     @Autowired
+    @Lazy
     private UserAssertHelper userAssertHelper;
     @Autowired
+    @Lazy
     private RoleMemberService roleMemberService;
 
     @Override

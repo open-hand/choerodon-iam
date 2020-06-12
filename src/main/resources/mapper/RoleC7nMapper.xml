@@ -353,5 +353,21 @@
           FROM iam_role ir
           WHERE ir.h_inherit_role_id = #{roleId}
     </select>
+    
+    <select id="listLabelByTenantIdAndUserId" resultType="java.lang.String">
+        SELECT
+            DISTINCT il. NAME
+        FROM
+            iam_label il
+            JOIN iam_member_role imr ON imr.member_id = #{userId}
+            JOIN iam_role ir ON imr.role_id = ir.id
+                                AND ir.fd_level = 'organization'
+                                AND ir.h_tenant_id = #{tenantId}
+            JOIN hiam_label_rel hlr ON hlr.data_id = ir.id
+                                       AND hlr.data_type = 'ROLE'
+        WHERE
+            il.id = hlr.label_id
+            AND il.`name` LIKE concat(concat('%', 'TENANT'), '%')
+    </select>
 
 </mapper>

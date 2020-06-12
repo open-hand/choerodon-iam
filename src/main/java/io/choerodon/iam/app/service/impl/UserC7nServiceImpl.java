@@ -109,6 +109,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
+    private RoleC7nMapper roleC7nMapper;
+    @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
     private UserService userService;
@@ -177,6 +179,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private IamTenantRepository iamTenantRepository;
+
+    @Autowired
+    private StarProjectMapper starProjectMapper;
 
     @Override
     public User queryInfo(Long userId) {
@@ -603,7 +608,23 @@ public class UserC7nServiceImpl implements UserC7nService {
         projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
+        setStarFlag(organizationId, projects, userId);
         return projects;
+    }
+
+    private void setStarFlag(Long organizationId, List<ProjectDTO> projects, Long userId) {
+        // 查询用户star的项目
+        List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
+        if (CollectionUtils.isEmpty(starProjects)) {
+            return;
+        }
+        Set<Long> starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        projects.forEach(p -> {
+            if (starIds.contains(p.getId())) {
+                p.setStarFlag(true);
+            }
+        });
+
     }
 
     @Override
@@ -940,6 +961,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         userIds.forEach(id -> {
+            labelNames.addAll(roleC7nMapper.listLabelByTenantIdAndUserId(id, organizationId));
             List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());

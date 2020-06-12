@@ -550,8 +550,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                     roleName, enabled, locked, params);
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
-            result.setTotalElements(count);
-            result.getContent().addAll(users);
+            return PageUtils.buildPage(page, size, count, users);
         } else {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);

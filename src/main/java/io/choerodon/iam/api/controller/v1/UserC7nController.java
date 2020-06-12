@@ -155,7 +155,6 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    // todo 改为查询用户 拥有超级管理员角色
 
     /**
      * 分页查询所有的admin用户

@@ -1215,8 +1215,8 @@
     <select id="doesUserHaveLabelInProject" resultType="boolean">
         SELECT COUNT(1)
         FROM fd_project_user fpu
-        INNER JOIN iam_role ir ON fpu.MEMBER_ROLE_ID = ir.id
-        INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_role ir ON ir.id = imr.role_id
         left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
         Left JOIN iam_label il on il.id = hlr.label_id
         WHERE imr.member_id = #{userId}

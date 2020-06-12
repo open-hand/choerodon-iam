@@ -21,7 +21,7 @@
             <if test="projectId == null">
                  fp.ORGANIZATION_ID = #{organizationId} OR fql.create_user_id = #{userId}
             </if>
-            <if test="projectId == null">
+            <if test="projectId != null">
                  fql.project_id = #{projectId} OR fql.create_user_id = #{userId}
             </if>
         </where>

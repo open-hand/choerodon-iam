@@ -105,8 +105,23 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         List<MemberRole> delMemberRoles = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(deleteList)) {
-            deleteList.forEach(t -> delMemberRoles.add(getMemberRole(clientId, t, organizationId)));
-            memberRoleService.batchDeleteMemberRole(organizationId, delMemberRoles);
+            // 删除 脏数据
+            List<Long> tempList = new ArrayList<>(deleteList);
+            tempList.forEach(t -> {
+                if (!roleRepository.selectById(t).getTenantId().equals(organizationId)) {
+                    MemberRole memberRole = new MemberRole();
+                    memberRole.setRoleId(t);
+                    memberRole.setMemberId(clientId);
+                    memberRole.setMemberType(HiamMemberType.CLIENT.value());
+                    // 防止数据删多
+                    memberRoleMapper.deleteByPrimaryKey(memberRoleMapper.selectOne(memberRole).getId());
+                    deleteList.remove(t);
+                }
+            });
+            if (!CollectionUtils.isEmpty(deleteList)) {
+                deleteList.forEach(t -> delMemberRoles.add(getMemberRole(clientId, t, organizationId)));
+                memberRoleService.batchDeleteMemberRole(organizationId, delMemberRoles);
+            }
         }
     }
 

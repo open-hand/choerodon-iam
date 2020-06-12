@@ -109,6 +109,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
+    private RoleC7nMapper roleC7nMapper;
+    @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
     private UserService userService;
@@ -959,6 +961,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         userIds.forEach(id -> {
+            labelNames.addAll(roleC7nMapper.listLabelByTenantIdAndUserId(id, organizationId));
             List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());

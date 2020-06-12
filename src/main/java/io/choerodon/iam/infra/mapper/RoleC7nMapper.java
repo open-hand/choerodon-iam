@@ -97,5 +97,12 @@ public interface RoleC7nMapper {
 
     List<Role> listByTenantId(@Param("tenantId") Long tenantId);
 
+    /**
+     * 查询用户组织层角色标签
+     *
+     * @return
+     */
+    Set<String> listLabelByTenantIdAndUserId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
+
     List<Role> listChildRoleByTplRoleId(@Param("roleId") Long roleId);
 }

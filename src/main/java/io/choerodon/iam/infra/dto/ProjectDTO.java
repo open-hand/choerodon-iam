@@ -119,6 +119,10 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("是否有编辑权限，默认为false")
     private Boolean editFlag = false;
 
+    @Transient
+    @ApiModelProperty("是否star，默认为false")
+    private Boolean starFlag = false;
+
     public Long getId() {
         return id;
     }
@@ -322,5 +326,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setEditFlag(Boolean editFlag) {
         this.editFlag = editFlag;
+    }
+
+    public Boolean getStarFlag() {
+        return starFlag;
+    }
+
+    public void setStarFlag(Boolean starFlag) {
+        this.starFlag = starFlag;
     }
 }

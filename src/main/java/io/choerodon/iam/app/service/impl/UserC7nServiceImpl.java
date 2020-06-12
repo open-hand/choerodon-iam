@@ -178,6 +178,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private IamTenantRepository iamTenantRepository;
 
+    @Autowired
+    private StarProjectMapper starProjectMapper;
+
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);
@@ -603,7 +606,23 @@ public class UserC7nServiceImpl implements UserC7nService {
         projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
+        setStarFlag(organizationId, projects, userId);
         return projects;
+    }
+
+    private void setStarFlag(Long organizationId, List<ProjectDTO> projects, Long userId) {
+        // 查询用户star的项目
+        List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
+        if (CollectionUtils.isEmpty(starProjects)) {
+            return;
+        }
+        Set<Long> starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        projects.forEach(p -> {
+            if (starIds.contains(p.getId())) {
+                p.setStarFlag(true);
+            }
+        });
+
     }
 
     @Override

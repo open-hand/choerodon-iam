@@ -36,7 +36,7 @@ const Client = observer(() => {
   }
   async function openRoleManageModal(record) {
     clientDataSet.current = record;
-    const roleData = await clientStore.loadClientRoles(record.get('id'));
+    const roleData = await clientStore.loadClientRoles(orgId, record.get('id'));
     const roleIds = (roleData || []).map(({ id: roleId }) => roleId);
     await record.set('roles', roleIds || []);
     setEditRoleModal(true);

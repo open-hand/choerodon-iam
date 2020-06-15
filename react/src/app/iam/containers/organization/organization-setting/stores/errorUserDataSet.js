@@ -1,11 +1,11 @@
 
-export default (id => ({
+export default ((id, orgId) => ({
   autoCreate: true,
   autoQuery: true,
   selection: false,
   transport: {
     read: () => ({
-      url: `/iam/choerodon/v1/organizations/2/ldap_histories/${id}/error_users?__id=`,
+      url: `iam/v1/${orgId}/ldaps/ldap-histories/${id}/error-users`,
       method: 'get',
     }),
   },

@@ -15,7 +15,7 @@ const { Column } = Table;
 const { Item } = Bread;
 let modal;
 const SyncRecordForm = observer(() => {
-  const { getLdapDataSet, history, orgName } = useContext(Store);
+  const { getLdapDataSet, history, orgName, orgId } = useContext(Store);
   const dataSet = getLdapDataSet();
   if (!dataSet) return null;
   function renderNewsNum({ record }) {
@@ -63,7 +63,7 @@ const SyncRecordForm = observer(() => {
   function openModal(record) {
     // console.log(record);
     const id = record.get('id');
-    const dsConfig = errorUserDataSet(id);
+    const dsConfig = errorUserDataSet(id, orgId);
     dsConfig.selection = false;
     const dataSet2 = new DataSet(dsConfig);
     modal = Modal.open({

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.iam.api.controller.v1.ProjectMapCategoryVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -106,4 +107,13 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     Set<Long> listUserManagedProjectInOrg(@Param("organizationId") Long organizationId,
                                           @Param("userId") Long userId);
+
+    List<ProjectMapCategoryVO> listProjectCategory(@Param("projectIdList") Set<Long> projectIdList);
+
+    List<ProjectDTO> selectProjectsWithCategoryAndRoleByUserIdOrAdmin(@Param("organizationId") Long organizationId,
+                                                                      @Param("userId") Long userId,
+                                                                      @Param("projectDTO") ProjectDTO projectDTO,
+                                                                      @Param("isAdmin") Boolean isAdmin,
+                                                                      @Param("isOrgAdmin") Boolean isOrgAdmin,
+                                                                      @Param("params") String params);
 }

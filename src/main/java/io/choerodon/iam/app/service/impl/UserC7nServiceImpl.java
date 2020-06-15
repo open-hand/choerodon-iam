@@ -595,23 +595,24 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+    public Page<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
+        Page<ProjectDTO> page = new Page<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
-        List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
             if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-                return projects;
+                return page;
             } else {
                 projectDTO.setEnabled(true);
             }
         }
-        projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        List<ProjectDTO> projects = page.getContent();
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
         setStarFlag(organizationId, projects, userId);
-        return projects;
+        return page;
     }
 
     private void setStarFlag(Long organizationId, List<ProjectDTO> projects, Long userId) {

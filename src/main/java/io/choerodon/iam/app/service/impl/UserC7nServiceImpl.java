@@ -12,6 +12,7 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.controller.v1.ProjectMapCategoryVO;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
@@ -595,38 +596,77 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Page<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
-        Page<ProjectDTO> page = new Page<>();
+    public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+        List<ProjectDTO> projects =  new ArrayList<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
             if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-                return page;
+                return projects;
             } else {
                 projectDTO.setEnabled(true);
             }
         }
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
-        List<ProjectDTO> projects = page.getContent();
+        projects = projectMapper.selectProjectsWithCategoryAndRoleByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        if (CollectionUtils.isEmpty(projects)) {
+            return projects;
+        }
+        // 添加额外信息
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
-        setStarFlag(organizationId, projects, userId);
-        return page;
+        return projects;
     }
 
-    private void setStarFlag(Long organizationId, List<ProjectDTO> projects, Long userId) {
-        // 查询用户star的项目
-        List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
-        if (CollectionUtils.isEmpty(starProjects)) {
-            return;
-        }
-        Set<Long> starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
-        projects.forEach(p -> {
-            if (starIds.contains(p.getId())) {
-                p.setStarFlag(true);
+    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin,  Long organizationId, Long userId) {
+        if (!CollectionUtils.isEmpty(projects)) {
+
+            Set<Long> projectIdList = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+
+            // 查询项目类型
+            List<ProjectMapCategoryVO> projectMapCategoryVOS = projectMapper.listProjectCategory(projectIdList);
+            Map<Long, List<ProjectMapCategoryVO>> projectMapCategoryMap = projectMapCategoryVOS
+                    .stream()
+                    .collect(Collectors.groupingBy(ProjectMapCategoryVO::getProjectId));
+
+            // 查询用户拥有项目所有者角色的项目
+            Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
+
+            // 查询用户star的项目
+            List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
+            if (CollectionUtils.isEmpty(starProjects)) {
+                return;
             }
-        });
+            Set<Long> starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+
+            // 遍历项目,计算信息
+            projects.forEach(p -> {
+                // 如果项目为禁用 不可进入
+                if (p.getEnabled() == null || !p.getEnabled()) {
+                    p.setInto(false);
+                } else {
+                    // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                    if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                        p.setInto(false);
+                    }
+                }
+
+                // 添加项目类型
+                if (projectMapCategoryMap.get(p.getId()) != null) {
+                    p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList()));
+                }
+
+                // 计算用户是否有编辑权限
+                if (isAdmin || isOrgAdmin || pids.contains(p.getId())) {
+                    p.setEditFlag(true);
+                }
+
+                // 计算是否star项目
+                if (starIds.contains(p.getId())) {
+                    p.setStarFlag(true);
+                }
+            });
+        }
 
     }
 
@@ -677,16 +717,6 @@ public class UserC7nServiceImpl implements UserC7nService {
             pageInfo.setContent(orgAdministratorVOS);
         }
         return pageInfo;
-    }
-
-    private Long getRoleByCode(String code) {
-        Role query = new Role();
-        query.setCode(code);
-        Role role = roleMapper.selectOne(query);
-        if (role == null) {
-            throw new CommonException("error.get.code.role");
-        }
-        return role.getId();
     }
 
     /**
@@ -1219,5 +1249,28 @@ public class UserC7nServiceImpl implements UserC7nService {
             return Collections.emptyList();
         }
         return userC7nMapper.listRoleLabelsForUserInTheProject(userId, projectIds);
+    }
+
+    @Override
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
+        Page<ProjectDTO> page = new Page<>();
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        // 普通用户只能查到启用的项目
+        if (!isAdmin && !isOrgAdmin) {
+            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+                return page;
+            } else {
+                projectDTO.setEnabled(true);
+            }
+        }
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        List<ProjectDTO> projects = page.getContent();
+        if (CollectionUtils.isEmpty(projects)) {
+            return page;
+        }
+        // 添加额外信息
+        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
+        return page;
     }
 }

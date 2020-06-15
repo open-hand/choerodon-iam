@@ -106,10 +106,9 @@ public interface UserC7nService {
      * @param userId         用户Id
      * @param projectDTO     项目DTO
      * @param params         模糊查询字段
-     * @param pageable
      * @return 项目列表
      */
-    Page<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+    List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
 
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 
@@ -302,4 +301,6 @@ public interface UserC7nService {
      * @return 项目下的用户有的角色的标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
+
+    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
 }

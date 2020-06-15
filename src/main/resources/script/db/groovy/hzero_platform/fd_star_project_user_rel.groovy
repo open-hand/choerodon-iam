@@ -19,7 +19,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_star_project_user_rel.groovy') 
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'FD_STAR_PROJECT_USER', columnNames: 'PROJECT_ID, USER_ID', constraintName: 'UK_FD_STAR_PROJECT_USER_ROLE')
+        addUniqueConstraint(tableName: 'fd_star_project_user_rel', columnNames: 'PROJECT_ID, USER_ID', constraintName: 'UK_FD_STAR_PROJECT_USER_ROLE')
 
     }
 }

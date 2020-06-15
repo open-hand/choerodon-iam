@@ -56,11 +56,12 @@ public class StarProjectServiceImpl implements StarProjectService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Assert.notNull(userId, ERROR_NOT_LOGIN);
 
-        StarProjectUserRelDTO starProjectUserRelDTO = new StarProjectUserRelDTO();
-        starProjectUserRelDTO.setProjectId(projectId);
-        starProjectUserRelDTO.setUserId(userId);
+        StarProjectUserRelDTO record = new StarProjectUserRelDTO();
+        record.setProjectId(projectId);
+        record.setUserId(userId);
+        StarProjectUserRelDTO starProjectUserRelDTO = starProjectMapper.selectOne(record);
 
-        if (starProjectMapper.delete(starProjectUserRelDTO) != 1) {
+        if (starProjectMapper.deleteByPrimaryKey(starProjectUserRelDTO.getId()) != 1) {
             throw new CommonException(ERROR_DELETE_STAR_PROJECT_FAILED);
         }
     }

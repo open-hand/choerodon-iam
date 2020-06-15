@@ -12,13 +12,13 @@ import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
-import org.hzero.iam.saas.domain.entity.Tenant;
-import org.hzero.iam.saas.domain.entity.TenantConfig;
-import org.hzero.iam.saas.domain.repository.TenantConfigRepository;
-import org.hzero.iam.saas.domain.repository.TenantRepository;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.TenantConfig;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
@@ -134,7 +134,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public TenantVO queryTenantById(Long tenantId) {
-        Tenant tenant = tenantService.queryTenant(tenantId);
+        Tenant tenant = tenantRepository.selectByPrimaryKey(tenantId);
         TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
         List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
                 .where(Sqls.custom()
@@ -166,7 +166,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public TenantVO queryTenantWithRoleById(Long tenantId) {
         CustomUserDetails customUserDetails = UserUtils.getUserDetails();
-        TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
+        TenantVO dto = ConvertUtils.convertObject(tenantRepository.selectByPrimaryKey(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
         List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
         TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO((configList));

@@ -43,21 +43,15 @@ import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.IamTenantRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.MemberRoleMapper;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.hzero.iam.saas.domain.entity.Tenant;
-import org.hzero.iam.saas.domain.entity.TenantConfig;
-import org.hzero.iam.saas.domain.repository.TenantRepository;
-import org.hzero.iam.saas.infra.mapper.TenantConfigMapper;
-import org.hzero.iam.saas.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.*;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.TenantConfig;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -174,7 +168,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     private OrganizationResourceLimitService organizationResourceLimitService;
 
     @Autowired
-    private IamTenantRepository iamTenantRepository;
+    private TenantRepository iamTenantRepository;
 
     @Override
     public User queryInfo(Long userId) {
@@ -909,7 +903,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         userVO.setAdmin(user.getAdmin());
         userVO.setLdap(user.getLdap());
         if (!user.getAdmin()) {
-            List<IamTenant> list = ConvertUtils.convertList(iamTenantRepository.selectSelfTenants(new TenantDTO(), new PageRequest()), IamTenant.class);
+            List<Tenant> list = ConvertUtils.convertList(iamTenantRepository.selectSelfTenants(new TenantDTO(), new PageRequest()), Tenant.class);
             if (CollectionUtils.isEmpty(list)) {
                 throw new CommonException("error.get.user.tenants");
             }

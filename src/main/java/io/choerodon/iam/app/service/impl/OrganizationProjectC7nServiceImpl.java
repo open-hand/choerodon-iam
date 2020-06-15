@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.Tenant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;

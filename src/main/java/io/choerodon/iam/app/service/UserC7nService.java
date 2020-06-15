@@ -106,9 +106,10 @@ public interface UserC7nService {
      * @param userId         用户Id
      * @param projectDTO     项目DTO
      * @param params         模糊查询字段
+     * @param pageable
      * @return 项目列表
      */
-    List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+    Page<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
 
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 

@@ -106,17 +106,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>ChoerodonRelease</id>
-            <name>Choerodon-Release Repository</name>
-            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 
 

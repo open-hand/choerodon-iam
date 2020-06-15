@@ -634,12 +634,13 @@ public class UserC7nServiceImpl implements UserC7nService {
 
             // 查询用户star的项目
             List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
-            if (CollectionUtils.isEmpty(starProjects)) {
-                return;
+            Set<Long> starIds = new HashSet<>();
+            if (!CollectionUtils.isEmpty(starProjects)) {
+                starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
             }
-            Set<Long> starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
 
             // 遍历项目,计算信息
+            Set<Long> finalStarIds = starIds;
             projects.forEach(p -> {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
@@ -662,7 +663,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 }
 
                 // 计算是否star项目
-                if (starIds.contains(p.getId())) {
+                if (finalStarIds.contains(p.getId())) {
                     p.setStarFlag(true);
                 }
             });

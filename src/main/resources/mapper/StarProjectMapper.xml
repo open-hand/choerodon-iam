@@ -4,16 +4,19 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.StarProjectMapper">
 
     <resultMap id="projectMap" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
+           <id property="id" column="ID"/>
         <result property="enabled" column="IS_ENABLED"/>
 
         <collection property="categories" ofType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
+            <id property="id" column="c_id"/>
             <result property="code" column="cateory_code"/>
             <result property="name" column="category_name"/>
         </collection>
 
     </resultMap>
     <select id="query" resultMap="projectMap">
-        SELECT fp.*,fpc.CODE AS cateory_code, fpc.NAME as category_name,
+        SELECT fp.*,
+          fpc.id AS c_id, fpc.CODE AS cateory_code, fpc.NAME as category_name,
           iu.real_name AS create_user_name, iu.image_url AS create_user_image_url
         FROM  fd_star_project_user_rel fspur
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID

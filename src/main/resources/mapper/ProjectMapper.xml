@@ -300,7 +300,9 @@
                 )
             </if>
         </where>
+         GROUP BY fp.id
         order by fp.is_enabled desc,fp.creation_date desc
+
     </select>
 
     <select id="selectAllProjectsByUserIdOrAdmin" resultMap="projectWithCategoryMap">

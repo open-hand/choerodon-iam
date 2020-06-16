@@ -2,8 +2,8 @@ package io.choerodon.iam.infra.asserts;
 
 import java.util.Optional;
 
-import org.hzero.iam.saas.domain.entity.Tenant;
-import org.hzero.iam.saas.infra.mapper.TenantMapper;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;

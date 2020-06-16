@@ -15,7 +15,7 @@
           fql.*,
           iu.id as user_id, iu.login_name, iu.real_name, iu.image_url
         FROM fd_quick_link fql
-        INNER JOIN fd_project fp ON fp.id = fql.project_id
+        LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
         <where>
             <if test="projectId == null">

@@ -129,7 +129,7 @@ public class TenantC7nController extends BaseController {
     @GetMapping
     @CustomPageRequest
     public ResponseEntity<Page<TenantVO>> pagingQuery(@ApiIgnore
-                                                      @SortDefault(value = "tenantId", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                      @SortDefault(value = "tenant_id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                       @RequestParam(required = false) String tenantName,
                                                       @RequestParam(required = false) String tenantNum,
                                                       @RequestParam(required = false) String ownerRealName,

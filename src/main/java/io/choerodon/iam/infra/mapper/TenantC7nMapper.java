@@ -6,7 +6,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.entity.Tenant;
 
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;

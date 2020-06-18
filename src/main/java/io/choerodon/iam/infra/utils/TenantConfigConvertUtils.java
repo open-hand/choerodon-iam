@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.hzero.iam.domain.entity.TenantConfig;
+import org.hzero.iam.saas.domain.entity.TenantConfig;
 
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;

@@ -129,7 +129,7 @@ public class TenantC7nController extends BaseController {
     @GetMapping
     @CustomPageRequest
     public ResponseEntity<Page<TenantVO>> pagingQuery(@ApiIgnore
-                                                      @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                      @SortDefault(value = "tenant_id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                       @RequestParam(required = false) String tenantName,
                                                       @RequestParam(required = false) String tenantNum,
                                                       @RequestParam(required = false) String ownerRealName,
@@ -144,7 +144,7 @@ public class TenantC7nController extends BaseController {
     @GetMapping(value = "/all")
     @CustomPageRequest
     public ResponseEntity<Page<TenantVO>> getAllOrgs(@ApiIgnore
-                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
+                                                     @SortDefault(value = "tenantId", direction = Sort.Direction.DESC) PageRequest pageRequest) {
         return new ResponseEntity<>(tenantC7nService.getAllTenants(pageRequest), HttpStatus.OK);
     }
 
@@ -194,7 +194,7 @@ public class TenantC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@PathVariable(name = "tenant_id") Long id,
                                                                      @ApiIgnore
-                                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @SortDefault(value = "tenantId", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                      @RequestParam(required = false, name = "id") Long userId,
                                                                      @RequestParam(required = false) String email,
                                                                      @RequestParam(required = false) String param) {
@@ -205,7 +205,7 @@ public class TenantC7nController extends BaseController {
     @PostMapping("/specified")
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据组织Id列表分页查询组织简要信息")
-    public ResponseEntity<Page<Tenant>> pagingSpecified(@SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+    public ResponseEntity<Page<Tenant>> pagingSpecified(@SortDefault(value = "tenantId", direction = Sort.Direction.ASC) PageRequest pageRequest,
                                                         @RequestParam(required = false) String name,
                                                         @RequestParam(required = false) String code,
                                                         @RequestParam(required = false) Boolean enabled,

@@ -39,6 +39,8 @@ import org.springframework.util.CollectionUtils;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.TenantC7nMapper;

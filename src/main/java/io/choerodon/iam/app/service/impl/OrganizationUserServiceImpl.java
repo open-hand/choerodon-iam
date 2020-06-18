@@ -40,12 +40,11 @@ import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.iam.saas.domain.entity.Tenant;
+import org.hzero.iam.saas.domain.repository.TenantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -81,6 +80,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final RoleMemberService roleMemberService;
     private final RoleService roleService;
     private final TenantService tenantService;
+    private final TenantRepository tenantRepository;
     private final TransactionalProducer producer;
     private final UserAssertHelper userAssertHelper;
     private final UserC7nMapper userC7nMapper;
@@ -98,6 +98,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RandomInfoGenerator randomInfoGenerator,
                                        RoleService roleService,
                                        TenantService tenantService,
+                                       TenantRepository tenantRepository,
                                        TransactionalProducer producer,
                                        UserAssertHelper userAssertHelper,
                                        UserC7nMapper userC7nMapper,
@@ -119,6 +120,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.roleMemberService = roleMemberService;
         this.roleService = roleService;
         this.tenantService = tenantService;
+        this.tenantRepository = tenantRepository;
         this.userAssertHelper = userAssertHelper;
         this.userC7nMapper = userC7nMapper;
         this.userC7nService = userC7nService;
@@ -477,7 +479,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     //导入成功过后，通知成员
                     users.forEach(e -> {
                         Map<String, String> params = new HashMap<>();
-                        Tenant organizationDTO = tenantService.queryTenant(e.getOrganizationId());
+                        Tenant organizationDTO = tenantRepository.selectByPrimaryKey(e.getOrganizationId());
                         params.put("organizationName", organizationDTO.getTenantName());
                         params.put("roleName", e.getRoles().stream().map(Role::getName).collect(Collectors.joining(",")));
                         params.put("userList", JSON.toJSONString(insertUsers));

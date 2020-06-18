@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
+import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -394,5 +395,15 @@ public interface UserC7nMapper {
                                            @Param("projectId") Long projectId);
 
     UserDTO queryPersonalInfo(@Param("userId") Long userId);
+
+    /**
+     * 批量根据项目id查询用户在这个项目下拥有的角色标签
+     *
+     * @param userId     用户id
+     * @param projectIds 项目id集合
+     * @return 项目下的用户有的角色的标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
+     */
+    List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(@Param("userId") Long userId,
+                                                               @Param("projectIds") Set<Long> projectIds);
 }
 

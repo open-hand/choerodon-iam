@@ -18,6 +18,7 @@ import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.*;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -48,10 +49,7 @@ import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.MemberRoleMapper;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.iam.infra.mapper.*;
 import org.hzero.iam.saas.domain.entity.Tenant;
 import org.hzero.iam.saas.domain.entity.TenantConfig;
 import org.hzero.iam.saas.domain.repository.TenantRepository;
@@ -547,8 +545,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                     roleName, enabled, locked, params);
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(start, size, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
-            result.setTotalElements(count);
-            result.getContent().addAll(users);
+            return PageUtils.buildPage(page, size, count, users);
         } else {
             List<User> users = userC7nMapper.selectUserWithRolesOnSiteLevel(null, null, ResourceLevel.SITE.value(), 0L, orgName,
                     loginName, realName, roleName, enabled, locked, params);
@@ -934,7 +931,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         Set<String> labelNames = new HashSet<>();
-
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         userIds.forEach(id -> {
             List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
@@ -945,6 +943,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             memberRoleDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
             memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
             memberRoleDTO.setAssignLevelValue(organizationId);
+            memberRoleDTO.setAdditionalParams(additionalParams);
             memberRoleList.add(memberRoleDTO);
 
             memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
@@ -1027,6 +1026,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         Map<Long, List<User>> rolelUsersMap = new HashMap<>();
         Map<Long, String> roleNameMap = new HashMap<>();
         Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         memberRoleDTOS.forEach(memberRoleDTO -> {
             User user = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
             Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
@@ -1065,6 +1066,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             memberRoleDTO.setSourceId(organizationId);
             memberRoleDTO.setAssignLevel(ResourceLevel.ORGANIZATION.value());
             memberRoleDTO.setAssignLevelValue(organizationId);
+            memberRoleDTO.setAdditionalParams(additionalParams);
         });
         memberRoleService.batchAssignMemberRoleInternal(memberRoleDTOS);
 
@@ -1178,5 +1180,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         } else {
             return new WebHookUser(userDTO.getLoginName(), userDTO.getRealName());
         }
+    }
+
+    @Override
+    public List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.emptyList();
+        }
+        return userC7nMapper.listRoleLabelsForUserInTheProject(userId, projectIds);
     }
 }

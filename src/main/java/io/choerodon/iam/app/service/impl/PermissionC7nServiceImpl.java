@@ -8,6 +8,8 @@ import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.domain.entity.Permission;
 import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,7 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 @Service
 public class PermissionC7nServiceImpl implements PermissionC7nService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionC7nServiceImpl.class);
     @Autowired
     private PermissionC7nMapper permissionC7nMapper;
     @Autowired
@@ -61,6 +64,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
             isOrgRoot = userC7nService.checkIsOrgRoot(projectDTO.getOrganizationId(), self.getUserId());
         }
         Boolean finalIsOrgRoot = isOrgRoot;
+        LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
+        LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self);
         return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), finalIsOrgRoot, c));
     }
 }

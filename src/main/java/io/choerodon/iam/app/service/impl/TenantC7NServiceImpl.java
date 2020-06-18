@@ -6,7 +6,6 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.iam.app.service.MessageSendService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -36,6 +35,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -134,7 +134,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public TenantVO queryTenantById(Long tenantId) {
-        Tenant tenant = tenantService.queryTenant(tenantId);
+        Tenant tenant = tenantRepository.selectByPrimaryKey(tenantId);
         TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
         List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
                 .where(Sqls.custom()
@@ -166,7 +166,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public TenantVO queryTenantWithRoleById(Long tenantId) {
         CustomUserDetails customUserDetails = UserUtils.getUserDetails();
-        TenantVO dto = ConvertUtils.convertObject(tenantService.queryTenant(tenantId), TenantVO.class);
+        TenantVO dto = ConvertUtils.convertObject(tenantRepository.selectByPrimaryKey(tenantId), TenantVO.class);
         long userId = customUserDetails.getUserId();
         List<TenantConfig> configList = tenantConfigRepository.select(new TenantConfig().setTenantId(tenantId));
         TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO((configList));

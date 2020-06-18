@@ -4,9 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
-import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -22,6 +20,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserInfoDTO;
+import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -294,4 +293,12 @@ public interface UserC7nService {
 
     WebHookUser getWebHookUser(Long userId);
 
+    /**
+     * 批量根据项目id查询用户在这个项目下拥有的角色标签
+     *
+     * @param userId     用户id
+     * @param projectIds 项目id集合
+     * @return 项目下的用户有的角色的标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
+     */
+    List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 }

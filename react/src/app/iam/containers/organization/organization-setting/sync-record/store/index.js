@@ -18,6 +18,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     getLdapDataSet,
     history: props.history,
     orgName: name,
+    orgId,
   };
   return (
     <Store.Provider value={value}>

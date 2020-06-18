@@ -1,5 +1,10 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_ENABLE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,20 +20,17 @@ import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
-import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.iam.saas.domain.entity.Tenant;
-import org.hzero.iam.saas.domain.repository.TenantRepository;
-import org.hzero.iam.saas.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
@@ -37,6 +39,9 @@ import org.springframework.util.CollectionUtils;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 
 @Service
 public class MessageSendServiceImpl implements MessageSendService {

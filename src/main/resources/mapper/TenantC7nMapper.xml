@@ -148,7 +148,7 @@
         SELECT enabled_flag FROM hpfm_tenant WHERE tenant_id = #{sourceId}
     </select>
 
-    <select id="selectSpecified" resultType="org.hzero.iam.saas.domain.entity.Tenant">
+    <select id="selectSpecified" resultType="org.hzero.iam.domain.entity.Tenant">
         SELECT
         fo.tenant_id AS id,
         fo.tenant_name AS `name`,
@@ -179,7 +179,7 @@
         </foreach>
     </select>
 
-    <select id="selectOwnOrgByUserId" resultType="org.hzero.iam.saas.domain.entity.Tenant">
+    <select id="selectOwnOrgByUserId" resultType="org.hzero.iam.domain.entity.Tenant">
         SELECT fo.*
         FROM hpfm_tenant fo
         left join iam_user iu on fo.tenant_id = iu.organization_id
@@ -204,7 +204,7 @@
         </if>
     </select>
 
-    <select id="selectByIds" resultType="org.hzero.iam.saas.domain.entity.Tenant">
+    <select id="selectByIds" resultType="org.hzero.iam.domain.entity.Tenant">
         select * from hpfm_tenant fo
         where fo.tenant_id in
         <foreach item="id" index="index" collection="ids"
@@ -213,7 +213,7 @@
         </foreach>
     </select>
 
-    <select id="selectByOrgIds" resultType="org.hzero.iam.saas.domain.entity.Tenant">
+    <select id="selectByOrgIds" resultType="org.hzero.iam.domain.entity.Tenant">
         select * from hpfm_tenant ht
         where ht.tenant_id in
         <foreach item="id" index="index" collection="ids"

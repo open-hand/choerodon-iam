@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.saas.domain.entity.TenantConfig;
+import org.hzero.iam.domain.entity.TenantConfig;
 
 /**
  * @author scp

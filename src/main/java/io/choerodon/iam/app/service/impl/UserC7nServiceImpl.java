@@ -101,6 +101,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
+    private RoleC7nMapper roleC7nMapper;
+    @Autowired
     private UserService userService;
     @Autowired
     private TransactionalProducer producer;
@@ -596,11 +598,15 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
-        List<RoleC7nDTO> roleC7nDTOList = userC7nMapper.selectRolesByUidAndProjectId(id, projectId);
+        List<Role> roleC7nDTOList;
+        if(ResourceLevel.PROJECT.value().equals(level)) {
+            roleC7nDTOList = roleC7nMapper.queryRolesInfoByUser(level,projectId,id);
+        } else {
+            ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+            roleC7nDTOList = roleC7nMapper.queryRolesInfoByUser(level, projectDTO.getOrganizationId(), id);
+        }
         if (!CollectionUtils.isEmpty(roleC7nDTOList)) {
-            List<Label> labels = new ArrayList<>();
-            roleC7nDTOList.forEach(t -> labels.addAll(t.getLabels()));
-            List<String> labelNameLists = labels.stream().map(Label::getName).collect(Collectors.toList());
+            List<String> labelNameLists = new ArrayList<>(labelC7nMapper.selectLabelNamesInRoleIds(roleC7nDTOList.stream().map(Role::getId).collect(Collectors.toSet())));
             if (ResourceLevel.PROJECT.value().equals(level)) {
                 return labelNameLists.contains(RoleLabelEnum.GITLAB_OWNER.value());
             }

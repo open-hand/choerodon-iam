@@ -46,14 +46,12 @@ import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.mapper.*;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.TenantConfig;
-import org.hzero.iam.domain.repository.TenantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -108,6 +106,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private RoleC7nMapper roleC7nMapper;
     @Autowired
     private UserC7nMapper userC7nMapper;
+    @Autowired
+    private RoleC7nMapper roleC7nMapper;
     @Autowired
     private UserService userService;
     @Autowired
@@ -174,8 +174,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
 
-    @Autowired
-    private TenantRepository iamTenantRepository;
 
     @Autowired
     private StarProjectMapper starProjectMapper;
@@ -965,7 +963,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         userVO.setAdmin(user.getAdmin());
         userVO.setLdap(user.getLdap());
         if (!user.getAdmin()) {
-            List<Tenant> list = ConvertUtils.convertList(iamTenantRepository.selectSelfTenants(new TenantDTO(), new PageRequest()), Tenant.class);
+            List<Tenant> list = ConvertUtils.convertList(tenantRepository.selectSelfTenants(new TenantDTO(), new PageRequest()), Tenant.class);
             if (CollectionUtils.isEmpty(list)) {
                 throw new CommonException("error.get.user.tenants");
             }

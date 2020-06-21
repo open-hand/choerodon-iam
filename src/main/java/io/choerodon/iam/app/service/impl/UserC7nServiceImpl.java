@@ -107,8 +107,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
-    private RoleC7nMapper roleC7nMapper;
-    @Autowired
     private UserService userService;
     @Autowired
     private TransactionalProducer producer;

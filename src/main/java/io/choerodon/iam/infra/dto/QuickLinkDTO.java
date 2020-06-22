@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -29,6 +30,7 @@ public class QuickLinkDTO extends AuditDomain {
     private Long id;
 
     @ApiModelProperty(value = "快速链接名字")
+    @Size(min = 1, max = 30, message = "error.quick.link.name.size")
     @NotEmpty
     private String name;
 

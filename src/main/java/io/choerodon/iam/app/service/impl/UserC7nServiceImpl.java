@@ -27,6 +27,7 @@ import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.ProjectHeadColorEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
@@ -656,6 +657,17 @@ public class UserC7nServiceImpl implements UserC7nService {
                 if (finalStarIds.contains(p.getId())) {
                     p.setStarFlag(true);
                 }
+
+                // 计算head头像，没有头像，设置随机色给前端
+                if (org.apache.commons.lang3.StringUtils.isEmpty(p.getImageUrl())) {
+                    ProjectDTO projectDTO = new ProjectDTO();
+                    projectDTO.setId(p.getId());
+                    projectDTO.setImageUrl(ProjectHeadColorEnum.getByRandom());
+                    projectMapper.updateByPrimaryKeySelective(projectDTO);
+
+                    p.setImageUrl(projectDTO.getImageUrl());
+                }
+
             });
         }
 

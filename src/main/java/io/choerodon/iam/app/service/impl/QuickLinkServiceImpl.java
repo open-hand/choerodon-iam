@@ -130,7 +130,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
 
         List<QuickLinkVO> content = page.getContent();
         content.stream().filter(v -> QuickLinkShareScopeEnum.SELF.value().equals(v.getScope())).forEach(v -> {
-            if (v.getCreateUserId() == userId) {
+            if (v.getCreateUserId().equals(userId)) {
                 v.setEditFlag(true);
             }
         });

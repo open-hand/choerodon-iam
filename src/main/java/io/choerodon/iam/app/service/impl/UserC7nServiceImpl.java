@@ -599,8 +599,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
         List<Role> roleC7nDTOList;
-        if(ResourceLevel.PROJECT.value().equals(level)) {
-            roleC7nDTOList = roleC7nMapper.queryRolesInfoByUser(level,projectId,id);
+        if (ResourceLevel.PROJECT.value().equals(level)) {
+            roleC7nDTOList = ConvertUtils.convertList(userC7nMapper.selectRolesByUidAndProjectId(id, projectId), Role.class);
         } else {
             ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
             roleC7nDTOList = roleC7nMapper.queryRolesInfoByUser(level, projectDTO.getOrganizationId(), id);

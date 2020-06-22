@@ -13,7 +13,8 @@
     <select id="queryByPids" resultMap="quickLinkMap">
         SELECT
           fql.*,
-          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url
+          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
+          case when fql.scope='user' then 1 else 0 end as sort
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
@@ -31,11 +32,13 @@
                  fql.project_id = #{projectId} OR (fql.create_user_id = #{userId} AND fql.scope = 'user')
             </if>
         </where>
+        ORDER BY sort DESC
     </select>
     <select id="queryAll" resultMap="quickLinkMap">
         SELECT
           fql.*,
-          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url
+          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
+          case when fql.scope='user' then 1 else 0 end as sort
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
@@ -47,6 +50,7 @@
                  fql.project_id = #{projectId} OR (fql.create_user_id = #{userId} AND fql.scope = 'user')
             </if>
         </where>
+        ORDER BY sort DESC
     </select>
 
 </mapper>

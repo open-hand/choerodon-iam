@@ -226,7 +226,7 @@ const OptsLine = observer(() => {
       <ul>
         {
           record.map((item) => {
-            const { logId: id, auditDateTime: creationDate, type, auditContent: content } = item;
+            const { logId: id, auditDatetime: creationDate, type, auditContent: content } = item;
             return (
               <li key={id}>
                 {renderDateLine(creationDate)}

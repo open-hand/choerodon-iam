@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -17,7 +18,11 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface QuickLinkMapper extends BaseMapper<QuickLinkDTO> {
 
-    List<QuickLinkVO> query(@Param("organizationId") Long organizationId,
-                            @Param("projectId") Long projectId,
-                            @Param("userId") Long userId);
+    List<QuickLinkVO> queryByPids(@Param("projectId") Long projectId,
+                                  @Param("userId") Long userId,
+                                  @Param("pIds") Set<Long> pIds);
+
+    List<QuickLinkVO> queryAll(@Param("organizationId") Long organizationId,
+                               @Param("projectId") Long projectId,
+                               @Param("userId") Long userId);
 }

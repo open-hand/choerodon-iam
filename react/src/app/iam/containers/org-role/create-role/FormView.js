@@ -10,9 +10,6 @@ import LoadingBar from '../../../components/loadingBar';
 import './index.less';
 
 const { Column } = Table;
-const tableStyle = {
-  height: '3.6rem',
-};
 
 const ListView = () => {
   const {
@@ -50,6 +47,7 @@ const ListView = () => {
       });
       let result;
       if (isModify) {
+        res.roleLabels = null;
         res.objectVersionNumber = record.get('objectVersionNumber');
         result = await roleStore.editRole(organizationId, res, record.get('id'));
       } else {

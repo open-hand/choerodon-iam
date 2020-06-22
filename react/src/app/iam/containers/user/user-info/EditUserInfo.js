@@ -144,7 +144,7 @@ function EditUserInfo(props) {
         className="user-info-avatar user-info-avatar-modal-edit"
         style={
           avatar && {
-            backgroundImage: `url(${Choerodon.fileServer(avatar)})`,
+            backgroundImage: `url('${Choerodon.fileServer(avatar)}')`,
           }
         }
       >

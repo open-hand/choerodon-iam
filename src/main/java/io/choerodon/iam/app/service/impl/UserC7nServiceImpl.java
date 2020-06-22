@@ -662,6 +662,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 if (org.apache.commons.lang3.StringUtils.isEmpty(p.getImageUrl())) {
                     ProjectDTO projectDTO = new ProjectDTO();
                     projectDTO.setId(p.getId());
+                    projectDTO.setObjectVersionNumber(p.getObjectVersionNumber());
                     projectDTO.setImageUrl(ProjectHeadColorEnum.getByRandom());
                     projectMapper.updateByPrimaryKeySelective(projectDTO);
 

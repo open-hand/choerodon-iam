@@ -64,6 +64,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
 
         quickLinkDTO.setId(null);
         quickLinkDTO.setCreateUserId(userId);
+        checkParam(quickLinkDTO);
 
         if (quickLinkMapper.insertSelective(quickLinkDTO) != 1) {
             throw new CommonException(ERROR_SAVE_QUICK_LINK_FAILED);
@@ -79,11 +80,22 @@ public class QuickLinkServiceImpl implements QuickLinkService {
 
         quickLinkDTO.setId(id);
         checkEditPermisison(id, userId);
+        checkParam(quickLinkDTO);
+
 
         if (quickLinkMapper.updateByPrimaryKeySelective(quickLinkDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_QUICK_LINK_FAILED);
         }
 
+    }
+
+    private void checkParam(QuickLinkDTO quickLinkDTO) {
+        if (QuickLinkShareScopeEnum.SELF.value().equals(quickLinkDTO.getScope())) {
+            quickLinkDTO.setProjectId(null);
+        } else if (QuickLinkShareScopeEnum.PROJECT.value().equals(quickLinkDTO.getScope())
+                && quickLinkDTO.getProjectId() == null) {
+            throw new CommonException(ResourceCheckConstants.ERROR_PARAM_IS_INVALID);
+        }
     }
 
     @Override
@@ -114,7 +126,6 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         } else {
             page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryAll(organizationId, projectId, userId));
         }
-
 
 
         List<QuickLinkVO> content = page.getContent();

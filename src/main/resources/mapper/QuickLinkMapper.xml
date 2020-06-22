@@ -14,18 +14,19 @@
         SELECT
           fql.*,
           iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
-          case when fql.scope='user' then 1 else 0 end as sort
+          case when fql.scope='self' then 1 else 0 end as sort
         FROM fd_quick_link fql
-        LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
         <where>
             <if test="projectId == null">
-                 (fql.create_user_id = #{userId} AND fql.scope = 'user')
+                 (fql.create_user_id = #{userId} AND fql.scope = 'self')
                  <if test="pIds != null and pIds.size() != 0">
-                     OR fp.ID IN
-                     <foreach collection="pIds" index="i" item="pid" open="(" separator="," close=")">
-                     #{pid}
-                    </foreach>
+                     OR (fql.scope = 'project'
+                     AND fql.ID IN
+                         <foreach collection="pIds" index="i" item="pid" open="(" separator="," close=")">
+                             #{pid}
+                        </foreach>
+                        )
                  </if>
             </if>
             <if test="projectId != null">
@@ -38,16 +39,16 @@
         SELECT
           fql.*,
           iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
-          case when fql.scope='user' then 1 else 0 end as sort
+          case when fql.scope='self' then 1 else 0 end as sort
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
         <where>
             <if test="projectId == null">
-                 fp.ORGANIZATION_ID = #{organizationId} OR (fql.create_user_id = #{userId} AND fql.scope = 'user')
+                 (fp.ORGANIZATION_ID = #{organizationId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
             </if>
             <if test="projectId != null">
-                 fql.project_id = #{projectId} OR (fql.create_user_id = #{userId} AND fql.scope = 'user')
+                 (fql.project_id = #{projectId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
             </if>
         </where>
         ORDER BY sort DESC

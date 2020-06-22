@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import './index.less';
@@ -207,12 +206,16 @@ const OptsLine = observer(() => {
 
   function renderDateLine(date) {
     const dateArr = date && date.split('-');
-    const month = renderMonth(dateArr[1]);
+    const month = dateArr && dateArr.length > 0 && renderMonth(dateArr[1]);
     return (
       <Tooltip title={date}>
         <div className="c7ncd-opts-timeLine-date">
-          <span>{dateArr[2].split(' ')[0]}</span>
-          <span>{month}</span>
+          {
+            dateArr && dateArr.length > 0 ? [
+              <span>{dateArr[2].split(' ')[0]}</span>,
+              <span>{month}</span>,
+            ] : '无'
+          }
         </div>
       </Tooltip>
     );
@@ -223,7 +226,7 @@ const OptsLine = observer(() => {
       <ul>
         {
           record.map((item) => {
-            const { id, creationDate, type, content } = item;
+            const { logId: id, auditDateTime: creationDate, type, auditContent: content } = item;
             return (
               <li key={id}>
                 {renderDateLine(creationDate)}

@@ -22,7 +22,7 @@
                  (fql.create_user_id = #{userId} AND fql.scope = 'self')
                  <if test="pIds != null and pIds.size() != 0">
                      OR (fql.scope = 'project'
-                     AND fql.ID IN
+                     AND fql.project_id IN
                          <foreach collection="pIds" index="i" item="pid" open="(" separator="," close=")">
                              #{pid}
                         </foreach>
@@ -30,7 +30,7 @@
                  </if>
             </if>
             <if test="projectId != null">
-                 fql.project_id = #{projectId} OR (fql.create_user_id = #{userId} AND fql.scope = 'user')
+                 (fql.project_id = #{projectId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
             </if>
         </where>
         ORDER BY sort DESC

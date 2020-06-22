@@ -9,6 +9,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -195,4 +196,6 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                              @Param("projectId") Long projectId,
                                              @Param("userId") Long userId);
 
+    List<ProjectDTO> listOwnedProject(@Param("organizationId") Long organizationId,
+                                      @Param("userId") Long userId);
 }

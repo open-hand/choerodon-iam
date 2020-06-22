@@ -468,6 +468,14 @@
             #{memberRoleId}
         </foreach>
     </delete>
+    <select id="listOwnedProject" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT fp.*
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON (ir.id = imr.role_id AND ir.is_enabled = true)
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
+        WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
+    </select>
 
 
 </mapper>

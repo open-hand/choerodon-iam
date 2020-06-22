@@ -61,7 +61,7 @@ public class QuickLinkController {
 
     @ApiOperation("分页查询快速链接")
     @Permission(permissionLogin = true)
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<Page<QuickLinkVO>> query(@PathVariable(value = "organization_id") Long organizationId,
                                                    @RequestParam(value = "project_id", required = false) Long projectId,
                                                    @ApiIgnore

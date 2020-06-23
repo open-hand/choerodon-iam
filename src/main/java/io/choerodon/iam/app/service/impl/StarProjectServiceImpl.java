@@ -37,6 +37,7 @@ public class StarProjectServiceImpl implements StarProjectService {
     private ProjectC7nService projectC7nService;
 
     @Override
+    @Transactional
     public void create(StarProjectUserRelDTO starProjectUserRelDTO) {
         // 数据校验
         projectC7nService.checkNotExistAndGet(starProjectUserRelDTO.getProjectId());
@@ -44,9 +45,12 @@ public class StarProjectServiceImpl implements StarProjectService {
         Assert.notNull(userId, ERROR_NOT_LOGIN);
 
         starProjectUserRelDTO.setUserId(userId);
-        if (starProjectMapper.insertSelective(starProjectUserRelDTO) != 1) {
-            throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
+        if (starProjectMapper.selectOne(starProjectUserRelDTO) == null) {
+            if (starProjectMapper.insertSelective(starProjectUserRelDTO) > 1) {
+                throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
+            }
         }
+
     }
 
     @Transactional
@@ -61,9 +65,12 @@ public class StarProjectServiceImpl implements StarProjectService {
         record.setUserId(userId);
         StarProjectUserRelDTO starProjectUserRelDTO = starProjectMapper.selectOne(record);
 
-        if (starProjectMapper.deleteByPrimaryKey(starProjectUserRelDTO.getId()) != 1) {
-            throw new CommonException(ERROR_DELETE_STAR_PROJECT_FAILED);
+        if (starProjectUserRelDTO != null) {
+            if (starProjectMapper.deleteByPrimaryKey(starProjectUserRelDTO.getId()) > 1) {
+                throw new CommonException(ERROR_DELETE_STAR_PROJECT_FAILED);
+            }
         }
+
     }
 
     @Override

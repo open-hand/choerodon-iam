@@ -134,6 +134,14 @@ maven-deploy-snapshot:
     variables:
     - $CI_COMMIT_MESSAGE =~ /combine/
 
+maven-deploy-release:
+  stage: build
+  script:
+    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /deploy release/
+
 .auto_devops: &auto_devops |
   http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`
   if [ "$http_status_code" != "200" ]; then

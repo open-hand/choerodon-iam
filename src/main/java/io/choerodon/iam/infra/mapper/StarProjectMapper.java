@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -17,5 +18,10 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface StarProjectMapper extends BaseMapper<StarProjectUserRelDTO> {
 
-    List<ProjectDTO> query(@Param("organizationId") Long organizationId, @Param("userId") Long userId);
+    List<ProjectDTO> query(@Param("pids") Set<Long> pids, @Param("userId") Long userId);
+
+    List<ProjectDTO> queryWithLimit(@Param("organizationId") Long organizationId,
+                                    @Param("userId") Long userId,
+                                    @Param("isAdmin") boolean isAdmin,
+                                    @Param("size") int size);
 }

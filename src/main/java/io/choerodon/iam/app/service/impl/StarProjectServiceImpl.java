@@ -1,16 +1,22 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.StarProjectService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
@@ -35,6 +41,8 @@ public class StarProjectServiceImpl implements StarProjectService {
     private StarProjectMapper starProjectMapper;
     @Autowired
     private ProjectC7nService projectC7nService;
+    @Autowired
+    private UserC7nService userC7nService;
 
     @Override
     @Transactional
@@ -76,9 +84,18 @@ public class StarProjectServiceImpl implements StarProjectService {
     @Override
     public List<ProjectDTO> query(Long organizationId) {
         Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
-        Long userId = DetailsHelper.getUserDetails().getUserId();
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Long userId = userDetails.getUserId();
         Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
-        return starProjectMapper.query(organizationId, userId);
+
+        boolean isAdmin =  Boolean.TRUE.equals(userDetails.getAdmin()) || Boolean.TRUE.equals(userC7nService.checkIsOrgRoot(organizationId, userId));
+        List<ProjectDTO> projectDTOS = starProjectMapper.queryWithLimit(organizationId, userId, isAdmin, 6);
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return new ArrayList<>();
+        }
+
+        Set<Long> pids = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        return starProjectMapper.query(pids, userId);
 
     }
 }

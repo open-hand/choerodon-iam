@@ -207,7 +207,7 @@ const TimeLine = observer(() => {
       <ul>
         {
           record.map((item) => {
-            const { id, creationDate, type, content } = item;
+            const { logId: id, auditDatetime: creationDate, type, auditContent: content } = item;
             return (
               <li key={id}>
                 {renderDateLine(creationDate)}

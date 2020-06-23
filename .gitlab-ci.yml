@@ -121,26 +121,14 @@ maven-deploy-snapshot:
   script:
   - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
   except:
-    changes:
-    - .eslintrc.json
-    - .stylelintrc.json
-    - package.json
-    - react/**/*
-    - tsconfig.json
-    - .gitignore
-    - .github/**/*
-    - .gitlab-ci.yml
-    - "*.md"
-    variables:
-    - $CI_COMMIT_MESSAGE =~ /combine/
+    - tags
 
 maven-deploy-release:
   stage: build
   script:
     - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
   only:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /deploy release/
+    - tags
 
 .auto_devops: &auto_devops |
   http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`

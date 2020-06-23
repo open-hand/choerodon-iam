@@ -20,9 +20,9 @@
           iu.real_name AS create_user_name, iu.image_url AS create_user_image_url
         FROM  fd_star_project_user_rel fspur
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
-        INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.ID
-        INNER JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
-        INNER JOIN iam_user iu ON iu.id = fp.CREATED_BY
+        LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.ID
+        LEFT JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        LEFT JOIN iam_user iu ON iu.id = fp.CREATED_BY
         <where>
              fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}
              AND fp.ID IN
@@ -44,6 +44,4 @@
         GROUP BY fp.id
         limit #{size}
     </select>
-
-
 </mapper>

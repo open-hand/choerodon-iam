@@ -623,7 +623,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
 
             // 查询用户star的项目
-            List<ProjectDTO> starProjects = starProjectMapper.query(organizationId, userId);
+            List<ProjectDTO> starProjects = starProjectMapper.query(projectIdList, userId);
             Set<Long> starIds = new HashSet<>();
             if (!CollectionUtils.isEmpty(starProjects)) {
                 starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());

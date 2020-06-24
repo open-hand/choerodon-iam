@@ -82,14 +82,14 @@ public class StarProjectServiceImpl implements StarProjectService {
     }
 
     @Override
-    public List<ProjectDTO> query(Long organizationId) {
+    public List<ProjectDTO> query(Long organizationId, Integer size) {
         Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         Long userId = userDetails.getUserId();
         Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
 
         boolean isAdmin =  Boolean.TRUE.equals(userDetails.getAdmin()) || Boolean.TRUE.equals(userC7nService.checkIsOrgRoot(organizationId, userId));
-        List<ProjectDTO> projectDTOS = starProjectMapper.queryWithLimit(organizationId, userId, isAdmin, 6);
+        List<ProjectDTO> projectDTOS = starProjectMapper.queryWithLimit(organizationId, userId, isAdmin, size);
         if (CollectionUtils.isEmpty(projectDTOS)) {
             return new ArrayList<>();
         }

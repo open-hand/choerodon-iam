@@ -23,4 +23,5 @@ public interface PermissionC7nService {
      */
     List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId);
 
+    List<Permission> getPermission(String[] codes);
 }

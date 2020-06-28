@@ -34,7 +34,10 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.*;
@@ -43,7 +46,6 @@ import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
@@ -326,6 +328,10 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             projectUserDTO.setProjectId(projectId);
             projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
             // 1. set memberRoleId
+            // 判断用户角色关系是否已经存在，存在则跳过
+            if (projectUserMapper.selectOne(projectUserDTO) != null) {
+                return;
+            }
             if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }

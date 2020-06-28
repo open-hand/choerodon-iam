@@ -194,7 +194,7 @@ public class TenantC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@PathVariable(name = "tenant_id") Long id,
                                                                      @ApiIgnore
-                                                                     @SortDefault(value = "tenantId", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @SortDefault(value = "organizationId", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                      @RequestParam(required = false, name = "id") Long userId,
                                                                      @RequestParam(required = false) String email,
                                                                      @RequestParam(required = false) String param) {

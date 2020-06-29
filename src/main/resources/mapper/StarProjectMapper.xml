@@ -30,7 +30,7 @@
                 #{pid}
             </foreach>
         </where>
-
+        ORDER BY fspur.id desc
     </select>
     <select id="queryWithLimit" resultMap="projectMap">
         SELECT fp.*
@@ -42,6 +42,7 @@
         </if>
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}
         GROUP BY fp.id
+        ORDER BY fspur.id desc
         <if test="size != null">
             limit #{size}
         </if>

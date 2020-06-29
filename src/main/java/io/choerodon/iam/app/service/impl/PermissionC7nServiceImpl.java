@@ -7,6 +7,7 @@ import java.util.Set;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.domain.entity.Permission;
 import org.hzero.iam.domain.repository.MenuRepository;
+import org.hzero.iam.domain.repository.PermissionRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private ProjectAssertHelper projectAssertHelper;
     @Autowired
     private UserC7nService userC7nService;
+    @Autowired
+    private PermissionRepository permissionRepository;
 
 
     @Override
@@ -67,5 +70,11 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
         LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self);
         return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), finalIsOrgRoot, c));
+    }
+
+    @Override
+    public List<Permission> getPermission(String[] codes) {
+        List<Permission> permissions = permissionRepository.selectByCodes(codes);
+        return permissions;
     }
 }

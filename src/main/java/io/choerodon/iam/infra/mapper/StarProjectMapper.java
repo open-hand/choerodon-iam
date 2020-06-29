@@ -20,8 +20,16 @@ public interface StarProjectMapper extends BaseMapper<StarProjectUserRelDTO> {
 
     List<ProjectDTO> query(@Param("pids") Set<Long> pids, @Param("userId") Long userId);
 
+    /**
+     *
+     * @param organizationId
+     * @param userId
+     * @param isAdmin
+     * @param size 为空则不限制条数
+     * @return
+     */
     List<ProjectDTO> queryWithLimit(@Param("organizationId") Long organizationId,
                                     @Param("userId") Long userId,
                                     @Param("isAdmin") boolean isAdmin,
-                                    @Param("size") int size);
+                                    @Param("size") Integer size);
 }

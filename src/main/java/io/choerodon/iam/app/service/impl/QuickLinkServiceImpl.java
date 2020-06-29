@@ -136,7 +136,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         });
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         content.stream().filter(v -> QuickLinkShareScopeEnum.PROJECT.value().equals(v.getScope())).forEach(v -> {
-            if (pids.contains(v.getProjectId())) {
+            if (pids.contains(v.getProjectId()) || v.getCreateUserId().equals(userId)) {
                 v.setEditFlag(true);
             }
         });

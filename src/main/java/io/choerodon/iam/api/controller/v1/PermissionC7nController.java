@@ -53,7 +53,6 @@ public class PermissionC7nController {
     }
 
 
-
     /**
      * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常
      *
@@ -83,5 +82,14 @@ public class PermissionC7nController {
             @RequestBody List<String> codes) {
         return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
     }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation("根据code查询permission")
+    @PostMapping("/list/code")
+    public ResponseEntity<List<org.hzero.iam.domain.entity.Permission>> getPermission(
+            @RequestBody String[] codes) {
+        return Results.success(permissionC7nService.getPermission(codes));
+    }
+
 
 }

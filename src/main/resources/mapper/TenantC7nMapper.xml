@@ -231,6 +231,7 @@
         FROM iam_member_role imr
         INNER JOIN hpfm_tenant ht ON ht.tenant_id = imr.source_id
         <where>
+            ht.enabled_flag = true AND
             imr.member_type = 'user' AND imr.member_id = #{params.userId} AND imr.source_type = 'organization'
             <if test="params.tenantName != null">
                 AND ht.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')

@@ -1272,11 +1272,11 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<ProjectDTO> listOwnerProjects(Long organizationId, Long userId) {
+    public List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId) {
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
 
 
-        return projectMapper.listOwnerProjects(organizationId, userId, isAdmin, isOrgAdmin);
+        return projectMapper.listOwnedProjects(organizationId, userId, isAdmin, isOrgAdmin);
     }
 }

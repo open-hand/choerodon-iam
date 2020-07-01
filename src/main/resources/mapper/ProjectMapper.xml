@@ -499,7 +499,7 @@
         </where>
         order by fp.is_enabled desc,fp.creation_date desc, fpmc.id asc
     </select>
-    <select id="listOwnerProjects" resultMap="projectDTO">
+    <select id="listOwnedProjects" resultMap="projectDTO">
         SELECT fp.*
         FROM fd_project fp
         <choose>

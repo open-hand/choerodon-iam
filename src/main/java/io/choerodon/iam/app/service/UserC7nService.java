@@ -304,5 +304,5 @@ public interface UserC7nService {
 
     Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
 
-    List<ProjectDTO> listOwnerProjects(Long organizationId, Long userId);
+    List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 }

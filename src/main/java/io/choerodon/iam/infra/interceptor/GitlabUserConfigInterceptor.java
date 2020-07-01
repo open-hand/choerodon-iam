@@ -23,6 +23,7 @@ public class GitlabUserConfigInterceptor implements HandlerInterceptor<User> {
     public GitlabUserConfigInterceptor() {
     }
 
+    @Override
     public String name() {
         return "USER_CONFIG_GITLAB";
     }

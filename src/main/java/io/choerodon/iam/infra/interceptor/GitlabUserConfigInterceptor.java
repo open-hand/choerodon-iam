@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.interceptor;
 
 import org.hzero.core.interceptor.HandlerInterceptor;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.service.user.interceptor.UserHandlerInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,7 @@ import io.choerodon.iam.app.service.OrganizationUserService;
  * @description
  */
 @Component
-public class GitlabUserConfigInterceptor implements HandlerInterceptor<User> {
+public class GitlabUserConfigInterceptor implements UserHandlerInterceptor {
 
     @Autowired
     private OrganizationUserService organizationUserService;

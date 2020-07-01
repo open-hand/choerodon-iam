@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
 
 /**
  * @author scp
@@ -34,6 +35,7 @@ public class LdapUserConfigInterceptor implements UserHandlerInterceptor {
         if (user.getLdap() == null || !user.getLdap()) {
             return;
         }
+        CustomContextUtil.setUserContext(0L);
         organizationUserService.sendUserCreationSaga(null, user, null, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
     }
 }

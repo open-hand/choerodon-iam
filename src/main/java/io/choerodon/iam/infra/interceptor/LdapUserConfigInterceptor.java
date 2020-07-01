@@ -23,6 +23,7 @@ public class LdapUserConfigInterceptor implements HandlerInterceptor<User> {
     public LdapUserConfigInterceptor() {
     }
 
+    @Override
     public String name() {
         return "USER_CONFIG_LDAP";
     }

@@ -303,4 +303,6 @@ public interface UserC7nService {
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 
     Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+
+    List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 }

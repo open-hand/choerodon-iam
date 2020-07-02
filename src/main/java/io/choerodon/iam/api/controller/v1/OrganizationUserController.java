@@ -261,4 +261,12 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
 
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询用户有权限的项目-devops用")
+    @GetMapping("/users/{user_id}/owned_projects")
+    public ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable(name = "organization_id") Long organizationId,
+                                                              @PathVariable(name = "user_id") Long userId) {
+        return ResponseEntity.ok(userC7nService.listOwnedProjects(organizationId, userId));
+    }
+
 }

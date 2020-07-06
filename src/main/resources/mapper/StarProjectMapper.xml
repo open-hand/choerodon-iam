@@ -16,13 +16,16 @@
     </resultMap>
     <select id="query" resultMap="projectMap">
         SELECT fp.*,
-          fpc.id AS c_id, fpc.CODE AS cateory_code, fpc.NAME as category_name,
-          iu.real_name AS create_user_name, iu.image_url AS create_user_image_url
-        FROM  fd_star_project_user_rel fspur
+        fpc.id AS c_id, fpc.CODE AS cateory_code, fpc.NAME as category_name,
+        iu.real_name AS create_user_name, iu.image_url AS create_user_image_url,
+        fp2.name AS program_name
+        FROM fd_star_project_user_rel fspur
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
         LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.ID
         LEFT JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
         LEFT JOIN iam_user iu ON iu.id = fp.CREATED_BY
+        left join fd_project_relationship fpr on ( fp.id = fpr.project_id and fpr.is_enabled)
+        left join fd_project fp2 on fpr.program_id = fp2.id
         <where>
              fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}
              AND fp.ID IN

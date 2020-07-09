@@ -1,19 +1,19 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-
 import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -109,6 +109,8 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<Long> listProjectRoleIds(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
+    List<UserVO> listRolesByProjectIdAndUserIds(@Param("projectId") Long projectId, @Param("userIds") List<Long> userId);
+
     /**
      * 统计项目下角色分配用户数
      *
@@ -118,7 +120,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
     List<RoleUserCountVO> countProjectRoleUser(@Param("projectId") Long projectId);
 
     /**
-     * 根据projectId和param模糊查询loginName和realName两列
+     * 根据projectId和param模糊匹配loginName和realName 获取用户信息
      *
      * @param projectId
      * @param userId

@@ -1,11 +1,37 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.api.vo.UserVO;
+import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.MessageFeignClient;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
@@ -24,35 +50,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ProjectUserVO;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -75,6 +77,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private TransactionalProducer producer;
     private MessageSendService messageSendService;
     private UserMapper userMapper;
+    private MessageFeignClient messageFeignClient;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -88,6 +91,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   MemberRoleService memberRoleService,
                                   @Lazy RoleMemberService roleMemberService,
                                   MessageSendService messageSendService,
+                                  MessageFeignClient messageFeignClient,
                                   UserMapper userMapper) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
@@ -100,6 +104,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.roleMemberService = roleMemberService;
+        this.messageFeignClient = messageFeignClient;
         this.messageSendService = messageSendService;
         this.userMapper = userMapper;
     }
@@ -449,6 +454,37 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         userMemberEventPayload.setSyncAll(syncAll);
         userMemberEventPayloads.add(userMemberEventPayload);
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
+
+    }
+
+    @Override
+    public OnlineUserStatistics getUserCount(Long projectId, PageRequest pageRequest) {
+        OnlineUserStatistics onlineUserStatistics = new OnlineUserStatistics();
+
+        // 获取该项目下的所有用户id(包括在线与不在线)
+        List<Long> userIdBelongToCurrentProject = projectUserMapper.selectUsersByOptions(projectId, null, null, null)
+                .stream()
+                .map(UserDTO::getId)
+                .collect(Collectors.toList());
+
+        // 过滤不属于该项目的用户id
+        List<Long> onlineUserIds = Objects.requireNonNull(messageFeignClient.getOnlineUserIds().getBody())
+                .stream()
+                .filter(userIdBelongToCurrentProject::contains)
+                .sorted()
+                .collect(Collectors.toList());
+        onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
+
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        List<Long> onlineUserIdsToGetInfo = onlineUserIds.subList(page * size, size * (page + 1));
+        List<UserVO> userVOS = projectUserMapper.listRolesByProjectIdAndUserIds(projectId, onlineUserIdsToGetInfo);
+
+        Page<UserVO> pageFromList = PageUtils.createPageFromList(userVOS, pageRequest);
+
+        onlineUserStatistics.setOnlineUserList(pageFromList);
+
+        return onlineUserStatistics;
 
     }
 

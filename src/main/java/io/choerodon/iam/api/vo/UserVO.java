@@ -41,6 +41,9 @@ public class UserVO {
 
     private List<Role> roles;
 
+    @ApiModelProperty(value = "用户角色名称，多个用英文逗号隔开")
+    private String roleNames;
+
     @ApiModelProperty(value = "用户角色编码,多个用英文逗号隔开")
     private String roleCodes;
 
@@ -156,5 +159,13 @@ public class UserVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public void setRoleNames(String roleNames) {
+        this.roleNames = roleNames;
+    }
+
+    public String getRoleNames() {
+        return roleNames;
     }
 }

@@ -1,21 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
@@ -28,6 +17,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
@@ -174,9 +176,9 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层更新用户角色")
     @PutMapping(value = "/{project_id}/users/{user_id}/assign_roles")
     public ResponseEntity updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                 @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                                                 @PathVariable(name = "user_id") Long userId,
-                                                                 @RequestBody Set<Long> roleIds) {
+                                                        @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                        @PathVariable(name = "user_id") Long userId,
+                                                        @RequestBody Set<Long> roleIds) {
         projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return Results.success();
     }
@@ -197,9 +199,24 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量移除用户")
     @PostMapping(value = "/{project_id}/users/{user_id}/role_members/delete")
     public ResponseEntity<Void> deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
-                                               @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                               @PathVariable(name = "user_id") Long userId) {
+                                                     @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                     @PathVariable(name = "user_id") Long userId) {
         roleMemberService.deleteOnProjectLevel(sourceId, userId, syncAll);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // 项目下活跃成员统计
+    @ApiOperation("项目下活跃成员统计")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{project_id}/users/user_count")
+    public ResponseEntity<OnlineUserStatistics> getUserCount(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest
+    ) {
+        return Optional.ofNullable(projectUserService.getUserCount(projectId, pageRequest))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.user.count"));
     }
 }

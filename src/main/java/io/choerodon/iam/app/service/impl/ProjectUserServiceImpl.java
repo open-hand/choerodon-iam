@@ -473,15 +473,17 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                 .filter(userIdBelongToCurrentProject::contains)
                 .sorted()
                 .collect(Collectors.toList());
-        onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
 
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
-        List<Long> onlineUserIdsToGetInfo = onlineUserIds.subList(page * size, size * (page + 1));
+        int total = onlineUserIds.size();
+
+        List<Long> onlineUserIdsToGetInfo = onlineUserIds.subList(page * size, Math.min(size * (page + 1), total));
         List<UserVO> userVOS = projectUserMapper.listRolesByProjectIdAndUserIds(projectId, onlineUserIdsToGetInfo);
 
         Page<UserVO> pageFromList = PageUtils.createPageFromList(userVOS, pageRequest);
 
+        onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
         onlineUserStatistics.setOnlineUserList(pageFromList);
 
         return onlineUserStatistics;

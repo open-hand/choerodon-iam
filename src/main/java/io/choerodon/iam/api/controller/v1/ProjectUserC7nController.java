@@ -213,7 +213,7 @@ public class ProjectUserC7nController extends BaseController {
      */
     @ApiOperation("项目下活跃成员统计")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{project_id}/users/user_count")
+    @GetMapping("/{project_id}/user_count")
     public ResponseEntity<OnlineUserStatistics> getUserCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,

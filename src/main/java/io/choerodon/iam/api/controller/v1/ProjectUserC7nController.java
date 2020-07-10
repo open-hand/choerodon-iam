@@ -205,7 +205,12 @@ public class ProjectUserC7nController extends BaseController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // 项目下活跃成员统计
+    /**
+     * 统计项目下活跃成员
+     * @param projectId 项目id
+     * @param pageRequest 分页参数
+     * @return
+     */
     @ApiOperation("项目下活跃成员统计")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{project_id}/users/user_count")
@@ -217,6 +222,6 @@ public class ProjectUserC7nController extends BaseController {
     ) {
         return Optional.ofNullable(projectUserService.getUserCount(projectId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.user.count"));
+                .orElseThrow(() -> new CommonException("error.iam.project.overview.user"));
     }
 }

@@ -568,7 +568,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         projectDTO.setEnabled(true);
         List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
         organizationProjectDTO.setProjectList(projectDTOS.stream()
-                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode()))
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), p.getOrganizationId()))
                 .collect(Collectors.toList()));
 
         List<Long> organizationIds = projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(Collectors.toList());

@@ -27,8 +27,8 @@ public class OrganizationProjectVO {
         return new Organization(id, name, code);
     }
 
-    public static Project newInstanceProject(Long id, String name, String code) {
-        return new Project(id, name, code);
+    public static Project newInstanceProject(Long id, String name, String code, Long organizationId) {
+        return new Project(id, name, code, organizationId);
     }
 
     public static class Organization {
@@ -75,11 +75,13 @@ public class OrganizationProjectVO {
         private Long id;
         private String name;
         private String code;
+        private Long organizationId;
 
-        public Project(Long id, String name, String code) {
+        public Project(Long id, String name, String code, Long organizationId) {
             this.id = id;
             this.name = name;
             this.code = code;
+            this.organizationId = organizationId;
         }
 
         //feign需要默认参数，以便反序列化
@@ -108,6 +110,14 @@ public class OrganizationProjectVO {
 
         public void setCode(String code) {
             this.code = code;
+        }
+
+        public Long getOrganizationId() {
+            return organizationId;
+        }
+
+        public void setOrganizationId(Long organizationId) {
+            this.organizationId = organizationId;
         }
     }
 }

@@ -1,49 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hzero.boot.file.FileClient;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.service.UserPasswordService;
-import org.hzero.boot.oauth.policy.PasswordPolicyManager;
-import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.RoleRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.service.user.UserDetailsService;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.domain.vo.UserVO;
-import org.hzero.iam.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -77,6 +34,48 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.service.user.UserDetailsService;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -560,14 +559,24 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
+    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
-                OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
+        Set<TenantVO> tenantVOS = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false);
+
         ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
-        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
-                .stream().map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
+        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        organizationProjectDTO.setProjectList(projectDTOS.stream()
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode()))
+                .collect(Collectors.toList()));
+
+        List<Long> organizationIds = projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(Collectors.toList());
+
+        organizationProjectDTO.setOrganizationList(tenantVOS.stream()
+                .filter(o -> organizationIds.contains(o.getTenantId()))
+                .map(organizationDO -> OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum()))
+                .collect(Collectors.toList()));
         return organizationProjectDTO;
     }
 
@@ -588,7 +597,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
-        List<ProjectDTO> projects =  new ArrayList<>();
+        List<ProjectDTO> projects = new ArrayList<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         // 普通用户只能查到启用的项目
@@ -609,7 +618,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         return projects;
     }
 
-    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin,  Long organizationId, Long userId) {
+    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin, Long organizationId, Long userId) {
         if (!CollectionUtils.isEmpty(projects)) {
 
             Set<Long> projectIdList = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());

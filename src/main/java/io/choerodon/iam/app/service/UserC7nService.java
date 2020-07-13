@@ -1,17 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.vo.UserVO;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -22,6 +10,17 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserInfoDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.vo.UserVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author scp
@@ -152,7 +151,14 @@ public interface UserC7nService {
     Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
                                                     String roleName, Boolean enabled, Boolean locked, String params);
 
-    OrganizationProjectVO queryOrganizationProjectByUserId(Long userId);
+    /**
+     * 查询组织和项目
+     *
+     * @param userId      用户id
+     * @param projectName 项目名称
+     * @return
+     */
+    OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName);
 
     /**
      * 校验用户是否是项目的所有者

@@ -534,13 +534,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             messageSendService.sendAddMemberMsg(tenant, params, BUSINESS_TYPE_CODE, DetailsHelper.getUserDetails().getUserId());
         }
         if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            ProjectDTO projectDTO = projectC7nService.queryProjectById(sourceId);
+            ProjectDTO projectDTO = projectC7nService.queryProjectById(sourceId, true, true, true);
             params.put("projectName", projectDTO.getName());
             params.put("roleName", roleDTO.getName());
             params.put("organizationId", String.valueOf(projectDTO.getOrganizationId()));
             params.put("addCount", String.valueOf(1));
             params.put("userList", JSON.toJSONString(userC7nService.getWebHookUser(memberRoleDTO.getMemberId())));
-            messageSendService.sendProjectAddUserMsg(projectDTO,params,PROJECT_ADD_USER,DetailsHelper.getUserDetails().getUserId());
+            messageSendService.sendProjectAddUserMsg(projectDTO, params, PROJECT_ADD_USER, DetailsHelper.getUserDetails().getUserId());
         }
     }
 

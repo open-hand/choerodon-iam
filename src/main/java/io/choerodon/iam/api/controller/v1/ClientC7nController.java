@@ -4,6 +4,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -12,11 +13,13 @@ import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.repository.ClientRepository;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -43,7 +46,8 @@ public class ClientC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
-    public ResponseEntity<Client> createInfo(@PathVariable("organization_id") Long organizationId) {
+    public ResponseEntity<Client> createInfo(
+            @Encrypt @PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(clientC7nService.getDefaultCreateData(organizationId), HttpStatus.OK);
     }
 
@@ -51,36 +55,43 @@ public class ClientC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除客户端")
     @DeleteMapping(value = "/{client_id}")
-    public ResponseEntity delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
+    public ResponseEntity<Void> delete(
+            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @Encrypt @PathVariable("client_id") Long clientId) {
         Client client = new Client();
         client.setOrganizationId(organizationId);
         client.setId(clientId);
         client.setName(clientRepository.selectByPrimaryKey(clientId).getName());
         clientService.delete(client);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "通过名称查询客户端")
     @GetMapping("/query_by_name")
-    public ResponseEntity<Client> queryByName(@PathVariable("organization_id") Long organizationId, @RequestParam(value = "client_name") String clientName) {
+    public ResponseEntity<Client> queryByName(
+            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @RequestParam(value = "client_name") String clientName) {
         return new ResponseEntity<>(clientC7nService.queryByName(organizationId, clientName), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "客户端分配角色")
     @PostMapping(value = "/{client_id}/assign_roles")
-    public ResponseEntity assignRoles(@PathVariable("organization_id") Long organizationId,
-                                      @PathVariable("client_id") Long clientId,
-                                      @RequestBody List<Long> roleIds) {
+    public ResponseEntity<Void> assignRoles(
+            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @Encrypt @PathVariable("client_id") Long clientId,
+            @RequestBody List<String> encryptRoleIds) {
+        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         clientC7nService.assignRoles(organizationId, clientId, roleIds);
-        return Results.success();
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "创建客户端，该接口会保存客户端关系")
     @PostMapping
-    public ResponseEntity<ClientVO> create(@PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
+    public ResponseEntity<ClientVO> create(
+            @Encrypt @PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
         clientVO.setOrganizationId(organizationId);
         this.validObject(clientVO);
         return Results.success(clientC7nService.create(clientVO));

@@ -1,17 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.ProjectCategoryC7nService;
@@ -20,6 +8,18 @@ import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_TYPE)
 @RestController
@@ -46,9 +46,9 @@ public class ProjectCategoryC7nController {
     @CustomPageRequest
     public ResponseEntity<Page<ProjectCategoryDTO>> pagingQuery(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                            @RequestParam(required = false) String name,
-                                                            @RequestParam(required = false) String code,
-                                                            @RequestParam(required = false) String param) {
+                                                                @RequestParam(required = false) String name,
+                                                                @RequestParam(required = false) String code,
+                                                                @RequestParam(required = false) String param) {
         return new ResponseEntity<>(projectTypeService.pagingQuery(pageRequest, name, code, param), HttpStatus.OK);
     }
 
@@ -62,8 +62,8 @@ public class ProjectCategoryC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "更新项目类型")
     @PostMapping("/{id}")
-    public ResponseEntity<ProjectCategoryDTO> update(@PathVariable Long id,
-                                                 @RequestBody @Valid ProjectCategoryDTO projectTypeDTO) {
+    public ResponseEntity<ProjectCategoryDTO> update(@Encrypt @PathVariable Long id,
+                                                     @RequestBody @Valid ProjectCategoryDTO projectTypeDTO) {
         return new ResponseEntity<>(projectTypeService.update(id, projectTypeDTO), HttpStatus.OK);
     }
 
@@ -74,11 +74,9 @@ public class ProjectCategoryC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "重名校验")
     @PostMapping("/check")
-    public ResponseEntity check(@RequestBody ProjectCategoryDTO projectTypeDTO) {
+    public ResponseEntity<Void> check(@RequestBody ProjectCategoryDTO projectTypeDTO) {
         projectTypeService.check(projectTypeDTO);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
-
-
 }
 

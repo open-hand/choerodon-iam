@@ -13,9 +13,17 @@
 
     <properties>
         <deploy.classifier/>
+        <!--        TODO 替换为稳定版-->
+        <temp.key.encrypt.version>1.5.0-SNAPSHOT</temp.key.encrypt.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-keyencrypt</artifactId>
+            <version>${temp.key.encrypt.version}</version>
+        </dependency>
+
         <!-- 数据库驱动 -->
         <dependency>
             <groupId>mysql</groupId>

@@ -2,6 +2,7 @@ package io.choerodon.iam.api.vo;
 
 import io.choerodon.iam.infra.utils.StringUtil;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author dinghuang123@gmail.com
@@ -10,9 +11,11 @@ import io.swagger.annotations.ApiModelProperty;
 public class TimeZoneWorkCalendarRefVO {
 
     @ApiModelProperty(value = "主键id")
+    @Encrypt
     private Long calendarId;
 
     @ApiModelProperty(value = "时区id")
+    @Encrypt
     private Long timeZoneId;
 
     @ApiModelProperty(value = "日期")
@@ -22,6 +25,7 @@ public class TimeZoneWorkCalendarRefVO {
     private Integer year;
 
     @ApiModelProperty(value = "组织id")
+    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "版本号")

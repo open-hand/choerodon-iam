@@ -14,6 +14,7 @@ import org.hzero.iam.domain.entity.Role;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author superlee
@@ -31,6 +32,7 @@ public class ProjectDTO extends AuditDomain {
     @Id
     @GeneratedValue
     @ApiModelProperty(value = "主键ID/非必填")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "项目名/必填")
@@ -47,6 +49,7 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiParam(name = "organization_id", value = "组织id")
     @ApiModelProperty(value = "组织ID/非必填")
+    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "项目图标url/非必填")
@@ -62,6 +65,7 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),GENERAL(普通应用项目),PROGRAM(普通项目群)")
     private String category;
 
+    // TODO 这里的id应该怎么加密
     @ApiModelProperty(value = "项目类型")
     @Transient
     private List<Long> categoryIds;
@@ -108,7 +112,7 @@ public class ProjectDTO extends AuditDomain {
     private Long agileProjectObjectVersionNumber;
 
     @Transient
-    @ApiModelProperty("敏捷项目乐观琐版本")
+    @ApiModelProperty("敏捷项目id")
     private Long agileProjectId;
 
     @Transient

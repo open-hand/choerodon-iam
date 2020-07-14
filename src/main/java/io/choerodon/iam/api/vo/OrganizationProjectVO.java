@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class OrganizationProjectVO {
     }
 
     public static class Organization {
+        @Encrypt
         private Long id;
         private String name;
         private String code;

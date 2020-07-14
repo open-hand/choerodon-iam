@@ -1,21 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -26,10 +10,28 @@ import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author flyleft
@@ -52,8 +54,9 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "创建项目")
     @PostMapping
-    public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectDTO projectDTO) {
+    public ResponseEntity<ProjectDTO> create(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationProjectC7nService.createProject(organizationId, projectDTO), HttpStatus.OK);
     }
@@ -61,8 +64,9 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/list")
     @ApiOperation(value = "查询分配开发的项目")
-    public ResponseEntity<List<ProjectDTO>> getAgileProjects(@PathVariable(name = "organization_id") Long organizationId,
-                                                             @RequestParam(required = false) String[] param) {
+    public ResponseEntity<List<ProjectDTO>> getAgileProjects(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam(required = false) String[] param) {
         return new ResponseEntity<>(organizationProjectC7nService.getAgileProjects(organizationId, ParamUtils.arrToStr(param)),
                 HttpStatus.OK);
     }
@@ -70,8 +74,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @PutMapping(value = "/{project_id}")
     @ApiOperation(value = "修改项目")
-    public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
-                                             @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<ProjectDTO> update(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                             @Encrypt @PathVariable(name = "project_id") Long projectId,
                                              @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         projectDTO.setId(projectId);
@@ -82,8 +86,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用项目")
     @PutMapping(value = "/{project_id}/enable")
-    public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
-                                                    @PathVariable(name = "project_id") Long projectId) {
+    public ResponseEntity<ProjectDTO> enableProject(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                    @Encrypt @PathVariable(name = "project_id") Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         return new ResponseEntity<>(organizationProjectC7nService.enableProject(organizationId, projectId, userId), HttpStatus.OK);
     }
@@ -91,8 +95,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
-    public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
-                                                     @PathVariable(name = "project_id") Long projectId) {
+    public ResponseEntity<ProjectDTO> disableProject(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                     @Encrypt @PathVariable(name = "project_id") Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         return new ResponseEntity<>(organizationProjectC7nService.disableProject(
                 organizationId, projectId, userId), HttpStatus.OK);
@@ -101,8 +105,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity<Boolean> check(@PathVariable(name = "organization_id") Long organizationId,
-                                @RequestBody ProjectDTO projectDTO) {
+    public ResponseEntity<Boolean> check(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                         @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         return ResponseEntity.ok(organizationProjectC7nService.check(projectDTO));
     }
@@ -110,14 +114,16 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下的项目类型及类下项目数及项目")
     @GetMapping("/under_the_type")
-    public ResponseEntity<Map<String, Object>> getProjectsByType(@PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<Map<String, Object>> getProjectsByType(@Encrypt
+                                                                 @PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationProjectC7nService.getProjectsByType(organizationId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "根据组织Id及项目code查询项目/devops用")
     @GetMapping(value = "/by_code")
-    public ResponseEntity<ProjectDTO> getProjectByOrgIdAndCode(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<ProjectDTO> getProjectByOrgIdAndCode(@Encrypt
+                                                               @PathVariable(name = "organization_id") Long organizationId,
                                                                @RequestParam(name = "code") String code) {
         return new ResponseEntity<>(organizationProjectC7nService.getProjectByOrgIdAndCode(organizationId, code), HttpStatus.OK);
     }
@@ -125,7 +131,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/all")
-    public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@Encrypt
+                                                                @PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationProjectC7nService.listProjectsByOrgId(organizationId), HttpStatus.OK);
     }
 
@@ -133,7 +140,8 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "分页查询项目/devops用")
     @GetMapping
     @CustomPageRequest
-    public ResponseEntity<Page<ProjectDTO>> pagingQuery(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Page<ProjectDTO>> pagingQuery(@Encrypt
+                                                        @PathVariable(name = "organization_id") Long organizationId,
                                                         @ApiIgnore
                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                         @RequestParam(required = false) String name,
@@ -162,27 +170,31 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
-    public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
-                                                                 @RequestBody Set<Long> projectIds,
+    public ResponseEntity<BarLabelRotationVO> countDeployRecords(@Encrypt
+                                                                 @PathVariable(name = "organization_id") Long organizationId,
+                                                                 @RequestBody Set<String> encryptProjectIds,
                                                                  @ApiParam(value = "开始时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "start_time") Date startTime,
                                                                  @ApiParam(value = "结束时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "end_time") Date endTime) {
+        Set<Long> projectIds = encryptProjectIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         return ResponseEntity.ok(organizationProjectC7nService.countDeployRecords(projectIds, startTime, endTime));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目（最多20个）")
     @GetMapping("/with_limit")
-    public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(@PathVariable(name = "organization_id") Long organizationId,
-                                                                  @RequestParam(required = false) String name) {
+    public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam(required = false) String name) {
         return ResponseEntity.ok(organizationProjectC7nService.listProjectsWithLimit(organizationId, name));
     }
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建项目")
     @GetMapping("/check_enable_create")
-    public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<Boolean> checkEnableCreateProject(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProject(organizationId));
     }
 }

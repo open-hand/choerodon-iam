@@ -12,6 +12,7 @@ import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
+import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -20,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
@@ -55,7 +57,7 @@ public class ProjectUserC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithRolesOnProjectLevel(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(name = "project_id") Long projectId,
+            @Encrypt @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
@@ -77,7 +79,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/search/list")
     public ResponseEntity<List<UserDTO>> listUsersWithRolesOnProjectLevel(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(name = "project_id") Long projectId,
+            @Encrypt @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "登录名")
             @RequestParam(required = false) String loginName,
             @ApiParam(value = "用户名")
@@ -95,9 +97,10 @@ public class ProjectUserC7nController extends BaseController {
     @PostMapping(value = "/{project_id}/users/list_by_ids")
     public ResponseEntity<List<UserWithGitlabIdDTO>> listUsersWithRolesAndGitlabUserIdByIds(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(name = "project_id") Long projectId,
+            @Encrypt @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
-            @RequestBody Set<Long> userIds) {
+            @RequestBody Set<String> encryptUserIds) {
+        Set<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         return new ResponseEntity<>(projectUserService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
@@ -107,7 +110,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/{role_lable}")
     public ResponseEntity<List<UserDTO>> listProjectUsersByProjectIdAndRoleLable(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable("project_id") Long projectId,
+            @Encrypt @PathVariable("project_id") Long projectId,
             @ApiParam(value = "角色标签", required = true)
             @PathVariable("role_lable") String roleLable) {
         return ResponseEntity.ok(projectUserService.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLable));
@@ -120,7 +123,7 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下的用户列表(根据登录名或真实名称搜索)")
     @GetMapping(value = "/{project_id}/users/search_by_name")
-    public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<UserDTO>> listUsersByName(@Encrypt @PathVariable(name = "project_id") Long projectId,
                                                          @RequestParam(required = false) String param) {
         return ResponseEntity.ok(projectUserService.listUsersByName(projectId, param));
     }
@@ -129,7 +132,7 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("根据项目id查询项目下的项目所有者")
     @GetMapping("/{project_id}/owner/list")
-    public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
+    public ResponseEntity<List<UserDTO>> listProjectOwnerById(@Encrypt @PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(projectUserService.listProjectOwnerById(projectId));
     }
 
@@ -137,7 +140,7 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)")
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
-    public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@Encrypt @PathVariable(name = "project_id") Long projectId,
                                                                   @RequestParam(name = "param", required = false) String param) {
         return ResponseEntity.ok(projectUserService.listUsersByNameWithLimit(projectId, param));
     }
@@ -146,7 +149,7 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/{project_id}/users/check_enable_create")
-    public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "project_id") Long projectId) {
+    public ResponseEntity<Boolean> checkEnableCreateUser(@Encrypt @PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProjectUser(projectId));
     }
 
@@ -154,42 +157,44 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "敏捷分页模糊查询项目下的用户和分配issue的用户接口")
     @PostMapping(value = "/{project_id}/agile_users")
     @CustomPageRequest
-    public ResponseEntity<Page<UserDTO>> agileUsers(@PathVariable(name = "project_id") Long id,
+    public ResponseEntity<Page<UserDTO>> agileUsers(@Encrypt @PathVariable(name = "project_id") Long id,
                                                     @ApiIgnore
                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                             PageRequest pageable,
-                                                    @RequestBody Set<Long> userIds,
+                                                    @RequestBody Set<String> encryptUserIds,
                                                     @RequestParam(required = false) String param) {
+        Set<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         return new ResponseEntity<>(projectUserService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")
-    public ResponseEntity assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                         @RequestBody List<ProjectUserDTO> projectUserDTOList) {
+    public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
+                                                               @RequestBody List<ProjectUserDTO> projectUserDTOList) {
         projectUserService.assignUsersProjectRoles(projectId, projectUserDTOList);
-        return Results.success();
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层更新用户角色")
     @PutMapping(value = "/{project_id}/users/{user_id}/assign_roles")
-    public ResponseEntity updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                        @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                                        @PathVariable(name = "user_id") Long userId,
-                                                        @RequestBody Set<Long> roleIds) {
+    public ResponseEntity<Void> updateUserRolesOnProjectLevel(@Encrypt @PathVariable(name = "project_id") Long projectId,
+                                                              @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                              @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                              @RequestBody Set<String> encryptRoleIds) {
+        Set<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
-        return Results.success();
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/{project_id}/role_members/batch_import")
-    public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
-                                                     @RequestPart MultipartFile file) {
+    public ResponseEntity<Void> import2MemberRoleOnProject(@Encrypt @PathVariable(name = "project_id") Long projectId,
+                                                           @RequestPart MultipartFile file) {
         roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -198,16 +203,17 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量移除用户")
     @PostMapping(value = "/{project_id}/users/{user_id}/role_members/delete")
-    public ResponseEntity<Void> deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+    public ResponseEntity<Void> deleteOnProjectLevel(@Encrypt @PathVariable(name = "project_id") Long sourceId,
                                                      @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                                     @PathVariable(name = "user_id") Long userId) {
+                                                     @Encrypt @PathVariable(name = "user_id") Long userId) {
         roleMemberService.deleteOnProjectLevel(sourceId, userId, syncAll);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * 统计项目下活跃成员
-     * @param projectId 项目id
+     *
+     * @param projectId   项目id
      * @param pageRequest 分页参数
      * @return
      */
@@ -216,7 +222,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping("/{project_id}/user_count")
     public ResponseEntity<OnlineUserStatistics> getUserCount(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable("project_id") Long projectId,
+            @Encrypt @PathVariable("project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest
     ) {

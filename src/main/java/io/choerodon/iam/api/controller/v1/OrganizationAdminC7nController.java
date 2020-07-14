@@ -6,11 +6,13 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OrgAdministratorVO;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_ORGANIZATION_ADMIN)
 @RestController
@@ -33,20 +36,23 @@ public class OrganizationAdminC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
     @ApiOperation(value = "查询本组织下的所有组织管理者")
-    public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                                                @ApiIgnore
-                                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
-                                                                                @RequestParam(required = false) String realName,
-                                                                                @RequestParam(required = false) String loginName,
-                                                                                @RequestParam(required = false) String params) {
+    public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
+            @RequestParam(required = false) String realName,
+            @RequestParam(required = false) String loginName,
+            @RequestParam(required = false) String params) {
         return new ResponseEntity<>(userC7nService.pagingQueryOrgAdministrator(Pageable, organizationId, realName, loginName, params), HttpStatus.OK);
     }
 
     @PostMapping("/org_administrator")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "添加组织管理员角色")
-    public ResponseEntity<Void> createOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                       @RequestParam(name = "id") List<Long> userIds) {
+    public ResponseEntity<Void> createOrgAdministrator(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam(name = "id") List<String> encryptUserIds) {
+        List<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         userC7nService.createOrgAdministrator(userIds, organizationId);
         return ResponseEntity.noContent().build();
 
@@ -55,8 +61,9 @@ public class OrganizationAdminC7nController {
     @DeleteMapping("/org_administrator/{id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除该User在本组织的组织管理员角色")
-    public ResponseEntity<Void> deleteOrgAdministrator(@PathVariable(name = "organization_id") Long organizationId,
-                                                       @PathVariable(name = "id") Long userId) {
+    public ResponseEntity<Void> deleteOrgAdministrator(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @Encrypt @PathVariable(name = "id") Long userId) {
         userC7nService.deleteOrgAdministrator(organizationId, userId);
         return ResponseEntity.noContent().build();
 

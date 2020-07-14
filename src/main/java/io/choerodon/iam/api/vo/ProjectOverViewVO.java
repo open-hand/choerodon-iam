@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * User: Mr.Wang
  * Date: 2020/2/24
@@ -15,6 +17,7 @@ public class ProjectOverViewVO {
     //项目下应用服务的数量
     private Integer appServerSum;
     //项目的id
+    @Encrypt
     private Long id;
 
     public String getProjectName() {

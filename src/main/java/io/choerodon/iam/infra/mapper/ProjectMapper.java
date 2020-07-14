@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.iam.api.controller.v1.ProjectMapCategoryVO;
+import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;

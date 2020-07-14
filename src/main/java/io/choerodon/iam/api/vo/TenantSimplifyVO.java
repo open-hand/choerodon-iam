@@ -1,12 +1,14 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author Eugen
  */
 public class TenantSimplifyVO {
     @ApiModelProperty(value = "主键")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "组织名")

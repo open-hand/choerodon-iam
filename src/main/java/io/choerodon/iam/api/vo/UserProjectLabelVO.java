@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.vo;
 
-import java.util.Set;
-
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.Set;
 
 /**
  * 用户在项目下的角色标签
@@ -12,8 +13,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class UserProjectLabelVO {
     @ApiModelProperty("项目id")
+    @Encrypt
     private Long projectId;
     @ApiModelProperty("用户id")
+    @Encrypt
     private Long UserId;
     @ApiModelProperty("角色标签")
     private Set<String> roleLabels;

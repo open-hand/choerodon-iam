@@ -2,10 +2,12 @@ package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 
 public class RegistrantInfoDTO {
     @ApiModelProperty(value = "注册人Id")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "注册人登录名")
@@ -18,12 +20,14 @@ public class RegistrantInfoDTO {
     private String realName;
 
     @ApiModelProperty(value = "注册组织ID")
+    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "注册组织名称")
     private String organizationName;
 
     @ApiModelProperty(value = "adminId")
+    @Encrypt
     private Long adminId;
 
     public Long getId() {

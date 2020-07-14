@@ -2,12 +2,14 @@ package io.choerodon.iam.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.List;
 
 public class UserRoleVO {
 
     @ApiModelProperty(value = "资源id")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "资源名")
@@ -30,6 +32,7 @@ public class UserRoleVO {
     @ApiModelProperty(value = "项目名称")
     private String projName;
 
+    @Encrypt
     private Long organizationId;
 
     @JsonIgnore

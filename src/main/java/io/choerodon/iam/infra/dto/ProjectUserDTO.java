@@ -1,12 +1,12 @@
 package io.choerodon.iam.infra.dto;
 
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.persistence.*;
 
 /**
  * @author scp
@@ -19,19 +19,25 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class ProjectUserDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("项目id")
+    @Encrypt
     private Long projectId;
 
     @ApiModelProperty("用户角色关系id")
+    @Encrypt
     private Long memberRoleId;
 
     @Transient
     @ApiModelProperty("用户id")
+    @Encrypt
     private Long memberId;
+
     @Transient
     @ApiModelProperty("角色id")
+    @Encrypt
     private Long roleId;
 
     public ProjectUserDTO() {
@@ -42,6 +48,7 @@ public class ProjectUserDTO extends AuditDomain {
         this.projectId = projectId;
         this.roleId = roleId;
     }
+
     public Long getId() {
         return id;
     }

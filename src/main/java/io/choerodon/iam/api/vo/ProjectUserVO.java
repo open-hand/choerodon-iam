@@ -1,11 +1,12 @@
 package io.choerodon.iam.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.iam.domain.entity.Role;
 
 /**
  * 〈功能简述〉
@@ -17,12 +18,16 @@ import org.hzero.iam.domain.entity.Role;
 public class ProjectUserVO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Encrypt
     private Long id;
     @ApiModelProperty("用户id")
+    @Encrypt
     private Long memberId;
     @ApiModelProperty("项目id")
+    @Encrypt
     private Long projectId;
     @ApiModelProperty("角色id")
+    @Encrypt
     private Long roleId;
 
     private Role role;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.choerodon.iam.infra.utils.StringUtil;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
@@ -15,6 +16,7 @@ import java.util.Objects;
  */
 public class TimeZoneWorkCalendarRefCreateVO extends AuditDomain {
 
+    @Encrypt
     private Long calendarId;
 
     @ApiModelProperty(value = "日期")

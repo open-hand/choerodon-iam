@@ -1,6 +1,9 @@
 package io.choerodon.iam.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class ProjectMapCategorySimpleVO {
+    @Encrypt
     private Long projectId;
     private String category;
 

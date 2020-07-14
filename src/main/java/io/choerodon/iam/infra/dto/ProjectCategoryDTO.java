@@ -8,6 +8,7 @@ import javax.persistence.Table;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author jiameng.cao
@@ -20,6 +21,7 @@ public class ProjectCategoryDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
     private Long id;
     private String name;
     private String description;

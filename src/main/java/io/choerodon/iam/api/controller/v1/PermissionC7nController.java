@@ -1,9 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.utils.KeyDecryptHelper;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -11,14 +12,15 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.app.service.PermissionService;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.PermissionC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -41,14 +43,18 @@ public class PermissionC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("通过角色查询权限列表")
     @PostMapping
-    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIds(@RequestBody List<Long> roleIds) {
+    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIds(@RequestBody List<String> encryptRoleIds) {
+        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         return new ResponseEntity<>(permissionC7nService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("组织层通过角色查询权限列表")
     @PostMapping("/through_roles_at_org/{organization_id}")
-    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIdsAtOrg(@PathVariable(name = "organization_id") Long organizationId, @RequestBody List<Long> roleIds) {
+    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIdsAtOrg(
+            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @RequestBody List<String> encryptRoleIds) {
+        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         return new ResponseEntity<>(permissionC7nService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
@@ -62,13 +68,13 @@ public class PermissionC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("根据permission code删除permission, 只能删除废弃的permission")
     @DeleteMapping
-    public ResponseEntity deleteByCode(@RequestParam String code) {
+    public ResponseEntity<Void> deleteByCode(@RequestParam String code) {
         List<org.hzero.iam.domain.entity.Permission> permissions = new ArrayList<>();
         org.hzero.iam.domain.entity.Permission permission = new org.hzero.iam.domain.entity.Permission();
         permission.setCode(code);
         permissions.add(permission);
         permissionService.deleteApis(permissions);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(permissionLogin = true)
@@ -78,7 +84,7 @@ public class PermissionC7nController {
     })
     @PostMapping("/menus/check-permissions")
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
-            @RequestParam(required = false) Long projectId,
+            @Encrypt @RequestParam(required = false) Long projectId,
             @RequestBody List<String> codes) {
         return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
     }

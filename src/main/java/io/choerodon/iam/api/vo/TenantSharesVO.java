@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 此DTO 用于 market-service feign 调用
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class TenantSharesVO {
     @ApiModelProperty("组织主键")
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "组织名")
     private String name;

@@ -2,11 +2,13 @@ package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Date;
 import java.util.List;
 
 public class UserVO {
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "登录名/非必填")

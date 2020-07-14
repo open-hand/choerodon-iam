@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.mybatis.domain.AuditDomain;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -21,6 +22,7 @@ public class QuickLinkVO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "主键ID")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "快速链接名字")
@@ -32,9 +34,11 @@ public class QuickLinkVO extends AuditDomain {
     private String linkUrl;
 
     @ApiModelProperty(value = "创建用户id")
+    @Encrypt
     private Long createUserId;
 
     @ApiModelProperty(value = "共享项目id")
+    @Encrypt
     private Long projectId;
 
     @ApiModelProperty(value = "共享范围")

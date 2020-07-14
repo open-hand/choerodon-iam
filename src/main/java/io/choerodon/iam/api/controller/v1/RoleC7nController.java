@@ -68,7 +68,9 @@ public class RoleC7nController {
     /**
      * 根据标签查询角色
      *
-     * @return
+     * @param tenantId  组织id
+     * @param labelName 标签名称
+     * @return LdapAutoDTO对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据标签查询角色")

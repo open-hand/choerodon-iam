@@ -33,7 +33,7 @@ public class LdapC7nController extends BaseController {
      * 用于创建ldap自动同步
      *
      * @param organizationId 组织id
-     * @return
+     * @return LdapAutoDTO对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "创建ldap自动同步")
@@ -50,7 +50,7 @@ public class LdapC7nController extends BaseController {
      * 用于更新ldap自动同步
      *
      * @param organizationId 组织id
-     * @return
+     * @return LdapAutoDTO对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "更新编辑ldap自动同步")

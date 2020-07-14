@@ -92,7 +92,7 @@ public class RoleMemberC7nController extends BaseController {
      * @param projectId
      * @param roleAssignmentSearchDTO
      * @param doPage                  是否分页，如果为false，则不分页
-     * @return
+     * @return 用户信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层分页查询角色下的用户")
@@ -211,7 +211,7 @@ public class RoleMemberC7nController extends BaseController {
      * 组织层下载模板
      *
      * @param organizationId
-     * @return
+     * @return Resource对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层下载excel导入模板")
@@ -300,7 +300,7 @@ public class RoleMemberC7nController extends BaseController {
      * 项目层下载模板
      *
      * @param projectId
-     * @return
+     * @return Resource对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层下载excel导入模板")
@@ -332,7 +332,7 @@ public class RoleMemberC7nController extends BaseController {
     /**
      * 根据角色Id分页查询该角色被分配的用户
      *
-     * @return
+     * @return 用户信息
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层查询角色下的用户")

@@ -162,10 +162,10 @@ public class OrganizationProjectC7nController extends BaseController {
      * 前端传的时间参数格式应为
      * yyyy-MM-dd HH:mm:ss
      *
-     * @param organizationId 组织id
-     * @param projectIds     项目id
-     * @param startTime      开始时间
-     * @param endTime        结束时间
+     * @param organizationId    组织id
+     * @param encryptProjectIds 项目id
+     * @param startTime         开始时间
+     * @param endTime           结束时间
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目部署次数")

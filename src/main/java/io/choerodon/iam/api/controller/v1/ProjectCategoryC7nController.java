@@ -69,7 +69,6 @@ public class ProjectCategoryC7nController {
 
     /**
      * @param projectTypeDTO
-     * @return
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "重名校验")

@@ -215,7 +215,7 @@ public class ProjectUserC7nController extends BaseController {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
-     * @return
+     * @return 在线用户信息
      */
     @ApiOperation("项目下活跃成员统计")
     @Permission(level = ResourceLevel.ORGANIZATION)

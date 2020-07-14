@@ -24,8 +24,7 @@ import java.util.Set;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
  */
 public interface UserC7nService {
 
@@ -84,7 +83,7 @@ public interface UserC7nService {
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
      * @param endTime
-     * @return
+     * @return UserNumberVO
      */
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
@@ -193,7 +192,7 @@ public interface UserC7nService {
      *
      * @param organizationId
      * @param userId
-     * @return
+     * @return true 或者 false
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
 

@@ -78,8 +78,8 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
+ *
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {

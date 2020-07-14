@@ -75,7 +75,7 @@ public class PageUtils {
      * @param list
      * @param <T>
      * @param <R>
-     * @return
+     * @return Page
      */
     public static <T, R> Page<T> copyPropertiesAndResetContent(Page<R> rpage, List<T> list) {
         Page<T> tPage = new Page<>();

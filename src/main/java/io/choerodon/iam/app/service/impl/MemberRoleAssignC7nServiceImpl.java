@@ -20,8 +20,8 @@ import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
- * @date 2020/5/25
- * @description
+ * @since 2020/5/25
+ *
  */
 @Component
 public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {

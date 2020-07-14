@@ -7,8 +7,8 @@ import org.hzero.iam.domain.entity.Permission;
 
 /**
  * @author scp
- * @date 2020/4/16
- * @description
+ * @since 2020/4/16
+ *
  */
 public interface PermissionC7nMapper  {
     List<Permission> selectByRoleId(@Param("roleId") Long roleId,

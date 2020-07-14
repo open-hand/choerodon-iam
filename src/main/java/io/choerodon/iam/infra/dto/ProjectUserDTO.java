@@ -10,8 +10,8 @@ import javax.persistence.*;
 
 /**
  * @author scp
- * @date 2020/4/16
- * @description
+ * @since 2020/4/16
+ *
  */
 @VersionAudit
 @ModifyAudit

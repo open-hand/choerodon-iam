@@ -12,8 +12,7 @@ import java.util.List;
 
 /**
  * @author scp
- * @date 2020/3/27
- * @description
+ * @since 2020/3/27
  */
 public interface ClientC7nService {
 
@@ -28,7 +27,7 @@ public interface ClientC7nService {
      * @param sourceId
      * @param clientRoleQueryVO
      * @param roleId
-     * @return
+     * @return client 分页
      */
     Page<Client> pagingQueryUsersByRoleId(PageRequest pageRequest,
                                           ResourceLevel resourceType,
@@ -42,7 +41,6 @@ public interface ClientC7nService {
      * @param organizationId
      * @param clientId
      * @param roleIds
-     * @return
      */
     void assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
 

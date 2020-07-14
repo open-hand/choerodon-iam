@@ -1,10 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-import java.util.Set;
-
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -17,13 +17,15 @@ public interface RolePermissionC7nService {
 
     /**
      * 查询角色拥有的权限
+     *
      * @param roleId
-     * @return
+     * @return RolePermission列表
      */
     List<RolePermission> listRolePermissionByRoleId(Long roleId);
 
     /**
      * 批量删除权限
+     *
      * @param roleId
      * @param deletePermissionIds
      */

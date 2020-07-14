@@ -10,8 +10,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
  * @author scp
- * @date 2020/4/21
- * @description
+ * @since 2020/4/21
  */
 public class TenantVO extends Tenant {
 

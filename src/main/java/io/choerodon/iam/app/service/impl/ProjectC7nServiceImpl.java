@@ -47,8 +47,8 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author scp
- * @date 2020/4/15
- * @description
+ * @since 2020/4/15
+ *
  */
 @Service
 public class ProjectC7nServiceImpl implements ProjectC7nService {

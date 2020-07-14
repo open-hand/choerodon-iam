@@ -9,8 +9,8 @@ import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 
 /**
  * @author scp
- * @date 2020/5/23
- * @description
+ * @since 2020/5/23
+ *
  */
 public interface ClientC7nMapper {
 

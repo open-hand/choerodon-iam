@@ -29,7 +29,7 @@ public interface ProjectC7nService {
      * 根据项目id，查询项目所属组织信息
      *
      * @param projectId
-     * @return
+     * @return Tenant
      */
     Tenant getOrganizationByProjectId(Long projectId);
 
@@ -46,7 +46,7 @@ public interface ProjectC7nService {
      *
      * @param projectId
      * @param name
-     * @return
+     * @return ProjectDTO列表
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
 
@@ -54,7 +54,7 @@ public interface ProjectC7nService {
     /**
      * 查询所有项目
      *
-     * @return
+     * @return ProjectDTO列表
      */
     List<ProjectDTO> listAllProjects();
 
@@ -66,7 +66,7 @@ public interface ProjectC7nService {
      * @param email
      * @param pageRequest
      * @param param
-     * @return
+     * @return UserDTO分页
      */
     Page<UserDTO> pagingQueryTheUsersOfProject(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
 }

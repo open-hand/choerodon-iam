@@ -12,7 +12,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author jiameng.cao
- * @date 2019/6/4
+ * @since 2019/6/4
  */
 @VersionAudit
 @ModifyAudit

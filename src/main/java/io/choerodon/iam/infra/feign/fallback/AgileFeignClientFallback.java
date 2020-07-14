@@ -9,7 +9,7 @@ import io.choerodon.iam.infra.feign.AgileFeignClient;
 
 /**
  * @author jiameng.cao
- * @date 2019/7/30
+ * @since 2019/7/30
  */
 @Component
 public class AgileFeignClientFallback implements AgileFeignClient {

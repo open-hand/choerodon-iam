@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * 〈用户数统计VO〉
  *
  * @author wanghao
- * @Date 2020/2/26 14:35
+ * @since 2020/2/26 14:35
  */
 public class UserNumberVO {
     private List<String> dateList = new ArrayList<>();

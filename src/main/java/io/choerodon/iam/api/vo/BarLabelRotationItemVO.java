@@ -10,7 +10,7 @@ import java.util.List;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/2/26 10:17
+ * @since 2020/2/26 10:17
  */
 public class BarLabelRotationItemVO {
     @Encrypt

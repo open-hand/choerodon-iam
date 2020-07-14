@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * @author jiameng.cao
- * @date 2019/6/4
+ * @since 2019/6/4
  */
 public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
 
@@ -29,7 +29,7 @@ public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
      * @param name
      * @param code
      * @param param
-     * @return
+     * @return ProjectCategoryDTO列表
      */
     List<ProjectCategoryDTO> fuzzyQuery(@Param("name") String name,
                                         @Param("code") String code,

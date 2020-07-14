@@ -14,8 +14,8 @@ import io.choerodon.iam.infra.mapper.ReportMapper;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
+ *
  */
 @Service
 public class ReportC7nServiceImpl implements ReportC7nService {

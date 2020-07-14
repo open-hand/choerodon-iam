@@ -19,9 +19,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * c7n的菜单控制器
+ *
  * @author scp
- * @date 2020/5/8
- * @description
+ * @since 2020/5/8
  */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_MENU)
 @RestController

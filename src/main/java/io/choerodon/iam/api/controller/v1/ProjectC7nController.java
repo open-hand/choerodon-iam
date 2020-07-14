@@ -1,18 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -24,6 +11,19 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -32,6 +32,9 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/choerodon/v1/projects")
 public class ProjectC7nController extends BaseController {
+
+    @Value("${choerodon.category.enabled:false}")
+    private boolean enableCategory;
 
     private ProjectC7nService projectService;
 
@@ -48,8 +51,11 @@ public class ProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "按照项目Id查询项目")
-    public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
-        return new ResponseEntity<>(projectService.queryProjectById(id), HttpStatus.OK);
+    public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id,
+                                            @RequestParam(value = "with_category_info", required = false, defaultValue = "true") Boolean withCategoryInfo,
+                                            @RequestParam(value = "with_user_info", required = false, defaultValue = "true") Boolean withUserInfo,
+                                            @RequestParam(value = "with_agile_info", required = false, defaultValue = "true") Boolean withAgileInfo) {
+        return new ResponseEntity<>(projectService.queryProjectById(id, withCategoryInfo, withUserInfo, withAgileInfo), HttpStatus.OK);
     }
 
     /**
@@ -128,11 +134,11 @@ public class ProjectC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users")
     @CustomPageRequest
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long projectId,
-                                                  @ApiIgnore
-                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                  @RequestParam(required = false, name = "id") Long userId,
-                                                  @RequestParam(required = false) String email,
-                                                  @RequestParam(required = false) String param) {
+                                              @ApiIgnore
+                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                              @RequestParam(required = false, name = "id") Long userId,
+                                              @RequestParam(required = false) String email,
+                                              @RequestParam(required = false) String param) {
         return ResponseEntity.ok(projectService.pagingQueryTheUsersOfProject(projectId, userId, email, pageRequest, param));
     }
 }

@@ -1,19 +1,17 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-import java.util.Set;
-
-
-import org.hzero.iam.domain.entity.Tenant;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.domain.entity.Tenant;
+
+import java.util.List;
+import java.util.Set;
 
 public interface ProjectC7nService {
 
-    ProjectDTO queryProjectById(Long projectId);
+    ProjectDTO queryProjectById(Long projectId, boolean enableCategory, boolean withUserInfo, boolean withAgileInfo);
 
     ProjectDTO update(ProjectDTO projectDTO);
 
@@ -29,6 +27,7 @@ public interface ProjectC7nService {
 
     /**
      * 根据项目id，查询项目所属组织信息
+     *
      * @param projectId
      * @return
      */
@@ -36,6 +35,7 @@ public interface ProjectC7nService {
 
     /**
      * 检查项目是否存在
+     *
      * @param projectId
      * @return 存在返回项目信息，不存在抛出not.exist exception
      */
@@ -43,6 +43,7 @@ public interface ProjectC7nService {
 
     /**
      * 查询项目所属组织下所有可用项目（不包含本项目，限制50个)
+     *
      * @param projectId
      * @param name
      * @return
@@ -52,12 +53,14 @@ public interface ProjectC7nService {
 
     /**
      * 查询所有项目
+     *
      * @return
      */
     List<ProjectDTO> listAllProjects();
 
     /**
      * 根据projectId和param模糊查询loginName和realName两列
+     *
      * @param projectId
      * @param userId
      * @param email

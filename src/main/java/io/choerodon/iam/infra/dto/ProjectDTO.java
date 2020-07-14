@@ -108,7 +108,7 @@ public class ProjectDTO extends AuditDomain {
     private Long agileProjectObjectVersionNumber;
 
     @Transient
-    @ApiModelProperty("敏捷项目乐观琐版本")
+    @ApiModelProperty("敏捷项目id")
     private Long agileProjectId;
 
     @Transient

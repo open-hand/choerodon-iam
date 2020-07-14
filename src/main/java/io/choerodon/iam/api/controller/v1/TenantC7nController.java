@@ -1,19 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -30,6 +16,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -100,8 +99,9 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层根据组织id查询组织")
     @GetMapping(value = "/{tenant_id}")
-    public ResponseEntity<TenantVO> query(@PathVariable(name = "tenant_id") Long id) {
-        return new ResponseEntity<>(tenantC7nService.queryTenantById(id), HttpStatus.OK);
+    public ResponseEntity<TenantVO> query(@PathVariable(name = "tenant_id") Long id,
+                                          @RequestParam(value = "with_more_info", required = false, defaultValue = "true") Boolean withMoreInfo) {
+        return new ResponseEntity<>(tenantC7nService.queryTenantById(id, withMoreInfo), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
@@ -213,8 +213,6 @@ public class TenantC7nController extends BaseController {
                                                         @RequestBody Set<Long> orgIds) {
         return new ResponseEntity<>(tenantC7nService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
     }
-
-
 
 
     @GetMapping("/{tenant_id}/project/overview")

@@ -561,22 +561,20 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        Set<TenantVO> tenantVOS = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false);
+        Map<Long, TenantVO> tenants = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false)
+                .stream()
+                .distinct()
+                .collect(Collectors.toMap(Tenant::getTenantId, t -> t));
 
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
         List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
         organizationProjectDTO.setProjectList(projectDTOS.stream()
-                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), p.getOrganizationId()))
+                .filter(p -> tenants.get(p.getOrganizationId()) != null)
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName()))
                 .collect(Collectors.toList()));
 
-        List<Long> organizationIds = projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(Collectors.toList());
-
-        organizationProjectDTO.setOrganizationList(tenantVOS.stream()
-                .filter(o -> organizationIds.contains(o.getTenantId()))
-                .map(organizationDO -> OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum()))
-                .collect(Collectors.toList()));
         return organizationProjectDTO;
     }
 

@@ -32,7 +32,6 @@ public class UserRoleVO {
     @ApiModelProperty(value = "项目名称")
     private String projName;
 
-    @Encrypt
     private Long organizationId;
 
     @JsonIgnore

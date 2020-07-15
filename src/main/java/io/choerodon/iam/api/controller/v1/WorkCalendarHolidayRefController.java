@@ -34,7 +34,7 @@ public class WorkCalendarHolidayRefController {
     @ApiOperation("按年份更新工作日历假期")
     @PostMapping
     public ResponseEntity<Void> updateWorkCalendarHolidayRefByYear(@ApiParam(value = "项目id", required = true)
-                                                                   @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                   @PathVariable(name = "organization_id") Long organizationId,
                                                                    @ApiParam(value = "要更新的年份", required = true)
                                                                    @RequestParam Integer year) {
         workCalendarHolidayRefService.updateWorkCalendarHolidayRefByYear(year);
@@ -45,7 +45,7 @@ public class WorkCalendarHolidayRefController {
     @ApiOperation("根据年份查询工作日历假期(包含查询年份和下一年份数据)")
     @GetMapping
     public ResponseEntity<List<WorkCalendarHolidayRefVO>> queryWorkCalendarHolidayRelByYear(@ApiParam(value = "项目id", required = true)
-                                                                                            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                            @PathVariable(name = "organization_id") Long organizationId,
                                                                                             @ApiParam(value = "要查询的年份", required = true)
                                                                                             @RequestParam Integer year) {
         return Optional.ofNullable(workCalendarHolidayRefService.queryWorkCalendarHolidayRelByYear(year))
@@ -57,7 +57,7 @@ public class WorkCalendarHolidayRefController {
     @ApiOperation("【敏捷专用】根据年份查询工作日历，包含当年、去年、明年")
     @GetMapping(value = "/year_include_last_and_next")
     public ResponseEntity<List<WorkCalendarHolidayRefVO>> queryByYearIncludeLastAndNext(@ApiParam(value = "项目id", required = true)
-                                                                                        @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                        @PathVariable(name = "organization_id") Long organizationId,
                                                                                         @ApiParam(value = "要查询的年份", required = true)
                                                                                         @RequestParam Integer year) {
         return Optional.ofNullable(workCalendarHolidayRefService.queryByYearIncludeLastAndNext(year))

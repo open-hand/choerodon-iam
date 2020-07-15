@@ -17,7 +17,6 @@ public class ProjectOverViewVO {
     //项目下应用服务的数量
     private Integer appServerSum;
     //项目的id
-    @Encrypt
     private Long id;
 
     public String getProjectName() {

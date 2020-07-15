@@ -18,7 +18,6 @@ public class StarProjectVO {
     private Long id;
 
     @ApiModelProperty("项目id/新增时必须")
-    @Encrypt
     private Long projectId;
 
     @ApiModelProperty("用户id")

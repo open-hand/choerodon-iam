@@ -54,7 +54,7 @@ public class ProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "按照项目Id查询项目")
-    public ResponseEntity<ProjectDTO> query(@Encrypt @PathVariable(name = "project_id") Long id) {
+    public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.queryProjectById(id), HttpStatus.OK);
     }
 
@@ -80,7 +80,7 @@ public class ProjectC7nController extends BaseController {
     @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(
-            @Encrypt @PathVariable(name = "project_id") Long id,
+            @PathVariable(name = "project_id") Long id,
             @RequestBody ProjectDTO projectDTO) {
         if (StringUtils.isEmpty(projectDTO.getName())) {
             throw new CommonException("error.project.name.empty");
@@ -105,7 +105,7 @@ public class ProjectC7nController extends BaseController {
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(
-            @Encrypt @PathVariable(name = "project_id") Long id) {
+            @PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.disableProject(id), HttpStatus.OK);
     }
 
@@ -124,7 +124,7 @@ public class ProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目所属组织下所有可用项目（不包含本项目，限制50个)")
     @GetMapping("/{project_id}/except_self/with_limit")
-    public ResponseEntity<List<ProjectDTO>> listOrgProjectsWithLimitExceptSelf(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<ProjectDTO>> listOrgProjectsWithLimitExceptSelf(@PathVariable(name = "project_id") Long projectId,
                                                                                @RequestParam(required = false) String name) {
         return ResponseEntity.ok(projectService.listOrgProjectsWithLimitExceptSelf(projectId, name));
     }
@@ -136,7 +136,7 @@ public class ProjectC7nController extends BaseController {
     @ApiOperation(value = "分页模糊查询项目下的用户")
     @GetMapping(value = "/{project_id}/users")
     @CustomPageRequest
-    public ResponseEntity<Page<UserDTO>> list(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long projectId,
                                               @ApiIgnore
                                               @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                               @Encrypt @RequestParam(required = false, name = "id") Long userId,

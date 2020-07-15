@@ -13,7 +13,6 @@ import java.util.Set;
  */
 public class UserProjectLabelVO {
     @ApiModelProperty("项目id")
-    @Encrypt
     private Long projectId;
     @ApiModelProperty("用户id")
     @Encrypt

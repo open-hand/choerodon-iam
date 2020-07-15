@@ -7,7 +7,6 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.domain.entity.Menu;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +36,7 @@ public class MenuC7nController {
     @Permission(permissionLogin = true)
     @GetMapping(value = "/menu")
     public ResponseEntity<List<Menu>> listNavMenuTree(
-            @Encrypt @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) Set<String> labels) {
         return ResponseEntity.ok(menuC7nService.listNavMenuTree(labels, projectId));
     }

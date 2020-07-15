@@ -37,7 +37,7 @@ public class RoleC7nController {
     @GetMapping("/{organizationId}/roles/self/roles")
     public ResponseEntity<Page<RoleC7nDTO>> listSelfRole(@ApiIgnore
                                                          @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                         @Encrypt @PathVariable("organizationId") Long organizationId,
+                                                         @PathVariable("organizationId") Long organizationId,
                                                          @RequestParam(required = false) String name,
                                                          @RequestParam(required = false) String level,
                                                          @RequestParam(required = false) String params) {
@@ -58,7 +58,7 @@ public class RoleC7nController {
                                                                             @RequestParam(required = false) String name,
                                                                             @RequestParam(required = false) String code,
                                                                             @RequestParam(required = false) String roleLevel,
-                                                                            @Encrypt @RequestParam(value = "tenantId") Long tenantId,
+                                                                            @RequestParam(value = "tenantId") Long tenantId,
                                                                             @RequestParam(required = false) Boolean builtIn,
                                                                             @RequestParam(required = false) Boolean enabled,
                                                                             @RequestParam(required = false) String params) {
@@ -75,7 +75,7 @@ public class RoleC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据标签查询角色")
     @GetMapping(value = "/roles/search_by_label")
-    public ResponseEntity<List<Role>> listByLabelName(@Encrypt @RequestParam(value = "tenantId") Long tenantId,
+    public ResponseEntity<List<Role>> listByLabelName(@RequestParam(value = "tenantId") Long tenantId,
                                                       @RequestParam(value = "labelName") String labelName) {
         return ResponseEntity.ok(roleC7nService.listByLabelNames(tenantId, labelName));
     }

@@ -8,7 +8,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class TenantSimplifyVO {
     @ApiModelProperty(value = "主键")
-    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "组织名")

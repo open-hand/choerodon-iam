@@ -37,7 +37,7 @@ public class OrganizationAdminC7nController {
     @CustomPageRequest
     @ApiOperation(value = "查询本组织下的所有组织管理者")
     public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
             @RequestParam(required = false) String realName,
@@ -50,7 +50,7 @@ public class OrganizationAdminC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "添加组织管理员角色")
     public ResponseEntity<Void> createOrgAdministrator(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @RequestParam(name = "id") List<String> encryptUserIds) {
         List<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         userC7nService.createOrgAdministrator(userIds, organizationId);
@@ -62,7 +62,7 @@ public class OrganizationAdminC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除该User在本组织的组织管理员角色")
     public ResponseEntity<Void> deleteOrgAdministrator(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @Encrypt @PathVariable(name = "id") Long userId) {
         userC7nService.deleteOrgAdministrator(organizationId, userId);
         return ResponseEntity.noContent().build();

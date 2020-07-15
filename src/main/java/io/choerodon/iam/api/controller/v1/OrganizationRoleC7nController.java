@@ -33,7 +33,7 @@ public class OrganizationRoleC7nController {
     @ApiOperation(value = "创建角色并分配权限")
     @PostMapping
     public ResponseEntity<Void> create(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @RequestBody RoleVO roleVO) {
         organizationRoleC7nService.create(organizationId, roleVO);
         return ResponseEntity.noContent().build();
@@ -43,7 +43,7 @@ public class OrganizationRoleC7nController {
     @ApiOperation(value = "修改角色信息")
     @PutMapping("/{role_id}")
     public ResponseEntity<Void> update(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("role_id") Long roleId,
             @RequestBody RoleVO roleVO) {
         organizationRoleC7nService.update(organizationId, roleId, roleVO);
@@ -54,7 +54,7 @@ public class OrganizationRoleC7nController {
     @ApiOperation(value = "查询角色信息")
     @GetMapping("/{role_id}")
     public ResponseEntity<RoleVO> queryById(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("role_id") Long roleId) {
         return ResponseEntity.ok(organizationRoleC7nService.queryById(organizationId, roleId));
     }

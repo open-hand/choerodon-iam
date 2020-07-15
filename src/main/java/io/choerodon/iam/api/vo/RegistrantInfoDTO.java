@@ -20,7 +20,6 @@ public class RegistrantInfoDTO {
     private String realName;
 
     @ApiModelProperty(value = "注册组织ID")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "注册组织名称")

@@ -351,7 +351,7 @@ public class UserC7nController extends BaseController {
     @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @Encrypt @PathVariable("id") Long id,
-            @Encrypt @PathVariable("project_id") Long projectId) {
+            @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.PROJECT.value()));
     }
 
@@ -360,7 +360,7 @@ public class UserC7nController extends BaseController {
     @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
             @Encrypt @PathVariable("id") Long id,
-            @Encrypt @PathVariable("project_id") Long projectId) {
+            @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.ORGANIZATION.value()));
     }
 
@@ -369,7 +369,7 @@ public class UserC7nController extends BaseController {
     @GetMapping("/{id}/projects/{project_id}/check_is_owner")
     public ResponseEntity<Boolean> checkIsProjectOwner(
             @Encrypt @PathVariable("id") Long id,
-            @Encrypt @PathVariable("project_id") Long projectId) {
+            @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
     }
 
@@ -407,7 +407,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "项目层查询所有包含gitlab角色标签的用户")
     @PostMapping(value = "/projects/{project_id}/gitlab_role/users")
     public ResponseEntity<List<UserDTO>> listUsersWithGitlabLabel(
-            @Encrypt @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "project_id") Long projectId,
             @RequestParam(name = "label_name") String labelName,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userC7nService.listUsersWithGitlabLabel(projectId, labelName, roleAssignmentSearchDTO), HttpStatus.OK);

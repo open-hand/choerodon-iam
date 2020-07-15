@@ -49,7 +49,7 @@ public class LabelC7nController extends BaseController {
     @ApiOperation(value = "通过类型查询组织层label")
     @GetMapping(value = "/org/{organization_id}")
     public ResponseEntity<List<Label>> listByTypeAtOrg(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
                                                        Label label) {
         label.setFdLevel(ResourceLevel.ORGANIZATION.value());
         return new ResponseEntity<>(labelC7nService.listByOption(label), HttpStatus.OK);

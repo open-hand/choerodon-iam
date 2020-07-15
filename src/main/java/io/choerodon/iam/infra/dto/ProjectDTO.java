@@ -32,7 +32,6 @@ public class ProjectDTO extends AuditDomain {
     @Id
     @GeneratedValue
     @ApiModelProperty(value = "主键ID/非必填")
-    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "项目名/必填")
@@ -49,7 +48,6 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiParam(name = "organization_id", value = "组织id")
     @ApiModelProperty(value = "组织ID/非必填")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "项目图标url/非必填")

@@ -11,7 +11,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class TenantSharesVO {
     @ApiModelProperty("组织主键")
-    @Encrypt
     private Long id;
     @ApiModelProperty(value = "组织名")
     private String name;

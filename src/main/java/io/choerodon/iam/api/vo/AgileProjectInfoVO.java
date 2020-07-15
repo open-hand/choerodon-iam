@@ -18,7 +18,6 @@ public class AgileProjectInfoVO {
     private Long infoId;
 
     @ApiModelProperty(value = "项目id")
-    @Encrypt
     private Long projectId;
 
     @ApiModelProperty(value = "项目code")

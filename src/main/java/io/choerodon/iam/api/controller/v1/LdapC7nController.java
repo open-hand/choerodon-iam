@@ -40,7 +40,7 @@ public class LdapC7nController extends BaseController {
     @PostMapping("/ldaps/auto")
     public ResponseEntity<LdapAutoDTO> createLdapAuto(
             @ApiParam(value = "组织Id", required = true)
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "LdapAutoDTO", required = true)
             @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
         return new ResponseEntity<>(ldapC7nService.createLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
@@ -57,7 +57,7 @@ public class LdapC7nController extends BaseController {
     @PutMapping("/ldaps/auto")
     public ResponseEntity<LdapAutoDTO> updateLdapAuto(
             @ApiParam(value = "组织Id", required = true)
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "LdapAutoDTO", required = true)
             @RequestBody @Valid LdapAutoDTO ldapAutoDTO) {
         return new ResponseEntity<>(ldapC7nService.updateLdapAuto(organizationId, ldapAutoDTO), HttpStatus.OK);
@@ -68,7 +68,7 @@ public class LdapC7nController extends BaseController {
     @GetMapping("/ldaps/auto/detail")
     public ResponseEntity<LdapAutoDTO> updateLdapAutoActive(
             @ApiParam(value = "组织Id", required = true)
-            @Encrypt @PathVariable("organization_id") Long organizationId) {
+            @PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(ldapC7nService.queryLdapAutoDTO(organizationId), HttpStatus.OK);
     }
 }

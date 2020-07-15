@@ -72,7 +72,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层修改组织")
     @PutMapping(value = "/{tenant_id}")
-    public ResponseEntity<Void> update(@Encrypt @PathVariable(name = "tenant_id") Long id,
+    public ResponseEntity<Void> update(@PathVariable(name = "tenant_id") Long id,
                                        @RequestBody @Valid TenantVO tenantVO) {
         tenantC7nService.updateTenant(id, tenantVO);
         return ResponseEntity.noContent().build();
@@ -86,7 +86,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层修改组织")
     @PutMapping(value = "/{tenant_id}/organization_level")
-    public ResponseEntity<Void> updateOnOrganizationLevel(@Encrypt @PathVariable(name = "tenant_id") Long id,
+    public ResponseEntity<Void> updateOnOrganizationLevel(@PathVariable(name = "tenant_id") Long id,
                                                           @RequestBody @Valid TenantVO tenantVO) {
         tenantC7nService.updateTenant(id, tenantVO);
         return ResponseEntity.noContent().build();
@@ -102,7 +102,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层根据组织id查询组织")
     @GetMapping(value = "/{tenant_id}")
-    public ResponseEntity<TenantVO> query(@Encrypt @PathVariable(name = "tenant_id") Long id) {
+    public ResponseEntity<TenantVO> query(@PathVariable(name = "tenant_id") Long id) {
         return new ResponseEntity<>(tenantC7nService.queryTenantById(id), HttpStatus.OK);
     }
 
@@ -122,7 +122,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据组织id查询组织，并查询当前用户被分配的角色")
     @GetMapping(value = "/{tenant_id}/org_level")
-    public ResponseEntity<TenantVO> queryOrgLevel(@Encrypt @PathVariable(name = "tenant_id") Long id) {
+    public ResponseEntity<TenantVO> queryOrgLevel(@PathVariable(name = "tenant_id") Long id) {
         return new ResponseEntity<>(tenantC7nService.queryTenantWithRoleById(id), HttpStatus.OK);
     }
 
@@ -168,7 +168,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "启用组织")
     @PutMapping(value = "/{tenant_id}/enable")
-    public ResponseEntity<Tenant> enableOrganization(@Encrypt @PathVariable(name = "tenant_id") Long id) {
+    public ResponseEntity<Tenant> enableOrganization(@PathVariable(name = "tenant_id") Long id) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         return new ResponseEntity<>(tenantC7nService.enableOrganization(id, userId), HttpStatus.OK);
     }
@@ -176,7 +176,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "禁用组织")
     @PutMapping(value = "/{tenant_id}/disable")
-    public ResponseEntity<Tenant> disableOrganization(@Encrypt @PathVariable(name = "tenant_id") Long id) {
+    public ResponseEntity<Tenant> disableOrganization(@PathVariable(name = "tenant_id") Long id) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         return new ResponseEntity<>(tenantC7nService.disableOrganization(id, userId), HttpStatus.OK);
     }
@@ -195,7 +195,7 @@ public class TenantC7nController extends BaseController {
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @GetMapping(value = "/{tenant_id}/users")
     @CustomPageRequest
-    public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@Encrypt @PathVariable(name = "tenant_id") Long id,
+    public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@PathVariable(name = "tenant_id") Long id,
                                                                      @ApiIgnore
                                                                      @SortDefault(value = "organizationId", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                      @Encrypt @RequestParam(required = false, name = "id") Long userId,
@@ -223,7 +223,7 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
     @ApiOperation(value = "组织概览，返回启用项目数量和停用项目数量")
     public ResponseEntity<ProjectOverViewVO> projectOverview(
-            @Encrypt @PathVariable(name = "tenant_id") Long organizationId) {
+            @PathVariable(name = "tenant_id") Long organizationId) {
         return new ResponseEntity<>(tenantC7nService.projectOverview(organizationId), HttpStatus.OK);
     }
 
@@ -231,14 +231,14 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织概览，返回应用服务的概览")
     public ResponseEntity<List<ProjectOverViewVO>> appServerOverview(
-            @Encrypt @PathVariable(name = "tenant_id") Long organizationId) {
+            @PathVariable(name = "tenant_id") Long organizationId) {
         return new ResponseEntity<>(tenantC7nService.appServerOverview(organizationId), HttpStatus.OK);
     }
 
     @GetMapping("/{tenant_id}/check_is_register")
     @Permission(permissionWithin = true)
     @ApiOperation(value = "判断组织是否是注册组织")
-    public ResponseEntity<Boolean> checkOrganizationIsRegister(@Encrypt @PathVariable(name = "tenant_id") Long organizationId) {
+    public ResponseEntity<Boolean> checkOrganizationIsRegister(@PathVariable(name = "tenant_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkOrganizationIsRegister(organizationId));
     }
 }

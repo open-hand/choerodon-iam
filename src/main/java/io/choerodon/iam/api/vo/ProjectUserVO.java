@@ -21,10 +21,8 @@ public class ProjectUserVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("用户id")
-    @Encrypt
     private Long memberId;
     @ApiModelProperty("项目id")
-    @Encrypt
     private Long projectId;
     @ApiModelProperty("角色id")
     @Encrypt

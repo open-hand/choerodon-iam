@@ -34,7 +34,6 @@ public class OrganizationProjectVO {
     }
 
     public static class Organization {
-        @Encrypt
         private Long id;
         private String name;
         private String code;

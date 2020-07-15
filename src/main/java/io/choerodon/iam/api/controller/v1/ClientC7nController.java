@@ -47,7 +47,7 @@ public class ClientC7nController extends BaseController {
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
     public ResponseEntity<Client> createInfo(
-            @Encrypt @PathVariable("organization_id") Long organizationId) {
+            @PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(clientC7nService.getDefaultCreateData(organizationId), HttpStatus.OK);
     }
 
@@ -56,7 +56,7 @@ public class ClientC7nController extends BaseController {
     @ApiOperation(value = "删除客户端")
     @DeleteMapping(value = "/{client_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("client_id") Long clientId) {
         Client client = new Client();
         client.setOrganizationId(organizationId);
@@ -70,7 +70,7 @@ public class ClientC7nController extends BaseController {
     @ApiOperation(value = "通过名称查询客户端")
     @GetMapping("/query_by_name")
     public ResponseEntity<Client> queryByName(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @RequestParam(value = "client_name") String clientName) {
         return new ResponseEntity<>(clientC7nService.queryByName(organizationId, clientName), HttpStatus.OK);
     }
@@ -79,7 +79,7 @@ public class ClientC7nController extends BaseController {
     @ApiOperation(value = "客户端分配角色")
     @PostMapping(value = "/{client_id}/assign_roles")
     public ResponseEntity<Void> assignRoles(
-            @Encrypt @PathVariable("organization_id") Long organizationId,
+            @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("client_id") Long clientId,
             @RequestBody List<String> encryptRoleIds) {
         List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
@@ -91,7 +91,7 @@ public class ClientC7nController extends BaseController {
     @ApiOperation(value = "创建客户端，该接口会保存客户端关系")
     @PostMapping
     public ResponseEntity<ClientVO> create(
-            @Encrypt @PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
+            @PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
         clientVO.setOrganizationId(organizationId);
         this.validObject(clientVO);
         return Results.success(clientC7nService.create(clientVO));

@@ -32,9 +32,9 @@ public class TimeZoneWorkCalendarProjectC7nController {
     @ApiOperation("获取冲刺有关于组织层时区设置")
     @GetMapping(value = "/time_zone_detail/{organization_id}")
     public ResponseEntity<TimeZoneWorkCalendarRefDetailVO> queryTimeZoneWorkCalendarDetail(@ApiParam(value = "项目id", required = true)
-                                                                                           @Encrypt @PathVariable(name = "project_id") Long projectId,
+                                                                                           @PathVariable(name = "project_id") Long projectId,
                                                                                            @ApiParam(value = "组织id", required = true)
-                                                                                           @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                           @PathVariable(name = "organization_id") Long organizationId,
                                                                                            @ApiParam(value = "时间", required = true)
                                                                                            @RequestParam(name = "year") Integer year) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year))

@@ -23,7 +23,6 @@ public class ProjectUserDTO extends AuditDomain {
     private Long id;
 
     @ApiModelProperty("项目id")
-    @Encrypt
     private Long projectId;
 
     @ApiModelProperty("用户角色关系id")

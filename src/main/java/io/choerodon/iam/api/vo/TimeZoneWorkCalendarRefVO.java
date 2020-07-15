@@ -25,7 +25,6 @@ public class TimeZoneWorkCalendarRefVO {
     private Integer year;
 
     @ApiModelProperty(value = "组织id")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "版本号")

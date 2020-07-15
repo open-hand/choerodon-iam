@@ -25,7 +25,6 @@ public class TimeZoneWorkCalendarVO {
     private Long objectVersionNumber;
 
     @ApiModelProperty(value = "组织id")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "是否使用法定节假日")

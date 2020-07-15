@@ -27,7 +27,6 @@ public class ClientVO {
     private String name;
 
     @ApiModelProperty(value = "组织ID/必填")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "客户端资源/非必填/默认：default")

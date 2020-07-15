@@ -38,7 +38,7 @@ public class OrganizationMenuC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/{menu_level}/permission-set-tree")
     public ResponseEntity<List<Menu>> listPermissionSetTree(
-            @Encrypt @PathVariable(value = "tenant_id") Long tenantId,
+            @PathVariable(value = "tenant_id") Long tenantId,
             @PathVariable(value = "menu_level") String menuLevel) {
         return ResponseEntity.ok(menuC7nService.listPermissionSetTree(tenantId, menuLevel));
     }

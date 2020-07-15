@@ -35,7 +35,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("获取时区设置")
     @GetMapping
     public ResponseEntity<TimeZoneWorkCalendarVO> queryTimeZoneWorkCalendar(@ApiParam(value = "组织id", required = true)
-                                                                            @Encrypt @PathVariable(name = "organization_id") Long organizationId) {
+                                                                            @PathVariable(name = "organization_id") Long organizationId) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendar(organizationId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarController.queryTimeZoneWorkCalendar"));
@@ -46,7 +46,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("修改时区设置")
     @PutMapping(value = "/{timeZoneId}")
     public ResponseEntity<TimeZoneWorkCalendarVO> updateTimeZoneWorkCalendar(@ApiParam(value = "组织id", required = true)
-                                                                             @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                             @PathVariable(name = "organization_id") Long organizationId,
                                                                              @ApiParam(value = "时区id", required = true)
                                                                              @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                              @ApiParam(value = "timeZoneWorkCalendar", required = true)
@@ -60,7 +60,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("批量创建或删除时区工作日历")
     @PutMapping("/ref/batch/{timeZoneId}")
     public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> batchUpdateTimeZoneWorkCalendarRef(@ApiParam(value = "组织id", required = true)
-                                                                                              @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                              @PathVariable(name = "organization_id") Long organizationId,
                                                                                               @ApiParam(value = "时区id", required = true)
                                                                                               @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                                               @ApiParam(value = "日期列表", required = true)
@@ -72,7 +72,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("获取时区工作日历")
     @GetMapping(value = "/ref/{timeZoneId}")
     public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> queryTimeZoneWorkCalendarRefByTimeZoneId(@ApiParam(value = "组织id", required = true)
-                                                                                                    @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                                    @PathVariable(name = "organization_id") Long organizationId,
                                                                                                     @ApiParam(value = "时区id", required = true)
                                                                                                     @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                                                     @ApiParam(value = "年份", required = true)
@@ -86,7 +86,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("获取时区下的工作日历")
     @GetMapping(value = "/detail")
     public ResponseEntity<TimeZoneWorkCalendarRefDetailVO> queryTimeZoneWorkCalendarDetail(@ApiParam(value = "组织id", required = true)
-                                                                                           @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+                                                                                           @PathVariable(name = "organization_id") Long organizationId,
                                                                                            @ApiParam(value = "年份", required = true)
                                                                                            @RequestParam(name = "year") Integer year) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year))
@@ -98,7 +98,7 @@ public class TimeZoneWorkCalendarController {
     @ApiOperation("【敏捷专用】根据组织id获取时区工作日历")
     @GetMapping(value = "/query_by_org_id")
     public ResponseEntity<TimeZoneWorkCalendarDTO> queryTimeZoneDetailByOrganizationId(@ApiParam(value = "组织id", required = true)
-                                                                                       @Encrypt @PathVariable(name = "organization_id") Long organizationId) {
+                                                                                       @PathVariable(name = "organization_id") Long organizationId) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneDetailByOrganizationId(organizationId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarController.queryTimeZoneDetailByOrganizationId"));

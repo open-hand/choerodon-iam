@@ -52,7 +52,7 @@ public class PermissionC7nController {
     @ApiOperation("组织层通过角色查询权限列表")
     @PostMapping("/through_roles_at_org/{organization_id}")
     public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIdsAtOrg(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @RequestBody List<String> encryptRoleIds) {
         List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
         return new ResponseEntity<>(permissionC7nService.queryByRoleIds(roleIds), HttpStatus.OK);
@@ -83,7 +83,7 @@ public class PermissionC7nController {
     })
     @PostMapping("/menus/check-permissions")
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
-            @Encrypt @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Long projectId,
             @RequestBody List<String> codes) {
         return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
     }

@@ -36,7 +36,7 @@ public class ReportC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询报表列表")
     @GetMapping(value = "/list")
-    public ResponseEntity<List<ReportDTO>> queryReportList(@Encrypt @PathVariable(value = "project_id") Long projectId) {
+    public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(reportService.queryReportList(projectId), HttpStatus.OK);
     }
 }

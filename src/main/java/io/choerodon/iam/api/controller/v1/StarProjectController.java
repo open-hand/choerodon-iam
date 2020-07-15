@@ -50,7 +50,7 @@ public class StarProjectController {
     @ApiOperation("查询组织下 用户有权限的星标项目")
     @Permission(permissionLogin = true)
     @GetMapping
-    public ResponseEntity<List<ProjectDTO>> query(@Encrypt @PathVariable(value = "organization_id") Long organizationId,
+    public ResponseEntity<List<ProjectDTO>> query(@PathVariable(value = "organization_id") Long organizationId,
                                                   @RequestParam(value = "size", required = false) Integer size) {
         return ResponseEntity.ok(starProjectService.query(organizationId, size));
     }

@@ -29,7 +29,6 @@ public class LdapAutoDTO extends AuditDomain {
     private Long id;
 
     @ApiModelProperty(value = "组织ID")
-    @Encrypt
     private Long organizationId;
 
     @ApiModelProperty(value = "频率/必填")

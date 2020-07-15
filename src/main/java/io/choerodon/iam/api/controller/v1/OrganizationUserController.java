@@ -74,7 +74,7 @@ public class OrganizationUserController extends BaseController {
     @GetMapping(value = "/users/search")
     @CustomPageRequest
     public ResponseEntity<Page<User>> pagingQueryUsersWithRolesOnOrganizationLevel(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @RequestParam(required = false) String loginName,
@@ -92,7 +92,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的组织角色信息以及GitlabUserId）")
     @PostMapping(value = "/users/list_by_ids")
     public ResponseEntity<List<UserWithGitlabIdVO>> listUsersWithRolesAndGitlabUserIdByIds(
-            @Encrypt @ApiParam(value = "组织id", required = true)
+            @ApiParam(value = "组织id", required = true)
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiParam(value = "多个用户id", required = true)
             @RequestBody Set<String> encryptUserIds) {
@@ -105,7 +105,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "创建用户并分配角色")
     @PostMapping("/users")
     public ResponseEntity<User> createUserWithRoles(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @RequestBody User user) {
         user.setUserType(UserType.ofDefault(user.getUserType()).value());
         user.setOrganizationId(organizationId);
@@ -117,7 +117,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "修改用户")
     @PutMapping(value = "/users/{id}")
     public ResponseEntity<Void> update(
-            @Encrypt @PathVariable(name = "organization_id") Long organizationId,
+            @PathVariable(name = "organization_id") Long organizationId,
             @Encrypt @PathVariable Long id,
             @RequestBody User user) {
         user.setOrganizationId(organizationId);
@@ -129,7 +129,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重置用户密码")
     @PutMapping(value = "/users/{id}/reset")
-    public ResponseEntity<User> resetUserPassword(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> resetUserPassword(@PathVariable(name = "organization_id") Long organizationId,
                                                   @Encrypt @PathVariable Long id) {
         return Results.success(organizationUserService.resetUserPassword(organizationId, id));
     }
@@ -137,7 +137,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/users/{id}")
-    public ResponseEntity<User> queryUserInOrganization(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> queryUserInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                         @Encrypt @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.query(organizationId, id), HttpStatus.OK);
     }
@@ -145,7 +145,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "解锁用户")
     @PutMapping(value = "/users/{id}/unlock")
-    public ResponseEntity<User> unlock(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> unlock(@PathVariable(name = "organization_id") Long organizationId,
                                        @Encrypt @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.unlock(organizationId, id), HttpStatus.OK);
     }
@@ -153,7 +153,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用用户")
     @PutMapping(value = "/users/{id}/enable")
-    public ResponseEntity<User> enableUser(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> enableUser(@PathVariable(name = "organization_id") Long organizationId,
                                            @Encrypt @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.enableUser(organizationId, id), HttpStatus.OK);
     }
@@ -161,7 +161,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "禁用用户")
     @PutMapping(value = "/users/{id}/disable")
-    public ResponseEntity<User> disableUser(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<User> disableUser(@PathVariable(name = "organization_id") Long organizationId,
                                             @Encrypt @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.disableUser(organizationId, id), HttpStatus.OK);
     }
@@ -169,7 +169,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "用户信息重名校验")
     @PostMapping(value = "/users/check")
-    public ResponseEntity<Void> check(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Void> check(@PathVariable(name = "organization_id") Long organizationId,
                                       @RequestBody User user) {
         userC7nService.check(user);
         return ResponseEntity.ok().build();
@@ -179,7 +179,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation("从excel里面批量导入用户")
     @PostMapping("/users/batch_import")
     public ResponseEntity<Void> importUsersFromExcel(
-            @Encrypt @PathVariable(name = "organization_id") Long id,
+            @PathVariable(name = "organization_id") Long id,
             @RequestPart MultipartFile file) {
         excelService.importUsers(id, file);
         return ResponseEntity.noContent().build();
@@ -189,7 +189,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation("下载导入用户的模板文件")
     @GetMapping("/users/download_templates")
     public ResponseEntity<Resource> downloadTemplates(
-            @Encrypt @PathVariable(name = "organization_id") Long id) {
+            @PathVariable(name = "organization_id") Long id) {
         HttpHeaders headers = excelService.getHttpHeaders();
         Resource resource = excelService.getUserTemplates();
         //excel2007
@@ -199,7 +199,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查询最新的导入历史")
     @GetMapping("/users/{user_id}/upload/history")
-    public ResponseEntity<UploadHistoryDTO> latestHistory(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<UploadHistoryDTO> latestHistory(@PathVariable(name = "organization_id") Long organizationId,
                                                           @Encrypt @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
@@ -207,7 +207,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
     @GetMapping(value = "/users/{user_id}/projects")
-    public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                  @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                  @RequestParam(required = false) String name,
                                                                  @RequestParam(required = false) String code,
@@ -227,7 +227,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
     @GetMapping(value = "/users/{user_id}/projects/paging")
-    public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
                                                                    @RequestParam(required = false) String name,
@@ -248,7 +248,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织人数统计")
     @GetMapping(value = "/users/count_by_date")
-    public ResponseEntity<UserNumberVO> countByDateInOrganization(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<UserNumberVO> countByDateInOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                                   @RequestParam(value = "start_time") Date startTime,
                                                                   @RequestParam(value = "end_time") Date endTime) {
         return ResponseEntity.ok(userC7nService.countByDate(organizationId, startTime, endTime));
@@ -257,7 +257,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "判断用户是否是组织管理员")
     @GetMapping(value = "/users/{user_id}/check_is_root")
-    public ResponseEntity<Boolean> checkIsOrgRoot(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
                                                   @Encrypt @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
     }
@@ -265,14 +265,14 @@ public class OrganizationUserController extends BaseController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
-    public ResponseEntity<Boolean> checkEnableCreateUser(@Encrypt @PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<Boolean> checkEnableCreateUser(@PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateOrganizationUser(organizationId));
     }
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询用户有权限的项目-devops用")
     @GetMapping("/users/{user_id}/owned_projects")
-    public ResponseEntity<List<ProjectDTO>> listOwnedProjects(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable(name = "organization_id") Long organizationId,
                                                               @Encrypt @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(userC7nService.listOwnedProjects(organizationId, userId));
     }

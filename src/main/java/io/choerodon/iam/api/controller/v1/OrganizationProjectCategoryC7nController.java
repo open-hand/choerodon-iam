@@ -33,7 +33,7 @@ public class OrganizationProjectCategoryC7nController extends BaseController {
     @Permission(permissionLogin = true)
     @GetMapping
     public ResponseEntity<List<ProjectCategoryDTO>> list(
-            @Encrypt @PathVariable(value = "organization_id") Long organizationId) {
+            @PathVariable(value = "organization_id") Long organizationId) {
         return ResponseEntity.ok(projectCategoryC7nService.list());
     }
 

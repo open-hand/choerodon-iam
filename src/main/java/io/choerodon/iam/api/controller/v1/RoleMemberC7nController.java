@@ -80,7 +80,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
-            @Encrypt @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "project_id") Long projectId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return ResponseEntity.ok(roleC7nService.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO));
     }
@@ -99,7 +99,7 @@ public class RoleMemberC7nController extends BaseController {
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
-            @Encrypt @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @Encrypt @RequestParam(name = "role_id") Long roleId,
@@ -115,7 +115,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户在项目下拥有的角色")
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
-    public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
                                                                           @Encrypt @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(projectUserService.listRolesByProjectIdAndUserId(projectId, userId));
     }
@@ -132,7 +132,7 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @Encrypt @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "project_id") Long projectId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return ResponseEntity.ok(projectUserService.pagingQueryUsersWithRoles(
                 pageRequest, roleAssignmentSearchDTO, projectId));
@@ -141,7 +141,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
-    public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                                         @RequestParam(name = "role_name") String roleName,
                                                                                         @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                                                 Boolean onlySelectEnable) {
@@ -151,7 +151,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层查询启用状态的用户列表")
     @GetMapping(value = "/organizations/{organization_id}/enableUsers")
-    public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @RequestParam(name = "user_name") String userName) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.ORGANIZATION.value(), organizationId, userName), HttpStatus.OK);
@@ -160,7 +160,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询启用状态的用户列表")
     @GetMapping(value = "/projects/{project_id}/enableUsers")
-    public ResponseEntity<List<User>> listUsersOnProjectLevel(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                               @RequestParam(name = "user_name") String userName) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.PROJECT.value(), projectId, userName), HttpStatus.OK);
@@ -178,7 +178,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层查询角色列表")
     @GetMapping(value = "/organizations/{organization_id}/roles")
-    public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<List<RoleDTO>> listRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                       @RequestParam(name = "role_name", required = false) String roleName,
                                                                       @RequestParam(name = "role_code", required = false) String roleCode,
                                                                       @RequestParam(name = "label_name", required = false) String labelName,
@@ -193,7 +193,7 @@ public class RoleMemberC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<SimplifiedUserVO>> queryAllUsers(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                @Encrypt @RequestParam(value = "organization_id") Long organizationId,
+                                                                @RequestParam(value = "organization_id") Long organizationId,
                                                                 @RequestParam(value = "param", required = false) String param) {
         return new ResponseEntity<>(userC7nService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
     }
@@ -201,7 +201,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层批量分配用户角色")
     @PostMapping(value = "/organizations/{organization_id}/users/assign_roles")
-    public ResponseEntity<Void> assignUsersRolesOnOrganizationLevel(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Void> assignUsersRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                     @RequestBody List<MemberRole> memberRoleDTOS) {
         userC7nService.assignUsersRolesOnOrganizationLevel(organizationId, memberRoleDTOS);
         return ResponseEntity.noContent().build();
@@ -216,14 +216,14 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层下载excel导入模板")
     @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
-    public ResponseEntity<Resource> downloadTemplatesOnOrganization(@Encrypt @PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
         return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.ORGANIZATION.value());
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("组织层从excel里面批量导入用户角色关系")
     @PostMapping("/organizations/{organization_id}/role_members/batch_import")
-    public ResponseEntity import2MemberRoleOnOrganization(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestPart MultipartFile file) {
         roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
@@ -236,7 +236,7 @@ public class RoleMemberC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @Encrypt @RequestParam(name = "role_id") Long roleId,
-            @Encrypt @PathVariable(name = "organization_id") Long sourceId,
+            @PathVariable(name = "organization_id") Long sourceId,
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(clientC7nService.pagingQueryUsersByRoleId(pageRequest, ResourceLevel.ORGANIZATION, sourceId, clientRoleQueryVO, roleId), HttpStatus.OK);
     }
@@ -250,7 +250,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "组织层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
     public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnOrganizationLevel(
-            @Encrypt @PathVariable(name = "organization_id") Long sourceId,
+            @PathVariable(name = "organization_id") Long sourceId,
             @RequestParam(required = false, name = "enable", defaultValue = "true") Boolean enable,
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnOrganizationLevel(
@@ -266,7 +266,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "组织层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
     public ResponseEntity<List<RoleC7nDTO>> listRolesWithUserCountOnOrganizationLevel(
-            @Encrypt @PathVariable(name = "organization_id") Long sourceId,
+            @PathVariable(name = "organization_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithUserCountOnOrganizationLevel(
                 roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
@@ -281,7 +281,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
     public ResponseEntity<List<RoleC7nDTO>> listRolesWithClientCountOnProjectLevel(
-            @Encrypt @PathVariable(name = "project_id") Long sourceId,
+            @PathVariable(name = "project_id") Long sourceId,
             @RequestBody(required = false) @Valid ClientRoleQueryVO clientRoleQueryVO) {
         return new ResponseEntity<>(roleC7nService.listRolesWithClientCountOnProjectLevel(
                 clientRoleQueryVO, sourceId), HttpStatus.OK);
@@ -290,7 +290,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查项目层的历史")
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
-    public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@Encrypt @PathVariable(name = "project_id") Long projectId,
+    public ResponseEntity<UploadHistoryDTO> latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
@@ -305,7 +305,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
-    public ResponseEntity<Resource> downloadTemplatesOnProject(@Encrypt @PathVariable(name = "project_id") Long projectId) {
+    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
         return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
     }
 
@@ -313,7 +313,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查组织层的历史")
     @GetMapping("/organizations/{organization_id}/member_role/users/{user_id}/upload/history")
-    public ResponseEntity<UploadHistoryDTO> latestHistoryOnOrganization(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<UploadHistoryDTO> latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                                         @Encrypt @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
@@ -321,7 +321,7 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层更新用户角色")
     @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
-    public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@Encrypt @PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @RequestBody @Validated List<Role> roles) {
 
@@ -347,7 +347,7 @@ public class RoleMemberC7nController extends BaseController {
     @PostMapping(value = "/organizations/{organization_id}/role_members/users")
     public ResponseEntity<List<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
             @Encrypt @RequestParam(name = "role_id") Long roleId,
-            @Encrypt @PathVariable(name = "organization_id") Long sourceId) {
+            @PathVariable(name = "organization_id") Long sourceId) {
         return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnOrganizationLevel(roleId, sourceId), HttpStatus.OK);
     }
 }

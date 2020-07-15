@@ -38,7 +38,6 @@ public class QuickLinkVO extends AuditDomain {
     private Long createUserId;
 
     @ApiModelProperty(value = "共享项目id")
-    @Encrypt
     private Long projectId;
 
     @ApiModelProperty(value = "共享范围")

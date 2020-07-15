@@ -8,7 +8,6 @@ import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -26,7 +25,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author flyleft
@@ -61,14 +59,13 @@ public class ProjectC7nController extends BaseController {
     /**
      * 根据id集合查询项目
      *
-     * @param encryptIds id集合，去重
+     * @param ids id集合，去重
      * @return 项目集合
      */
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id集合查询项目")
     @PostMapping("/ids")
-    public ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<String> encryptIds) {
-        Set<Long> ids = encryptIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+    public ResponseEntity<List<ProjectDTO>> queryByIds(@Encrypt @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(projectService.queryByIds(ids), HttpStatus.OK);
     }
 

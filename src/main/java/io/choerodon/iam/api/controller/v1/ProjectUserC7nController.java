@@ -12,7 +12,6 @@ import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -31,7 +30,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
@@ -99,8 +97,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
-            @RequestBody Set<String> encryptUserIds) {
-        Set<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+            @Encrypt @RequestBody Set<Long> userIds) {
         return new ResponseEntity<>(projectUserService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
@@ -161,9 +158,8 @@ public class ProjectUserC7nController extends BaseController {
                                                     @ApiIgnore
                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                             PageRequest pageable,
-                                                    @RequestBody Set<String> encryptUserIds,
+                                                    @Encrypt @RequestBody Set<Long> userIds,
                                                     @RequestParam(required = false) String param) {
-        Set<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         return new ResponseEntity<>(projectUserService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
@@ -182,8 +178,7 @@ public class ProjectUserC7nController extends BaseController {
     public ResponseEntity<Void> updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                               @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                               @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                              @RequestBody Set<String> encryptRoleIds) {
-        Set<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+                                                              @Encrypt @RequestBody Set<Long> roleIds) {
         projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return ResponseEntity.noContent().build();
     }

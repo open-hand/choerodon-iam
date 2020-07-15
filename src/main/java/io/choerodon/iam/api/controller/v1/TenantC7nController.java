@@ -11,7 +11,6 @@ import io.choerodon.iam.app.service.DemoRegisterService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -31,7 +30,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -153,14 +151,13 @@ public class TenantC7nController extends BaseController {
     /**
      * 根据id集合查询组织
      *
-     * @param encryptIds id集合，去重
+     * @param ids id集合，去重
      * @return 组织集合
      */
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id集合查询组织")
     @PostMapping("/ids")
-    public ResponseEntity<List<Tenant>> queryByIds(@RequestBody Set<String> encryptIds) {
-        Set<Long> ids = encryptIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+    public ResponseEntity<List<Tenant>> queryByIds(@Encrypt @RequestBody Set<Long> ids) {
         return Results.success(tenantC7nService.queryTenantsByIds(ids));
     }
 
@@ -213,8 +210,7 @@ public class TenantC7nController extends BaseController {
                                                         @RequestParam(required = false) String code,
                                                         @RequestParam(required = false) Boolean enabled,
                                                         @RequestParam(required = false) String params,
-                                                        @RequestBody Set<String> encryptOrgIds) {
-        Set<Long> orgIds = encryptOrgIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+                                                        @Encrypt @RequestBody Set<Long> orgIds) {
         return new ResponseEntity<>(tenantC7nService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
     }
 

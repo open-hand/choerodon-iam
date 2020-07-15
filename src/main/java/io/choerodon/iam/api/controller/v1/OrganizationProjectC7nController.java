@@ -10,7 +10,6 @@ import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -18,6 +17,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author flyleft
@@ -157,21 +156,20 @@ public class OrganizationProjectC7nController extends BaseController {
      * 前端传的时间参数格式应为
      * yyyy-MM-dd HH:mm:ss
      *
-     * @param organizationId    组织id
-     * @param encryptProjectIds 项目id
-     * @param startTime         开始时间
-     * @param endTime           结束时间
+     * @param organizationId 组织id
+     * @param projectIds     项目id
+     * @param startTime      开始时间
+     * @param endTime        结束时间
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
     public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
-                                                                 @RequestBody Set<String> encryptProjectIds,
+                                                                 @Encrypt @RequestBody Set<Long> projectIds,
                                                                  @ApiParam(value = "开始时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "start_time") Date startTime,
                                                                  @ApiParam(value = "结束时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "end_time") Date endTime) {
-        Set<Long> projectIds = encryptProjectIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
         return ResponseEntity.ok(organizationProjectC7nService.countDeployRecords(projectIds, startTime, endTime));
     }
 

@@ -4,7 +4,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -81,8 +79,7 @@ public class ClientC7nController extends BaseController {
     public ResponseEntity<Void> assignRoles(
             @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("client_id") Long clientId,
-            @RequestBody List<String> encryptRoleIds) {
-        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
+            @Encrypt @RequestBody List<Long> roleIds) {
         clientC7nService.assignRoles(organizationId, clientId, roleIds);
         return ResponseEntity.noContent().build();
     }

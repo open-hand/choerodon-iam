@@ -6,7 +6,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OrgAdministratorVO;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_ORGANIZATION_ADMIN)
 @RestController
@@ -51,8 +49,7 @@ public class OrganizationAdminC7nController {
     @ApiOperation(value = "添加组织管理员角色")
     public ResponseEntity<Void> createOrgAdministrator(
             @PathVariable(name = "organization_id") Long organizationId,
-            @RequestParam(name = "id") List<String> encryptUserIds) {
-        List<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
+            @Encrypt @RequestParam(name = "id") List<Long> userIds) {
         userC7nService.createOrgAdministrator(userIds, organizationId);
         return ResponseEntity.noContent().build();
 

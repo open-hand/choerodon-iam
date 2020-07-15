@@ -3,7 +3,6 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -43,8 +41,7 @@ public class PermissionC7nController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("通过角色查询权限列表")
     @PostMapping
-    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIds(@RequestBody List<String> encryptRoleIds) {
-        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
+    public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIds(@RequestBody List<Long> roleIds) {
         return new ResponseEntity<>(permissionC7nService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
@@ -53,8 +50,7 @@ public class PermissionC7nController {
     @PostMapping("/through_roles_at_org/{organization_id}")
     public ResponseEntity<Set<org.hzero.iam.domain.entity.Permission>> queryByRoleIdsAtOrg(
             @PathVariable(name = "organization_id") Long organizationId,
-            @RequestBody List<String> encryptRoleIds) {
-        List<Long> roleIds = encryptRoleIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toList());
+            @Encrypt @RequestBody List<Long> roleIds) {
         return new ResponseEntity<>(permissionC7nService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 

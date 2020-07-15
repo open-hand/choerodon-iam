@@ -13,7 +13,6 @@ import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -37,7 +36,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -178,8 +176,8 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "批量给用户添加管理员身份")
     @PostMapping("/admin")
-    public ResponseEntity<Void> addDefaultUsers(@ModelAttribute("id") List<String> encryptIds) {
-        userC7nService.addAdminUsers(encryptIds.stream().map(KeyDecryptHelper::decryptId).toArray(Long[]::new));
+    public ResponseEntity<Void> addDefaultUsers(@Encrypt @ModelAttribute("id") Long[] ids) {
+        userC7nService.addAdminUsers(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -195,9 +193,8 @@ public class UserC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
-    public ResponseEntity<List<User>> listUsersByIds(@RequestBody String[] encryptIds,
+    public ResponseEntity<List<User>> listUsersByIds(@Encrypt @RequestBody Long[] ids,
                                                      @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
-        Long[] ids = Arrays.stream(encryptIds).map(KeyDecryptHelper::decryptId).toArray(Long[]::new);
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
 
@@ -208,8 +205,7 @@ public class UserC7nController extends BaseController {
             @ApiParam(value = "是否只查询启用的用户", required = false)
             @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled,
             @ApiParam(value = "用户id集合", required = true)
-            @RequestBody Set<String> encryptIds) {
-        Set<Long> ids = encryptIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+            @Encrypt @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
 
@@ -418,8 +414,7 @@ public class UserC7nController extends BaseController {
     @PostMapping(value = "/{user_id}/project_role_labels")
     public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
             @Encrypt @PathVariable("user_id") Long userId,
-            @RequestBody Set<String> encryptProjectIds) {
-        Set<Long> projectIds = encryptProjectIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+            @Encrypt @RequestBody Set<Long> projectIds) {
         return ResponseEntity.ok(userC7nService.listRoleLabelsForUserInTheProject(userId, projectIds));
     }
 }

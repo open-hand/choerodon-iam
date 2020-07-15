@@ -11,7 +11,6 @@ import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.utils.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -37,7 +36,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -95,8 +93,7 @@ public class OrganizationUserController extends BaseController {
             @ApiParam(value = "组织id", required = true)
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiParam(value = "多个用户id", required = true)
-            @RequestBody Set<String> encryptUserIds) {
-        Set<Long> userIds = encryptUserIds.stream().map(KeyDecryptHelper::decryptId).collect(Collectors.toSet());
+            @Encrypt @RequestBody Set<Long> userIds) {
         return new ResponseEntity<>(userC7nService.listUsersWithRolesAndGitlabUserIdByIdsInOrg(organizationId, userIds), HttpStatus.OK);
     }
 

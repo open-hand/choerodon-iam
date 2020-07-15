@@ -542,12 +542,19 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
-                OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
+        Map<Long, TenantVO> tenants = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false)
+                .stream()
+                .distinct()
+                .collect(Collectors.toMap(Tenant::getTenantId, t -> t));
+
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setEnabled(true);
-        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
-                .stream().map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
+        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        organizationProjectDTO.setProjectList(projectDTOS.stream()
+                .filter(p -> tenants.get(p.getOrganizationId()) != null)
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName()))
+                .collect(Collectors.toList()));
+
         return organizationProjectDTO;
     }
 

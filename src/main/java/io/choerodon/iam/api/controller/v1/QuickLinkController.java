@@ -1,16 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.QuickLinkVO;
 import io.choerodon.iam.app.service.QuickLinkService;
@@ -18,6 +7,17 @@ import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.QuickLinkDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
 
 /**
  * 〈功能简述〉
@@ -45,8 +45,9 @@ public class QuickLinkController {
     @ApiOperation("修改快速链接")
     @Permission(permissionLogin = true)
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable(value = "id") Long id,
-                                       @RequestBody @Valid QuickLinkDTO quickLinkDTO) {
+    public ResponseEntity<Void> update(
+            @Encrypt @PathVariable(value = "id") Long id,
+            @RequestBody @Valid QuickLinkDTO quickLinkDTO) {
         quickLinkService.update(id, quickLinkDTO);
         return ResponseEntity.noContent().build();
     }
@@ -54,7 +55,7 @@ public class QuickLinkController {
     @ApiOperation("删除快速链接")
     @Permission(permissionLogin = true)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<Void> delete(@Encrypt @PathVariable(value = "id") Long id) {
         quickLinkService.delete(id);
         return ResponseEntity.noContent().build();
     }

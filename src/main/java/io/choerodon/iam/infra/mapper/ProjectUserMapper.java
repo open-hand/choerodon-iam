@@ -115,7 +115,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * 统计项目下角色分配用户数
      *
      * @param projectId
-     * @return
+     * @return RoleUserCountVO列表
      */
     List<RoleUserCountVO> countProjectRoleUser(@Param("projectId") Long projectId);
 
@@ -126,7 +126,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @param userId
      * @param email
      * @param param
-     * @return
+     * @return UserDTO列表
      */
     List<UserDTO> selectUsersByOptions(@Param("projectId") Long projectId,
                                        @Param("userId") Long userId,
@@ -138,7 +138,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @param roleId
      * @param roleAssignmentSearchDTO
      * @param param
-     * @return
+     * @return UserDTO列表
      */
     List<UserDTO> listProjectUsersByRoleIdAndOptions(@Param("projectId") Long projectId,
                                                      @Param("roleId") Long roleId,
@@ -157,7 +157,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return RoleDTO列表
      */
     List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                 @Param("userId") Long userId);
@@ -167,7 +167,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                         @Param("userId") Long userId,
@@ -178,7 +178,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleWithOutProjectId(@Param("projectId") Long projectId,
                                                     @Param("userId") Long userId,

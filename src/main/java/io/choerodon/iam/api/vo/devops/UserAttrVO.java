@@ -1,9 +1,11 @@
 package io.choerodon.iam.api.vo.devops;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class UserAttrVO {
     @ApiModelProperty("choerodon用户id")
+    @Encrypt
     private Long iamUserId;
     @ApiModelProperty("gitlab用户id")
     private Long gitlabUserId;

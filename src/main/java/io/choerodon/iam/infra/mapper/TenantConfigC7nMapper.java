@@ -5,8 +5,8 @@ import org.hzero.iam.domain.entity.TenantConfig;
 
 /**
  * @author scp
- * @date 2020/5/23
- * @description
+ * @since 2020/5/23
+ *
  */
 public interface TenantConfigC7nMapper {
     TenantConfig queryTenantConfigByTenantIdAndKey(@Param("tenantId") Long tenantId,

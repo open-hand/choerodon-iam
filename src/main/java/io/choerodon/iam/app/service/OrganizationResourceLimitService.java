@@ -10,19 +10,23 @@ package io.choerodon.iam.app.service;
 public interface OrganizationResourceLimitService {
     /**
      * 检查是否还能创建组织用户
+     *
      * @param organizationId
-     * @return
+     * @return true 或者 false
      */
-     Boolean checkEnableCreateOrganizationUser(Long organizationId);
+    Boolean checkEnableCreateOrganizationUser(Long organizationId);
 
     /**
      * 检查是否还能创建项目用户
+     *
      * @param projectId
-     * @return
+     * @return true 或者 false
      */
     Boolean checkEnableCreateProjectUser(Long projectId);
+
     /**
      * 校验组织是否是注册组织
+     *
      * @param tenantId
      * @return 默认值false
      */
@@ -30,19 +34,22 @@ public interface OrganizationResourceLimitService {
 
     /**
      * 校验组织是否还能创建项目
+     *
      * @param organizationId
      */
     void checkEnableCreateProjectOrThrowE(Long organizationId);
 
     /**
      * 检查组织下是否还能创建项目
+     *
      * @param organizationId
-     * @return
+     * @return true 或者 false
      */
     Boolean checkEnableCreateProject(Long organizationId);
 
     /**
      * 检查组织层是否还能创建用户
+     *
      * @param organizationId
      * @param userNum
      */

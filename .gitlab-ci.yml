@@ -8,7 +8,7 @@ build backend:
   stage: build
   script:
     - update_pom_version
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
+    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -Dmaven.javadoc.skip=true -U
     - >-
         mvn --batch-mode verify sonar:sonar
         -Dsonar.host.url=$SONAR_URL
@@ -19,7 +19,8 @@ build backend:
         -Dsonar.analysis.serviceGroup=$GROUP_NAME
         -Dsonar.analysis.commitId=$CI_COMMIT_SHA
         -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
-    - mvn package spring-boot:repackage
+        -Dmaven.javadoc.skip=true
+    - mvn package spring-boot:repackage -Dmaven.javadoc.skip=true
     - mv target/app.jar $PWD/docker
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
 
@@ -32,7 +33,7 @@ release backend:
 maven-deploy-snapshot:
   stage: build
   script:
-  - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
+  - mvn clean install -Dmaven.javadoc.skip=true -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
   # 只有master, release和hotfix分支才发包
   only:
     refs:
@@ -44,7 +45,7 @@ maven-deploy-snapshot:
 maven-deploy-release:
   stage: build
   script:
-    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
+    - mvn clean install -Dmaven.javadoc.skip=true -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
   only:
     - tags
 

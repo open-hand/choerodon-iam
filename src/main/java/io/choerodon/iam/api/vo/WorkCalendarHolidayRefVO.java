@@ -2,6 +2,7 @@ package io.choerodon.iam.api.vo;
 
 import io.choerodon.iam.infra.utils.StringUtil;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Objects;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 public class WorkCalendarHolidayRefVO {
 
     @ApiModelProperty(value = "主键id")
+    @Encrypt
     private Long calendarId;
 
     @ApiModelProperty(value = "节假日名称")

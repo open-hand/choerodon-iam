@@ -119,7 +119,7 @@ public interface ProjectUserService {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
-     * @return
+     * @return OnlineUserStatistics
      */
     OnlineUserStatistics getUserCount(Long projectId, PageRequest pageRequest);
 

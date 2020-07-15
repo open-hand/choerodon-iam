@@ -1,15 +1,13 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-import java.util.Set;
-
-
-import org.hzero.iam.domain.entity.Tenant;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.domain.entity.Tenant;
+
+import java.util.List;
+import java.util.Set;
 
 public interface ProjectC7nService {
 
@@ -29,13 +27,15 @@ public interface ProjectC7nService {
 
     /**
      * 根据项目id，查询项目所属组织信息
+     *
      * @param projectId
-     * @return
+     * @return Tenant
      */
     Tenant getOrganizationByProjectId(Long projectId);
 
     /**
      * 检查项目是否存在
+     *
      * @param projectId
      * @return 存在返回项目信息，不存在抛出not.exist exception
      */
@@ -43,27 +43,30 @@ public interface ProjectC7nService {
 
     /**
      * 查询项目所属组织下所有可用项目（不包含本项目，限制50个)
+     *
      * @param projectId
      * @param name
-     * @return
+     * @return ProjectDTO列表
      */
     List<ProjectDTO> listOrgProjectsWithLimitExceptSelf(Long projectId, String name);
 
 
     /**
      * 查询所有项目
-     * @return
+     *
+     * @return ProjectDTO列表
      */
     List<ProjectDTO> listAllProjects();
 
     /**
      * 根据projectId和param模糊查询loginName和realName两列
+     *
      * @param projectId
      * @param userId
      * @param email
      * @param pageRequest
      * @param param
-     * @return
+     * @return UserDTO分页
      */
     Page<UserDTO> pagingQueryTheUsersOfProject(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
 }

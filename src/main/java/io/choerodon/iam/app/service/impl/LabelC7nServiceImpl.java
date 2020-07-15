@@ -15,8 +15,8 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 
 /**
  * @author scp
- * @date 2020/3/31
- * @description
+ * @since 2020/3/31
+ *
  */
 @Service
 public class LabelC7nServiceImpl implements LabelC7nService {

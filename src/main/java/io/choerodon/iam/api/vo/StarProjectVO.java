@@ -3,6 +3,7 @@ package io.choerodon.iam.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -13,12 +14,14 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
  */
 public class StarProjectVO {
 
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("项目id/新增时必须")
     private Long projectId;
 
     @ApiModelProperty("用户id")
+    @Encrypt
     private Long userId;
 
     private ProjectDTO projectDTO;

@@ -7,8 +7,9 @@ package io.choerodon.iam.app.service;
 public interface DomainC7nService {
     /**
      * 检查url是否存在，可以访问
+     *
      * @param url
-     * @return
+     * @return true 或者 false
      */
     boolean check(String url);
 }

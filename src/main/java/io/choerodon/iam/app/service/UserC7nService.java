@@ -1,17 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.hzero.iam.api.dto.UserPasswordDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.vo.UserVO;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -22,11 +10,21 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserInfoDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.vo.UserVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
  */
 public interface UserC7nService {
 
@@ -85,7 +83,7 @@ public interface UserC7nService {
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
      * @param endTime
-     * @return
+     * @return UserNumberVO
      */
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
@@ -112,7 +110,7 @@ public interface UserC7nService {
 
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 
-    void addAdminUsers(long[] ids);
+    void addAdminUsers(Long[] ids);
 
     void deleteAdminUser(long id);
 
@@ -194,7 +192,7 @@ public interface UserC7nService {
      *
      * @param organizationId
      * @param userId
-     * @return
+     * @return true 或者 false
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
 

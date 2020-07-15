@@ -1,23 +1,21 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.sql.Date;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.User;
-
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.User;
+
+import java.sql.Date;
+import java.util.List;
+import java.util.Set;
 
 
 /**
  * @author scp
- * @date 2020/4/15
- * @description
+ * @since 2020/4/15
  */
 public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
@@ -29,7 +27,7 @@ public interface UserC7nMapper {
      *
      * @param loginNames
      * @param onlyEnabled
-     * @return
+     * @return 用户列表
      */
     List<User> listUsersByLoginNames(@Param("loginNames") String[] loginNames,
                                      @Param("onlyEnabled") Boolean onlyEnabled);
@@ -47,7 +45,7 @@ public interface UserC7nMapper {
      *
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
-     * @return
+     * @return long
      */
     long countPreviousNumberByOrgIdAndDate(@Param("organizationId") Long organizationId,
                                            @Param("startTime") Date startTime);
@@ -58,7 +56,7 @@ public interface UserC7nMapper {
      * @param organizationId 如果为null，则查询平台人数
      * @param startTime
      * @param endTime
-     * @return
+     * @return User列表
      */
     List<User> selectByOrgIdAndDate(@Param("organizationId") Long organizationId,
                                     @Param("startTime") Date startTime,
@@ -116,7 +114,7 @@ public interface UserC7nMapper {
     /**
      * 查询所用拥有对应角色的用户
      *
-     * @return
+     * @return Long列表
      */
     List<Long> selectUserByRoleCode(@Param("roleCode") String roleCode);
 
@@ -165,7 +163,7 @@ public interface UserC7nMapper {
      *
      * @param id
      * @param projectId
-     * @return
+     * @return RoleC7nDTO列表
      */
     List<RoleC7nDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
 
@@ -264,7 +262,7 @@ public interface UserC7nMapper {
      *
      * @param id
      * @param projectId
-     * @return
+     * @return 结果数量
      */
     Integer checkIsGitlabProjectOwner(@Param("id") Long id, @Param("projectId") Long projectId);
 
@@ -279,14 +277,14 @@ public interface UserC7nMapper {
      *
      * @param projectId
      * @param param
-     * @return
+     * @return User列表
      */
     List<User> listUsersByName(@Param("projectId") Long projectId, @Param("param") String param);
 
     /**
      * 查询所有的组织管理员
      *
-     * @return
+     * @return User列表
      */
     List<User> queryAllOrgAdmin(@Param("roleId") Long roleId);
 
@@ -297,7 +295,7 @@ public interface UserC7nMapper {
      *
      * @param projectId
      * @param param
-     * @return
+     * @return User列表
      */
     List<User> listUsersByNameWithLimit(@Param("projectId") Long projectId,
                                         @Param("param") String param);
@@ -307,7 +305,7 @@ public interface UserC7nMapper {
      *
      * @param userId
      * @param orgIds
-     * @return
+     * @return Long Set集合
      */
     Set<Long> listManagedOrgIdByUserId(@Param("userId") Long userId,
                                        @Param("orgIds") Set<Long> orgIds);
@@ -334,7 +332,7 @@ public interface UserC7nMapper {
      *
      * @param param
      * @param organizationId
-     * @return
+     * @return 用户信息
      */
     List<SimplifiedUserVO> selectUsersOptional(@Param("params") String param, @Param("organizationId") Long organizationId);
 
@@ -381,7 +379,7 @@ public interface UserC7nMapper {
      *
      * @param realNames
      * @param onlyEnabled
-     * @return
+     * @return user列表
      */
     List<User> listUsersByRealNames(@Param("realNames") Set<String> realNames,
                                     @Param("onlyEnabled") Boolean onlyEnabled);

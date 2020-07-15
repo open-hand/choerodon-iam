@@ -3,8 +3,8 @@ package io.choerodon.iam.infra.constant;
 /**
  * @author scp
  * 消息类型code
- * @date 2020/5/14
- * @description
+ * @since 2020/5/14
+ *
  */
 public class MessageCodeConstants {
 

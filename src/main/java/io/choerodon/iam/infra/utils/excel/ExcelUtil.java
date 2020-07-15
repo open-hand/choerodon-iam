@@ -1,16 +1,6 @@
 package io.choerodon.iam.infra.utils.excel;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
@@ -21,7 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -105,7 +104,7 @@ public class ExcelUtil {
      *
      * @param row         excel的行
      * @param propertyMap excel列名与dataObject字段的对应关系
-     * @return
+     * @return map
      */
     private static Map<Integer, String> getTitleRow(Row row, Map<String, String> propertyMap) {
         Map<Integer, String> map = new HashMap<>();
@@ -313,7 +312,7 @@ public class ExcelUtil {
      * 返回sheet名字，sheetTitle为空则返回sheet
      *
      * @param sheetTitle sheet标题名
-     * @return
+     * @return 清单名称
      */
     public static String getSheetTitle(String sheetTitle) {
         return StringUtils.isEmpty(sheetTitle) ? DEFAULT_SHEET_NAME : sheetTitle;
@@ -455,8 +454,8 @@ public class ExcelUtil {
      * @param propertyMap key:JavaBean的字段名， value: 自定义的excel标题头
      * @return 设置完成的头部Row
      * @author chenssy
-     * @date 2014年6月17日 上午11:37:28
      * @version 1.0
+     * @since 2014年6月17日 上午11:37:28
      */
     private static Map<String, Integer> createHeader(Sheet sheet, CellStyle headerStyle,
                                                      Map<String, String> propertyMap) {
@@ -489,8 +488,8 @@ public class ExcelUtil {
      * @param cellStyle 单元格样式
      * @param book      book HSSFWorkbook对象
      * @author chenssy
-     * @date 2014年6月17日 上午11:00:53
      * @version 1.0
+     * @since 2014年6月17日 上午11:00:53
      */
     private static void setCellStyle(CellStyle cellStyle, Workbook book) {
         cellStyle.setAlignment(HorizontalAlignment.CENTER);   //水平居中
@@ -508,8 +507,8 @@ public class ExcelUtil {
      * @param headerStyle 头部样式
      * @param book        生产的excel book 	 HSSFWorkbook对象
      * @author chenssy
-     * @date 2014年6月16日 下午8:46:49
      * @version 1.0
+     * @since 2014年6月16日 下午8:46:49
      */
     private static void setHeaderStyle(CellStyle headerStyle, Workbook book) {
         headerStyle.setAlignment(HorizontalAlignment.CENTER);   //水平居中

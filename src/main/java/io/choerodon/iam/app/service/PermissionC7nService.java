@@ -8,8 +8,8 @@ import org.hzero.iam.domain.entity.Permission;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
+ *
  */
 public interface PermissionC7nService {
 

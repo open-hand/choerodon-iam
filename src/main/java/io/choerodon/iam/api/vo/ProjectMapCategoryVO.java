@@ -1,4 +1,4 @@
-package io.choerodon.iam.api.controller.v1;
+package io.choerodon.iam.api.vo;
 
 
 

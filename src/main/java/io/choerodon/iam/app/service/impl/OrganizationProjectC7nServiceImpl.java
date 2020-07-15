@@ -62,8 +62,8 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * @author scp
- * @date 2020/4/15
- * @description
+ * @since 2020/4/15
+ *
  */
 @Service
 public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7nService {

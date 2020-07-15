@@ -1,15 +1,15 @@
 package io.choerodon.iam.infra.dto;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -24,6 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class StarProjectUserRelDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("项目id/新增时必须")

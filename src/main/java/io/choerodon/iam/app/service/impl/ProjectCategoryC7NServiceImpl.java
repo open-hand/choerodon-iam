@@ -18,8 +18,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
- * @date 2020/4/15
- * @description
+ * @since 2020/4/15
+ *
  */
 @Service
 public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService {

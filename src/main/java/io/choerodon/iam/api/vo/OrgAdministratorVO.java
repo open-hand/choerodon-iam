@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Date;
 
@@ -9,6 +10,7 @@ import java.util.Date;
  */
 public class OrgAdministratorVO {
     @ApiModelProperty(value = "主键，用户ID")
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "用户名")
     private String UserName;

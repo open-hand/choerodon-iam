@@ -12,7 +12,7 @@ import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 
 /**
  * @author jiameng.cao
- * @date 2019/7/30
+ * @since 2019/7/30
  */
 @FeignClient(value = "agile-service", fallback = AgileFeignClientFallback.class)
 public interface AgileFeignClient {

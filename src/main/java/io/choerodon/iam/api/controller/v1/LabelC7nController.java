@@ -6,6 +6,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.app.service.LabelService;
 import org.hzero.iam.domain.entity.Label;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +48,8 @@ public class LabelC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "通过类型查询组织层label")
     @GetMapping(value = "/org/{organization_id}")
-    public ResponseEntity<List<Label>> listByTypeAtOrg(@PathVariable(name = "organization_id") Long organizationId,
+    public ResponseEntity<List<Label>> listByTypeAtOrg(
+            @PathVariable(name = "organization_id") Long organizationId,
                                                        Label label) {
         label.setFdLevel(ResourceLevel.ORGANIZATION.value());
         return new ResponseEntity<>(labelC7nService.listByOption(label), HttpStatus.OK);

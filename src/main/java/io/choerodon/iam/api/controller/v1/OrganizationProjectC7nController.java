@@ -1,21 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -30,6 +14,22 @@ import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -52,8 +52,9 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "创建项目")
     @PostMapping
-    public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectDTO projectDTO) {
+    public ResponseEntity<ProjectDTO> create(
+            @PathVariable(name = "organization_id") Long organizationId,
+            @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationProjectC7nService.createProject(organizationId, projectDTO), HttpStatus.OK);
     }
@@ -61,8 +62,9 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/list")
     @ApiOperation(value = "查询分配开发的项目")
-    public ResponseEntity<List<ProjectDTO>> getAgileProjects(@PathVariable(name = "organization_id") Long organizationId,
-                                                             @RequestParam(required = false) String[] param) {
+    public ResponseEntity<List<ProjectDTO>> getAgileProjects(
+            @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam(required = false) String[] param) {
         return new ResponseEntity<>(organizationProjectC7nService.getAgileProjects(organizationId, ParamUtils.arrToStr(param)),
                 HttpStatus.OK);
     }
@@ -102,7 +104,7 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "项目信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity<Boolean> check(@PathVariable(name = "organization_id") Long organizationId,
-                                @RequestBody ProjectDTO projectDTO) {
+                                         @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         return ResponseEntity.ok(organizationProjectC7nService.check(projectDTO));
     }
@@ -163,7 +165,7 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
     public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
-                                                                 @RequestBody Set<Long> projectIds,
+                                                                 @Encrypt @RequestBody Set<Long> projectIds,
                                                                  @ApiParam(value = "开始时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "start_time") Date startTime,
                                                                  @ApiParam(value = "结束时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
@@ -174,15 +176,17 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下项目（最多20个）")
     @GetMapping("/with_limit")
-    public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(@PathVariable(name = "organization_id") Long organizationId,
-                                                                  @RequestParam(required = false) String name) {
+    public ResponseEntity<List<ProjectDTO>> listProjectsWithLimit(
+            @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam(required = false) String name) {
         return ResponseEntity.ok(organizationProjectC7nService.listProjectsWithLimit(organizationId, name));
     }
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建项目")
     @GetMapping("/check_enable_create")
-    public ResponseEntity<Boolean> checkEnableCreateProject(@PathVariable(name = "organization_id") Long organizationId) {
+    public ResponseEntity<Boolean> checkEnableCreateProject(
+            @PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationResourceLimitService.checkEnableCreateProject(organizationId));
     }
 }

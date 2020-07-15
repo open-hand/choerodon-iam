@@ -274,7 +274,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             Map<String, Object> objectMap = new HashMap<>();
             //发送组织层和项目层消息时必填 当前组织id
             objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), projectDTO.getOrganizationId());
-            objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectDTO.getOrganizationId());
+            objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectDTO.getId());
             messageSender.setAdditionalInformation(objectMap);
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {

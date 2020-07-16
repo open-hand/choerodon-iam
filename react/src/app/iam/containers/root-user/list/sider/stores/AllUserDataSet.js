@@ -19,6 +19,6 @@ export default {
   fields: [
     { name: 'realName', type: 'string' },
     { name: 'loginName', type: 'string' },
-    { name: 'id', type: 'number', unique: true },
+    { name: 'id', type: 'string', unique: true },
   ],
 };

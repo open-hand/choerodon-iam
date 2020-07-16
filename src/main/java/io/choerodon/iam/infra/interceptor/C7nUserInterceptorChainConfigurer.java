@@ -20,21 +20,21 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
         builder
                 .selectChain(UserOperation.CREATE_USER)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, CommonMemberRoleInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
 
         builder
                 .selectChain(UserOperation.REGISTER_USER)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, CommonMemberRoleInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
                 .post()
-                .addInterceptorAfter(LdapUserInterceptor.class, InternalMemberRoleInterceptor.class);
+                .addInterceptorAfter(LdapUserInterceptor.class, UserConfigInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, InternalMemberRoleInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
     }
 }

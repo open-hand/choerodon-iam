@@ -3,8 +3,8 @@ export default function (projectId, applicationId) {
     autoQuery: true,
     paging: false,
     fields: [
-      { name: 'id', type: 'number', label: '版本id' },
-      { name: 'applicationId', type: 'number', label: '应用id' },
+      { name: 'id', type: 'string', label: '版本id' },
+      { name: 'applicationId', type: 'string', label: '应用id' },
       { name: 'version', type: 'string', label: '版本名' },
       { name: 'description', type: 'string', label: '版本描述' },
       { name: 'status', type: 'string', label: '版本状态' },

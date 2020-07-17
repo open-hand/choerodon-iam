@@ -9,7 +9,7 @@ export default (code, organizationId) => ({
     },
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'marketAppCode', type: 'string' },
     { name: 'version', type: 'string' },
     { name: 'document', type: 'string' },

@@ -31,7 +31,7 @@ export default function (orgId, optionsDataSet) {
       }),
     },
     fields: [
-      { name: 'id', type: 'number', label: '客户端ID' },
+      { name: 'id', type: 'string', label: '客户端ID' },
       { name: 'name', type: 'string', label: '客户端ID', required: true },
       { name: 'authorizedGrantTypes', type: 'string', label: '授权类型', required: true, multiple: ',' },
       { name: 'secret', type: 'string', label: '密钥', required: true },
@@ -41,7 +41,7 @@ export default function (orgId, optionsDataSet) {
       { name: 'autoApprove', type: 'string', label: '自动授权域', multiple: ',', help: '自动授权域为oauth认证后，系统自动授权而非用户手动添加的作用域。您最多可输入6个域。' },
       { name: 'webServerRedirectUri', type: 'string', label: '重定向地址' },
       { name: 'additionalInformation', type: 'string', label: '附加信息', validator: checkIsJson },
-      { name: 'roles', type: 'number', label: '角色名称', textField: 'name', valueField: 'id' },
+      { name: 'roles', type: 'string', label: '角色名称', textField: 'name', valueField: 'id' },
     ],
     queryFields: [
       { name: 'name', type: 'string', label: '客户端ID' },

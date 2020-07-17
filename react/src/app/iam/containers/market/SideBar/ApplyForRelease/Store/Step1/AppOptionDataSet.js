@@ -5,7 +5,7 @@ export default function (projectId) {
     paging: false,
     dataKey: null,
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       { name: 'name', type: 'string' },
       { name: 'description', type: 'string', label: '应用描述' },
     ],

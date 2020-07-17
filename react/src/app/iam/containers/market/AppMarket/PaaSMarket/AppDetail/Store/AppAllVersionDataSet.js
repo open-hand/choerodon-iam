@@ -10,7 +10,7 @@ export default (id, organizationId) => ({
     },
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'version', type: 'string' },
     { name: 'document', type: 'string' },
     { name: 'changelog', type: 'string' },

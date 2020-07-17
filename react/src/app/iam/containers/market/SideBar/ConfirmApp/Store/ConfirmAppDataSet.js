@@ -33,8 +33,8 @@ export default function (projectId, appId, versionId, serviceTableDataSet, mobxS
       // objectVersionNumber: 27
       // overview: null
       // version: "1.112345"
-      { name: 'id', type: 'number', ignore: 'always' },
-      { name: 'latestVersionId', type: 'number', ignore: 'always' },
+      { name: 'id', type: 'string', ignore: 'always' },
+      { name: 'latestVersionId', type: 'string', ignore: 'always' },
       { name: 'name', type: 'string', label: '应用名称', ignore: 'always' },
       { name: 'appServiceDetailsVOS', ignore: 'always' },
       { name: 'version', type: 'string', label: '应用版本', ignore: 'always' },

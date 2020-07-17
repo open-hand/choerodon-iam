@@ -27,7 +27,7 @@ export default ({ id = 0, intl, orgRoleDataSet }) => {
     },
     fields: [
       { name: 'realName', type: 'string', label: username, required: true },
-      { name: 'roles', type: 'number', label: '角色', textField: 'name', valueField: 'id', required: true },
+      { name: 'roles', type: 'string', label: '角色', textField: 'name', valueField: 'id', required: true },
       { name: 'email', type: 'email', label: '邮箱', required: true, validator: checkEmail },
       { name: 'password', type: 'string', label: '密码', required: true },
     ],

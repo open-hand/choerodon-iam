@@ -12,6 +12,6 @@ export default ({ id = 0, intl, intlPrefix }) => ({
   fields: [
     { name: 'name', type: 'string' },
     { name: 'code', type: 'string' },
-    { name: 'id', type: 'number', unique: true },
+    { name: 'id', type: 'string', unique: true },
   ],
 });

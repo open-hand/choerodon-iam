@@ -10,10 +10,10 @@ export default (id, organizationId) => ({
     },
   },
   queryFields: [
-    { name: 'version_id', type: 'number', label: '应用版本id' },
+    { name: 'version_id', type: 'string', label: '应用版本id' },
   ],
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'code', type: 'string' },
     { name: 'name', type: 'string' },
     { name: 'imageUrl', type: 'string' },

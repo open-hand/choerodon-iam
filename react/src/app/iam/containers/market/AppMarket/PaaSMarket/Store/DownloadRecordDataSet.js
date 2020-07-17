@@ -32,7 +32,7 @@ export default (orgId) => ({
     { name: 'params', type: 'string', label: '模糊查询参数' },
   ],
   fields: [
-    { name: 'id', type: 'number', label: 'id' },
+    { name: 'id', type: 'string', label: 'id' },
     { name: 'mktAppName', type: 'string', label: '应用名称' },
     { name: 'mktAppCode', type: 'string', label: '应用编码' },
     { name: 'mktAppId', type: 'number', label: 'appId' },

@@ -13,6 +13,6 @@ export default () => ({
   },
   fields: [
     { name: 'name', type: 'string' },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
   ],
 });

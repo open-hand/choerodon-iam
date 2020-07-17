@@ -19,7 +19,7 @@ export default function (projectId, appId) {
       }),
     },
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       { name: 'code', type: 'string' },
       { name: 'name', type: 'string', label: '应用服务' },
       { name: 'type', type: 'string' },

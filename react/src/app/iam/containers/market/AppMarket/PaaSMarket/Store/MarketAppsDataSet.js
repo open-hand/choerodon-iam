@@ -17,7 +17,7 @@ export default (orgId) => ({
     { name: 'param', type: 'string', label: '模糊搜索字段' },
   ],
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'code', type: 'string' },
     { name: 'name', type: 'string' },
     { name: 'imageUrl', type: 'string' },

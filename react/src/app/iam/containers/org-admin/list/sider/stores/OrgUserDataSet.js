@@ -17,7 +17,7 @@ export default ({ id = 0, intl, intlPrefix }) => {
     fields: [
       { name: 'realName', type: 'string', label: username },
       { name: 'loginName', type: 'string', label: loginName },
-      { name: 'id', type: 'number', unique: true },
+      { name: 'id', type: 'string', unique: true },
     ],
   };
 };

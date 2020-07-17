@@ -1,4 +1,4 @@
-# Base Service
+## 使用说明
 
 ## 主要功能
 
@@ -58,7 +58,7 @@
   ```yaml
   spring:
     datasource:
-      url: jdbc:mysql://localhost/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
+      url: jdbc:mysql://localhost/hzero_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
       username: choerodon
       password: 123456
     servlet: #设置上传文件最大为10M

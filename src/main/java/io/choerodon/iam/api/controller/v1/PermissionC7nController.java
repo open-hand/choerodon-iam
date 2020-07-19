@@ -84,4 +84,13 @@ public class PermissionC7nController {
         return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
     }
 
+    @Permission(permissionLogin = true)
+    @ApiOperation("根据code查询permission")
+    @PostMapping("/list/code")
+    public ResponseEntity<List<org.hzero.iam.domain.entity.Permission>> getPermission(
+            @RequestBody String[] codes) {
+        return Results.success(permissionC7nService.getPermission(codes));
+    }
+
+
 }

@@ -69,4 +69,15 @@ public interface ProjectC7nService {
      * @return UserDTO分页
      */
     Page<UserDTO> pagingQueryTheUsersOfProject(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
+
+    /**
+     * 查询项目下的项目成员，以及传入的userId的并集
+     *
+     * @param projectId
+     * @param pageable
+     * @param userIds
+     * @param param
+     * @return
+     */
+    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
 }

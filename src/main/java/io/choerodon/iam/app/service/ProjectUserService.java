@@ -81,11 +81,6 @@ public interface ProjectUserService {
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage);
 
-    /*
-     * 查询项目下的项目成员，以及传入的userId的并集
-     */
-    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
-
     /**
      * 查询用户在项目下拥有的角色
      */

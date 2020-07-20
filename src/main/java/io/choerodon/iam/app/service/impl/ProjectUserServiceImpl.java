@@ -227,11 +227,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
-        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param));
-    }
-
-    @Override
     public List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId) {
         return projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
     }

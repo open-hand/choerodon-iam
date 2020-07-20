@@ -303,6 +303,116 @@
         </where>
         group by iu.id
     </select>
+
+
+    <select id="selectUsersByOptionsOrderByRoles" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        select
+            iu.id,
+            iu.login_name,
+            iu.email,
+            iu.organization_id,
+            iu.real_name,
+            iu.phone,
+            iu.INTERNATIONAL_TEL_CODE,
+            iu.image_url,
+            iu.profile_photo,
+            iu.time_zone,
+            iu.last_password_updated_at,
+            iu.last_login_at,
+            iu.is_enabled AS enabled,
+            iu.is_locked AS locked,
+            iu.is_ldap AS ldap,
+            iu.is_admin AS admin,
+            iu.locked_until_at,
+            iu.password_attempt,
+            iu.object_version_number,
+            iu.created_by,
+            iu.creation_date,
+            iu.last_updated_by,
+            iu.last_update_date,
+            iu.user_type
+        from iam_user iu
+        join (
+            select
+              imr.member_id
+            from iam_member_role imr
+            left join fd_project_user fpu on imr.id = fpu.member_role_id
+            left join iam_user iu1 on imr.member_id = iu1.id
+            <where>
+                fpu.project_id = #{projectId}
+                <if test="userId != null">
+                    AND iu1.id = #{userId}
+                </if>
+                <if test="email != null">
+                    AND iu1.email LIKE concat(concat('%',#{email}),'%')
+                </if>
+                <if test="param != null">
+                    AND (
+                    iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
+                    iu1.real_name LIKE concat(concat('%',#{param}),'%')
+                    )
+                </if>
+                and imr.role_id in
+                <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                    #{adminRole}
+                </foreach>
+            </where>
+            union
+            select
+            imr.member_id
+            from iam_member_role imr
+            left join fd_project_user fpu on imr.id = fpu.member_role_id
+            left join iam_user iu2 on imr.member_id = iu2.id
+            <where>
+                fpu.project_id = #{projectId}
+                <if test="userId != null">
+                    AND iu2.id = #{userId}
+                </if>
+                <if test="email != null">
+                    AND iu2.email LIKE concat(concat('%',#{email}),'%')
+                </if>
+                <if test="param != null">
+                    AND (
+                    iu2.login_name LIKE concat(concat('%',#{param}),'%') OR
+                    iu2.real_name LIKE concat(concat('%',#{param}),'%')
+                    )
+                </if>
+                and imr.role_id in
+                <foreach collection="memberRoleIds" item="memberRoleId" separator="," open="(" close=")">
+                    #{memberRoleId}
+                </foreach>
+                and imr.member_id not in (
+                select
+                imr1.member_id
+                from iam_member_role imr1
+                left join fd_project_user fpu1 on imr1.id = fpu1.member_role_id
+                left join iam_user iu3 on imr1.member_id = iu3.id
+                <where>
+                    fpu1.project_id = #{projectId}
+                    <if test="userId != null">
+                        AND iu3.id = #{userId}
+                    </if>
+                    <if test="email != null">
+                        AND iu3.email LIKE concat(concat('%',#{email}),'%')
+                    </if>
+                    <if test="param != null">
+                        AND (
+                        iu3.login_name LIKE concat(concat('%',#{param}),'%') OR
+                        iu3.real_name LIKE concat(concat('%',#{param}),'%')
+                        )
+                    </if>
+                    and imr1.role_id in
+                    <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                        #{adminRole}
+                    </foreach>
+                </where>
+                )
+            </where>
+        ) t
+        on iu.id = t.member_id
+    </select>
+
+
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM fd_project_user fpu

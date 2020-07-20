@@ -33,16 +33,16 @@ Parameter | Description	| Default
 `image.pullPolicy` | 镜像拉取策略 | `IfNotPresent`
 `preJob.timeout` | job超时时间 | `300`
 `preJob.image` | job镜像库地址 | `registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.7.1`
-`preJob.preInitDB.enabled` | 是否初始base_service数据库 | `true`
-`preJob.preInitDB.datasource.url` | base_service数据库连接地址 | `jdbc:mysql://localhost:3306/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
-`preJob.preInitDB.datasource.username` | base_service数据库用户名 | `choerodon`
-`preJob.preInitDB.datasource.password` | base_service数据库密码 | `password`
+`preJob.preInitDB.enabled` | 是否初始hzero_platform数据库 | `true`
+`preJob.preInitDB.datasource.url` | hzero_platform数据库连接地址 | `jdbc:mysql://localhost:3306/hzero_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
+`preJob.preInitDB.datasource.username` | hzero_platform数据库用户名 | `choerodon`
+`preJob.preInitDB.datasource.password` | hzero_platform数据库密码 | `password`
 `metrics.path` | 收集应用的指标数据路径 | `/actuator/prometheus`
 `metrics.group` | 性能指标应用分组 | `spring-boot`
 `logs.parser` | 日志收集格式 | `spring-boot`
 `deployment.managementPort` | 服务管理端口 | `8031`
 `ingress.enabled` | 是否创建k8s ingress | `false`
-`env.open.SPRING_DATASOURCE_URL` | 数据库连接地址 | `jdbc:mysql://localhost/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
+`env.open.SPRING_DATASOURCE_URL` | 数据库连接地址 | `jdbc:mysql://localhost/hzero_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
 `env.open.SPRING_DATASOURCE_USERNAME` | 数据库用户名 | `choerodon`
 `env.open.SPRING_DATASOURCE_PASSWORD` | 数据库密码 | `password`
 `env.open.SPRING_REDIS_HOST` | redis主机地址 | `localhost`

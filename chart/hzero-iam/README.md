@@ -1,5 +1,5 @@
-# Choerodon Hzero-iam
-Choerodon  Hzero-iam 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
+#  Hzero-iam
+Hzero-iam 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
                               
 ## Introduction
 

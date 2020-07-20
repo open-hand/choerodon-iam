@@ -337,21 +337,8 @@
               imr.member_id
             from iam_member_role imr
             left join fd_project_user fpu on imr.id = fpu.member_role_id
-            left join iam_user iu1 on imr.member_id = iu1.id
             <where>
                 fpu.project_id = #{projectId}
-                <if test="userId != null">
-                    AND iu1.id = #{userId}
-                </if>
-                <if test="email != null">
-                    AND iu1.email LIKE concat(concat('%',#{email}),'%')
-                </if>
-                <if test="param != null">
-                    AND (
-                    iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-                    iu1.real_name LIKE concat(concat('%',#{param}),'%')
-                    )
-                </if>
                 and imr.role_id in
                 <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
                     #{adminRole}
@@ -362,21 +349,8 @@
             imr.member_id
             from iam_member_role imr
             left join fd_project_user fpu on imr.id = fpu.member_role_id
-            left join iam_user iu2 on imr.member_id = iu2.id
             <where>
                 fpu.project_id = #{projectId}
-                <if test="userId != null">
-                    AND iu2.id = #{userId}
-                </if>
-                <if test="email != null">
-                    AND iu2.email LIKE concat(concat('%',#{email}),'%')
-                </if>
-                <if test="param != null">
-                    AND (
-                    iu2.login_name LIKE concat(concat('%',#{param}),'%') OR
-                    iu2.real_name LIKE concat(concat('%',#{param}),'%')
-                    )
-                </if>
                 and imr.role_id in
                 <foreach collection="memberRoleIds" item="memberRoleId" separator="," open="(" close=")">
                     #{memberRoleId}
@@ -389,18 +363,6 @@
                 left join iam_user iu3 on imr1.member_id = iu3.id
                 <where>
                     fpu1.project_id = #{projectId}
-                    <if test="userId != null">
-                        AND iu3.id = #{userId}
-                    </if>
-                    <if test="email != null">
-                        AND iu3.email LIKE concat(concat('%',#{email}),'%')
-                    </if>
-                    <if test="param != null">
-                        AND (
-                        iu3.login_name LIKE concat(concat('%',#{param}),'%') OR
-                        iu3.real_name LIKE concat(concat('%',#{param}),'%')
-                        )
-                    </if>
                     and imr1.role_id in
                     <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
                         #{adminRole}
@@ -410,6 +372,19 @@
             </where>
         ) t
         on iu.id = t.member_id
+        where 1=1
+        <if test="userId != null">
+            AND iu.id = #{userId}
+        </if>
+        <if test="email != null">
+            AND iu.email LIKE concat(concat('%',#{email}),'%')
+        </if>
+        <if test="param != null">
+            AND (
+            iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iu.real_name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
     </select>
 
 
@@ -441,31 +416,61 @@
     </select>
 
     <select id="selectAgileUsersByProjectId" resultMap="userDTO">
-        select iu1.*
-        from iam_user iu1
-        join (
-        select iu.id
+        select iu.*
         from iam_user iu
-        where iu.id in (
-        select distinct imr.member_id
-        from fd_project_user fpu
-        inner join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-        where PROJECT_ID = #{projectId}
-        )
-        <if test="userIds != null and userIds.size > 0">
-            or iu.id in
-            <foreach item="id" index="index" collection="userIds"
-                     open="(" separator="," close=")">
-                #{id}
+        join (
+            select
+            imr.member_id
+            from iam_member_role imr
+            join fd_project_user fpu on imr.id = fpu.member_role_id
+            where fpu.project_id = #{projectId}
+            and imr.role_id in
+            <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                #{adminRole}
             </foreach>
-        </if>
-        ) t on iu1.id = t.id
+            union
+            select
+            imr.member_id
+            from iam_member_role imr
+            join fd_project_user fpu on imr.id = fpu.member_role_id
+            where fpu.project_id = #{projectId}
+            and imr.role_id in
+            <foreach collection="memberRoleIds" item="memberRoleId" separator="," open="(" close=")">
+                #{memberRoleId}
+            </foreach>
+            and imr.member_id not in (
+            select
+            imr.member_id
+            from iam_member_role imr
+            join fd_project_user fpu on imr.id = fpu.member_role_id
+            where fpu.project_id = #{projectId}
+            and imr.role_id in
+            <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                #{adminRole}
+            </foreach>
+            )
+        )t on t.member_id = iu.id
         where 1=1
         <if test="param != null">
             AND (
-            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%')
+            iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iu.real_name LIKE concat(concat('%',#{param}),'%')
             )
+        </if>
+        <if test="userIds != null and userIds.size > 0">
+            union
+            select iu.*
+            from iam_user iu
+            where iu.id in
+            <foreach item="id" index="index" collection="userIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            <if test="param != null">
+                AND (
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
         </if>
     </select>
     <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">

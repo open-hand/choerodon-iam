@@ -259,14 +259,29 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             return new Page<>();
         }
         Long organizationId = project.getOrganizationId();
-        List<Role> projectAdmins = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        List<Role> projectMembers = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
-        if (ObjectUtils.isEmpty(projectAdmins) || ObjectUtils.isEmpty(projectMembers)) {
+        Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
+        Set<Long> memberRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
+        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds, memberRoleIds));
+    }
+
+    private Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, labelName);
+        if (ObjectUtils.isEmpty(roles)) {
             throw new CommonException("error.project.role.not.existed");
         }
-        Set<Long> adminRoleIds = projectAdmins.stream().map(Role::getId).collect(Collectors.toSet());
-        Set<Long> memberRoleIds = projectMembers.stream().map(Role::getId).collect(Collectors.toSet());
-        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds, memberRoleIds));
+        return roles.stream().map(Role::getId).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
+        ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
+        if (ObjectUtils.isEmpty(project)) {
+            return new Page<>();
+        }
+        Long organizationId = project.getOrganizationId();
+        Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
+        Set<Long> memberRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
+        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds, memberRoleIds));
     }
 
     @Override

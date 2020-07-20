@@ -6,6 +6,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
+import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -41,12 +42,16 @@ public class ProjectUserC7nController extends BaseController {
     private final OrganizationResourceLimitService organizationResourceLimitService;
     private final RoleMemberService roleMemberService;
 
+    private final ProjectC7nService projectC7nService;
+
     public ProjectUserC7nController(ProjectUserService projectUserService,
                                     RoleMemberService roleMemberService,
-                                    OrganizationResourceLimitService organizationResourceLimitService) {
+                                    OrganizationResourceLimitService organizationResourceLimitService,
+                                    ProjectC7nService projectC7nService) {
         this.projectUserService = projectUserService;
         this.roleMemberService = roleMemberService;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.projectC7nService = projectC7nService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -160,7 +165,7 @@ public class ProjectUserC7nController extends BaseController {
                                                             PageRequest pageable,
                                                     @Encrypt @RequestBody Set<Long> userIds,
                                                     @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectUserService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

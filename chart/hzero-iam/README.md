@@ -1,5 +1,5 @@
-# Choerodon Base Service
-Choerodon Base Service 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
+# Choerodon Hzero-iam
+Choerodon  Hzero-iam 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
                               
 ## Introduction
 
@@ -32,36 +32,23 @@ Parameter | Description	| Default
 `image.repository` | 镜像库地址 | `registry.choerodon.com.cn/choerodon/hzero-iam`
 `image.pullPolicy` | 镜像拉取策略 | `IfNotPresent`
 `preJob.timeout` | job超时时间 | `300`
-`preJob.image` | job镜像库地址 | `registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.4`
-`preJob.preConfig.enabled`| 是否初始manager_service数据库 | `true`
-`preJob.preConfig.configFile` | 初始化到配置中心文件名 | `application.yml`
-`preJob.preConfig.configType` | 初始化到配置中心存储方式 | `k8s`
-`preJob.preConfig.updatePolicy` | 初始化配置策略: not/add/override/update | `add`
-`preJob.preConfig.registerHost` | 注册中心地址 | `http://register-server:8000`
-`preJob.preConfig.datasource.url` | manager_service数据库连接地址 | `jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
-`preJob.preConfig.datasource.username` | manager_service数据库用户名 | `choerodon`
-`preJob.preConfig.datasource.password` | manager_service数据库密码 | `password`
+`preJob.image` | job镜像库地址 | `registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.7.1`
 `preJob.preInitDB.enabled` | 是否初始base_service数据库 | `true`
 `preJob.preInitDB.datasource.url` | base_service数据库连接地址 | `jdbc:mysql://localhost:3306/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
 `preJob.preInitDB.datasource.username` | base_service数据库用户名 | `choerodon`
 `preJob.preInitDB.datasource.password` | base_service数据库密码 | `password`
-`preJob.preInitDB.datasource.exclusion` | 初始化数据库更新数据的时候忽略的表或列 | `iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,hpfm_tenant.name`
 `metrics.path` | 收集应用的指标数据路径 | `/actuator/prometheus`
 `metrics.group` | 性能指标应用分组 | `spring-boot`
 `logs.parser` | 日志收集格式 | `spring-boot`
 `deployment.managementPort` | 服务管理端口 | `8031`
 `ingress.enabled` | 是否创建k8s ingress | `false`
-`env.open.SPRING_CLOUD_CONFIG_ENABLED` | 是否启用配置中心 | `true`
-`env.open.SPRING_CLOUD_CONFIG_URI` | 配置中心地址 | `http://register-server:8000`
 `env.open.SPRING_DATASOURCE_URL` | 数据库连接地址 | `jdbc:mysql://localhost/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true`
 `env.open.SPRING_DATASOURCE_USERNAME` | 数据库用户名 | `choerodon`
 `env.open.SPRING_DATASOURCE_PASSWORD` | 数据库密码 | `password`
 `env.open.SPRING_REDIS_HOST` | redis主机地址 | `localhost`
 `env.open.SPRING_REDIS_PORT` | redis端口 | `6379`
 `env.open.SPRING_REDIS_DATABASE` | redis db | `1`
-`env.open.CHOERODON_RESOURCE_JWT_IGNORE` |忽略jwt的url | `/favicon.ico`
-`env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` | 注册服务地址 | `http://register-server.io-choerodon:8000/eureka/`
-`env.open.CHOERODON_CLEANPERMISSION` | 清理permission表中的旧接口和role_permission表中角色和权限层级不匹配的脏数据 | `false`
+`env.open.EUREKA_DEFAULT_ZONE` | 注册服务地址 | `http://register-server.io-choerodon:8000/eureka/`
 `env.open.CHOERODON_GATEWAY_URL` | 网关地址 | `http://api.staging.saas.hand-china.com`
 `service.enabled` | 是否创建k8s service | `false`
 `service.type` |  service类型 | `ClusterIP`

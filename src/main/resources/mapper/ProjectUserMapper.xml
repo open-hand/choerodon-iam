@@ -402,7 +402,12 @@
     <select id="selectAgileUsersByProjectId" resultMap="userDTO">
         select
         iu1.*,
-        t1.weight
+        case
+            when iu1.is_enabled = 0
+            <!--如果用户停用，将用户权重设置为最小-->
+            then t1.weight - 100
+            else t1.weight
+        end as weight
         from (
             select
             t.member_id,
@@ -444,7 +449,7 @@
             iu1.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
-        order by t1.weight desc, iu1.id asc
+        order by weight desc, iu1.id asc
     </select>
 
 

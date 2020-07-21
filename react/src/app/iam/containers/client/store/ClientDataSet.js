@@ -42,6 +42,7 @@ export default function (orgId, optionsDataSet) {
       { name: 'webServerRedirectUri', type: 'string', label: '重定向地址' },
       { name: 'additionalInformation', type: 'string', label: '附加信息', validator: checkIsJson },
       { name: 'roles', type: 'string', label: '角色名称', textField: 'name', valueField: 'id' },
+      { name: 'apiEncryptFlag', type: 'number', defaultValue: 0 },
     ],
     queryFields: [
       { name: 'name', type: 'string', label: '客户端ID' },

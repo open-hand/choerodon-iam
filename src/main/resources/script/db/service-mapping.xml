@@ -15,4 +15,8 @@
     <service name="hzero_scheduler" filename="hzero_scheduler" schema="hzero_scheduler" description="调度服务"/>
     <service name="hzero_interface" filename="hzero_interface" schema="hzero_interface" description="接口服务"/>
     <service name="hzero_monitor" filename="hzero_monitor" schema="hzero_monitor" description="监控审计服务"/>
+
+    <exclusion>
+        iam_user
+    </exclusion>
 </services>

@@ -51,131 +51,16 @@
 
 - Password policy
 
-## 服务配置
-
-- `application.yml`
-
-  ```yaml
-  spring:
-    datasource:
-      url: jdbc:mysql://localhost/hzero_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
-      username: choerodon
-      password: 123456
-    servlet: #设置上传文件最大为10M
-      multipart:
-        max-file-size: 10MB # 单个文件最大上传大小
-        max-request-size: 10MB # 总上传文件最大上传大小
-    redis:
-      host: localhost
-      port: 6379
-      database: 1
-    mvc:
-      static-path-pattern: /**
-    resources:
-      static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
-  choerodon:
-    gateway:
-      url: http://api.example.choerodon.com
-    organization:
-      link:
-        complete: http://localhost:8080/#/organization/register-organization
-    category:
-      enabled: false # 是否开启项目/组织类型控制
-    devops:
-      message: true
-    eureka:
-      event:
-        max-cache-size: 300
-        retry-time: 5
-        retry-interval: 3
-        skip-services: config**, **register-server, **gateway**, zipkin**, hystrix**, oauth**
-    saga:
-      consumer:
-        enabled: true # 启动消费端
-        thread-num: 2 # saga消息消费线程池大小
-        max-poll-size: 200 # 每次拉取消息最大数量
-        poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-    schedule:
-      consumer:
-        enabled: true # 启用任务调度消费端
-        thread-num: 1 # 任务调度消费线程数
-        poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-    cleanPermission: false
-  eureka:
-    instance:
-      preferIpAddress: true
-      leaseRenewalIntervalInSeconds: 10
-      leaseExpirationDurationInSeconds: 30
-      metadata-map:
-        VERSION: v1
-    client:
-      serviceUrl:
-        defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8000/eureka/}
-      registryFetchIntervalSeconds: 10
-  hystrix:
-    command:
-      default:
-        execution:
-          isolation:
-            thread:
-              timeoutInMilliseconds: 15000
-  ribbon:
-    ReadTimeout: 5000
-    ConnectTimeout: 5000
-  file-service:
-    ribbon:
-      ReadTimeout: 60000
-      ConnectTimeout: 60000
-  notify-service:
-    ribbon:
-      ReadTimeout: 15000
-      ConnectTimeout: 15000
-  mybatis:
-    mapperLocations: classpath*:/mapper/*.xml
-    configuration: # 数据库下划线转驼峰配置
-      mapUnderscoreToCamelCase: true
-  db:
-    type: mysql
-  ```
-
-- `bootstrap.yml`
-
-  ```yaml
-  server:
-    port: 8030
-  spring:
-    application:
-      name: hzero-iam
-    cloud:
-      config:
-        failFast: true
-        retry:
-          maxAttempts: 6
-          multiplier: 1.5
-          maxInterval: 2000
-        uri: localhost:8010
-        enabled: false
-  management:
-    endpoint:
-      health:
-        show-details: ALWAYS
-    server:
-      port: 8031
-    endpoints:
-      web:
-        exposure:
-          include: '*'
-  ```
-
 ## 环境需求
 
-- mysql 5.6+
+- mysql 5.7+
 - redis 3.0+
 - 该项目是一个 Eureka Client 项目启动后需要注册到 `EurekaServer`，本地环境需要 `eureka-server`，线上环境需要使用 `go-register-server`
 
 ## 安装和启动步骤
 
 - 运行 `eureka-server`，[代码库地址](https://github.com/choerodon/eureka-server.git)。
+- 运行 `hzero-platform`，[代码库地址](https://github.com/choerodon/hzero-platform.git)。
 
 - 拉取当前项目到本地
 
@@ -183,19 +68,19 @@
   git clone https://github.com/choerodon/hzero-iam.git
   ```
 
-- 创建数据库，本地创建 `base_service` 数据库和默认用户，示例如下：
+- 创建数据库，本地创建 `hzero_platform` 数据库和默认用户，示例如下：
 
   ```sql
   CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
-  CREATE DATABASE base_service DEFAULT CHARACTER SET utf8;
-  GRANT ALL PRIVILEGES ON base_service.* TO choerodon@'%';
+  CREATE DATABASE hzero_platform DEFAULT CHARACTER SET utf8;
+  GRANT ALL PRIVILEGES ON hzero_platform.* TO choerodon@'%';
   FLUSH PRIVILEGES;
   ```
 
 - 初始化 `base_service` 数据库，运行项目根目录下的 `init-mysql-database.sh`，该脚本默认初始化数据库的地址为 `localhost`，若有变更需要修改脚本文件
 
   ```sh
-  sh init-mysql-database.sh
+  sh init-database.sh
   ```
 
 - 本地启动redis-server

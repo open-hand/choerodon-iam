@@ -307,84 +307,68 @@
 
     <select id="selectUsersByOptionsOrderByRoles" resultType="io.choerodon.iam.infra.dto.UserDTO">
         select
-            iu.id,
-            iu.login_name,
-            iu.email,
-            iu.organization_id,
-            iu.real_name,
-            iu.phone,
-            iu.INTERNATIONAL_TEL_CODE,
-            iu.image_url,
-            iu.profile_photo,
-            iu.time_zone,
-            iu.last_password_updated_at,
-            iu.last_login_at,
-            iu.is_enabled AS enabled,
-            iu.is_locked AS locked,
-            iu.is_ldap AS ldap,
-            iu.is_admin AS admin,
-            iu.locked_until_at,
-            iu.password_attempt,
-            iu.object_version_number,
-            iu.created_by,
-            iu.creation_date,
-            iu.last_updated_by,
-            iu.last_update_date,
-            iu.user_type
-        from iam_user iu
-        join (
+            iu1.id,
+            iu1.login_name,
+            iu1.email,
+            iu1.organization_id,
+            iu1.real_name,
+            iu1.phone,
+            iu1.INTERNATIONAL_TEL_CODE,
+            iu1.image_url,
+            iu1.profile_photo,
+            iu1.time_zone,
+            iu1.last_password_updated_at,
+            iu1.last_login_at,
+            iu1.is_enabled AS enabled,
+            iu1.is_locked AS locked,
+            iu1.is_ldap AS ldap,
+            iu1.is_admin AS admin,
+            iu1.locked_until_at,
+            iu1.password_attempt,
+            iu1.object_version_number,
+            iu1.created_by,
+            iu1.creation_date,
+            iu1.last_updated_by,
+            iu1.last_update_date,
+            iu1.user_type,
+            t1.weight
+        from (
             select
-              imr.member_id
-            from iam_member_role imr
-            left join fd_project_user fpu on imr.id = fpu.member_role_id
-            <where>
-                fpu.project_id = #{projectId}
-                and imr.role_id in
-                <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
-                    #{adminRole}
-                </foreach>
-            </where>
-            union
-            select
-            imr.member_id
-            from iam_member_role imr
-            left join fd_project_user fpu on imr.id = fpu.member_role_id
-            <where>
-                fpu.project_id = #{projectId}
-                and imr.role_id in
-                <foreach collection="memberRoleIds" item="memberRoleId" separator="," open="(" close=")">
-                    #{memberRoleId}
-                </foreach>
-                and imr.member_id not in (
+            t.member_id,
+            max(t.weight) as weight
+            from
+            (
                 select
-                imr1.member_id
-                from iam_member_role imr1
-                left join fd_project_user fpu1 on imr1.id = fpu1.member_role_id
-                left join iam_user iu3 on imr1.member_id = iu3.id
-                <where>
-                    fpu1.project_id = #{projectId}
-                    and imr1.role_id in
-                    <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
-                        #{adminRole}
-                    </foreach>
-                </where>
-                )
-            </where>
-        ) t
-        on iu.id = t.member_id
-        where 1=1
-        <if test="userId != null">
-            AND iu.id = #{userId}
-        </if>
-        <if test="email != null">
-            AND iu.email LIKE concat(concat('%',#{email}),'%')
-        </if>
-        <if test="param != null">
-            AND (
-            iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu.real_name LIKE concat(concat('%',#{param}),'%')
-            )
-        </if>
+                imr.member_id,
+                case
+                    when imr.role_id in
+                        <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                            #{adminRole}
+                        </foreach>
+                    then 10
+                    else 0
+                end as weight
+                from iam_member_role imr
+                join fd_project_user fpu on imr.id = fpu.member_role_id
+                left join iam_user iu on imr.member_id = iu.id
+                where fpu.project_id = #{projectId}
+                    <if test="userId != null">
+                        AND iu.id = #{userId}
+                    </if>
+                    <if test="email != null">
+                        AND iu.email LIKE concat(concat('%',#{email}),'%')
+                    </if>
+                    <if test="param != null">
+                        AND (
+                        iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                        iu.real_name LIKE concat(concat('%',#{param}),'%')
+                        )
+                    </if>
+            ) t
+                group by t.member_id
+        ) t1
+        join iam_user iu1 on t1.member_id = iu1.id
+        order by t1.weight desc, iu1.id asc
     </select>
 
 
@@ -416,63 +400,54 @@
     </select>
 
     <select id="selectAgileUsersByProjectId" resultMap="userDTO">
-        select iu.*
-        from iam_user iu
-        join (
+        select
+        iu1.*,
+        t1.weight
+        from (
             select
-            imr.member_id
-            from iam_member_role imr
-            join fd_project_user fpu on imr.id = fpu.member_role_id
-            where fpu.project_id = #{projectId}
-            and imr.role_id in
-            <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
-                #{adminRole}
-            </foreach>
-            union
-            select
-            imr.member_id
-            from iam_member_role imr
-            join fd_project_user fpu on imr.id = fpu.member_role_id
-            where fpu.project_id = #{projectId}
-            and imr.role_id in
-            <foreach collection="memberRoleIds" item="memberRoleId" separator="," open="(" close=")">
-                #{memberRoleId}
-            </foreach>
-            and imr.member_id not in (
-            select
-            imr.member_id
-            from iam_member_role imr
-            join fd_project_user fpu on imr.id = fpu.member_role_id
-            where fpu.project_id = #{projectId}
-            and imr.role_id in
-            <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
-                #{adminRole}
-            </foreach>
-            )
-        )t on t.member_id = iu.id
+            t.member_id,
+            max(t.weight) as weight
+            from (
+                select
+                imr.member_id,
+                case
+                    when imr.role_id in
+                        <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                            #{adminRole}
+                        </foreach>
+                    then 10
+                    else 0
+                end as weight
+                from iam_member_role imr
+                join fd_project_user fpu on imr.id = fpu.member_role_id
+                where fpu.project_id = #{projectId}
+                <if test="userIds != null and userIds.size > 0">
+                    union
+                    select
+                    iu.id,
+                    0 as weight
+                    from iam_user iu
+                    where iu.id in
+                    <foreach item="id" index="index" collection="userIds"
+                             open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+            ) t
+            group by t.member_id
+        ) t1
+        join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
         <if test="param != null">
             AND (
-            iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu.real_name LIKE concat(concat('%',#{param}),'%')
+            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iu1.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
-        <if test="userIds != null and userIds.size > 0">
-            union
-            select iu.*
-            from iam_user iu
-            where iu.id in
-            <foreach item="id" index="index" collection="userIds" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-            <if test="param != null">
-                AND (
-                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iu.real_name LIKE concat(concat('%',#{param}),'%')
-                )
-            </if>
-        </if>
+        order by t1.weight desc, iu1.id asc
     </select>
+
+
     <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT ir.*
         FROM fd_project_user fpu

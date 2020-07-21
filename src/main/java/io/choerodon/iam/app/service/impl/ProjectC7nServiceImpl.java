@@ -260,8 +260,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        Set<Long> memberRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
-        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds, memberRoleIds));
+        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
     }
 
     private Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {
@@ -280,8 +279,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        Set<Long> memberRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
-        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds, memberRoleIds));
+        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
     }
 
     @Override

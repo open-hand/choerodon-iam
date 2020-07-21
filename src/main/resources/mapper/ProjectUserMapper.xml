@@ -251,7 +251,7 @@
     </select>
 
     <select id="listRolesByProjectIdAndUserIds" resultType="io.choerodon.iam.api.vo.UserVO">
-        SELECT imr.member_id as id, GROUP_CONCAT(ir.name) as role_names,ANY_VALUE(iu.login_name),ANY_VALUE(iu.real_name) as real_name,ANY_VALUE(iu.image_url) as image_url
+        SELECT imr.member_id as id, GROUP_CONCAT(ir.name) as role_names,ANY_VALUE(iu.login_name) as login_name,ANY_VALUE(iu.real_name) as real_name,ANY_VALUE(iu.image_url) as image_url
         FROM fd_project_user fpu
                      INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                      INNER JOIN iam_role ir ON imr.role_id = ir.id

@@ -58,32 +58,32 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 public class ProjectC7nServiceImpl implements ProjectC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectC7nServiceImpl.class);
 
-    private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
+    protected static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
 
-    private OrganizationProjectC7nService organizationProjectC7nService;
+    protected OrganizationProjectC7nService organizationProjectC7nService;
 
     @Value("${choerodon.category.enabled:false}")
-    private boolean enableCategory;
+    protected boolean enableCategory;
 
     @Value("${spring.application.name:default}")
-    private String serviceName;
+    protected String serviceName;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private UserMapper userMapper;
+    protected UserMapper userMapper;
 
-    private ProjectMapper projectMapper;
-    private ProjectAssertHelper projectAssertHelper;
-    private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private UserAssertHelper userAssertHelper;
-    private OrganizationAssertHelper organizationAssertHelper;
-    private TenantMapper organizationMapper;
-    private AgileFeignClient agileFeignClient;
-    private TestManagerFeignClient testManagerFeignClient;
-    private ProjectUserMapper projectUserMapper;
-    private TransactionalProducer transactionalProducer;
+    protected ProjectMapper projectMapper;
+    protected ProjectAssertHelper projectAssertHelper;
+    protected ProjectMapCategoryMapper projectMapCategoryMapper;
+    protected UserAssertHelper userAssertHelper;
+    protected OrganizationAssertHelper organizationAssertHelper;
+    protected TenantMapper organizationMapper;
+    protected AgileFeignClient agileFeignClient;
+    protected TestManagerFeignClient testManagerFeignClient;
+    protected ProjectUserMapper projectUserMapper;
+    protected TransactionalProducer transactionalProducer;
 
-    private RoleC7nMapper roleC7nMapper;
+    protected RoleC7nMapper roleC7nMapper;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  OrganizationAssertHelper organizationAssertHelper,

@@ -16,6 +16,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.mybatis.domian.Condition;
@@ -57,6 +58,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
+    public static final Long OPERATION_ORG_ID = 1L;
 
 
     @Autowired
@@ -88,6 +90,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantConfigC7nMapper tenantConfigMapper;
     @Autowired
     private MessageSendService messageSendService;
+    @Autowired
+    private TenantMapper tenantMapper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -389,7 +393,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         }
         tenantDTOS = tenantDTOS.stream().filter(tenantDTO -> tenantDTO.getTenantId() != 0).collect(Collectors.toList());
         User user = userMapper.selectByPrimaryKey(params.getUserId());
-        return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
+        List<TenantVO> ownedOrganizations = getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
+        // 如果是admin用户，没有任何组织权限，默认返回运营组织
+        if (CollectionUtils.isEmpty(ownedOrganizations) && Boolean.TRUE.equals(user.getAdmin())) {
+            return Collections.singletonList(ConvertUtils.convertObject(tenantMapper.selectByPrimaryKey(OPERATION_ORG_ID), TenantVO.class));
+        }
+        return ownedOrganizations;
     }
 
     /**

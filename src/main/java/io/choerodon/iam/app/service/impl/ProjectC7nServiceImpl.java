@@ -263,7 +263,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
     }
 
-    private Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {
+    protected Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {
         List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, labelName);
         if (ObjectUtils.isEmpty(roles)) {
             throw new CommonException("error.project.role.not.existed");

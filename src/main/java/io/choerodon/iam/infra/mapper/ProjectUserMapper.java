@@ -141,15 +141,13 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      * @param email
      * @param param
      * @param adminRoleIds
-     * @param memberRoleIds
      * @return userDTO list
      */
     List<UserDTO> selectUsersByOptionsOrderByRoles(@Param("projectId") Long projectId,
                                                    @Param("userId") Long userId,
                                                    @Param("email") String email,
                                                    @Param("param") String param,
-                                                   @Param("adminRoleIds") Set<Long> adminRoleIds,
-                                                   @Param("memberRoleIds") Set<Long> memberRoleIds);
+                                                   @Param("adminRoleIds") Set<Long> adminRoleIds);
 
 
     /**
@@ -170,8 +168,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
     List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
                                               @Param("userIds") Set<Long> userIds,
                                               @Param("param") String param,
-                                              @Param("adminRoleIds") Set<Long> adminRoleIds,
-                                              @Param("memberRoleIds") Set<Long> memberRoleIds);
+                                              @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     /**
      * 查询用户在项目下拥有的角色

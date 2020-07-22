@@ -4,6 +4,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -12,6 +14,7 @@ import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.repository.ClientRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,14 +34,17 @@ public class ClientC7nController extends BaseController {
     private final ClientService clientService;
     private final ClientC7nService clientC7nService;
     private final ClientRepository clientRepository;
+    private final TenantRepository tenantRepository;
 
 
     public ClientC7nController(ClientService clientService,
                                ClientRepository clientRepository,
-                               ClientC7nService clientC7nService) {
+                               ClientC7nService clientC7nService,
+                               TenantRepository tenantRepository) {
         this.clientService = clientService;
         this.clientC7nService = clientC7nService;
         this.clientRepository = clientRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -56,10 +62,17 @@ public class ClientC7nController extends BaseController {
     public ResponseEntity<Void> delete(
             @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("client_id") Long clientId) {
+        Client clientToDelete = clientRepository.selectByPrimaryKey(clientId);
+        if (clientToDelete == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        CommonExAssertUtil.assertTrue(organizationId.equals(clientToDelete.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+
         Client client = new Client();
         client.setOrganizationId(organizationId);
         client.setId(clientId);
-        client.setName(clientRepository.selectByPrimaryKey(clientId).getName());
+        client.setName(clientToDelete.getName());
         clientService.delete(client);
         return new ResponseEntity<>(HttpStatus.OK);
     }

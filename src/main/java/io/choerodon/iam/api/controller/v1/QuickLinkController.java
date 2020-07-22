@@ -46,17 +46,20 @@ public class QuickLinkController {
     @Permission(permissionLogin = true)
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(
+            @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable(value = "id") Long id,
             @RequestBody @Valid QuickLinkDTO quickLinkDTO) {
-        quickLinkService.update(id, quickLinkDTO);
+        quickLinkService.update(organizationId, id, quickLinkDTO);
         return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("删除快速链接")
     @Permission(permissionLogin = true)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@Encrypt @PathVariable(value = "id") Long id) {
-        quickLinkService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable("organization_id") Long organizationId,
+            @Encrypt @PathVariable(value = "id") Long id) {
+        quickLinkService.delete(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 

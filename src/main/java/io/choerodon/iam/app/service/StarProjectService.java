@@ -1,9 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -16,9 +16,11 @@ public interface StarProjectService {
 
     /**
      * 添加星标项目
+     *
+     * @param organizationId
      * @param starProjectUserRelDTO
      */
-    void create(StarProjectUserRelDTO starProjectUserRelDTO);
+    void create(Long organizationId, StarProjectUserRelDTO starProjectUserRelDTO);
 
     /**
      * 删除星标项目

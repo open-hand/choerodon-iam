@@ -1,26 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -42,6 +22,7 @@ import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -55,15 +36,34 @@ import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
  * @since 2020/4/15
- *
  */
 @Service
 public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7nService {
@@ -269,6 +269,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
+        ProjectDTO projectToUpdate = projectMapper.selectByPrimaryKey(projectDTO.getId());
+        CommonExAssertUtil.assertTrue(organizationId.equals(projectToUpdate.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         updateCheck(projectDTO);
         // 项目编码、类型不可编辑
         projectDTO.setCode(null);
@@ -277,7 +279,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Tenant organizationDTO = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
 
         // 校验组织id是否和项目所属组织匹配
-        if(!projectRecord.getOrganizationId().equals(organizationId)) {
+        if (!projectRecord.getOrganizationId().equals(organizationId)) {
             throw new CommonException(ResourceCheckConstants.ERROR_PARAM_IS_INVALID);
         }
         // 判断是否修改启停用状态
@@ -344,6 +346,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
+        ProjectDTO projectToEnable = projectMapper.selectByPrimaryKey(projectId);
+        CommonExAssertUtil.assertTrue(organizationId.equals(projectToEnable.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         organizationAssertHelper.notExisted(organizationId);
         return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
     }
@@ -353,6 +357,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
         if (organizationId != null) {
+            ProjectDTO projectToEnable = projectMapper.selectByPrimaryKey(projectId);
+            CommonExAssertUtil.assertTrue(organizationId.equals(projectToEnable.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
             organizationAssertHelper.notExisted(organizationId);
         }
         return updateProjectAndSendEvent(projectId, PROJECT_DISABLE, false, userId);

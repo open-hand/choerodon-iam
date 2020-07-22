@@ -11,6 +11,7 @@ import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.app.service.LdapC7nService;
 import io.choerodon.iam.infra.asserts.LdapAssertHelper;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.dto.LdapAutoDTO;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
@@ -20,6 +21,7 @@ import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -102,6 +104,8 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     @Transactional
     public LdapAutoDTO updateLdapAuto(Long organizationId, LdapAutoDTO ldapAutoDTO) {
         LdapAutoDTO oldLdapAutoDTO = ldapAutoMapper.selectByPrimaryKey(ldapAutoDTO.getId());
+        CommonExAssertUtil.assertTrue(organizationId.equals(oldLdapAutoDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+
         Boolean isNotChange = false;
         if (ldapAutoDTO.getFrequency().equals(oldLdapAutoDTO.getFrequency()) && ldapAutoDTO.getStartTime().compareTo(oldLdapAutoDTO.getStartTime()) == 0) {
             isNotChange = true;

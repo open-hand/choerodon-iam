@@ -8,7 +8,6 @@ import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +32,10 @@ public class StarProjectController {
     @ApiOperation("新增星标项目")
     @Permission(permissionLogin = true)
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody StarProjectUserRelDTO starProjectUserRelDTO) {
-        starProjectService.create(starProjectUserRelDTO);
+    public ResponseEntity<Void> create(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestBody StarProjectUserRelDTO starProjectUserRelDTO) {
+        starProjectService.create(organizationId, starProjectUserRelDTO);
         return ResponseEntity.noContent().build();
     }
 

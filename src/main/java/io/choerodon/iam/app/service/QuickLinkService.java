@@ -16,9 +16,9 @@ public interface QuickLinkService {
 
     void create(QuickLinkDTO quickLinkDTO);
 
-    void update(Long id, QuickLinkDTO quickLinkDTO);
+    void update(Long organizationId, Long id, QuickLinkDTO quickLinkDTO);
 
-    void delete(Long id);
+    void delete(Long organizationId, Long id);
 
     Page<QuickLinkVO> query(Long organizationId, Long projectId, PageRequest pageable);
 }

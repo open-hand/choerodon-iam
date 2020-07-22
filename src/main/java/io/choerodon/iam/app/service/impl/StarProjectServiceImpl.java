@@ -1,26 +1,28 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.StarProjectMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -43,10 +45,14 @@ public class StarProjectServiceImpl implements StarProjectService {
     private ProjectC7nService projectC7nService;
     @Autowired
     private UserC7nService userC7nService;
+    @Autowired
+    private ProjectMapper projectMapper;
 
     @Override
     @Transactional
-    public void create(StarProjectUserRelDTO starProjectUserRelDTO) {
+    public void create(Long organizationId, StarProjectUserRelDTO starProjectUserRelDTO) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(starProjectUserRelDTO.getProjectId());
+        CommonExAssertUtil.assertTrue(organizationId.equals(projectDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         // 数据校验
         projectC7nService.checkNotExistAndGet(starProjectUserRelDTO.getProjectId());
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -88,7 +94,7 @@ public class StarProjectServiceImpl implements StarProjectService {
         Long userId = userDetails.getUserId();
         Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
 
-        boolean isAdmin =  Boolean.TRUE.equals(userDetails.getAdmin()) || Boolean.TRUE.equals(userC7nService.checkIsOrgRoot(organizationId, userId));
+        boolean isAdmin = Boolean.TRUE.equals(userDetails.getAdmin()) || Boolean.TRUE.equals(userC7nService.checkIsOrgRoot(organizationId, userId));
         List<ProjectDTO> projectDTOS = starProjectMapper.queryWithLimit(organizationId, userId, isAdmin, size);
         if (CollectionUtils.isEmpty(projectDTOS)) {
             return new ArrayList<>();

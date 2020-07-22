@@ -7,9 +7,11 @@ import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.asserts.ClientAssertHelper;
+import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
 import io.choerodon.iam.infra.mapper.ClientC7nMapper;
 import io.choerodon.iam.infra.mapper.OauthClientResourceMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -18,6 +20,7 @@ import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.repository.ClientRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.HiamMemberType;
@@ -38,7 +41,6 @@ import java.util.stream.Collectors;
 /**
  * @author scp
  * @since 2020/3/27
- *
  */
 @Service
 public class ClientC7nServiceImpl implements ClientC7nService {
@@ -58,6 +60,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     private MemberRoleService memberRoleService;
     @Autowired
     private ClientService clientService;
+    @Autowired
+    private ClientRepository clientRepository;
     @Autowired
     private OauthClientResourceMapper oauthClientResourceMapper;
 
@@ -87,6 +91,9 @@ public class ClientC7nServiceImpl implements ClientC7nService {
 
     @Override
     public void assignRoles(Long organizationId, Long clientId, List<Long> newRoleIds) {
+        Client client = clientRepository.selectByPrimaryKey(clientId);
+        CommonExAssertUtil.assertTrue(organizationId.equals(client.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+
         List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
         //交集，传入的roleId与数据库里存在的roleId相交
         List<Long> intersection = existingRoleIds.stream().filter(newRoleIds::contains).collect(Collectors.toList());

@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -34,6 +35,7 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -166,6 +168,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    @Transactional
     public User updateInfo(User user, Boolean checkLogin) {
         if (checkLogin) {
             checkLoginUser(user.getId());
@@ -173,6 +176,14 @@ public class UserC7nServiceImpl implements UserC7nService {
         User dto;
         UserEventPayload userEventPayload = new UserEventPayload();
         dto = userService.updateUser(user);
+
+        // hzero update 不更新imageUrl
+        User imageUser = new User();
+        imageUser.setId(dto.getId());
+        imageUser.setImageUrl(user.getImageUrl());
+        imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
+        userMapper.updateByPrimaryKeySelective(imageUser);
+
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());
         userEventPayload.setName(dto.getRealName());

@@ -6,6 +6,14 @@ import Store from './stores';
 import FormSelectEditor from '../../../../components/formSelectEditor';
 import './index.less';
 
+let hasRegister = false;
+try {
+  require('@choerodon/base-pro');
+  hasRegister = true;
+} catch (error) {
+  hasRegister = false;
+}
+
 export default observer(() => {
   const {
     prefixCls,
@@ -22,7 +30,9 @@ export default observer(() => {
   }), [userStore.getEmailSuffix]);
 
   useEffect(() => {
-    userStore.loadEmailSuffix(organizationId);
+    if (hasRegister) {
+      userStore.loadEmailSuffix(organizationId);
+    }
     return () => {
       userStore.setEmailSuffix(null);
     };

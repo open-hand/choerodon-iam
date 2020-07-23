@@ -114,7 +114,7 @@ public class SystemSettingC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     public ResponseEntity<ResetPasswordVO> enableResetPassword() {
         SysSettingVO sysSettingVO = systemSettingService.getSetting();
-        boolean result = !ObjectUtils.isEmpty(sysSettingVO.getResetGitlabPasswordUrl());
+        boolean result = !ObjectUtils.isEmpty(sysSettingVO) && !ObjectUtils.isEmpty(sysSettingVO.getResetGitlabPasswordUrl());
         ResetPasswordVO resetPasswordVO = new ResetPasswordVO();
         if (result) {
             resetPasswordVO.setEnable_reset(true);

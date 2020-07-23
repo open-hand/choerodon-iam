@@ -219,7 +219,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
+        return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
     }
 
     @Override
@@ -227,7 +227,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         checkLoginUser(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
-            return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
+            return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");
@@ -1285,5 +1285,19 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
         return projectMapper.listOwnedProjects(organizationId, userId, isAdmin, isOrgAdmin);
+    }
+
+    private static String trimFileDirectory(String directory) {
+        if (StringUtils.isEmpty(directory)) {
+            return UUID.randomUUID().toString();
+        }
+        int directoryLength = directory.length();
+        if (directoryLength < 60) {
+            return directory;
+        }
+        int dotIndex = directory.indexOf(".");
+        String suffix = directory.substring(dotIndex, directoryLength);
+        String trimDirectory = directory.substring(0, 59 - suffix.length());
+        return trimDirectory + suffix;
     }
 }

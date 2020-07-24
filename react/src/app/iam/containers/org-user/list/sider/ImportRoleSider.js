@@ -62,7 +62,7 @@ export default observer(() => {
   }
 
   function getSpentTime() {
-    const { startTime, endTime } = syncData;
+    const { beginTime: startTime, endTime } = syncData;
     const timeUnit = {
       day: intl.formatMessage({ id: 'day' }),
       hour: intl.formatMessage({ id: 'hour' }),
@@ -116,7 +116,7 @@ export default observer(() => {
   function getInfo() {
     return (
       <div>
-        <p className="last-import-time">上次导入完成时间<span className="import-user-time">{syncData.endTime}</span>{syncData.endTime && `（耗时${getSpentTime()}秒）`}</p>
+        <p className="last-import-time">上次导入完成时间<span className="import-user-time">{syncData.endTime}</span>{syncData.endTime && `（耗时${getSpentTime()}）`}</p>
         <p className="total-import">共导入
           <span className="import-user-success">
             {syncData.successfulCount || 0}

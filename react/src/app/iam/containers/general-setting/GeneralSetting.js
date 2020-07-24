@@ -302,6 +302,7 @@ const GeneralSetting = observer(() => {
           visible={editing}
           onCancel={handleCancel}
           categoryEnabled={categoryEnabled}
+          isOPERATIONS={isOPERATIONS}
         />
       </Content>
     </Page>

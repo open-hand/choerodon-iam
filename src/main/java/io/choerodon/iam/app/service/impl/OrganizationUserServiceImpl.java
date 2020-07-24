@@ -55,6 +55,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -332,7 +333,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         String newPassword;
         PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
-        if (passwordPolicy.getEnablePassword()) {
+        if (!StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
             newPassword = passwordPolicy.getOriginalPassword();
         } else {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();
@@ -341,8 +342,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
 
         userPasswordService.updateUserPassword(userId, newPassword, false);
-
-        userService.resetUserPassword(userId, organizationId);
 
         // 发送重置密码消息
         sendResetOrganizationUserPassword(organizationId, user);

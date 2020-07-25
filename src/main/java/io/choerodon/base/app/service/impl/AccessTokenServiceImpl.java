@@ -72,10 +72,10 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         List<AccessTokenDTO> accessTokens = accessTokenMapper.selectTokenList(tokenIds);
         List<String> tokens = accessTokens.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
 
-        if (tokens != null && !tokens.isEmpty() && tokens.contains(currentToken)) {
+        if (!tokens.isEmpty() && tokens.contains(currentToken)) {
             throw new CommonException("error.delete.current.token");
         }
-        if (tokens != null && tokens.size() != tokenIds.size()) {
+        if (tokens.size() != tokenIds.size()) {
             tokenIds = accessTokens.stream().map(AccessTokenDTO::getTokenId).collect(Collectors.toList());
         }
         oauthTokenFeignClient.deleteTokenList(tokenIds);

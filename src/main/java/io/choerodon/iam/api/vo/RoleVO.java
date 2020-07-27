@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.mybatis.domian.SecurityToken;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -25,6 +26,7 @@ public class RoleVO extends Role {
     @ApiModelProperty("角色层级organization，project")
     private String roleLevel;
     @ApiModelProperty("角色拥有的菜单id集合")
+    @Encrypt
     private Set<Long> menuIdList;
 
     private List<Menu> menuList;

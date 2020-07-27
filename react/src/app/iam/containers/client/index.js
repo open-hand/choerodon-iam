@@ -99,7 +99,7 @@ const Client = observer(() => {
         </Permission>
       </Header>
       <Breadcrumb />
-      <Content className="safe-content">
+      <Content className="organization-pwdpolicy">
         <Table pristine filter={filterData} dataSet={clientDataSet} className="tab2">
           <Column renderer={renderName} width={250} name="name" align="left" />
           <Column width={50} renderer={renderAction} />

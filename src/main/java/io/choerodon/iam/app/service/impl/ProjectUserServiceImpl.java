@@ -477,6 +477,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         List<UserVO> userVOS = projectUserMapper.listRolesByProjectIdAndUserIds(projectId, onlineUserIdsToGetInfo);
 
         Page<UserVO> pageFromList = PageUtils.createPageFromList(userVOS, pageRequest);
+        pageFromList.setTotalElements(onlineUserIds.size());
 
         onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
         onlineUserStatistics.setOnlineUserList(pageFromList);

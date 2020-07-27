@@ -166,7 +166,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         for (Label label : labels) {
             if (RoleLabelEnum.TENANT_ROLE.value().equals(label.getName())) {
                 labelNames.add(MenuLabelEnum.TENANT_MENU.value());
-                labelNames.add(MenuLabelEnum.KNOWLEDGE_MENU.value());
+                labelNames.add(MenuLabelEnum.TENANT_GENERAL.value());
             }
             if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
                 labelNames.add(MenuLabelEnum.GENERAL_MENU.value());

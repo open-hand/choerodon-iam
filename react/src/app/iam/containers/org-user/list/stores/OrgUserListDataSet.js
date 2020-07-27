@@ -64,7 +64,7 @@ export default ({ id = 0, intl, intlPrefix, safeOptionDs, statusOptionDs, orgRol
       { name: 'locked', type: 'boolean', label: safeStatus, textField: 'text', valueField: 'value', options: safeOptionDs },
       { name: 'email', type: 'email', label: '邮箱', validator: check, required: true },
       { name: 'password', type: 'string', label: '密码' },
-      { name: 'phone', type: 'string', label: '手机', validator: checkPhone, required: true },
+      { name: 'phone', type: 'string', label: '手机', validator: checkPhone },
       { name: 'language', type: 'string', label: '语言', defaultValue: 'zh_CN' },
       { name: 'timeZone', type: 'string', label: '时区', defaultValue: 'CTT' },
       { name: 'myRoles', type: 'string', label: '角色' },

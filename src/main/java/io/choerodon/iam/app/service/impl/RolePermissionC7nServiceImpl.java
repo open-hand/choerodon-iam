@@ -6,7 +6,6 @@ import java.util.Set;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.domain.repository.RolePermissionRepository;
-import org.hzero.iam.infra.constant.RolePermissionType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -37,10 +36,7 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
     @Override
     public List<RolePermission> listRolePermissionByRoleId(Long roleId) {
         Assert.notNull(roleId, ERROR_ROLE_ID_NOT_BE_NULL);
-        RolePermission rolePermission = new RolePermission();
-        rolePermission.setRoleId(roleId);
-        rolePermission.setType(RolePermissionType.PS.name());
-        return rolePermissionRepository.select(rolePermission);
+        return rolePermissionC7nMapper.listRolePermissionIds(roleId);
     }
 
     @Override

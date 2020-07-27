@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -29,6 +30,7 @@ import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -166,6 +168,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         user.setPhoneCheckFlag(BaseConstants.Flag.YES);
 
         List<Role> roles = user.getRoles();
+        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, roles));
         User result = userService.createUserInternal(user);
         if (!CollectionUtils.isEmpty(roles)) {
             memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
@@ -186,10 +189,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         user.setLoginName(randomInfoGenerator.randomLoginName());
         List<Role> userRoles = user.getRoles();
         user.setRoles(null);
+        user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, userRoles));
         user = userService.createUserInternal(user);
         if (!CollectionUtils.isEmpty(userRoles)) {
-            // hzero-iam未处理角色分配, 这块加上
-            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), user.getRoles()));
+            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), userRoles));
         }
         sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         return user;

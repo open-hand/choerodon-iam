@@ -1,6 +1,26 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -41,25 +61,6 @@ import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.collections.CollectionUtils;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 /**
  * @author scp
@@ -553,9 +554,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectIds.forEach(id -> {
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
             BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, simpleDateFormat.format(startTime), simpleDateFormat.format(endTime)).getBody();
-            labelRotationItemVO.setName(projectDTO.getName());
-            labelRotationItemVO.setId(id);
-            barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
+            if (labelRotationItemVO != null) {
+                labelRotationItemVO.setName(projectDTO.getName());
+                labelRotationItemVO.setId(id);
+                barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
+            }
         });
         return barLabelRotationVO;
     }

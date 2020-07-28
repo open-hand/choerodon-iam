@@ -157,6 +157,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private LabelC7nMapper labelC7nMapper;
     @Autowired
+    @Lazy
     private MessageSendService messageSendService;
 
     @Override

@@ -1,4 +1,39 @@
+import { axios } from '@choerodon/boot';
+
 export default function passwordPoliciesDataSet(organizationId, id, intl, intlPrefix) {
+  async function handleLoad({ dataSet }) {
+    if (dataSet.current && !dataSet.current.get('code')) {
+      const orgData = {};
+      try {
+        const res = await axios.get(`/iam/choerodon/v1/organizations/${organizationId}/org_level`);
+        orgData.code = res.tenantNum;
+        orgData.name = res.tenantName;
+      } catch (e) {
+        //
+      }
+      dataSet.loadData([{
+        ...orgData,
+        digitsCount: 0,
+        enableCaptcha: false,
+        enableLock: false,
+        enablePassword: false,
+        enableSecurity: false,
+        lockedExpireTime: 0,
+        lowercaseCount: 0,
+        maxCheckCaptcha: 0,
+        maxErrorTime: 0,
+        maxLength: 0,
+        minLength: 0,
+        notRecentCount: 0,
+        notUsername: false,
+        originalPassword: null,
+        regularExpression: null,
+        specialCharCount: 0,
+        uppercaseCount: 0,
+      }]);
+    }
+  }
+
   function getAllCount(record) {
     const digitsCount = record.get('digitsCount');
     const specialCharCount = record.get('specialCharCount');
@@ -48,31 +83,30 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
         url: `/iam/v1/${organizationId}/password-policies`,
         method: 'get',
       },
-      submit: (record) => {
-        if (record.data[0].id) {
-          return {
-            url: `/iam/v1/${organizationId}/password-policies`,
-            method: 'put',
-            transformRequest: (([data]) => {
-              Object.keys(data).forEach((key) => {
-                const field = fields.find((v) => v.name === key);
-                if ((data[key] === null || data[key] === undefined) && field && field.type === 'number') {
-                  data[key] = 0;
-                }
-              });
-              fields.forEach((v) => {
-                if (v.type === 'number' && data[v.name] === undefined) {
-                  data[v.name] = 0;
-                } else if ((data[v.name] === undefined || data[v.name] === null) && v.name !== 'regularExpression') {
-                  data[v.name] = '';
-                }
-              });
-              return JSON.stringify(data);
-            }),
-          };
-        }
-      },
+      submit: (record) => ({
+        url: `/iam/v1/${organizationId}/password-policies`,
+        method: 'put',
+        transformRequest: (([data]) => {
+          Object.keys(data).forEach((key) => {
+            const field = fields.find((v) => v.name === key);
+            if ((data[key] === null || data[key] === undefined) && field && field.type === 'number') {
+              data[key] = 0;
+            }
+          });
+          fields.forEach((v) => {
+            if (v.type === 'number' && data[v.name] === undefined) {
+              data[v.name] = 0;
+            } else if ((data[v.name] === undefined || data[v.name] === null) && v.name !== 'regularExpression') {
+              data[v.name] = '';
+            }
+          });
+          return JSON.stringify(data);
+        }),
+      }),
       fields,
+    },
+    events: {
+      load: handleLoad,
     },
   };
 }

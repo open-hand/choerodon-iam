@@ -38,7 +38,7 @@ export default observer(({ dataSet, onCancel, onOk }) => {
       if (current.get('enableCaptcha')) {
         ret.push(
           (
-            <NumberField name="maxCheckCaptcha" colSpan={6} />
+            <NumberField name="maxCheckCaptcha" label="输错次数" colSpan={6} />
           ),
         );
       }
@@ -53,8 +53,8 @@ export default observer(({ dataSet, onCancel, onOk }) => {
       if (current.get('enableLock')) {
         ret.push(
           [
-            <NumberField name="maxErrorTime" colSpan={6} />,
-            <NumberField name="lockedExpireTime" suffix="秒" colSpan={6} />,
+            <NumberField name="maxErrorTime" label="输错次数" colSpan={6} />,
+            <NumberField name="lockedExpireTime" label="锁定时长" suffix="秒" colSpan={6} />,
           ],
         );
       }
@@ -93,8 +93,8 @@ export default observer(({ dataSet, onCancel, onOk }) => {
               <NumberField name="digitsCount" label="最少数字数" colSpan={2} />,
               <NumberField name="lowercaseCount" label="最少小写字母数" colSpan={2} />,
               <NumberField name="uppercaseCount" label="最少大写字母数" colSpan={2} />,
-              <NumberField name="specialCharCount" colSpan={3} />,
-              <NumberField name="notRecentCount" colSpan={3} />,
+              <NumberField name="specialCharCount" label="最少特殊字符" colSpan={3} />,
+              <NumberField name="notRecentCount" label="最大近期密码" colSpan={3} />,
               <TextField name="regularExpression" label="密码正则" colSpan={6} />]
           ) : null}
       </Form>

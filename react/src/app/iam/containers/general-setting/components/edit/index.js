@@ -1,4 +1,4 @@
-import React, { Component, useState, useContext, useEffect } from 'react';
+import React, { Fragment, useState, useContext, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Form, Icon, Input, Modal, Select } from 'choerodon-ui';
 import { axios, Content, Header, TabPage as Page, Breadcrumb, Permission, stores, Choerodon } from '@choerodon/boot';
@@ -22,6 +22,7 @@ const Edit = Form.create({})(observer(({
   },
   visible,
   categoryEnabled,
+  isOPERATIONS,
 }) => {
   const [submitting, setSubmitting] = useState(false);
   const [isShowAvatar, setIsShowAvatar] = useState(false);
@@ -31,9 +32,13 @@ const Edit = Form.create({})(observer(({
       const { enabled, name, code, agileProjectCode, categories, applicationVO = {} } = store.getProjectInfo;
       setFieldsValue({
         name,
-        agileProjectCode,
         applicationName: applicationVO.name,
       });
+      if (!isOPERATIONS) {
+        setFieldsValue({
+          agileProjectCode,
+        });
+      }
     }
   }, [visible]);
   /**
@@ -231,21 +236,25 @@ const Edit = Form.create({})(observer(({
             />,
           )}
         </FormItem>  */}
-        <div className={`${prefixCls}-section-title`}>
-          {formatMessage({ id: `${intlPrefix}.otherSetting` })}
-        </div>
-        <FormItem>
-          {getFieldDecorator('agileProjectCode', {
-            rules: [{ required: true, message: formatMessage({ id: `${intlPrefix}.agilePrefixrequiredmsg` }) }],
-            initialValue: agileProjectCode,
-          })(
-            <Input
-              autoComplete="off"
-              label={<FormattedMessage id={`${intlPrefix}.agile.prefix`} />}
-              maxLength={5}            
-            />,
-          )}
-        </FormItem>
+        {!isOPERATIONS && (
+          <Fragment>
+            <div className={`${prefixCls}-section-title`}>
+              {formatMessage({ id: `${intlPrefix}.otherSetting` })}
+            </div>
+            <FormItem>
+              {getFieldDecorator('agileProjectCode', {
+                rules: [{ required: true, message: formatMessage({ id: `${intlPrefix}.agilePrefixrequiredmsg` }) }],
+                initialValue: agileProjectCode,
+              })(
+                <Input
+                  autoComplete="off"
+                  label={<FormattedMessage id={`${intlPrefix}.agile.prefix`} />}
+                  maxLength={5}
+                />,
+              )}
+            </FormItem>
+          </Fragment>
+        )}
         {/* {categoryEnabled && (
           <FormItem>
             {getFieldDecorator('category', {

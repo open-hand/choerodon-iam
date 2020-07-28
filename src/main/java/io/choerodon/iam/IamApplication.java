@@ -30,6 +30,4 @@ public class IamApplication {
         return executor;
     }
     
-    
-    
 } 

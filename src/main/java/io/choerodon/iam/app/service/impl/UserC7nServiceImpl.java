@@ -1,7 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -35,7 +34,6 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -80,8 +78,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
@@ -553,7 +550,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
+    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
         Map<Long, TenantVO> tenants = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false)
                 .stream()
@@ -561,6 +558,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 .collect(Collectors.toMap(Tenant::getTenantId, t -> t));
 
         ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
         List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
         organizationProjectDTO.setProjectList(projectDTOS.stream()

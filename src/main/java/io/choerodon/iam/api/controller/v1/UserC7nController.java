@@ -1,22 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.*;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.PasswordPolicy;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -36,6 +19,22 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.*;
 
 /**
  * @author superlee
@@ -325,8 +324,9 @@ public class UserC7nController extends BaseController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "根据用户id查询对应的组织和项目")
     @GetMapping("/{id}/organization_project")
-    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id));
+    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@PathVariable("id") Long id,
+                                                                                  @RequestParam(value = "project_name", required = false) String projectName) {
+        return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id, projectName));
     }
 
 

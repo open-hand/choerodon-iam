@@ -59,6 +59,7 @@ import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,6 +157,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private LabelC7nMapper labelC7nMapper;
     @Autowired
+    @Lazy
     private MessageSendService messageSendService;
 
     @Override
@@ -392,6 +394,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
+    @Async
     public void sendNotice(List<Long> userIds, String code,
                            Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
         if (CollectionUtils.isEmpty(userIds)) {

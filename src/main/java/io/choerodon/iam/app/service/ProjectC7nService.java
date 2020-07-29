@@ -11,7 +11,7 @@ import java.util.Set;
 
 public interface ProjectC7nService {
 
-    ProjectDTO queryProjectById(Long projectId);
+    ProjectDTO queryProjectById(Long projectId, boolean enableCategory, boolean withUserInfo, boolean withAgileInfo);
 
     ProjectDTO update(ProjectDTO projectDTO);
 
@@ -54,7 +54,7 @@ public interface ProjectC7nService {
     /**
      * 查询所有项目
      *
-     * @return ProjectDTO列表
+     * @return
      */
     List<ProjectDTO> listAllProjects();
 

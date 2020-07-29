@@ -135,24 +135,26 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
 
     @Override
-    public TenantVO queryTenantById(Long tenantId) {
+    public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
         Tenant tenant = tenantRepository.selectByPrimaryKey(tenantId);
         TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
-        List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
-                .where(Sqls.custom()
-                        .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantId)
-                )
-                .build());
-        TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
-        tenantVO.setTenantConfigVO(tenantConfigVO);
-        //返回组织所有者的手机号邮箱
-        if (tenantConfigVO.getUserId() != null) {
-            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
-            if (user != null) {
-                tenantVO.setOwnerRealName(user.getRealName());
-                tenantVO.setOwnerEmail(user.getEmail());
-                tenantVO.setOwnerPhone(user.getPhone());
-                tenantVO.setOwnerLoginName(user.getLoginName());
+        if (withMoreInfo) {
+            List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
+                    .where(Sqls.custom()
+                            .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantId)
+                    )
+                    .build());
+            TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
+            tenantVO.setTenantConfigVO(tenantConfigVO);
+            //返回组织所有者的手机号邮箱
+            if (tenantConfigVO.getUserId() != null) {
+                User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+                if (user != null) {
+                    tenantVO.setOwnerRealName(user.getRealName());
+                    tenantVO.setOwnerEmail(user.getEmail());
+                    tenantVO.setOwnerPhone(user.getPhone());
+                    tenantVO.setOwnerLoginName(user.getLoginName());
+                }
             }
         }
         return tenantVO;

@@ -21,7 +21,7 @@ public interface TenantC7nService {
 
     void updateTenant(Long tenantId, TenantVO tenantVO);
 
-    TenantVO queryTenantById(Long tenantId);
+    TenantVO queryTenantById(Long tenantId,Boolean withMoreInfo);
 
     List<TenantVO> queryTenantByName(String tenantName);
 

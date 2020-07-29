@@ -1,15 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
@@ -145,9 +135,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
-    private UserC7nMapper userC7nMapper;
-    @Autowired
     private RoleC7nMapper roleC7nMapper;
+    @Autowired
+    private UserC7nMapper userC7nMapper;
     @Autowired
     private UserService userService;
     @Autowired

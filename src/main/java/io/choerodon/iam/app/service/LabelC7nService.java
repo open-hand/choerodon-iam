@@ -6,8 +6,8 @@ import org.hzero.iam.domain.entity.Label;
 
 /**
  * @author scp
- * @date 2020/3/31
- * @description
+ * @since 2020/3/31
+ *
  */
 public interface LabelC7nService {
     List<Label> listByOption(Label label);
@@ -18,7 +18,7 @@ public interface LabelC7nService {
 
     /**
      * 查询项目层gitlab标签
-     * @return
+     * @return 标签列表
      */
     List<Label> listProjectGitlabLabels();
 

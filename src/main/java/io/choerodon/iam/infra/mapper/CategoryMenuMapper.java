@@ -5,7 +5,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author jiameng.cao
- * @date 2019/6/5
+ * @since 2019/6/5
  */
 public interface CategoryMenuMapper extends BaseMapper<CategoryMenuDTO> {
 

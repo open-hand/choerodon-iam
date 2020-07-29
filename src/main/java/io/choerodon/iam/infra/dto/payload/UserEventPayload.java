@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.dto.payload;
 
 /**
  * @author flyleft
- * @date 2018/4/9
+ * @since 2018/4/9
  */
 public class UserEventPayload {
 

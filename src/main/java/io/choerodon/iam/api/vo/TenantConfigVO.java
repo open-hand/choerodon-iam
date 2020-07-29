@@ -1,14 +1,15 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author scp
- * @date 2020/4/27
- * @description
+ * @since 2020/4/27
  */
 public class TenantConfigVO {
     @ApiModelProperty("创建者Id/非必填/默认为登陆用户id")
+    @Encrypt
     private Long userId;
 
     @ApiModelProperty("组织地址/非必填")

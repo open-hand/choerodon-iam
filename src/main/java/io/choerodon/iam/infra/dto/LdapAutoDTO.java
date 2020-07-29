@@ -1,18 +1,18 @@
 package io.choerodon.iam.infra.dto;
 
 
-import java.util.Date;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import java.util.Date;
 
 /**
  * @author scp
@@ -25,6 +25,7 @@ public class LdapAutoDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty(value = "主键/非必填")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "组织ID")
@@ -39,6 +40,7 @@ public class LdapAutoDTO extends AuditDomain {
     private Date startTime;
 
     @ApiModelProperty(value = "定时任务Id")
+    @Encrypt
     private Long quartzTaskId;
 
     @ApiModelProperty(value = "是否启用")

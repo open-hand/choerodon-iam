@@ -1,21 +1,6 @@
 package io.choerodon.iam.api.controller.compatible;
 
 import com.alibaba.fastjson.JSONObject;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.domain.vo.UserVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -26,6 +11,21 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * 这个类是用于放置一些对于外部已经安装的组件(例如集群监控中的prometheus, sonarqube)保证向后兼容的接口
@@ -73,7 +73,7 @@ public class CompatibleController {
     public ResponseEntity<PageInfoVO<ProjectDTO>> pagingQueryProjectAndRolesById(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @PathVariable("id") Long id,
+            @Encrypt @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
         LOGGER.debug("CompatibleController: API project_roles is called...");
         Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params));

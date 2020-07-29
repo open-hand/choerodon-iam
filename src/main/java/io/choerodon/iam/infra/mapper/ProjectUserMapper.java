@@ -1,18 +1,19 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-
 import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -108,22 +109,24 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<Long> listProjectRoleIds(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
+    List<UserVO> listRolesByProjectIdAndUserIds(@Param("projectId") Long projectId, @Param("userIds") List<Long> userId);
+
     /**
      * 统计项目下角色分配用户数
      *
      * @param projectId
-     * @return
+     * @return RoleUserCountVO列表
      */
     List<RoleUserCountVO> countProjectRoleUser(@Param("projectId") Long projectId);
 
     /**
-     * 根据projectId和param模糊查询loginName和realName两列
+     * 根据projectId和param模糊匹配loginName和realName 获取用户信息
      *
      * @param projectId
      * @param userId
      * @param email
      * @param param
-     * @return
+     * @return UserDTO列表
      */
     List<UserDTO> selectUsersByOptions(@Param("projectId") Long projectId,
                                        @Param("userId") Long userId,
@@ -131,11 +134,28 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                        @Param("param") String param);
 
     /**
+     * 根据条件查询用户，并按项目管理员，项目成员的顺序排列
+     *
+     * @param projectId
+     * @param userId
+     * @param email
+     * @param param
+     * @param adminRoleIds
+     * @return userDTO list
+     */
+    List<UserDTO> selectUsersByOptionsOrderByRoles(@Param("projectId") Long projectId,
+                                                   @Param("userId") Long userId,
+                                                   @Param("email") String email,
+                                                   @Param("param") String param,
+                                                   @Param("adminRoleIds") Set<Long> adminRoleIds);
+
+
+    /**
      * @param projectId
      * @param roleId
      * @param roleAssignmentSearchDTO
      * @param param
-     * @return
+     * @return UserDTO列表
      */
     List<UserDTO> listProjectUsersByRoleIdAndOptions(@Param("projectId") Long projectId,
                                                      @Param("roleId") Long roleId,
@@ -147,14 +167,15 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
                                               @Param("userIds") Set<Long> userIds,
-                                              @Param("param") String param);
+                                              @Param("param") String param,
+                                              @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     /**
      * 查询用户在项目下拥有的角色
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return RoleDTO列表
      */
     List<RoleDTO> listRolesByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                 @Param("userId") Long userId);
@@ -164,7 +185,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                         @Param("userId") Long userId,
@@ -175,7 +196,7 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      *
      * @param projectId
      * @param userId
-     * @return
+     * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleWithOutProjectId(@Param("projectId") Long projectId,
                                                     @Param("userId") Long userId,
@@ -195,4 +216,6 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                              @Param("projectId") Long projectId,
                                              @Param("userId") Long userId);
 
+    List<ProjectDTO> listOwnedProject(@Param("organizationId") Long organizationId,
+                                      @Param("userId") Long userId);
 }

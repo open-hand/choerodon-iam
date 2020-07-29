@@ -1,16 +1,15 @@
 package io.choerodon.iam.infra.utils.excel;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author superlee
@@ -22,7 +21,7 @@ public class ExcelExportHelper {
      * @param list       写入的对象集合
      * @param sheetTitle 生成excel工作薄的名字
      * @param <T>        类型
-     * @return
+     * @return HSSFWorkbook
      */
     public static <T> HSSFWorkbook exportExcel2003(String[] headers, List<T> list, String sheetTitle, Class<T> clazz)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -45,7 +44,7 @@ public class ExcelExportHelper {
      * @param list        写入的对象集合
      * @param sheetTitle  生成excel工作薄的名字
      * @param <T>         类型
-     * @return
+     * @return HSSFWorkbook
      */
     public static <T> HSSFWorkbook exportExcel2003(Map<String, String> propertyMap, List<T> list, String sheetTitle, Class<T> clazz)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -65,7 +64,7 @@ public class ExcelExportHelper {
      * @param headers
      * @param list
      * @param <T>
-     * @return
+     * @return HSSFWorkbook
      */
     public static <T> HSSFWorkbook exportExcel2003ForBigData(String[] headers, List<T> list, Class<T> clazz) {
         return null;
@@ -76,7 +75,7 @@ public class ExcelExportHelper {
      * @param list       写入的对象集合
      * @param sheetTitle 生成excel工作薄的名字
      * @param <T>        类型
-     * @return
+     * @return XSSFWorkbook
      */
     public static <T> XSSFWorkbook exportExcel2007(String[] headers, List<T> list, String sheetTitle, Class<T> clazz) {
         return null;
@@ -86,7 +85,7 @@ public class ExcelExportHelper {
      * excel2007一个sheet最多1048576行
      *
      * @param dataSheets 数据封装到Sheet对象，一个Sheet对应一个excel sheet页
-     * @return
+     * @return XSSFWorkbook
      */
     public static XSSFWorkbook exportExcel2007(List<DataSheet> dataSheets) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         XSSFWorkbook workbook = new XSSFWorkbook();

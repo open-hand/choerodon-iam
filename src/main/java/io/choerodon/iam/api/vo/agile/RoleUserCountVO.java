@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo.agile;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,6 +10,7 @@ package io.choerodon.iam.api.vo.agile;
  * @since 2020/5/13 9:30
  */
 public class RoleUserCountVO {
+    @Encrypt
     private Long roleId;
     private Integer userNumber;
 

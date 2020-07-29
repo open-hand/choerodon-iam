@@ -2,7 +2,7 @@ package io.choerodon.iam.api.vo;
 
 /**
  * @author jiameng.cao
- * @date 2019/6/11
+ * @since 2019/6/11
  */
 public class ResetPasswordVO {
     private Boolean enable_reset;

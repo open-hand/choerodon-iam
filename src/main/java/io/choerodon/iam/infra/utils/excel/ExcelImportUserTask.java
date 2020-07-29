@@ -462,7 +462,7 @@ public class ExcelImportUserTask {
      *
      * @param validateMemberRoles 源集合
      * @param errorMemberRoles    重复的数据集合
-     * @return
+     * @return ExcelMemberRoleDTO
      */
     private List<ExcelMemberRoleDTO> distinctMemberRole(List<ExcelMemberRoleDTO> validateMemberRoles, List<ExcelMemberRoleDTO> errorMemberRoles) {
         List<ExcelMemberRoleDTO> distinctList = new ArrayList<>();

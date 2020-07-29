@@ -8,8 +8,8 @@ import org.hzero.iam.domain.entity.Permission;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
+ *
  */
 public interface PermissionC7nService {
 
@@ -23,5 +23,5 @@ public interface PermissionC7nService {
      */
     List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId);
 
-    List<org.hzero.iam.domain.entity.Permission> getPermission(String[] codes);
+    List<Permission> getPermission(String[] codes);
 }

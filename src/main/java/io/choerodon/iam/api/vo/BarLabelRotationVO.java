@@ -8,7 +8,7 @@ import java.util.List;
  * 〈bar-label-rotation展示VO〉
  *
  * @author wanghao
- * @Date 2020/2/26 9:13
+ * @since 2020/2/26 9:13
  */
 public class BarLabelRotationVO {
 

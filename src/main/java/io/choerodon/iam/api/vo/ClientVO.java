@@ -2,6 +2,7 @@ package io.choerodon.iam.api.vo;
 
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,6 +17,7 @@ public class ClientVO {
     private static final String regex = "^[a-z0-9A-Z]+$";
 
     @ApiModelProperty(value = "客户端ID/非必填")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "客户端名称/必填")
@@ -28,6 +30,7 @@ public class ClientVO {
     private Long organizationId;
 
     @ApiModelProperty(value = "客户端资源/非必填/默认：default")
+    @Encrypt
     private String resourceIds;
 
     @ApiModelProperty(value = "客户端秘钥/必填")
@@ -63,6 +66,7 @@ public class ClientVO {
 
     @ApiModelProperty(value = "资源id")
     @NotNull(message = "error.sourceId.null")
+    @Encrypt
     private Long sourceId;
 
     @ApiModelProperty(value = "client类型")

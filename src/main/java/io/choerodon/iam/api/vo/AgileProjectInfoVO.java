@@ -5,6 +5,7 @@ import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.iam.infra.utils.StringUtil;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author dinghuang123@gmail.com
@@ -13,6 +14,7 @@ import io.choerodon.iam.infra.utils.StringUtil;
 public class AgileProjectInfoVO {
 
     @ApiModelProperty(value = "主键id")
+    @Encrypt
     private Long infoId;
 
     @ApiModelProperty(value = "项目id")
@@ -25,6 +27,7 @@ public class AgileProjectInfoVO {
     private Long objectVersionNumber;
 
     @ApiModelProperty(value = "默认的经办人id")
+    @Encrypt
     private Long defaultAssigneeId;
 
     @ApiModelProperty(value = "默认的经办人类型")

@@ -39,6 +39,8 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_ORGANIZATION_ADMIN = "Choerodon Organization Admin";
     public static final String CHOERODON_ORGANIZATION_PROJECT_CATEGORY = "Choerodon Organization Project Category";
     public static final String CHOERODON_COMPATIBLE = "Choerodon Compatible";
+    public static final String CHOERODON_STAR_PROJECT = "Choerodon Star Project";
+    public static final String CHOERODON_QUICK_LINK = "Choerodon Quick Link";
 
 
     @Autowired

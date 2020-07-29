@@ -63,6 +63,7 @@ import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
@@ -76,6 +77,48 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.service.user.UserDetailsService;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author scp
@@ -157,6 +200,13 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     @Lazy
     private MessageSendService messageSendService;
+
+    @Autowired
+    private OrganizationResourceLimitService organizationResourceLimitService;
+
+
+    @Autowired
+    private StarProjectMapper starProjectMapper;
 
     @Override
     public User queryInfo(Long userId) {
@@ -363,7 +413,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Saga(code = SagaTopic.User.ASSIGN_ADMIN, description = "分配Root权限同步事件", inputSchemaClass = AssignAdminVO.class)
     @Override
     @Transactional
-    public void addAdminUsers(long[] ids) {
+    public void addAdminUsers(Long[] ids) {
         List<Long> adminUserIds = new ArrayList<>();
         for (long id : ids) {
             User dto = userRepository.selectByPrimaryKey(id);
@@ -587,9 +637,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+        List<ProjectDTO> projects = new ArrayList<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
-        List<ProjectDTO> projects = new ArrayList<>();
         // 普通用户只能查到启用的项目
         if (!isAdmin && !isOrgAdmin) {
             if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
@@ -598,10 +648,68 @@ public class UserC7nServiceImpl implements UserC7nService {
                 projectDTO.setEnabled(true);
             }
         }
-        projects = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        projects = projectMapper.selectProjectsWithCategoryAndRoleByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        if (CollectionUtils.isEmpty(projects)) {
+            return projects;
+        }
+        // 添加额外信息
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
         return projects;
+    }
+
+    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin, Long organizationId, Long userId) {
+        if (!CollectionUtils.isEmpty(projects)) {
+
+            Set<Long> projectIdList = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+
+            // 查询项目类型
+            List<ProjectMapCategoryVO> projectMapCategoryVOS = projectMapper.listProjectCategory(projectIdList);
+            Map<Long, List<ProjectMapCategoryVO>> projectMapCategoryMap = projectMapCategoryVOS
+                    .stream()
+                    .collect(Collectors.groupingBy(ProjectMapCategoryVO::getProjectId));
+
+            // 查询用户拥有项目所有者角色的项目
+            Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
+
+            // 查询用户star的项目
+            List<ProjectDTO> starProjects = starProjectMapper.query(projectIdList, userId);
+            Set<Long> starIds = new HashSet<>();
+            if (!CollectionUtils.isEmpty(starProjects)) {
+                starIds = starProjects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+            }
+
+            // 遍历项目,计算信息
+            Set<Long> finalStarIds = starIds;
+            projects.forEach(p -> {
+                // 如果项目为禁用 不可进入
+                if (p.getEnabled() == null || !p.getEnabled()) {
+                    p.setInto(false);
+                } else {
+                    // 如果不是admin用户和组织管理员且未分配项目角色 不可进入
+                    if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
+                        p.setInto(false);
+                    }
+                }
+
+                // 添加项目类型
+                if (projectMapCategoryMap.get(p.getId()) != null) {
+                    p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList()));
+                }
+
+                // 计算用户是否有编辑权限
+                if (isAdmin || isOrgAdmin || pids.contains(p.getId())) {
+                    p.setEditFlag(true);
+                }
+
+                // 计算是否star项目
+                if (finalStarIds.contains(p.getId())) {
+                    p.setStarFlag(true);
+                }
+
+            });
+        }
+
     }
 
     @Override
@@ -628,6 +736,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsProjectOwner(Long id, Long projectId) {
+        Assert.notNull(projectId, ResourceCheckConstants.ERROR_PROJECT_IS_NULL);
         return userC7nMapper.doesUserHaveLabelInProject(id, RoleLabelEnum.PROJECT_ADMIN.value(), projectId);
     }
 
@@ -654,16 +763,6 @@ public class UserC7nServiceImpl implements UserC7nService {
             pageInfo.setContent(orgAdministratorVOS);
         }
         return pageInfo;
-    }
-
-    private Long getRoleByCode(String code) {
-        Role query = new Role();
-        query.setCode(code);
-        Role role = roleMapper.selectOne(query);
-        if (role == null) {
-            throw new CommonException("error.get.code.role");
-        }
-        return role.getId();
     }
 
     /**
@@ -941,6 +1040,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         userIds.forEach(id -> {
+            labelNames.addAll(roleC7nMapper.listLabelByTenantIdAndUserId(id, organizationId));
             List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());
@@ -1195,6 +1295,38 @@ public class UserC7nServiceImpl implements UserC7nService {
             return Collections.emptyList();
         }
         return userC7nMapper.listRoleLabelsForUserInTheProject(userId, projectIds);
+    }
+
+    @Override
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
+        Page<ProjectDTO> page = new Page<>();
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        // 普通用户只能查到启用的项目
+        if (!isAdmin && !isOrgAdmin) {
+            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+                return page;
+            } else {
+                projectDTO.setEnabled(true);
+            }
+        }
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        List<ProjectDTO> projects = page.getContent();
+        if (CollectionUtils.isEmpty(projects)) {
+            return page;
+        }
+        // 添加额外信息
+        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
+        return page;
+    }
+
+    @Override
+    public List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId) {
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+
+
+        return projectMapper.listOwnedProjects(organizationId, userId, isAdmin, isOrgAdmin);
     }
 
     private static String trimFileDirectory(String directory) {

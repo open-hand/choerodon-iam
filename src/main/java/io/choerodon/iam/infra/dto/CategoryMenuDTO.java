@@ -1,17 +1,17 @@
 package io.choerodon.iam.infra.dto;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
 /**
  * @author jiameng.cao
- * @date 2019/6/4
+ * @since 2019/6/4
  */
 @Table(name = "fd_category_menu")
 @VersionAudit

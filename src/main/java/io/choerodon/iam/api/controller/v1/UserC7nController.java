@@ -35,6 +35,23 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.*;
 
 /**
  * @author superlee
@@ -63,7 +80,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "根据id查询用户信息")
     @GetMapping(value = "/{id}/info")
-    public ResponseEntity<User> queryInfo(@PathVariable Long id) {
+    public ResponseEntity<User> queryInfo(@Encrypt @PathVariable Long id) {
         return Optional.ofNullable(userC7nService.queryInfo(id))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(NotFoundException::new);
@@ -83,7 +100,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")
-    public ResponseEntity<User> updateInfo(@PathVariable Long id,
+    public ResponseEntity<User> updateInfo(@Encrypt @PathVariable Long id,
                                            @RequestBody User user) {
         user.setId(id);
         if (user.getObjectVersionNumber() == null) {
@@ -109,7 +126,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传")
     @PostMapping(value = "/{id}/upload_photo")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+    public ResponseEntity<String> uploadPhoto(@Encrypt @PathVariable Long id,
                                               @RequestPart MultipartFile file) {
         return new ResponseEntity<>(userC7nService.uploadPhoto(id, file), HttpStatus.OK);
     }
@@ -120,7 +137,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
     @PostMapping(value = "/{id}/save_photo")
-    public ResponseEntity<String> savePhoto(@PathVariable Long id,
+    public ResponseEntity<String> savePhoto(@Encrypt @PathVariable Long id,
                                             @RequestPart MultipartFile file,
                                             @ApiParam(name = "rotate", value = "顺时针旋转的角度", example = "90")
                                             @RequestParam(required = false) Double rotate,
@@ -139,7 +156,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在项目列表")
     @GetMapping(value = "/{id}/projects")
-    public ResponseEntity<List<ProjectDTO>> queryProjects(@PathVariable Long id,
+    public ResponseEntity<List<ProjectDTO>> queryProjects(@Encrypt @PathVariable Long id,
                                                           @RequestParam(required = false, name = "included_disabled")
                                                                   boolean includedDisabled) {
         return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
@@ -149,9 +166,9 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity checkUserInfo(@RequestBody User user) {
+    public ResponseEntity<Void> checkUserInfo(@RequestBody User user) {
         userC7nService.check(user);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -175,7 +192,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "批量给用户添加管理员身份")
     @PostMapping("/admin")
-    public ResponseEntity addDefaultUsers(@ModelAttribute("id") long[] ids) {
+    public ResponseEntity<Void> addDefaultUsers(@Encrypt @ModelAttribute("id") Long[] ids) {
         userC7nService.addAdminUsers(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -183,7 +200,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "清除用户的管理员身份")
     @DeleteMapping("/admin/{id}")
-    public ResponseEntity deleteDefaultUser(@PathVariable long id) {
+    public ResponseEntity<Void> deleteDefaultUser(@Encrypt @PathVariable Long id) {
         userC7nService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -192,7 +209,7 @@ public class UserC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
-    public ResponseEntity<List<User>> listUsersByIds(@RequestBody Long[] ids,
+    public ResponseEntity<List<User>> listUsersByIds(@Encrypt @RequestBody Long[] ids,
                                                      @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
@@ -204,7 +221,7 @@ public class UserC7nController extends BaseController {
             @ApiParam(value = "是否只查询启用的用户", required = false)
             @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled,
             @ApiParam(value = "用户id集合", required = true)
-            @RequestBody Set<Long> ids) {
+            @Encrypt @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
 
@@ -238,7 +255,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Page<TenantVO>> pagingQueryOrganizationAndRolesById(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @PathVariable(value = "id") Long id,
+            @Encrypt @PathVariable(value = "id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
         return new ResponseEntity<>(userC7nService.pagingQueryOrganizationsWithRoles(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
@@ -250,7 +267,7 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectAndRolesById(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @PathVariable("id") Long id,
+            @Encrypt @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
         return new ResponseEntity<>(userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
@@ -305,8 +322,9 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层修改用户")
     @PutMapping(value = "/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id,
-                                           @RequestBody User userDTO) {
+    public ResponseEntity<User> updateUser(
+            @Encrypt @PathVariable Long id,
+            @RequestBody User userDTO) {
         // 不能更新admin字段
         userDTO.setAdmin(null);
         // 不能更新ldap字段
@@ -324,7 +342,7 @@ public class UserC7nController extends BaseController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "根据用户id查询对应的组织和项目")
     @GetMapping("/{id}/organization_project")
-    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@PathVariable("id") Long id,
+    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@Encrypt @PathVariable("id") Long id,
                                                                                   @RequestParam(value = "project_name", required = false) String projectName) {
         return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id, projectName));
     }
@@ -345,7 +363,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation("校验用户是否是gitlab项目的所有者")
     @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_owner")
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(
-            @PathVariable("id") Long id,
+            @Encrypt @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.PROJECT.value()));
     }
@@ -354,7 +372,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation("校验用户是否是gitlab组织层owner")
     @GetMapping("/{id}/projects/{project_id}/check_is_gitlab_org_owner")
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(
-            @PathVariable("id") Long id,
+            @Encrypt @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.ORGANIZATION.value()));
     }
@@ -363,7 +381,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation("校验用户是否是项目的所有者")
     @GetMapping("/{id}/projects/{project_id}/check_is_owner")
     public ResponseEntity<Boolean> checkIsProjectOwner(
-            @PathVariable("id") Long id,
+            @Encrypt @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsProjectOwner(id, projectId));
     }
@@ -379,14 +397,14 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation("校验用户是否是Root用户")
     @GetMapping("/{id}/check_is_root")
-    public ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id) {
+    public ResponseEntity<Boolean> checkIsRoot(@Encrypt @PathVariable("id") Long id) {
         return ResponseEntity.ok(userC7nService.isRoot(id));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation("查询用户组织列表，根据into字段判断是否能够进入")
     @GetMapping("/{user_id}/organizations")
-    public ResponseEntity<List<TenantVO>> listOwnedOrganizationByUserId(@PathVariable("user_id") Long userId) {
+    public ResponseEntity<List<TenantVO>> listOwnedOrganizationByUserId(@Encrypt @PathVariable("user_id") Long userId) {
         return ResponseEntity.ok(tenantC7nService.listOwnedOrganizationByUserId(userId));
     }
 
@@ -412,8 +430,8 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "批量根据项目id查询用户在这个项目下拥有的角色标签, 如果在某个项目下没有角色, 不会包含该项目的纪录")
     @PostMapping(value = "/{user_id}/project_role_labels")
     public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
-            @PathVariable("user_id") Long userId,
-            @RequestBody Set<Long> projectIds) {
+            @Encrypt @PathVariable("user_id") Long userId,
+            @Encrypt @RequestBody Set<Long> projectIds) {
         return ResponseEntity.ok(userC7nService.listRoleLabelsForUserInTheProject(userId, projectIds));
     }
 }

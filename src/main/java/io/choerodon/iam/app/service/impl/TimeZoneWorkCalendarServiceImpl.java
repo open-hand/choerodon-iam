@@ -121,7 +121,7 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
                             createTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVO);
                             break;
                         case STATUS_DELETE:
-                            timeZoneWorkCalendarValidator.verifyDeleteTimeZoneWorkCalendarRef(timeZoneWorkCalendarRefCreateVO.getCalendarId());
+                            timeZoneWorkCalendarValidator.verifyDeleteTimeZoneWorkCalendarRef(organizationId, timeZoneWorkCalendarRefCreateVO.getCalendarId());
                             deleteTimeZoneWorkCalendarRef(organizationId, timeZoneWorkCalendarRefCreateVO.getCalendarId());
                             break;
                         default:

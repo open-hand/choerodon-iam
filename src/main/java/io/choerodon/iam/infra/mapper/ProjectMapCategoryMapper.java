@@ -1,13 +1,12 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.iam.api.vo.ProjectMapCategorySimpleVO;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 
 /**
@@ -23,7 +22,7 @@ public interface ProjectMapCategoryMapper extends BaseMapper<ProjectMapCategoryD
      * 批量插入
      *
      * @param records
-     * @return
+     * @return 插入的数量
      */
     int batchInsert(@Param("records") List<ProjectMapCategoryDTO> records);
 

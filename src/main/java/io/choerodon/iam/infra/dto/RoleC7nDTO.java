@@ -10,8 +10,8 @@ import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 
 /**
  * @author scp
- * @date 2020/4/26
- * @description
+ * @since 2020/4/26
+ *
  */
 public class RoleC7nDTO extends Role {
     private List<Label> labels;

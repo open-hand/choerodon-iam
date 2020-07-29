@@ -179,9 +179,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Role> roles = user.getRoles();
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, roles));
         User result = userService.createUserInternal(user);
-//        if (!CollectionUtils.isEmpty(roles)) {
-//            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
-//        }
         sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
     }

@@ -529,7 +529,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             params.put("organizationId", String.valueOf(projectDTO.getOrganizationId()));
             params.put("addCount", String.valueOf(1));
             params.put("userList", JSON.toJSONString(userC7nService.getWebHookUser(memberRoleDTO.getMemberId())));
-            messageSendService.sendProjectAddUserMsg(projectDTO,params,PROJECT_ADD_USER,DetailsHelper.getUserDetails().getUserId());
+            messageSendService.sendProjectAddUserMsg(projectDTO, params, PROJECT_ADD_USER, DetailsHelper.getUserDetails().getUserId());
         }
     }
 

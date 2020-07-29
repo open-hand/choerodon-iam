@@ -1,25 +1,25 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.Optional;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.TimeZoneWorkCalendarRefDetailVO;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * @author jiameng.cao
- * @date 2019/8/20
+ * @since 2019/8/20
  */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_WORK_CALENDAR_PROJECT)
 @RestController
@@ -35,7 +35,7 @@ public class TimeZoneWorkCalendarProjectC7nController {
                                                                                            @PathVariable(name = "project_id") Long projectId,
                                                                                            @ApiParam(value = "组织id", required = true)
                                                                                            @PathVariable(name = "organization_id") Long organizationId,
-                                                                                           @ApiParam(value = "组织id", required = true)
+                                                                                           @ApiParam(value = "时间", required = true)
                                                                                            @RequestParam(name = "year") Integer year) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))

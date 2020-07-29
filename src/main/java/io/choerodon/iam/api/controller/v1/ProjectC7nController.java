@@ -1,18 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -24,6 +11,20 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -32,6 +33,9 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/choerodon/v1/projects")
 public class ProjectC7nController extends BaseController {
+
+    @Value("${choerodon.category.enabled:false}")
+    private boolean enableCategory;
 
     private ProjectC7nService projectService;
 
@@ -61,7 +65,7 @@ public class ProjectC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id集合查询项目")
     @PostMapping("/ids")
-    public ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids) {
+    public ResponseEntity<List<ProjectDTO>> queryByIds(@Encrypt @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(projectService.queryByIds(ids), HttpStatus.OK);
     }
 
@@ -72,8 +76,9 @@ public class ProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
-    public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
-                                             @RequestBody ProjectDTO projectDTO) {
+    public ResponseEntity<ProjectDTO> update(
+            @PathVariable(name = "project_id") Long id,
+            @RequestBody ProjectDTO projectDTO) {
         if (StringUtils.isEmpty(projectDTO.getName())) {
             throw new CommonException("error.project.name.empty");
         }
@@ -96,7 +101,8 @@ public class ProjectC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
-    public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "project_id") Long id) {
+    public ResponseEntity<ProjectDTO> disableProject(
+            @PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.disableProject(id), HttpStatus.OK);
     }
 
@@ -128,11 +134,11 @@ public class ProjectC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users")
     @CustomPageRequest
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long projectId,
-                                                  @ApiIgnore
-                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                  @RequestParam(required = false, name = "id") Long userId,
-                                                  @RequestParam(required = false) String email,
-                                                  @RequestParam(required = false) String param) {
+                                              @ApiIgnore
+                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                              @Encrypt @RequestParam(required = false, name = "id") Long userId,
+                                              @RequestParam(required = false) String email,
+                                              @RequestParam(required = false) String param) {
         return ResponseEntity.ok(projectService.pagingQueryTheUsersOfProject(projectId, userId, email, pageRequest, param));
     }
 }

@@ -1,16 +1,15 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -83,7 +82,7 @@ public interface TenantC7nMapper {
      * 查询用户可以看到的组织列表
      *
      * @param params params.userId必填
-     * @return
+     * @return TenantDTO列表
      */
     List<TenantDTO> listVisibleTentant(@Param("params") TenantDTO params);
 
@@ -91,7 +90,7 @@ public interface TenantC7nMapper {
      * 查询组织下的所有用户
      *
      * @param tenantId
-     * @return
+     * @return User列表
      */
     List<User> listMemberIds(@Param("tenantId") Long tenantId);
 }

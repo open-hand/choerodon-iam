@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 此DTO 用于 market-service feign 调用

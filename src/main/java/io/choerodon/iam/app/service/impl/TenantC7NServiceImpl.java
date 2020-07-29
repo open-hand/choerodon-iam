@@ -1,11 +1,25 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -28,31 +42,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author scp
- * @date 2020/4/21
- * @description
+ * @since 2020/4/21
  */
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
@@ -381,7 +379,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
      * 查询用户可访问的组织，into判断是否可进
      *
      * @param params
-     * @return
+     * @return TenantVO列表
      */
     private List<TenantVO> listOwnedOrganizationByTenant(TenantDTO params) {
         Assert.notNull(params, ERROR_TENANT_PARAM_IS_NULL);

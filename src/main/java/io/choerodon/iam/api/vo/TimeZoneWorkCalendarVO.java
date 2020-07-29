@@ -2,6 +2,7 @@ package io.choerodon.iam.api.vo;
 
 import io.choerodon.iam.infra.utils.StringUtil;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 
 /**
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class TimeZoneWorkCalendarVO {
 
     @ApiModelProperty(value = "时区主键id")
+    @Encrypt
     private Long timeZoneId;
 
     @ApiModelProperty(value = "地址code")

@@ -14,8 +14,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
- * @date 2020/4/21
- * @description
+ * @since 2020/4/21
+ *
  */
 public interface TenantC7nService {
 

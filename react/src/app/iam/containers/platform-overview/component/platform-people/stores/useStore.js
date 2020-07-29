@@ -13,16 +13,33 @@ export default function useStore() {
       return this.platformPeopleChartData;
     },
 
+    loading: false,
+    setLoading(value) {
+      this.loading = value;
+    },
+
     async initPlatformPeopleChartData(startTime, endTime) {
-      const data = await axios({
-        method: 'GET',
-        url: '/iam/choerodon/v1/users/count_by_date',
-        params: {
-          start_time: startTime,
-          end_time: endTime,
-        },
-      });
-      this.platformPeopleChartData = data;
+      this.setLoading(true);
+      try {
+        const data = await axios({
+          method: 'GET',
+          url: '/iam/choerodon/v1/users/count_by_date',
+          params: {
+            start_time: startTime,
+            end_time: endTime,
+          },
+        });
+        if (data.failed) {
+          throw data.message;
+        }
+        this.platformPeopleChartData = data;
+        this.setLoading(false);
+      } catch (e) {
+        if (e && e.message) {
+          return e.message;
+        }
+        return false;
+      }
     },
   }));
 }

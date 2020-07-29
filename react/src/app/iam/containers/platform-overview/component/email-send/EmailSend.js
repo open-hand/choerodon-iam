@@ -10,6 +10,7 @@ const EmailSend = observer(() => {
 
   const {
     EmailSendStore,
+    EmailSendStore: { loading },
   } = useEmailSendStore();
 
   const initData = (days) => {
@@ -34,6 +35,7 @@ const EmailSend = observer(() => {
       title="邮件发送情况"
       hasDaysPicker
       handleChangeDays={handleChangeDays}
+      loading={loading}
     >
       <Chart />
     </ContainerBlock>

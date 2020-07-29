@@ -11,7 +11,7 @@ const ThingPerform = observer(() => {
   const [chosenDays, setChosenDays] = useState(7);
 
   const {
-    ThingPerformStore,
+    ThingPerformStore: { loading, ...ThingPerformStore },
     FailedStatisticsTableDataSet,
   } = useFailedStatisticsStore();
 
@@ -36,6 +36,7 @@ const ThingPerform = observer(() => {
         title="事务执行情况"
         hasDaysPicker
         handleChangeDays={handleChangeDays}
+        loading={loading}
       >
         <Charts />
         <FailedStatistics />

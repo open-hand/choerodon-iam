@@ -37,17 +37,31 @@ export default function useStore() {
       this.initChartData(orgId, projectIds, startTime, endTime);
     },
 
+    loading: false,
+
     async initChartData(orgId, projectIds, startTime, endTime) {
-      const data = await axios({
-        method: 'POST',
-        url: `/iam/choerodon/v1/organizations/${orgId}/projects/deploy_records`,
-        data: projectIds,
-        params: {
-          start_time: startTime,
-          end_time: endTime,
-        },
-      });
-      this.chartData = data;
+      this.loading = true;
+      try {
+        const data = await axios({
+          method: 'POST',
+          url: `/iam/choerodon/v1/organizations/${orgId}/projects/deploy_records`,
+          data: projectIds,
+          params: {
+            start_time: startTime,
+            end_time: endTime,
+          },
+        });
+        if (data.failed) {
+          throw data.message;
+        }
+        this.chartData = data;
+        this.loading = false;
+      } catch (e) {
+        if (e && e.message) {
+          return e.message;
+        }
+        return false;
+      }
     },
   }));
 }

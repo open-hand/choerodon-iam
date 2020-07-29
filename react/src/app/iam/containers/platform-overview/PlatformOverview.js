@@ -25,14 +25,7 @@ const PlatformOverview = observer(() => (
           <ContainerBlock height="108px" width="100%" style={{ marginBottom: '20px' }}>
             <ClusterOverview />
           </ContainerBlock>
-          <ContainerBlock
-            width="100%"
-            height="255px"
-            title="在线人数统计"
-            titleMarginBottom="0"
-          >
-            <LineChart />
-          </ContainerBlock>
+          <LineChart />
         </div>
         <PlatformPeople />
       </div>
@@ -44,7 +37,6 @@ const PlatformOverview = observer(() => (
         <div className="c7n-platform-overview-content-right">
           <ContainerBlock
             width="100%"
-            // height="528px"
             title="系统公告"
           >
             <TimeLine />

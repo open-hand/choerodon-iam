@@ -21,7 +21,6 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     },
   } = props;
 
-
   const ProDeployStore = useStore();
 
   const ProDeploySelectDataSet = useMemo(() => new DataSet(proDeploySelectDataSet({ orgId, ProDeployStore })), [orgId]);

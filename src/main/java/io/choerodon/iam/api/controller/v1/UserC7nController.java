@@ -176,7 +176,7 @@ public class UserC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "批量给用户添加管理员身份")
     @PostMapping("/admin")
-    public ResponseEntity<Void> addDefaultUsers(@Encrypt @ModelAttribute("id") Long[] ids) {
+    public ResponseEntity<Void> addDefaultUsers(@Encrypt @RequestParam("id") Long[] ids) {
         userC7nService.addAdminUsers(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }

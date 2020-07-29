@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Select } from 'choerodon-ui/pro';
+import { Select, Tooltip } from 'choerodon-ui/pro';
 import ContainerBlock from '../../../ContainerBlock';
 import { useProDeployStore } from './stores';
 import MaxTagPopover from '../../../../../../components/MaxTagPopover';
@@ -32,6 +32,7 @@ const ProDeploy = observer(() => {
       popupCls="proDeploy-select-dropdown"
       maxTagCount={1}
       searchMatcher="name"
+      optionRenderer={({ text }) => <Tooltip title={text}>{text}</Tooltip>}
       maxTagPlaceholder={(omittedValues) => <MaxTagPopover dataSource={ProDeployStore.getProjectsArray} value={omittedValues} />}
     />
   );

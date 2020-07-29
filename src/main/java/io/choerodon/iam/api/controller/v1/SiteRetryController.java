@@ -28,7 +28,7 @@ public class SiteRetryController {
     @PutMapping("/{id}/site/retry")
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     public void siteRetry(
-            @Encrypt @PathVariable(value = "source_id") Long sourceId,
+            @PathVariable(value = "source_id") Long sourceId,
             @Encrypt @PathVariable(value = "id") long id) {
         operateLogService.siteRetry(sourceId, id);
     }

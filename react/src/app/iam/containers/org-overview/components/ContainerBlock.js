@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import DaysPicker from './DaysPicker';
 
 import './ContainerBlock.less';
+import Loading from '../../../components/loading';
 
 const ContainerBlock = observer((props) => {
   const {
@@ -15,6 +16,7 @@ const ContainerBlock = observer((props) => {
     titleExtra,
     style,
     titleMarginBottom,
+    loading,
   } = props;
   return (
     <div
@@ -39,7 +41,7 @@ const ContainerBlock = observer((props) => {
           {hasDaysPicker && <DaysPicker handleChangeDays={handleChangeDays} />}
         </div>
       </div>
-      {children}
+      {!loading ? children : <Loading display />}
     </div>
   );
 });

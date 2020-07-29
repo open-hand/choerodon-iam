@@ -11,7 +11,7 @@ const OrgPeople = observer(() => {
   const [chosenDay, setChosenDay] = useState(7);
 
   const {
-    OrgPeopleStore,
+    OrgPeopleStore: { loading, ...OrgPeopleStore },
     AppState: {
       menuType: { orgId },
     },
@@ -40,6 +40,7 @@ const OrgPeople = observer(() => {
         title="组织人数统计"
         hasDaysPicker
         handleChangeDays={handleChangeDays}
+        loading={loading}
       >
         <Charts />
       </ContainerBlock>

@@ -9,7 +9,7 @@ const PlatformPeople = observer(() => {
   const [chosenDay, setChosenDay] = useState(7);
 
   const {
-    PlatformPeopleStore,
+    PlatformPeopleStore: { loading, ...PlatformPeopleStore },
   } = usePlatformPeopleStore();
 
   const initData = (day) => {
@@ -34,6 +34,7 @@ const PlatformPeople = observer(() => {
       title="平台人数统计"
       hasDaysPicker
       handleChangeDays={handleChangeDays}
+      loading={loading}
     >
       <Chart />
     </ContainerBlock>

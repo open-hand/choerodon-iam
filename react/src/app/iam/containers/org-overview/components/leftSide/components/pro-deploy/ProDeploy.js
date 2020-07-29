@@ -12,7 +12,7 @@ const { Option } = Select;
 
 const ProDeploy = observer(() => {
   const {
-    ProDeployStore,
+    ProDeployStore: { loading, ...ProDeployStore },
     AppState: {
       menuType: { orgId },
     },
@@ -45,6 +45,7 @@ const ProDeploy = observer(() => {
         hasDaysPicker
         titleExtra={SelectProList()}
         handleChangeDays={handleChangeDays}
+        loading={loading}
       >
         <Chart />
       </ContainerBlock>

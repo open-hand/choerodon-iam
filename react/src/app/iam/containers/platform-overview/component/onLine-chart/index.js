@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
@@ -11,7 +11,7 @@ import 'echarts/lib/component/legend';
 import 'echarts/lib/chart/line';
 import 'echarts/lib/component/markPoint';
 import { usePlatformOverviewStore } from '../../stores';
-
+import ContainerBlock from '../../../org-overview/components/ContainerBlock';
 
 const LineChart = observer(() => {
   const {
@@ -79,24 +79,33 @@ const LineChart = observer(() => {
     return option;
   };
   return (
-    <div className="c7n-online-chart">
-      <div className="c7n-online-number">
-        <span>{onlineNumDs.current && onlineNumDs.current.get('OnlineCount')}</span>
-        <span>人</span>
+    <ContainerBlock
+      width="100%"
+      height="255px"
+      title="在线人数统计"
+      titleMarginBottom="0"
+      loading={onlineHourDs.status === 'loading' || onlineNumDs.status === 'loading'}
+    >
+      <div className="c7n-online-chart">
+        <div className="c7n-online-number">
+          <span>{onlineNumDs.current && onlineNumDs.current.get('OnlineCount')}</span>
+          <span>人</span>
+        </div>
+        <div className="c7n-online-mainChart">
+          <ReactEchartsCore
+            echarts={echarts}
+            option={getOpts()}
+            notMerge
+            lazyUpdate
+          />
+        </div>
+        <div className="c7n-online-daily">
+          <span>日访问量：</span>
+          <span>{onlineNumDs.current && onlineNumDs.current.get('NumberOfVisitorsToday')}次</span>
+        </div>
       </div>
-      <div className="c7n-online-mainChart">
-        <ReactEchartsCore
-          echarts={echarts}
-          option={getOpts()}
-          notMerge
-          lazyUpdate
-        />
-      </div>
-      <div className="c7n-online-daily">
-        <span>日访问量：</span>
-        <span>{onlineNumDs.current && onlineNumDs.current.get('NumberOfVisitorsToday')}次</span>
-      </div>
-    </div>
+    </ContainerBlock>
+
   );
 });
 export default LineChart;

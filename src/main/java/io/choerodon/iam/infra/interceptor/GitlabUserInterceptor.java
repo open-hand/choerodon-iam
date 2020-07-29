@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.interceptor;
 
+import org.hzero.core.interceptor.HandlerInterceptor;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

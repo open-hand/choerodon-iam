@@ -172,7 +172,7 @@ hzero:
     enable-async: true
   audit:
     operation:
-      enable: false     # 全局开关，默认 false
+      enable: true     # 全局开关，默认 false
       api-audit:
           enable: true    # API 审计开关，默认 true，如果全局开关关闭，此值无效
       annotation-audit:

@@ -1,6 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -28,26 +49,6 @@ import io.choerodon.iam.infra.mapper.ProjectUserMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.TenantMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author scp
@@ -114,26 +115,32 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
-    public ProjectDTO queryProjectById(Long projectId) {
+    public ProjectDTO queryProjectById(Long projectId, boolean withCategoryInfo, boolean withUserInfo, boolean withAgileInfo) {
         ProjectDTO dto = projectAssertHelper.projectNotExisted(projectId);
-        if (enableCategory) {
-            dto.setCategories(projectMapCategoryMapper.selectProjectCategoryNames(dto.getId()));
-        }
-        User createdUser = userMapper.selectByPrimaryKey(dto.getCreatedBy());
-        if (createdUser != null) {
-            dto.setCreateUserName(createdUser.getRealName());
-            dto.setCreateUserImageUrl(createdUser.getImageUrl());
-        }
-        try {
-            ResponseEntity<AgileProjectInfoVO> agileProjectResponse = agileFeignClient.queryProjectInfoByProjectId(projectId);
-            if (agileProjectResponse.getStatusCode().is2xxSuccessful()) {
-                AgileProjectInfoVO agileProject = agileProjectResponse.getBody();
-                dto.setAgileProjectId(agileProject.getInfoId());
-                dto.setAgileProjectCode(agileProject.getProjectCode());
-                dto.setAgileProjectObjectVersionNumber(agileProject.getObjectVersionNumber());
+        if (withCategoryInfo) {
+            if (enableCategory) {
+                dto.setCategories(projectMapCategoryMapper.selectProjectCategoryNames(dto.getId()));
             }
-        } catch (Exception e) {
-            LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
+        }
+        if (withUserInfo) {
+            User createdUser = userMapper.selectByPrimaryKey(dto.getCreatedBy());
+            if (createdUser != null) {
+                dto.setCreateUserName(createdUser.getRealName());
+                dto.setCreateUserImageUrl(createdUser.getImageUrl());
+            }
+        }
+        if (withAgileInfo) {
+            try {
+                ResponseEntity<AgileProjectInfoVO> agileProjectResponse = agileFeignClient.queryProjectInfoByProjectId(projectId);
+                if (agileProjectResponse.getStatusCode().is2xxSuccessful()) {
+                    AgileProjectInfoVO agileProject = agileProjectResponse.getBody();
+                    dto.setAgileProjectId(agileProject.getInfoId());
+                    dto.setAgileProjectCode(agileProject.getProjectCode());
+                    dto.setAgileProjectObjectVersionNumber(agileProject.getObjectVersionNumber());
+                }
+            } catch (Exception e) {
+                LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
+            }
         }
         return dto;
     }

@@ -173,7 +173,8 @@ public class ExcelImportUserTask {
         }
     }
 
-    private void sendNotice(Integer successCount, Long userId, Long organizationId) {
+    @Async
+    public void sendNotice(Integer successCount, Long userId, Long organizationId) {
         Map<String, String> paramsMap = new HashMap<>();
         paramsMap.put("addCount", String.valueOf(successCount));
         List<Long> userIds = new ArrayList<>();

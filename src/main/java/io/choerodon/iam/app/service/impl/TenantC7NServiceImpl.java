@@ -30,6 +30,7 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.mybatis.domian.Condition;
@@ -55,6 +56,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
+    public static final Long OPERATION_ORG_ID = 1L;
 
 
     @Autowired
@@ -86,6 +88,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantConfigC7nMapper tenantConfigMapper;
     @Autowired
     private MessageSendService messageSendService;
+    @Autowired
+    private TenantMapper tenantMapper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -131,24 +135,26 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
 
     @Override
-    public TenantVO queryTenantById(Long tenantId) {
+    public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
         Tenant tenant = tenantRepository.selectByPrimaryKey(tenantId);
         TenantVO tenantVO = ConvertUtils.convertObject(tenant, TenantVO.class);
-        List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
-                .where(Sqls.custom()
-                        .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantId)
-                )
-                .build());
-        TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
-        tenantVO.setTenantConfigVO(tenantConfigVO);
-        //返回组织所有者的手机号邮箱
-        if (tenantConfigVO.getUserId() != null) {
-            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
-            if (user != null) {
-                tenantVO.setOwnerRealName(user.getRealName());
-                tenantVO.setOwnerEmail(user.getEmail());
-                tenantVO.setOwnerPhone(user.getPhone());
-                tenantVO.setOwnerLoginName(user.getLoginName());
+        if (withMoreInfo) {
+            List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
+                    .where(Sqls.custom()
+                            .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantId)
+                    )
+                    .build());
+            TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
+            tenantVO.setTenantConfigVO(tenantConfigVO);
+            //返回组织所有者的手机号邮箱
+            if (tenantConfigVO.getUserId() != null) {
+                User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+                if (user != null) {
+                    tenantVO.setOwnerRealName(user.getRealName());
+                    tenantVO.setOwnerEmail(user.getEmail());
+                    tenantVO.setOwnerPhone(user.getPhone());
+                    tenantVO.setOwnerLoginName(user.getLoginName());
+                }
             }
         }
         return tenantVO;
@@ -387,7 +393,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         }
         tenantDTOS = tenantDTOS.stream().filter(tenantDTO -> tenantDTO.getTenantId() != 0).collect(Collectors.toList());
         User user = userMapper.selectByPrimaryKey(params.getUserId());
-        return getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
+        List<TenantVO> ownedOrganizations = getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
+        // 如果是admin用户，没有任何组织权限，默认返回运营组织
+        if (CollectionUtils.isEmpty(ownedOrganizations) && Boolean.TRUE.equals(user.getAdmin())) {
+            return Collections.singletonList(ConvertUtils.convertObject(tenantMapper.selectByPrimaryKey(OPERATION_ORG_ID), TenantVO.class));
+        }
+        return ownedOrganizations;
     }
 
     /**

@@ -44,6 +44,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private ProjectAssertHelper projectAssertHelper;
     @Autowired
     private UserC7nService userC7nService;
+
     @Autowired
     private PermissionRepository permissionRepository;
 
@@ -77,4 +78,5 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         List<Permission> permissions = permissionRepository.selectByCodes(codes);
         return permissions;
     }
+
 }

@@ -6,7 +6,7 @@
             pc. CODE
         FROM
             FD_PROJECT_MAP_CATEGORY pmc
-        LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        INNER JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
         WHERE pmc.project_id = #{projectId}
     </select>
 
@@ -16,7 +16,7 @@
             pc.LABEL_CODE as labelCode
         FROM
             FD_PROJECT_MAP_CATEGORY pmc
-        LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        INNER JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
         WHERE pmc.project_id = #{projectId}
     </select>
 
@@ -27,7 +27,7 @@
         FROM
             fd_project fp
         LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-        LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
+        INNER JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
     </select>
 
     <insert id="batchInsert" parameterType="java.util.List">

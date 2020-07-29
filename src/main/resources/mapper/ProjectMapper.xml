@@ -374,7 +374,7 @@
                 <if test="projectDTO.organizationId != null">
                     AND fp.organization_id = #{projectDTO.organizationId}
                 </if>
-                <if test="projectDTO.name != null">
+                <if test="projectDTO.name != null ">
                     AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
                 </if>
                 <if test="projectDTO.enabled != null">

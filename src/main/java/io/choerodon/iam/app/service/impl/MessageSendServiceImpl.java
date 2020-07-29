@@ -11,12 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
-
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -25,6 +19,7 @@ import org.hzero.iam.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -34,14 +29,6 @@ import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
-
-import org.springframework.util.CollectionUtils;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 
@@ -62,6 +49,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     private TenantC7nMapper tenantC7nMapper;
 
     @Override
+    @Async
     public void sendSiteAddUserMsg(User user, String roleName) {
         try {
             // 构建消息对象
@@ -95,6 +83,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendDisableUserMsg(User user, Long tenantId) {
         try {
             // 构建消息对象
@@ -124,6 +113,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList) {
         try {
             // 构建消息对象
@@ -178,6 +168,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList) {
         try {
             // 构建消息对象
@@ -230,6 +221,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendDisableOrEnableProject(ProjectDTO projectDTO, String consumerType, boolean enabled, Long userId) {
         try {
             // 构建消息对象
@@ -283,6 +275,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendDisableOrEnableTenant(Tenant tenant, String consumerType, Long userId) {
         try {
             // 构建消息对象
@@ -337,6 +330,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendSiteAddRoot(String rootBusinessTypeCode, Long userId) {
         try {
             // 构建消息对象
@@ -364,6 +358,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendAddMemberMsg(Tenant tenant, Map<String, String> argsMap, String businessTypeCode, Long userId) {
         try {
             // 构建消息对象
@@ -397,6 +392,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     }
 
     @Override
+    @Async
     public void sendProjectAddUserMsg(ProjectDTO projectDTO, Map<String, String> params, String projectAddUser, Long userId) {
         try {
             // 构建消息对象

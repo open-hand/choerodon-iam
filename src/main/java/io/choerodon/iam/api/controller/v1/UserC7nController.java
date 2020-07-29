@@ -27,7 +27,39 @@ import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -326,8 +358,9 @@ public class UserC7nController extends BaseController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "根据用户id查询对应的组织和项目")
     @GetMapping("/{id}/organization_project")
-    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@Encrypt @PathVariable("id") Long id) {
-        return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id));
+    public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@Encrypt @PathVariable("id") Long id,
+                                                                                  @RequestParam(value = "project_name", required = false) String projectName) {
+        return ResponseEntity.ok(userC7nService.queryOrganizationProjectByUserId(id, projectName));
     }
 
 

@@ -18,13 +18,16 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
+import io.choerodon.iam.infra.dto.SysSettingDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.SysSettingEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
+import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
@@ -39,10 +42,8 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.constant.HiamMemberType;
@@ -56,6 +57,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,6 +94,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final UserService userService;
     private final MessageClient messageClient;
     private final MessageSendService messageSendService;
+    private final PasswordPolicyRepository passwordPolicyRepository;
+    private final SysSettingMapper sysSettingMapper;
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -111,7 +115,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        RoleMemberService roleMemberService,
                                        UserService userService,
                                        MessageClient messageClient,
-                                       MessageSendService messageSendService) {
+                                       PasswordPolicyRepository passwordPolicyRepository,
+                                       MessageSendService messageSendService,
+                                       SysSettingMapper sysSettingMapper
+    ) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.memberRoleService = memberRoleService;
@@ -130,7 +137,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userRepository = userRepository;
         this.userService = userService;
         this.messageClient = messageClient;
+        this.passwordPolicyRepository = passwordPolicyRepository;
         this.messageSendService = messageSendService;
+        this.sysSettingMapper = sysSettingMapper;
     }
 
     @Override
@@ -170,9 +179,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Role> roles = user.getRoles();
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, roles));
         User result = userService.createUserInternal(user);
-        if (!CollectionUtils.isEmpty(roles)) {
-            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(result.getOrganizationId(), result.getId(), roles));
-        }
         sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
     }
@@ -191,9 +197,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         user.setRoles(null);
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, userRoles));
         user = userService.createUserInternal(user);
-        if (!CollectionUtils.isEmpty(userRoles)) {
-            memberRoleService.batchAssignMemberRoleInternal(role2MemberRole(user.getOrganizationId(), user.getId(), userRoles));
-        }
+
         sendCreateUserAndUpdateRoleSaga(userId, user, userRoles, ResourceLevel.ORGANIZATION.value(), organizationId);
         return user;
     }
@@ -325,8 +329,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
+        String newPassword;
+        PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
+        if (!StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
+            newPassword = passwordPolicy.getOriginalPassword();
+        } else {
+            SysSettingDTO sysSettingDTO = new SysSettingDTO();
+            sysSettingDTO.setSettingKey(SysSettingEnum.DEFAULT_PASSWORD.value());
+            newPassword = sysSettingMapper.selectOne(sysSettingDTO).getSettingValue();
+        }
 
-        userService.resetUserPassword(userId, organizationId);
+        userPasswordService.updateUserPassword(userId, newPassword, false);
 
         // 发送重置密码消息
         sendResetOrganizationUserPassword(organizationId, user);

@@ -35,7 +35,7 @@ import java.util.Set;
  * @author flyleft
  * @author superlee
  */
-@Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_ORGANIZATION_PROJECT)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/projects")
 public class OrganizationProjectC7nController extends BaseController {

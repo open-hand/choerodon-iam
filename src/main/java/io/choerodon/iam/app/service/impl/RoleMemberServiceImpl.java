@@ -1,9 +1,39 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
+import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.enums.MessageAdditionalType;
@@ -29,36 +59,6 @@ import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.utils.excel.ExcelReadConfig;
 import io.choerodon.iam.infra.utils.excel.ExcelReadHelper;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
-import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
 /**
  * @author superlee
@@ -92,10 +92,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private SagaClient sagaClient;
-
-    private LabelMapper labelMapper;
-
     private LabelC7nMapper labelC7nMapper;
 
     private ClientMapper clientMapper;
@@ -103,8 +99,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private UploadHistoryMapper uploadHistoryMapper;
 
     private OrganizationUserService organizationUserService;
-
-    private UserService userService;
 
     private ProjectAssertHelper projectAssertHelper;
 
@@ -129,14 +123,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  MemberRoleC7nMapper memberRoleC7nMapper,
                                  RoleMapper roleMapper,
                                  UserAssertHelper userAssertHelper,
-                                 SagaClient sagaClient,
                                  MemberRoleService memberRoleService,
-                                 LabelMapper labelMapper,
                                  LabelC7nMapper labelC7nMapper,
                                  ClientMapper clientMapper,
                                  UploadHistoryMapper uploadHistoryMapper,
                                  OrganizationUserService organizationUserService,
-                                 UserService userService,
                                  ProjectUserMapper projectUserMapper,
                                  UserMapper userMapper,
                                  ProjectAssertHelper projectAssertHelper,
@@ -147,20 +138,18 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  MemberRoleRepository memberRoleRepository,
                                  MessageSendService messageSendService,
                                  UserC7nService userC7nService,
-                                 ProjectC7nService projectC7nService) {
+                                 @Lazy
+                                         ProjectC7nService projectC7nService) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.roleMapper = roleMapper;
         this.userAssertHelper = userAssertHelper;
-        this.sagaClient = sagaClient;
-        this.labelMapper = labelMapper;
         this.labelC7nMapper = labelC7nMapper;
         this.clientMapper = clientMapper;
         this.uploadHistoryMapper = uploadHistoryMapper;
         this.organizationUserService = organizationUserService;
-        this.userService = userService;
         this.userMapper = userMapper;
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
@@ -534,7 +523,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             messageSendService.sendAddMemberMsg(tenant, params, BUSINESS_TYPE_CODE, DetailsHelper.getUserDetails().getUserId());
         }
         if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            ProjectDTO projectDTO = projectC7nService.queryProjectById(sourceId);
+            ProjectDTO projectDTO = projectC7nService.queryProjectById(sourceId, true, true, true);
             params.put("projectName", projectDTO.getName());
             params.put("roleName", roleDTO.getName());
             params.put("organizationId", String.valueOf(projectDTO.getOrganizationId()));

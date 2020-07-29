@@ -150,7 +150,14 @@ public interface UserC7nService {
     Page<User> pagingQueryUsersWithRolesOnSiteLevel(PageRequest pageRequest, String orgName, String loginName, String realName,
                                                     String roleName, Boolean enabled, Boolean locked, String params);
 
-    OrganizationProjectVO queryOrganizationProjectByUserId(Long userId);
+    /**
+     * 查询组织和项目
+     *
+     * @param userId      用户id
+     * @param projectName 项目名称
+     * @return
+     */
+    OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName);
 
     /**
      * 校验用户是否是项目的所有者

@@ -1,6 +1,38 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.file.FileClient;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.iam.api.dto.TenantDTO;
+import org.hzero.iam.api.dto.UserPasswordDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.service.user.UserDetailsService;
+import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -12,11 +44,13 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.RoleC7nService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
@@ -79,7 +113,6 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 /**
  * @author scp
  * @since 2020/4/1
- *
  */
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
@@ -118,8 +151,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Lazy
     private RoleMemberService roleMemberService;
     @Autowired
-    private OrganizationUserService organizationUserService;
-    @Autowired
     private TenantC7nMapper tenantC7nMapper;
     @Autowired
     private MessageClient messageClient;
@@ -127,12 +158,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     private MemberRoleC7nMapper memberRoleC7nMapper;
     @Autowired
     private ProjectMapper projectMapper;
-    @Autowired
-    private PasswordPolicyMapper passwordPolicyMapper;
-    @Autowired
-    private PasswordPolicyManager passwordPolicyManager;
-    @Autowired
-    private UserPasswordValidator userPasswordValidator;
     @Autowired
     private RoleAssertHelper roleAssertHelper;
     @Autowired
@@ -153,9 +178,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private DevopsFeignClient devopsFeignClient;
     @Autowired
-    private ProjectUserMapper projectUserMapper;
-
-    @Autowired
     private TenantRepository tenantRepository;
     @Autowired
     private RoleC7nService roleC7nService;
@@ -166,6 +188,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private LabelC7nMapper labelC7nMapper;
     @Autowired
+    @Lazy
     private MessageSendService messageSendService;
 
     @Autowired
@@ -185,6 +208,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    @Transactional
     public User updateInfo(User user, Boolean checkLogin) {
         if (checkLogin) {
             checkLoginUser(user.getId());
@@ -192,6 +216,14 @@ public class UserC7nServiceImpl implements UserC7nService {
         User dto;
         UserEventPayload userEventPayload = new UserEventPayload();
         dto = userService.updateUser(user);
+
+        // hzero update 不更新imageUrl
+        User imageUser = new User();
+        imageUser.setId(dto.getId());
+        imageUser.setImageUrl(user.getImageUrl());
+        imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
+        userMapper.updateByPrimaryKeySelective(imageUser);
+
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());
         userEventPayload.setName(dto.getRealName());
@@ -218,7 +250,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
+        return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
     }
 
     @Override
@@ -226,7 +258,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         checkLoginUser(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
-            return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
+            return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");
@@ -400,6 +432,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
     @Override
+    @Async
     public void sendNotice(List<Long> userIds, String code,
                            Map<String, String> params, Long sourceId, ResourceLevel resourceLevel) {
         if (CollectionUtils.isEmpty(userIds)) {
@@ -558,14 +591,22 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId) {
+    public OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName) {
         OrganizationProjectVO organizationProjectDTO = new OrganizationProjectVO();
-        organizationProjectDTO.setOrganizationList(tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
-                OrganizationProjectVO.newInstanceOrganization(organizationDO.getTenantId(), organizationDO.getTenantName(), organizationDO.getTenantNum())).collect(Collectors.toList()));
+        Map<Long, TenantVO> tenants = tenantC7nMapper.selectFromMemberRoleByMemberId(userId, false)
+                .stream()
+                .distinct()
+                .collect(Collectors.toMap(Tenant::getTenantId, t -> t));
+
         ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
-        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
-                .stream().map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode())).collect(Collectors.toList()));
+        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        organizationProjectDTO.setProjectList(projectDTOS.stream()
+                .filter(p -> tenants.get(p.getOrganizationId()) != null)
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName()))
+                .collect(Collectors.toList()));
+
         return organizationProjectDTO;
     }
 
@@ -1031,7 +1072,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 builder -> {
                 });
 
-        messageSendService.sendAddMemberMsg(tenant, "租户管理员", notifyUserList);
+        messageSendService.sendAddMemberMsg(tenant, "组织管理员", notifyUserList);
     }
 
     @Override
@@ -1276,5 +1317,19 @@ public class UserC7nServiceImpl implements UserC7nService {
 
 
         return projectMapper.listOwnedProjects(organizationId, userId, isAdmin, isOrgAdmin);
+    }
+
+    private static String trimFileDirectory(String directory) {
+        if (StringUtils.isEmpty(directory)) {
+            return UUID.randomUUID().toString();
+        }
+        int directoryLength = directory.length();
+        if (directoryLength < 60) {
+            return directory;
+        }
+        int dotIndex = directory.indexOf(".");
+        String suffix = directory.substring(dotIndex, directoryLength);
+        String trimDirectory = directory.substring(0, 59 - suffix.length());
+        return trimDirectory + suffix;
     }
 }

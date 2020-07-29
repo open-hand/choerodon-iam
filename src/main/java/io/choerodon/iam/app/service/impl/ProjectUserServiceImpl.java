@@ -287,7 +287,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers) {
-        ProjectDTO project = projectC7nService.queryProjectById(projectId);
+        ProjectDTO project = projectC7nService.queryProjectById(projectId, true, true, true);
         projectUsers.forEach(u -> {
             // 要先在组织层插入一条角色
             MemberRole memberRole = new MemberRole();

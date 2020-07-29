@@ -42,7 +42,7 @@ include: https://api.choerodon.com.cn/devops/v1/projects/1529/ci_contents/pipeli
 #    - master
 #    - /^.*hotfix.*$/
 #    - /^.*release.*$/
-#  
+#
 #
 #maven-deploy-release:
 #  stage: build

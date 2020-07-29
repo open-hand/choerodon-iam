@@ -28,7 +28,7 @@ public class OrganizationRetryController {
     @PutMapping("/{id}/org/retry")
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     public void orgRetry(
-            @Encrypt @PathVariable(value = "source_id") Long sourceId,
+            @PathVariable(value = "source_id") Long sourceId,
             @Encrypt @PathVariable(value = "id") long id) {
         operateLogService.orgRetry(sourceId, id);
     }

@@ -12,7 +12,6 @@ import 'echarts/lib/component/markPoint';
 import { Spin } from 'choerodon-ui';
 import { useOrgOverviewRightSide } from '../../stores';
 
-
 const PieChart = observer(() => {
   const {
     appServiceDs,
@@ -35,7 +34,6 @@ const PieChart = observer(() => {
       return getLeftDataArr.map((item) => `${item.projectName}：${item.appServerSum}`).join('<br/>');
     }
   }
-
 
   const getOpts = () => {
     const option = {

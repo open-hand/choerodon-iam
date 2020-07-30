@@ -479,6 +479,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         Page<UserVO> pageFromList = PageUtils.createPageFromList(userVOS, pageRequest);
         pageFromList.setTotalElements(onlineUserIds.size());
 
+        int remain = onlineUserIds.size() % size;
+        pageFromList.setTotalPages(remain == 0 ? onlineUserIds.size() / size : onlineUserIds.size() / size + 1);
+
         onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
         onlineUserStatistics.setOnlineUserList(pageFromList);
 

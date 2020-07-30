@@ -21,7 +21,7 @@ public class ClientVO {
     private Long id;
 
     @ApiModelProperty(value = "客户端名称/必填")
-    @Size(min = 1, max = 12, message = "error.client.name.size")
+    @Size(min = 1, max = 30, message = "error.client.name.size")
     @NotNull(message = "error.clientName.null")
     @Pattern(regexp = regex, message = "error.client.name.regex")
     private String name;

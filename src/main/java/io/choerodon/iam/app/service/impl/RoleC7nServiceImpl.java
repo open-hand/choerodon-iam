@@ -46,6 +46,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class RoleC7nServiceImpl implements RoleC7nService {
 
+    private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
+
     private RoleC7nMapper roleC7nMapper;
     private ProjectUserMapper projectUserMapper;
     private ProjectMapper projectMapper;
@@ -89,6 +91,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         List<UserPermissionVO> roleDTOList = new ArrayList<>();
 
         Page<UserRoleVO> result = PageHelper.doPage(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
+        if (!CollectionUtils.isEmpty(result.getContent())) {
+            result.setContent(result.getContent().stream().filter(v -> !v.getCode().equals(DEFAULT_HZERO_PLATFORM_CODE)).collect(Collectors.toList()));
+        }
         result.getContent().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledVO> list = new ArrayList<>(roles.length);

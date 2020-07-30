@@ -469,6 +469,12 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                 .sorted()
                 .collect(Collectors.toList());
 
+        if (onlineUserIds.size() == 0) {
+            onlineUserStatistics.setTotalOnlineUser(0);
+            onlineUserStatistics.setOnlineUserList(new Page<>());
+            return onlineUserStatistics;
+        }
+
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
         int total = onlineUserIds.size();
@@ -476,14 +482,17 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         List<Long> onlineUserIdsToGetInfo = onlineUserIds.subList(page * size, Math.min(size * (page + 1), total));
         List<UserVO> userVOS = projectUserMapper.listRolesByProjectIdAndUserIds(projectId, onlineUserIdsToGetInfo);
 
-        Page<UserVO> pageFromList = PageUtils.createPageFromList(userVOS, pageRequest);
-        pageFromList.setTotalElements(onlineUserIds.size());
+        Page<UserVO> userVOPage = new Page<>();
+        userVOPage.setContent(userVOS);
+        userVOPage.setSize(size);
+        userVOPage.setNumber(page);
+        userVOPage.setTotalElements(total);
 
-        int remain = onlineUserIds.size() % size;
-        pageFromList.setTotalPages(remain == 0 ? onlineUserIds.size() / size : onlineUserIds.size() / size + 1);
+        int remain = total % size;
+        userVOPage.setTotalPages(remain == 0 ? total / size : total / size + 1);
 
-        onlineUserStatistics.setTotalOnlineUser(onlineUserIds.size());
-        onlineUserStatistics.setOnlineUserList(pageFromList);
+        onlineUserStatistics.setTotalOnlineUser(total);
+        onlineUserStatistics.setOnlineUserList(userVOPage);
 
         return onlineUserStatistics;
 

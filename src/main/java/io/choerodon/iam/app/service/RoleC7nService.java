@@ -1,15 +1,17 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Role;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Role;
-
-import java.util.List;
 
 
 /**
@@ -36,7 +38,7 @@ public interface RoleC7nService {
      *
      * @return RoleC7nDTO分页
      */
-    Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
+    Page<UserPermissionVO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
 
 
     Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String roleLevel,

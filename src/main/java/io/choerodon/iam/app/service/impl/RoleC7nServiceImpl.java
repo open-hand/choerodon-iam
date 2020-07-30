@@ -1,6 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.hzero.core.exception.NotLoginException;
@@ -17,6 +20,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
+import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.api.vo.UserRoleVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.app.service.RoleC7nService;
@@ -80,9 +84,9 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     }
 
     @Override
-    public Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params) {
+    public Page<UserPermissionVO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params) {
         Long userId = Optional.ofNullable(DetailsHelper.getUserDetails()).orElseThrow(NotLoginException::new).getUserId();
-        List<RoleC7nDTO> roleDTOList = new ArrayList<>();
+        List<UserPermissionVO> roleDTOList = new ArrayList<>();
 
         Page<UserRoleVO> result = PageHelper.doPage(pageRequest, () -> roleC7nMapper.selectRoles(userId, name, level, params));
         result.getContent().forEach(i -> {
@@ -96,7 +100,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
                 }
                 list.add(new RoleNameAndEnabledVO(nameAndEnabled[0], nameAndEnabled[1], roleEnabled));
             }
-            RoleC7nDTO roleC7nDTO = ConvertUtils.convertObject(i, RoleC7nDTO.class);
+            UserPermissionVO roleC7nDTO = ConvertUtils.convertObject(i, UserPermissionVO.class);
             roleC7nDTO.setRoles(list);
             if (ResourceLevel.PROJECT.value().equals(i.getLevel())) {
                 roleC7nDTO.setTenantId(projectMapper.selectByPrimaryKey(i.getId()).getOrganizationId());

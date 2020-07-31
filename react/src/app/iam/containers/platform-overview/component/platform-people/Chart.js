@@ -44,8 +44,11 @@ const Charts = observer(() => {
       tooltip: {
         trigger: 'axis',
         position(pt) {
-          return [pt[0], '10%'];
+          return [pt[0] - 70, pt[1]];
         },
+        // position: function(point, params, dom, rect, size){
+        //   return [0,point[1]];
+        // },
         backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
           color: '#FFF',

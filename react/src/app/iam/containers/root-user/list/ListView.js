@@ -45,6 +45,9 @@ export default function ListView() {
         adminListDataSet={adminListDataSet}
       />,
       className: 'base-root-user-sider-modal',
+      afterClose: () => {
+        adminCreateDataSet.reset();
+      },
     });
   }
 

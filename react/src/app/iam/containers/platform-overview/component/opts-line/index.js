@@ -233,9 +233,9 @@ const OptsLine = observer(() => {
                 <div className="c7ncd-opts-timeLine-content">
                   <div className="c7ncd-opts-timeLine-content-header">
                     <div className="c7ncd-opts-timeLine-content-header-icon">
-                      <Icon type={iconType[type].icon} className={iconType[type].className} />
+                      <Icon type={iconType[type]?.icon} className={iconType[type]?.className} />
                     </div>
-                    <span className="c7ncd-opts-timeLine-content-header-title">{iconType[type].typeTxt}</span>
+                    <span className="c7ncd-opts-timeLine-content-header-title">{iconType[type]?.typeTxt}</span>
                     <Button
                       className="c7ncd-opts-timeLine-content-header-btn"
                       shape="circle"

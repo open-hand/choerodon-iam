@@ -24,4 +24,7 @@ public interface PermissionC7nService {
     List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId);
 
     List<org.hzero.iam.domain.entity.Permission> getPermission(String[] codes);
+
+    void asyncRolePermission();
+
 }

@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -33,7 +32,6 @@ import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -331,7 +329,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         String newPassword;
         PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
-        if (!StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
+        if (passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
             newPassword = passwordPolicy.getOriginalPassword();
         } else {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();

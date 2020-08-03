@@ -154,7 +154,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         return page;
     }
 
-    private void checkEditPermisison(Long id, Long userId, Long organizationId) {
+    private void checkEditPermisison(Long organizationId, Long id, Long userId) {
         QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
         if (quickLinkDTO == null) {
             throw new CommonException(ERROR_QUICK_LINK_NOT_FOUND);

@@ -1,5 +1,16 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -19,16 +30,6 @@ import io.choerodon.iam.infra.mapper.QuickLinkMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -106,8 +107,11 @@ public class QuickLinkServiceImpl implements QuickLinkService {
     @Transactional
     public void delete(Long organizationId, Long id) {
         QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(quickLinkDTO);
-        CommonExAssertUtil.assertTrue(organizationId.equals(projectDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        // 删除项目下共享的快速连接时，校验资源权限
+        if (QuickLinkShareScopeEnum.PROJECT.value().equals(quickLinkDTO.getScope())) {
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(quickLinkDTO.getProjectId());
+            CommonExAssertUtil.assertTrue(organizationId.equals(projectDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        }
         Assert.notNull(id, ResourceCheckConstants.ERROR_TARGET_ID_IS_NULL);
         if (quickLinkMapper.deleteByPrimaryKey(id) != 1) {
             throw new CommonException(ERROR_DELETE_QUICK_LINK_FAILED);

@@ -25,10 +25,6 @@ public class LdapUserPostInterceptor implements HandlerInterceptor<User> {
         if (user.getLdap() == null || !user.getLdap()) {
             return;
         }
-        CustomUserDetails userDetails = UserUtils.getUserDetails();
-        if (userDetails == null || userDetails.getUserId() == null) {
-            CustomContextUtil.setUserContext(0L);
-        }
         organizationUserService.sendUserCreationSaga(null, user, null, ResourceLevel.ORGANIZATION.value(), user.getOrganizationId());
     }
 }

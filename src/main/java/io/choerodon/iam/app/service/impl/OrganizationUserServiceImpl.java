@@ -10,6 +10,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
@@ -29,6 +30,7 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
 import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -46,6 +48,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.slf4j.Logger;
@@ -212,6 +215,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         createAndUpdateUserEventPayload.setUserEventPayload(userEventPayload);
         List<UserMemberEventPayload> userMemberEventPayloads = getListUserMemberEventPayload(fromUserId, userDTO, userRoles, value, organizationId);
         createAndUpdateUserEventPayload.setUserMemberEventPayloads(userMemberEventPayloads);
+        // ldap同步 用户没登陆问题
+        CustomUserDetails userDetails = null;
+        try {
+            userDetails = UserUtils.getUserDetails();
+        } catch (Exception e) {
+            LOGGER.info("not login!");
+        } finally {
+            if (userDetails == null || userDetails.getUserId() == null) {
+                CustomContextUtil.setUserContext(0L);
+            }
+        }
+
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()

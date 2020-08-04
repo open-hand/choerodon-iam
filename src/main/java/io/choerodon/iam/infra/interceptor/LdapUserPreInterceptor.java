@@ -34,6 +34,7 @@ public class LdapUserPreInterceptor implements HandlerInterceptor<User> {
         if (user.getLdap() == null || !user.getLdap()) {
             return;
         }
+        
         if (CollectionUtils.isEmpty(user.getMemberRoleList())) {
             List<Role> roleList = roleRepository.selectByCondition(Condition.builder(Role.class)
                     .where(Sqls.custom()

@@ -12,11 +12,11 @@ import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.infra.utils.CustomContextUtil;
 
 @Component
-public class LdapUserInterceptor implements HandlerInterceptor<User> {
+public class LdapUserPostInterceptor implements HandlerInterceptor<User> {
     private final OrganizationUserService organizationUserService;
 
     @Autowired
-    public LdapUserInterceptor(OrganizationUserService organizationUserService) {
+    public LdapUserPostInterceptor(OrganizationUserService organizationUserService) {
         this.organizationUserService = organizationUserService;
     }
 

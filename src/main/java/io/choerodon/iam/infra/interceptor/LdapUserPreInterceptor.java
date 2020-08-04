@@ -38,11 +38,7 @@ public class LdapUserPreInterceptor implements HandlerInterceptor<User> {
         if (user.getLdap() == null || !user.getLdap()) {
             return;
         }
-        // ldap同步 没有上下文
-        CustomUserDetails userDetails = UserUtils.getUserDetails();
-        if (userDetails == null || userDetails.getUserId() == null) {
-            CustomContextUtil.setUserContext(0L);
-        }
+
         if (CollectionUtils.isEmpty(user.getMemberRoleList())) {
             List<Role> roleList = roleRepository.selectByCondition(Condition.builder(Role.class)
                     .where(Sqls.custom()

@@ -9,11 +9,15 @@ import org.hzero.core.interceptor.HandlerInterceptor;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.RoleRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
 
 /**
  * @author scp
@@ -33,6 +37,11 @@ public class LdapUserPreInterceptor implements HandlerInterceptor<User> {
     public void interceptor(User user) {
         if (user.getLdap() == null || !user.getLdap()) {
             return;
+        }
+        // ldap同步 没有上下文
+        CustomUserDetails userDetails = UserUtils.getUserDetails();
+        if (userDetails == null || userDetails.getUserId() == null) {
+            CustomContextUtil.setUserContext(0L);
         }
         if (CollectionUtils.isEmpty(user.getMemberRoleList())) {
             List<Role> roleList = roleRepository.selectByCondition(Condition.builder(Role.class)

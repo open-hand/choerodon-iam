@@ -220,7 +220,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             LOGGER.info("not login!");
         } finally {
             if (userDetails == null || userDetails.getUserId() == null) {
-                CustomContextUtil.setUserContext(0L);
+                CustomContextUtil.setUserContext(userDTO.getId());
             }
         }
 

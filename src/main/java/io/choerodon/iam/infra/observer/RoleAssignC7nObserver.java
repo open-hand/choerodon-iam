@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -27,7 +28,6 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 /**
  * @author scp
  * @since 2020/5/25
- *
  */
 @Component
 public class RoleAssignC7nObserver implements RoleAssignObserver {
@@ -85,6 +85,6 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 || ObjectUtils.isEmpty(objectMap.get(MemberRoleConstants.MEMBER_TYPE))
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
                 && (memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
-                && memberRoleList.get(0).getSourceType().contains(ResourceLevel.ORGANIZATION.value());
+                && (StringUtils.isEmpty(memberRoleList.get(0).getSourceType()) || memberRoleList.get(0).getSourceType().contains(ResourceLevel.ORGANIZATION.value()));
     }
 }

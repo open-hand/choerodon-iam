@@ -30,17 +30,17 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
                 .pre()
-                .addInterceptor(LdapUserPostInterceptor.class);
+                .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER_INTERNAL)
                 .pre()
-                .addInterceptor(LdapUserPostInterceptor.class);
+                .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
                 .post()
-                .addInterceptorAfter(LdapUserPreInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(LdapUserPostInterceptor.class, UserConfigInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)

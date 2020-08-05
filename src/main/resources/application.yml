@@ -145,6 +145,7 @@ hzero:
     # 是否启用字段权限
     enable: ${HZERO_FIELD_PERMISSION_ENABLE:true}
   iam:
+    usernameRegex:
     permission:
       # 是否自动刷新服务权限
       parse-permission: ${HZERO_PERMISSION_PARSE_PERMISSION:true}

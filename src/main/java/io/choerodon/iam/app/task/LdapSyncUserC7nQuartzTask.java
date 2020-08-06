@@ -121,7 +121,7 @@ public class LdapSyncUserC7nQuartzTask {
             latch.countDown();
             LdapSyncUserTask.FinishFallback fallback = new LdapSyncUserTask.FinishFallbackImpl(ldapHistoryRepository);
             return fallback.callback(ldapSyncReport, ldapHistory);
-        }, LdapType.AUTO.value());
+        }, syncType);
         try {
             latch.await();
         } catch (InterruptedException e) {

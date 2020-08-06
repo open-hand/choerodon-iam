@@ -1,6 +1,17 @@
 package io.choerodon.iam.api.controller.compatible;
 
 import com.alibaba.fastjson.JSONObject;
+
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
@@ -76,7 +87,7 @@ public class CompatibleController {
             @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
         LOGGER.debug("CompatibleController: API project_roles is called...");
-        Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params));
+        Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(new PageRequest(0, 0), id, ParamUtils.arrToStr(params));
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("CompatibleController: API project_roles is called successfully. And the rawResult size is {}...", (rawResult == null) ? null : (rawResult.getContent() == null ? null : rawResult.getContent().size()));
         }

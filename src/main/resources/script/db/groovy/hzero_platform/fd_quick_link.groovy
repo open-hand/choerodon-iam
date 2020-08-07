@@ -26,4 +26,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_quick_link.groovy') {
             column(name: "create_user_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-08-07-fd-quick-link-add-column') {
+        addColumn(tableName: 'fd_quick_link') {
+            column(name: 'top', type: "TINYINT UNSIGNED", remarks: '是否置顶', defaultValue: "0", afterColumn: 'scope')
+        }
+    }
 }

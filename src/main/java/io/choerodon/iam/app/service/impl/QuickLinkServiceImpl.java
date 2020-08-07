@@ -154,6 +154,87 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         return page;
     }
 
+    @Override
+    public Page<QuickLinkVO> querySelf(Long organizationId, PageRequest pageable) {
+        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+
+        Long userId = userDetails.getUserId();
+        Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
+
+        Page<QuickLinkVO> page = PageHelper.doPage(pageable, () -> quickLinkMapper.querySelf(organizationId, userId));
+
+        List<QuickLinkVO> content = page.getContent();
+        content.forEach(v -> {
+            if (v.getCreateUserId().equals(userId)) {
+                v.setEditFlag(true);
+            }
+        });
+        return page;
+    }
+
+    @Override
+    public Page<QuickLinkVO> queryProject(Long organizationId, Long projectId, PageRequest pageable) {
+        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Long userId = userDetails.getUserId();
+        Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
+
+        Page<QuickLinkVO> page;
+        if (Boolean.FALSE.equals(userDetails.getAdmin()) && Boolean.FALSE.equals(userC7nService.checkIsOrgRoot(organizationId, userId))) {
+            List<ProjectDTO> projectDTOS = projectUserMapper.listOwnedProject(organizationId, userId);
+            Set<Long> pIds;
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
+                pIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+            } else {
+                pIds = new HashSet<>();
+            }
+            page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryProjectByPids(projectId, userId, pIds));
+        } else {
+            page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryAllProject(organizationId, projectId, userId));
+        }
+
+
+        List<QuickLinkVO> content = page.getContent();
+        Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
+        content.stream().filter(v -> QuickLinkShareScopeEnum.PROJECT.value().equals(v.getScope())).forEach(v -> {
+            if (pids.contains(v.getProjectId()) || v.getCreateUserId().equals(userId)) {
+                v.setEditFlag(true);
+            }
+        });
+        return page;
+    }
+
+
+    @Override
+    @Transactional
+    public void addTop(Long organizationId, Long id) {
+        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
+        Assert.notNull(id, ResourceCheckConstants.ERROR_TARGET_ID_IS_NULL);
+
+        QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
+        if (Boolean.FALSE.equals(quickLinkDTO.getTop())) {
+            quickLinkDTO.setTop(true);
+            if (quickLinkMapper.updateByPrimaryKeySelective(quickLinkDTO) != 1) {
+                throw new CommonException(ERROR_UPDATE_QUICK_LINK_FAILED);
+            }
+        }
+    }
+
+    @Override
+    public void deleteTop(Long organizationId, Long id) {
+        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
+        Assert.notNull(id, ResourceCheckConstants.ERROR_TARGET_ID_IS_NULL);
+
+        QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
+        if (Boolean.TRUE.equals(quickLinkDTO.getTop())) {
+            quickLinkDTO.setTop(false);
+            if (quickLinkMapper.updateByPrimaryKeySelective(quickLinkDTO) != 1) {
+                throw new CommonException(ERROR_UPDATE_QUICK_LINK_FAILED);
+            }
+        }
+    }
+
     private void checkEditPermisison(Long organizationId, Long id, Long userId) {
         QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
         if (quickLinkDTO == null) {

@@ -25,4 +25,15 @@ public interface QuickLinkMapper extends BaseMapper<QuickLinkDTO> {
     List<QuickLinkVO> queryAll(@Param("organizationId") Long organizationId,
                                @Param("projectId") Long projectId,
                                @Param("userId") Long userId);
+
+    List<QuickLinkVO> querySelf(@Param("organizationId") Long organizationId,
+                                @Param("userId") Long userId);
+
+    List<QuickLinkVO> queryProjectByPids(@Param("projectId") Long projectId,
+                                         @Param("userId") Long userId,
+                                         @Param("pIds") Set<Long> pIds);
+
+    List<QuickLinkVO> queryAllProject(@Param("organizationId") Long organizationId,
+                                      @Param("projectId") Long projectId,
+                                      @Param("userId") Long userId);
 }

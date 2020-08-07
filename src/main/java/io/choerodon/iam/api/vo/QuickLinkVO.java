@@ -7,9 +7,9 @@ import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -49,6 +49,11 @@ public class QuickLinkVO extends AuditDomain {
 
     @ApiModelProperty(value = "是否可修改")
     private Boolean editFlag = false;
+
+    @ApiModelProperty(value = "是否置顶")
+    private Boolean top;
+
+    private String projectName;
 
     public Long getId() {
         return id;
@@ -112,5 +117,21 @@ public class QuickLinkVO extends AuditDomain {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Boolean getTop() {
+        return top;
+    }
+
+    public void setTop(Boolean top) {
+        this.top = top;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

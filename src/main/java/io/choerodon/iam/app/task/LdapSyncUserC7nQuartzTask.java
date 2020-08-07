@@ -27,6 +27,7 @@ import io.choerodon.iam.app.service.LdapC7nService;
 import io.choerodon.iam.app.service.impl.LdapC7nServiceImpl;
 import io.choerodon.iam.infra.constant.LdapSyncC7nType;
 import io.choerodon.iam.infra.enums.LdapType;
+import io.choerodon.iam.infra.utils.StringUtil;
 
 /**
  * @author dengyouquan
@@ -35,6 +36,7 @@ import io.choerodon.iam.infra.enums.LdapType;
 public class LdapSyncUserC7nQuartzTask {
 
     private static final String TENANT_CODE = "tenantNum";
+    private static final String SYNC_TYPE = "syncType";
 
     private final Logger logger = LoggerFactory.getLogger(LdapSyncUserC7nQuartzTask.class);
     private LdapConnectService ldapConnectService;
@@ -57,18 +59,21 @@ public class LdapSyncUserC7nQuartzTask {
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserSite",
             params = {
-                    @JobParam(name = TENANT_CODE, defaultValue = "hand", description = "组织编码")
+                    @JobParam(name = TENANT_CODE, defaultValue = "hand", description = "组织编码"),
+                    @JobParam(name = SYNC_TYPE, defaultValue = "manual", description = "同步类型")
             }, description = "全局层同步LDAP用户")
     public void syncLdapUserSite(Map<String, Object> map) {
         long startTime = System.currentTimeMillis();
-        syncLdapUser(map, "", LdapSyncC7nType.SYNC.value());
+        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE).toString()) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
+        syncLdapUser(map, "", syncType);
         long entTime = System.currentTimeMillis();
         logger.info("Timed Task for syncing users has been completed, total time: {} millisecond", (entTime - startTime));
     }
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserOrganization", level = ResourceLevel.ORGANIZATION,
             params = {
-                    @JobParam(name = TENANT_CODE, description = "组织编码")
+                    @JobParam(name = TENANT_CODE, description = "组织编码"),
+                    @JobParam(name = SYNC_TYPE, defaultValue = "manual", description = "同步类型")
             }, description = "组织层同步LDAP用户")
     public void syncLdapUserOrganization(Map<String, Object> map) {
         syncLdapUserSite(map);
@@ -77,7 +82,8 @@ public class LdapSyncUserC7nQuartzTask {
     @JobTask(maxRetryCount = 2, code = "syncDisabledLdapUserSite",
             params = {
                     @JobParam(name = TENANT_CODE, defaultValue = "hand", description = "组织编码"),
-                    @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件")
+                    @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件"),
+                    @JobParam(name = SYNC_TYPE, defaultValue = "manual", description = "同步类型")
             },
             description = "全局层过滤并停用LDAP用户")
     public void syncDisabledLdapUserSite(Map<String, Object> map) {
@@ -86,7 +92,8 @@ public class LdapSyncUserC7nQuartzTask {
                         .ofNullable((String) map.get("filterStr"))
                         .orElseThrow(() -> new CommonException("error.syncLdapUser.filterStrEmpty"));
         long startTime = System.currentTimeMillis();
-        syncLdapUser(map, filter, LdapSyncC7nType.DISABLE.value());
+        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE).toString()) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
+        syncDisabledLDAPUser(map, filter, syncType);
         long entTime = System.currentTimeMillis();
         logger.info("Timed Task for disabling users has been completed, total time: {} millisecond", (entTime - startTime));
     }
@@ -94,7 +101,8 @@ public class LdapSyncUserC7nQuartzTask {
     @JobTask(maxRetryCount = 2, code = "syncDisabledLdapUserOrg", level = ResourceLevel.ORGANIZATION,
             params = {
                     @JobParam(name = TENANT_CODE, description = "组织编码"),
-                    @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件")
+                    @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件"),
+                    @JobParam(name = SYNC_TYPE, defaultValue = "manual", description = "同步类型")
             }, description = "组织层过滤并停用LDAP用户")
     public void syncDisabledLdapUserOrg(Map<String, Object> map) {
         syncDisabledLdapUserSite(map);
@@ -118,6 +126,36 @@ public class LdapSyncUserC7nQuartzTask {
         CountDownLatch latch = new CountDownLatch(1);
         //开始同步
         ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, (LdapSyncReport ldapSyncReport, LdapHistory ldapHistory) -> {
+            latch.countDown();
+            LdapSyncUserTask.FinishFallback fallback = new LdapSyncUserTask.FinishFallbackImpl(ldapHistoryRepository);
+            return fallback.callback(ldapSyncReport, ldapHistory);
+        }, syncType);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CommonException("error.ldapSyncUserTask.countDownLatch", e);
+        }
+    }
+
+    private void syncDisabledLDAPUser(Map<String, Object> map, String filter, String syncType) {
+        //获取方法参数
+        String orgCode =
+                Optional
+                        .ofNullable((String) map.get(TENANT_CODE))
+                        .orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
+        Ldap ldap = getLdapByOrgCode(orgCode);
+        if (!StringUtils.isEmpty(filter)) {
+            ldap.setCustomFilter(filter);
+        }
+        //获取测试连接的returnMap 及 测试连接十分成功
+        Map<String, Object> returnMap = ldapConnectService.testConnect(ldap);
+        validateConnection(returnMap);
+        //获取ldapTemplate
+        LdapTemplate ldapTemplate = (LdapTemplate) returnMap.get(LdapC7nServiceImpl.LDAP_TEMPLATE);
+        CountDownLatch latch = new CountDownLatch(1);
+        //开始同步
+        ldapSyncUserTask.syncDisabledLDAPUser(ldapTemplate, ldap, (LdapSyncReport ldapSyncReport, LdapHistory ldapHistory) -> {
             latch.countDown();
             LdapSyncUserTask.FinishFallback fallback = new LdapSyncUserTask.FinishFallbackImpl(ldapHistoryRepository);
             return fallback.callback(ldapSyncReport, ldapHistory);

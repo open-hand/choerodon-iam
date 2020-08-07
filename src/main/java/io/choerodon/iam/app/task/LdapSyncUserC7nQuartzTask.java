@@ -64,7 +64,7 @@ public class LdapSyncUserC7nQuartzTask {
             }, description = "全局层同步LDAP用户")
     public void syncLdapUserSite(Map<String, Object> map) {
         long startTime = System.currentTimeMillis();
-        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE).toString()) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
+        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE)) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
         syncLdapUser(map, "", syncType);
         long entTime = System.currentTimeMillis();
         logger.info("Timed Task for syncing users has been completed, total time: {} millisecond", (entTime - startTime));
@@ -92,7 +92,7 @@ public class LdapSyncUserC7nQuartzTask {
                         .ofNullable((String) map.get("filterStr"))
                         .orElseThrow(() -> new CommonException("error.syncLdapUser.filterStrEmpty"));
         long startTime = System.currentTimeMillis();
-        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE).toString()) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
+        String syncType = StringUtils.isEmpty(map.get(SYNC_TYPE)) ? LdapType.MANUAL.value() : map.get(SYNC_TYPE).toString();
         syncDisabledLDAPUser(map, filter, syncType);
         long entTime = System.currentTimeMillis();
         logger.info("Timed Task for disabling users has been completed, total time: {} millisecond", (entTime - startTime));

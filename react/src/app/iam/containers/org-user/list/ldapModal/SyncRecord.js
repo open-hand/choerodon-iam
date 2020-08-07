@@ -61,7 +61,7 @@ const autoContent = observer(() => {
     <div className={`${prefixCls}-record-content`}>
       <Table dataSet={recordTableDs}>
         <Column className="text-gray" name="syncBeginTime" width={200} />
-        <Column className="text-gray" name="type" renderer={renderType} />
+        <Column className="text-gray" name="syncType" renderer={renderType} />
         <Column className="text-gray" name="updateUserCount" renderer={renderNewsNum} />
         <Column className="text-gray" name="errorUserCount" renderer={renderErrorUserCount} />
         <Column className="text-gray" name="syncEndTime" renderer={handleLoadTime} />

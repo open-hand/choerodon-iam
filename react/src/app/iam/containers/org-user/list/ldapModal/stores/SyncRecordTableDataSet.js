@@ -14,6 +14,6 @@ export default ({ orgId, ldapId }) => ({
     { name: 'syncEndTime', type: 'string', label: '耗时' },
     { name: 'updateUserCount', type: 'Number', label: '成功人数' },
     { name: 'newUserCount', type: 'Number', label: '新增人数' },
-    { name: 'type', type: 'string', label: '同步类型' },
+    { name: 'syncType', type: 'string', label: '同步类型' },
   ],
 });

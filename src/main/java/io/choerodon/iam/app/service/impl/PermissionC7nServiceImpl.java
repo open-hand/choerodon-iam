@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -100,6 +101,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     }
 
     @Override
+    @Async
     public void asyncRolePermission() {
         try {
             // 修复子角色权限（保持和模板角色权限一致）

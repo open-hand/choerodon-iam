@@ -70,9 +70,9 @@ const LineChart = observer(() => {
       }],
       grid: {
         bottom: '10px', // 与容器顶部的距离
-        height: '100%',
-        x: 0,
-        x2: 0,
+        height: '80%',
+        x: '10px',
+        x2: '10px',
         y2: '22px',
       },
     };

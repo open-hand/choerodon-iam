@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -37,6 +38,8 @@ import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.ResourceCheckConstants;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
@@ -287,6 +290,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
         return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
+    }
+
+    @Override
+    public ProjectDTO queryBasicInfo(Long projectId) {
+        Assert.notNull(projectId, ResourceCheckConstants.ERROR_PROJECT_IS_NULL);
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectMapCategoryMapper.selectProjectCategoryNames(projectDTO.getId());
+        projectDTO.setCategories(projectCategoryDTOS);
+
+        return projectDTO;
     }
 
     @Override

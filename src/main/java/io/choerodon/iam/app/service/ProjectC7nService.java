@@ -1,13 +1,14 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import org.hzero.iam.domain.entity.Tenant;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.iam.domain.entity.Tenant;
-
-import java.util.List;
-import java.util.Set;
 
 public interface ProjectC7nService {
 
@@ -80,4 +81,6 @@ public interface ProjectC7nService {
      * @return user 分页数据
      */
     Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
+
+    ProjectDTO queryBasicInfo(Long id);
 }

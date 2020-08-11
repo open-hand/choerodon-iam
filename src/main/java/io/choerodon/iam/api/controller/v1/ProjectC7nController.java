@@ -145,4 +145,17 @@ public class ProjectC7nController extends BaseController {
                                               @RequestParam(required = false) String param) {
         return ResponseEntity.ok(projectService.pagingQueryTheUsersOfProject(projectId, userId, email, pageRequest, param));
     }
+
+    /**
+     * 查询项目基本信息
+     *
+     * @param id 要查询的项目ID
+     * @return 查询到的项目
+     */
+    @Permission(permissionLogin = true)
+    @GetMapping(value = "/{project_id}/basic_info")
+    @ApiOperation(value = "按照项目Id查询项目")
+    public ResponseEntity<ProjectDTO> queryBasicInfo(@PathVariable(name = "project_id") Long id) {
+        return ResponseEntity.ok(projectService.queryBasicInfo(id));
+    }
 }

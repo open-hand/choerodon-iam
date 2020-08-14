@@ -208,7 +208,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .newBuilder()
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withRefType(PROJECT)
-                        .withSagaCode(PROJECT_CREATE),
+                        .withSagaCode(PROJECT_CREATE)
+                        .withSourceId(project.getOrganizationId()),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
                     Set<String> roleLabels = initMemberRole(projectDTO);

@@ -217,9 +217,9 @@ export default function ListView(props) {
         <Table labelLayout="float" pristine dataSet={dataSet}>
           <Column renderer={renderUserName} name="realName" />
           <Column renderer={renderAction} width={50} align="right" />
-          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" />
+          <Column style={{ color: 'rgba(0, 0, 0, 0.65)' }} name="loginName" tooltip="overflow" />
           <Column minWidth={320} width={320} renderer={expandMoreColumn} className="project-user-roles" name="myRoles" />
-          <Column renderer={rednerEnabled} name="enabled" align="left" />
+          <Column renderer={rednerEnabled} width={100} name="enabled" align="left" />
         </Table>
       </Content>
     </TabPage>

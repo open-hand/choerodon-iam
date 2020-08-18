@@ -49,6 +49,11 @@ public enum SysSettingEnum {
      * 重置gitlab密码页面链接
      */
     RESET_GITLAB_PASSWORD_URL("resetGitlabPasswordUrl"),
+
+    /**
+     * 是否启用强制修改默认密码
+     */
+    ENABLE_UPDATE_DEFAULT_PWD("enableUpdateDefaultPwd"),
     /**
      * 平台主题色
      */

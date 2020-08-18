@@ -65,7 +65,7 @@
         <where>
             fql.create_user_id = #{userId} AND fql.scope = 'self'
         </where>
-        ORDER BY id DESC
+        ORDER BY top DESC, id DESC
     </select>
     <select id="queryProjectByPids" resultMap="quickLinkMap">
         SELECT

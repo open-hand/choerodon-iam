@@ -19,20 +19,22 @@ export default ({ id = 0 }) => {
         dataKey: null,
         transformResponse: (data) => {
           const parseData = JSON.parse(data);
-          const { defaultPassword, minPasswordLength, maxPasswordLength } = parseData;
+          const {
+            defaultPassword, minPasswordLength, maxPasswordLength, forceModifyPassword,
+          } = parseData;
           const dft = {
             defaultPassword: defaultPassword || 'abcd1234',
             minPasswordLength: minPasswordLength || 6,
             maxPasswordLength: maxPasswordLength || 18,
+            forceModifyPassword: forceModifyPassword || true,
           };
           if (!defaultPassword && !minPasswordLength && !maxPasswordLength) {
             return ({ new: true, ...dft });
-          } else {
-            return ({
-              ...parseData,
-              ...dft,
-            });
           }
+          return ({
+            ...parseData,
+            ...dft,
+          });
         },
       },
       update: ({ data }) => ({
@@ -42,9 +44,18 @@ export default ({ id = 0 }) => {
       }),
     },
     fields: [
-      { name: 'defaultPassword', type: 'string', label: '平台默认密码', required: true },
-      { name: 'minPasswordLength', type: 'number', min: 0, validator: checkMinLength, label: '平台默认最小密码长度', required: true },
-      { name: 'maxPasswordLength', type: 'number', min: 0, max: 65535, validator: checkMaxLength, label: '平台默认最大密码长度', required: true },
+      {
+        name: 'defaultPassword', type: 'string', label: '平台默认密码', required: true,
+      },
+      {
+        name: 'minPasswordLength', type: 'number', min: 0, validator: checkMinLength, label: '平台默认最小密码长度', required: true,
+      },
+      {
+        name: 'maxPasswordLength', type: 'number', min: 0, max: 65535, validator: checkMaxLength, label: '平台默认最大密码长度', required: true,
+      },
+      {
+        name: 'forceModifyPassword', type: 'boolean', label: '登录时强制修改默认密码', defaultValue: true,
+      },
     ],
   };
 };

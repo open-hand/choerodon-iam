@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Icon, Button, Row, Col } from 'choerodon-ui/pro';
-import { Form, Output } from 'choerodon-ui/pro';
-import { Content, Header, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
-import { useContext } from 'react';
+import {
+  Icon, Button, Row, Col, Form, Output,
+} from 'choerodon-ui/pro';
+import {
+  Content, Header, Permission, TabPage, Breadcrumb,
+} from '@choerodon/boot';
 import Store from '../store';
 import EditPassword from './editPassword';
-
 
 export default observer(() => {
   const { passwordPolicyDataSet } = useContext(Store);
@@ -29,7 +30,9 @@ export default observer(() => {
     <TabPage service={['choerodon.code.organization.setting.security.ps.password-policy']}>
       <Header>
         <Permission service={['choerodon.code.organization.setting.security.ps.password-policy.update']}>
-          <Button color="blue" onClick={openPasswordModal}><Icon type="mode_edit" /> 修改安全策略</Button>
+          <Button color="blue" onClick={openPasswordModal}>
+            <Icon type="mode_edit" /> 修改安全策略
+          </Button>
         </Permission>
       </Header>
       <Breadcrumb />
@@ -42,6 +45,7 @@ export default observer(() => {
             <Col span={24}>
               <Row><label>是否启用</label><Output name="enablePassword" renderer={renderBoolean} /></Row>
               {passwordPolicyDataSet.current && passwordPolicyDataSet.current.getPristineValue('enablePassword') ? [
+                <Row><label>登录时强制修改默认密码</label><Output name="forceModifyPassword" renderer={renderBoolean} /></Row>,
                 <Row><label>是否允许密码与登录名相同</label><Output name="notUsername" renderer={renderBoolean} /></Row>,
                 <Row><label>新用户默认密码</label><Output name="originalPassword" /></Row>,
                 <Row><label>最小密码长度</label><Output name="minLength" /></Row>,

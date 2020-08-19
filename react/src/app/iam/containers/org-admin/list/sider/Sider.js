@@ -25,20 +25,20 @@ export default observer((props) => {
   });
 
   function getUserOption({ record, text, value }) {
-    // label: realName
-    // Tooltip: email
-    // TextField: imageUrl, realName,
-    // valueField: id
+    const imgUrl = record.get('imageUrl');
+    const realName = record.get('realName');
+    const loginName = record.get('loginName');
     return (
       <Tooltip placement="left" title={`${record.get('email')}`}>
         <div className={`${prefixCls}-option`}>
           <div className={`${prefixCls}-option-avatar`}>
             {
-              record.get('imageUrl') ? <img src={record.get('imageUrl')} alt="userAvatar" style={{ width: '100%' }} />
-                : <span className={`${prefixCls}-option-avatar-noavatar`}>{record.get('realName') && record.get('realName').split('')[0]}</span>
+              imgUrl ? <img src={imgUrl} alt="userAvatar" style={{ width: '100%' }} />
+                : <span className={`${prefixCls}-option-avatar-noavatar`}>{ realName && realName.split('')[0]}</span>
             }
           </div>
           <span>{text}</span>
+          <span>({loginName})</span>
         </div>
       </Tooltip>
     );

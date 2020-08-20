@@ -154,18 +154,19 @@ public class QuickLinkServiceImpl implements QuickLinkService {
                 pIds = new HashSet<>();
             }
             page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryProjectByPids(projectId, userId, pIds));
+            List<QuickLinkVO> content = page.getContent();
+            Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
+            content.stream().filter(v -> QuickLinkShareScopeEnum.PROJECT.value().equals(v.getScope())).forEach(v -> {
+                if (pids.contains(v.getProjectId()) || v.getCreateUserId().equals(userId)) {
+                    v.setEditFlag(true);
+                }
+            });
         } else {
             page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryAllProject(organizationId, projectId, userId));
+            page.getContent().forEach(v -> v.setEditFlag(true));
         }
 
 
-        List<QuickLinkVO> content = page.getContent();
-        Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
-        content.stream().filter(v -> QuickLinkShareScopeEnum.PROJECT.value().equals(v.getScope())).forEach(v -> {
-            if (pids.contains(v.getProjectId()) || v.getCreateUserId().equals(userId)) {
-                v.setEditFlag(true);
-            }
-        });
         return page;
     }
 

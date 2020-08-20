@@ -147,6 +147,7 @@ public class SysSettingUtils {
         settingDTOMap.put(SysSettingEnum.DEFAULT_PASSWORD.value(), sysSettingVO.getDefaultPassword());
         settingDTOMap.put(SysSettingEnum.MIN_PASSWORD_LENGTH.value(), String.valueOf(sysSettingVO.getMinPasswordLength()));
         settingDTOMap.put(SysSettingEnum.MAX_PASSWORD_LENGTH.value(), String.valueOf(sysSettingVO.getMaxPasswordLength()));
+        settingDTOMap.put(SysSettingEnum.FORCE_MODIFY_PASSWORD.value(), String.valueOf(sysSettingVO.getForceModifyPassword()));
         return settingDTOMap;
     }
 

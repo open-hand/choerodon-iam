@@ -77,7 +77,8 @@ public class SysSettingUtils {
     public static boolean isPasswordPolicy(String settingKey) {
         return SysSettingEnum.DEFAULT_PASSWORD.value().equals(settingKey)
                 || SysSettingEnum.MIN_PASSWORD_LENGTH.value().equals(settingKey)
-                || SysSettingEnum.MAX_PASSWORD_LENGTH.value().equals(settingKey);
+                || SysSettingEnum.MAX_PASSWORD_LENGTH.value().equals(settingKey)
+                || SysSettingEnum.FORCE_MODIFY_PASSWORD.value().equals(settingKey);
     }
 
     /**

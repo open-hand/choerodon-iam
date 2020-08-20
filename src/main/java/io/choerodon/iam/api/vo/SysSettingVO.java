@@ -60,7 +60,7 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "平台主题色")
     private String themeColor;
     @ApiModelProperty(value = "是否启用平台层 强制修改默认密码")
-    private Boolean enableUpdateDefaultPwd;
+    private Boolean forceModifyPassword;
 
     public String getFavicon() {
         return favicon;
@@ -158,11 +158,11 @@ public class SysSettingVO extends AuditDomain {
         this.themeColor = themeColor;
     }
 
-    public Boolean getEnableUpdateDefaultPwd() {
-        return enableUpdateDefaultPwd;
+    public Boolean getForceModifyPassword() {
+        return forceModifyPassword;
     }
 
-    public void setEnableUpdateDefaultPwd(Boolean enableUpdateDefaultPwd) {
-        this.enableUpdateDefaultPwd = enableUpdateDefaultPwd;
+    public void setForceModifyPassword(Boolean forceModifyPassword) {
+        this.forceModifyPassword = forceModifyPassword;
     }
 }

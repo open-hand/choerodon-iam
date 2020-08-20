@@ -119,42 +119,6 @@ public class QuickLinkServiceImpl implements QuickLinkService {
     }
 
     @Override
-    public Page<QuickLinkVO> query(Long organizationId, Long projectId, PageRequest pageable) {
-        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        Long userId = userDetails.getUserId();
-        Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
-        Page<QuickLinkVO> page;
-        if (Boolean.FALSE.equals(userDetails.getAdmin()) && Boolean.FALSE.equals(userC7nService.checkIsOrgRoot(organizationId, userId))) {
-            List<ProjectDTO> projectDTOS = projectUserMapper.listOwnedProject(organizationId, userId);
-            Set<Long> pIds;
-            if (!CollectionUtils.isEmpty(projectDTOS)) {
-                pIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
-            } else {
-                pIds = new HashSet<>();
-            }
-            page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryByPids(projectId, userId, pIds));
-        } else {
-            page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryAll(organizationId, projectId, userId));
-        }
-
-
-        List<QuickLinkVO> content = page.getContent();
-        content.stream().filter(v -> QuickLinkShareScopeEnum.SELF.value().equals(v.getScope())).forEach(v -> {
-            if (v.getCreateUserId().equals(userId)) {
-                v.setEditFlag(true);
-            }
-        });
-        Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
-        content.stream().filter(v -> QuickLinkShareScopeEnum.PROJECT.value().equals(v.getScope())).forEach(v -> {
-            if (pids.contains(v.getProjectId()) || v.getCreateUserId().equals(userId)) {
-                v.setEditFlag(true);
-            }
-        });
-        return page;
-    }
-
-    @Override
     public Page<QuickLinkVO> querySelf(Long organizationId, PageRequest pageable) {
         Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();

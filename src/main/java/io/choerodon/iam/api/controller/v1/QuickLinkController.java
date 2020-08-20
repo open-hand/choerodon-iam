@@ -64,16 +64,6 @@ public class QuickLinkController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation("分页查询快速链接")
-    @Permission(permissionLogin = true)
-    @GetMapping
-    public ResponseEntity<Page<QuickLinkVO>> query(@PathVariable(value = "organization_id") Long organizationId,
-                                                   @RequestParam(value = "project_id", required = false) Long projectId,
-                                                   @ApiIgnore
-                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
-        return ResponseEntity.ok(quickLinkService.query(organizationId, projectId, pageable));
-    }
-
 
     @ApiOperation("分页查询项目快速链接")
     @Permission(permissionLogin = true)

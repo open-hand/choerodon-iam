@@ -26,7 +26,7 @@ export default ({ id = 0 }) => {
             defaultPassword: defaultPassword || 'abcd1234',
             minPasswordLength: minPasswordLength || 6,
             maxPasswordLength: maxPasswordLength || 18,
-            forceModifyPassword: forceModifyPassword || true,
+            forceModifyPassword: forceModifyPassword !== false,
           };
           if (!defaultPassword && !minPasswordLength && !maxPasswordLength) {
             return ({ new: true, ...dft });

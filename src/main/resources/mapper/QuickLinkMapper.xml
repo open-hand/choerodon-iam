@@ -12,10 +12,10 @@
         <result property="createUserId" column="create_user_id"/>
         <result property="projectId" column="project_id"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
-        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
-        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
-        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
-        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="creation_date" property="creationDate"/>
+        <result column="last_updated_by" property="lastUpdatedBy"/>
+        <result column="last_update_date" property="lastUpdateDate"/>
 
         <association property="user" javaType="org.hzero.iam.domain.entity.User">
             <id property="id" column="user_id"/>

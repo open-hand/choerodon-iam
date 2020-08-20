@@ -18,14 +18,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface QuickLinkMapper extends BaseMapper<QuickLinkDTO> {
 
-    List<QuickLinkVO> queryByPids(@Param("projectId") Long projectId,
-                                  @Param("userId") Long userId,
-                                  @Param("pIds") Set<Long> pIds);
-
-    List<QuickLinkVO> queryAll(@Param("organizationId") Long organizationId,
-                               @Param("projectId") Long projectId,
-                               @Param("userId") Long userId);
-
     List<QuickLinkVO> querySelf(@Param("organizationId") Long organizationId,
                                 @Param("userId") Long userId);
 

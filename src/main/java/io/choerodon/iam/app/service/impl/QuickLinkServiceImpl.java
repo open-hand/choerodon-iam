@@ -144,7 +144,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         Long userId = userDetails.getUserId();
         Assert.notNull(userId, ResourceCheckConstants.ERROR_NOT_LOGIN);
 
-        Page<QuickLinkVO> page;
+        Page<QuickLinkVO> page = new Page<QuickLinkVO>();
         if (Boolean.FALSE.equals(userDetails.getAdmin()) && Boolean.FALSE.equals(userC7nService.checkIsOrgRoot(organizationId, userId))) {
             List<ProjectDTO> projectDTOS = projectUserMapper.listOwnedProject(organizationId, userId);
             Set<Long> pIds;
@@ -152,6 +152,9 @@ public class QuickLinkServiceImpl implements QuickLinkService {
                 pIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
             } else {
                 pIds = new HashSet<>();
+            }
+            if (CollectionUtils.isEmpty(pIds)) {
+                return page;
             }
             page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryProjectByPids(projectId, userId, pIds));
             List<QuickLinkVO> content = page.getContent();

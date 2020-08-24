@@ -229,7 +229,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         .newBuilder()
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withRefType("user")
-                        .withSagaCode(ORG_USER_CREAT),
+                        .withSagaCode(ORG_USER_CREAT)
+                        .withSourceId(organizationId),
                 builder -> builder.withPayloadAndSerialize(createAndUpdateUserEventPayload)
                         .withRefId(createAndUpdateUserEventPayload.getUserEventPayload().getId())
                         .withSourceId(organizationId));

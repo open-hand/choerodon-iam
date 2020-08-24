@@ -5,7 +5,7 @@ package io.choerodon.iam.infra.enums;
  * 用于区分ldap同步记录
  */
 public enum LdapType {
-    HAND("hand"),
+    MANUAL("manual"),
     AUTO("auto");
 
     private String value;

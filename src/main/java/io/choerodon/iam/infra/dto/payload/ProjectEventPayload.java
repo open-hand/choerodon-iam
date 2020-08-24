@@ -20,6 +20,7 @@ public class ProjectEventPayload {
     private String imageUrl;
     private Long programId;
     private Long applicationId;
+    private String agileProjectCode;
 
     private Set<String> roleLabels;
 
@@ -125,5 +126,13 @@ public class ProjectEventPayload {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public String getAgileProjectCode() {
+        return agileProjectCode;
+    }
+
+    public void setAgileProjectCode(String agileProjectCode) {
+        this.agileProjectCode = agileProjectCode;
     }
 }

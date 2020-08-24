@@ -19,9 +19,11 @@ import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
+import io.choerodon.iam.infra.enums.LdapType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -51,6 +53,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private static final String CRON_TRIGGER = "cron-trigger";
     private static final String STOP = "STOP";
     private static final String TENANT_CODE = "tenantNum";
+    private static final String SYNC_TYPE = "syncType";
     private static final String EXECUTE_METHOD = "syncLdapUserOrganization";
 
     public static final String LDAP_CONNECTION_DTO = "ldapConnectionDTO";
@@ -204,6 +207,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
 
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put(TENANT_CODE, tenant.getTenantNum());
+        mapParams.put(SYNC_TYPE, LdapType.AUTO.value());
         scheduleTaskDTO.setParams(mapParams);
 
         scheduleTaskDTO.setMethodId(getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId()).getId());

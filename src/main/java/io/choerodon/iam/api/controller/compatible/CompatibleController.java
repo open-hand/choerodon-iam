@@ -1,16 +1,6 @@
 package io.choerodon.iam.api.controller.compatible;
 
 import com.alibaba.fastjson.JSONObject;
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
@@ -26,6 +16,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 这个类是用于放置一些对于外部已经安装的组件(例如集群监控中的prometheus, sonarqube)保证向后兼容的接口
@@ -76,7 +77,7 @@ public class CompatibleController {
             @Encrypt @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
         LOGGER.debug("CompatibleController: API project_roles is called...");
-        Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params));
+        Page<ProjectDTO> rawResult = userC7nService.pagingQueryProjectAndRolesById(new PageRequest(0, 0), id, ParamUtils.arrToStr(params));
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("CompatibleController: API project_roles is called successfully. And the rawResult size is {}...", (rawResult == null) ? null : (rawResult.getContent() == null ? null : rawResult.getContent().size()));
         }

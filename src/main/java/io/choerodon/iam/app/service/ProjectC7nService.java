@@ -83,4 +83,6 @@ public interface ProjectC7nService {
     Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
 
     ProjectDTO queryBasicInfo(Long id);
+
+    List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO);
 }

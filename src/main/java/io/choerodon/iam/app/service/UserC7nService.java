@@ -312,5 +312,4 @@ public interface UserC7nService {
 
     List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 
-    List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO);
 }

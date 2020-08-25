@@ -1285,6 +1285,16 @@ public class UserC7nServiceImpl implements UserC7nService {
         return projectMapper.listOwnedProjects(organizationId, userId, isAdmin, isOrgAdmin);
     }
 
+    @Override
+    public List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Long userId = userDetails.getUserId();
+        boolean isAdmin = isRoot(userId);
+        List<ProjectDTO> projects = projectMapper.selectProjectByUserIdOrAdmin(userId, projectDTO, isAdmin);
+        projects.forEach(p -> p.setCategory(p.getCategories().get(0).getCode()));
+        return projects;
+    }
+
     private static String trimFileDirectory(String directory) {
         if (StringUtils.isEmpty(directory)) {
             return UUID.randomUUID().toString();

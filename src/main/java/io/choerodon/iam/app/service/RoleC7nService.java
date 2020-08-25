@@ -7,6 +7,7 @@ import org.hzero.iam.domain.entity.Role;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
@@ -27,7 +28,7 @@ public interface RoleC7nService {
      *
      * @param roleAssignmentSearchDTO
      * @param projectId
-     * @return
+     * @return RoleVO列表
      */
     List<RoleVO> listRolesWithUserCountOnProjectLevel(Long projectId, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
@@ -35,9 +36,9 @@ public interface RoleC7nService {
     /**
      * 查询当前用户自己的角色
      *
-     * @return
+     * @return RoleC7nDTO分页
      */
-    Page<RoleC7nDTO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
+    Page<UserPermissionVO> listRole(PageRequest pageRequest, Long tenantId, String name, String level, String params);
 
 
     Page<io.choerodon.iam.api.vo.RoleVO> pagingSearch(PageRequest pageRequest, Long tenantId, String name, String code, String roleLevel,
@@ -51,7 +52,7 @@ public interface RoleC7nService {
      * @param organizationId
      * @param roleName
      * @param onlySelectEnable
-     * @return
+     * @return RoleDTO列表
      */
     List<RoleDTO> listRolesByName(Long organizationId, String roleName, String code, String labelName, Boolean onlySelectEnable);
 

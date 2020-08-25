@@ -10,6 +10,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class TimeZoneWorkCalendarController {
     public ResponseEntity<TimeZoneWorkCalendarVO> updateTimeZoneWorkCalendar(@ApiParam(value = "组织id", required = true)
                                                                              @PathVariable(name = "organization_id") Long organizationId,
                                                                              @ApiParam(value = "时区id", required = true)
-                                                                             @PathVariable(name = "timeZoneId") Long timeZoneId,
+                                                                             @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                              @ApiParam(value = "timeZoneWorkCalendar", required = true)
                                                                              @RequestBody TimeZoneWorkCalendarUpdateVO timeZoneWorkCalendarUpdateVO) {
         return Optional.ofNullable(timeZoneWorkCalendarService.updateTimeZoneWorkCalendar(organizationId, timeZoneId, timeZoneWorkCalendarUpdateVO))
@@ -61,7 +62,7 @@ public class TimeZoneWorkCalendarController {
     public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> batchUpdateTimeZoneWorkCalendarRef(@ApiParam(value = "组织id", required = true)
                                                                                               @PathVariable(name = "organization_id") Long organizationId,
                                                                                               @ApiParam(value = "时区id", required = true)
-                                                                                              @PathVariable(name = "timeZoneId") Long timeZoneId,
+                                                                                              @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                                               @ApiParam(value = "日期列表", required = true)
                                                                                               @RequestBody List<TimeZoneWorkCalendarRefCreateVO> timeZoneWorkCalendarRefCreateVOList) {
         return new ResponseEntity<>(timeZoneWorkCalendarService.batchUpdateTimeZoneWorkCalendarRef(organizationId, timeZoneId, timeZoneWorkCalendarRefCreateVOList), HttpStatus.OK);
@@ -73,7 +74,7 @@ public class TimeZoneWorkCalendarController {
     public ResponseEntity<List<TimeZoneWorkCalendarRefVO>> queryTimeZoneWorkCalendarRefByTimeZoneId(@ApiParam(value = "组织id", required = true)
                                                                                                     @PathVariable(name = "organization_id") Long organizationId,
                                                                                                     @ApiParam(value = "时区id", required = true)
-                                                                                                    @PathVariable(name = "timeZoneId") Long timeZoneId,
+                                                                                                    @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                                                     @ApiParam(value = "年份", required = true)
                                                                                                     @RequestParam(name = "year") Integer year) {
         return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarRefByTimeZoneId(organizationId, timeZoneId, year))

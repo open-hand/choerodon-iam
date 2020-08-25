@@ -250,6 +250,21 @@
           AND imr.MEMBER_ID = #{userId,jdbcType=BIGINT}
     </select>
 
+    <select id="listRolesByProjectIdAndUserIds" resultType="io.choerodon.iam.api.vo.UserVO">
+        SELECT imr.member_id as id, GROUP_CONCAT(ir.name) as role_names,ANY_VALUE(iu.login_name) as login_name,ANY_VALUE(iu.real_name) as real_name,ANY_VALUE(iu.image_url) as image_url
+        FROM fd_project_user fpu
+                     INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                     INNER JOIN iam_role ir ON imr.role_id = ir.id
+                     INNER JOIN iam_user iu ON iu.id=imr.member_id
+                WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
+                  AND imr.MEMBER_ID IN
+        <foreach collection="userIds" item="userId" separator="," open="(" close=")">
+            #{userId}
+        </foreach>
+        GROUP BY imr.member_id
+    </select>
+
+
     <select id="countProjectRoleUser" resultType="io.choerodon.iam.api.vo.agile.RoleUserCountVO">
         SELECT imr.ROLE_ID, COUNT(*) AS USER_NUMBER
         FROM fd_project_user fpu
@@ -288,6 +303,75 @@
         </where>
         group by iu.id
     </select>
+
+
+    <select id="selectUsersByOptionsOrderByRoles" resultType="io.choerodon.iam.infra.dto.UserDTO">
+        select
+            iu1.id,
+            iu1.login_name,
+            iu1.email,
+            iu1.organization_id,
+            iu1.real_name,
+            iu1.phone,
+            iu1.INTERNATIONAL_TEL_CODE,
+            iu1.image_url,
+            iu1.profile_photo,
+            iu1.time_zone,
+            iu1.last_password_updated_at,
+            iu1.last_login_at,
+            iu1.is_enabled AS enabled,
+            iu1.is_locked AS locked,
+            iu1.is_ldap AS ldap,
+            iu1.is_admin AS admin,
+            iu1.locked_until_at,
+            iu1.password_attempt,
+            iu1.object_version_number,
+            iu1.created_by,
+            iu1.creation_date,
+            iu1.last_updated_by,
+            iu1.last_update_date,
+            iu1.user_type,
+            t1.weight
+        from (
+            select
+            t.member_id,
+            max(t.weight) as weight
+            from
+            (
+                select
+                imr.member_id,
+                case
+                    when imr.role_id in
+                        <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                            #{adminRole}
+                        </foreach>
+                    then 10
+                    else 0
+                end as weight
+                from iam_member_role imr
+                join fd_project_user fpu on imr.id = fpu.member_role_id
+                left join iam_user iu on imr.member_id = iu.id
+                where fpu.project_id = #{projectId}
+                    <if test="userId != null">
+                        AND iu.id = #{userId}
+                    </if>
+                    <if test="email != null">
+                        AND iu.email LIKE concat(concat('%',#{email}),'%')
+                    </if>
+                    <if test="param != null">
+                        AND (
+                        iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                        iu.real_name LIKE concat(concat('%',#{param}),'%')
+                        )
+                    </if>
+            ) t
+                group by t.member_id
+        ) t1
+        join iam_user iu1 on t1.member_id = iu1.id
+        order by t1.weight desc, iu1.id asc
+    </select>
+
+
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM fd_project_user fpu
@@ -316,25 +400,48 @@
     </select>
 
     <select id="selectAgileUsersByProjectId" resultMap="userDTO">
-        select iu1.*
-        from iam_user iu1
-        join (
-        select iu.id
-        from iam_user iu
-        where iu.id in (
-        select distinct imr.member_id
-        from fd_project_user fpu
-        inner join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-        where PROJECT_ID = #{projectId}
-        )
-        <if test="userIds != null and userIds.size > 0">
-            or iu.id in
-            <foreach item="id" index="index" collection="userIds"
-                     open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        ) t on iu1.id = t.id
+        select
+        iu1.*,
+        case
+            when iu1.is_enabled = 0
+            <!--如果用户停用，将用户权重设置为最小-->
+            then t1.weight - 100
+            else t1.weight
+        end as weight
+        from (
+            select
+            t.member_id,
+            max(t.weight) as weight
+            from (
+                select
+                imr.member_id,
+                case
+                    when imr.role_id in
+                        <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
+                            #{adminRole}
+                        </foreach>
+                    then 10
+                    else 0
+                end as weight
+                from iam_member_role imr
+                join fd_project_user fpu on imr.id = fpu.member_role_id
+                where fpu.project_id = #{projectId}
+                <if test="userIds != null and userIds.size > 0">
+                    union
+                    select
+                    iu.id,
+                    0 as weight
+                    from iam_user iu
+                    where iu.id in
+                    <foreach item="id" index="index" collection="userIds"
+                             open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+            ) t
+            group by t.member_id
+        ) t1
+        join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
         <if test="param != null">
             AND (
@@ -342,7 +449,10 @@
             iu1.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
+        order by weight desc, iu1.id asc
     </select>
+
+
     <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT ir.*
         FROM fd_project_user fpu
@@ -468,6 +578,14 @@
             #{memberRoleId}
         </foreach>
     </delete>
+    <select id="listOwnedProject" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT fp.*
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON (ir.id = imr.role_id AND ir.is_enabled = true)
+        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
+        WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
+    </select>
 
 
 </mapper>

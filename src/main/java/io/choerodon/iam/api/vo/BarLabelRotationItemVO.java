@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,9 +10,10 @@ import java.util.List;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/2/26 10:17
+ * @since 2020/2/26 10:17
  */
 public class BarLabelRotationItemVO {
+    @Encrypt
     private Long id;
     private String name;
     private List<Long> data = new ArrayList<>();

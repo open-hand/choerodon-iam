@@ -1,11 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.ConvertUtils;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
@@ -18,23 +24,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/22 10:10
+ * @since 2020/4/22 10:10
  */
 @Service
 public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
@@ -117,6 +118,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     @Override
     @Transactional
     public void update(Long organizationId, Long roleId, RoleVO roleVO) {
+        Role role = roleMapper.selectByPrimaryKey(roleId);
+        CommonExAssertUtil.assertTrue(organizationId.equals(role.getTenantId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+
         roleVO.setId(roleId);
 
         // 预定义角色无法修改
@@ -145,9 +149,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         }
 
 
-
     }
-
 
 
     @Override
@@ -188,7 +190,7 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         SecurityTokenHelper.clear();
 
 
-        List<Menu> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId,null);
+        List<Menu> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId, null);
         Set<Long> psIds = rolePermissions.stream().map(Menu::getId).collect(Collectors.toSet());
         // 查询权限集
         Set<Long> ids = menus.stream().map(Menu::getId).collect(Collectors.toSet());

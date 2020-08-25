@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Date;
 
@@ -10,9 +11,11 @@ import java.util.Date;
  */
 public class OperateLogVO {
     @ApiModelProperty(value = "主键ID")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "操作者ID")
+    @Encrypt
     private Long operatorId;
 
     @ApiModelProperty(value = "操作的类型")
@@ -25,6 +28,7 @@ public class OperateLogVO {
     private String content;
 
     @ApiModelProperty(value = "源id")
+    @Encrypt
     private Long sourceId;
 
     @ApiModelProperty(value = "源类型")

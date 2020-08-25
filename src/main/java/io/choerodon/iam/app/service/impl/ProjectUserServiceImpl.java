@@ -1,11 +1,37 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.api.vo.UserVO;
+import io.choerodon.iam.api.vo.devops.UserAttrVO;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.MessageFeignClient;
+import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
@@ -24,33 +50,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ProjectUserVO;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -73,6 +77,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     private TransactionalProducer producer;
     private MessageSendService messageSendService;
     private UserMapper userMapper;
+    private MessageFeignClient messageFeignClient;
 
     public ProjectUserServiceImpl(ProjectUserMapper projectUserMapper,
                                   DevopsFeignClient devopsFeignClient,
@@ -86,6 +91,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                                   MemberRoleService memberRoleService,
                                   @Lazy RoleMemberService roleMemberService,
                                   MessageSendService messageSendService,
+                                  MessageFeignClient messageFeignClient,
                                   UserMapper userMapper) {
         this.projectUserMapper = projectUserMapper;
         this.devopsFeignClient = devopsFeignClient;
@@ -98,6 +104,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
         this.roleMemberService = roleMemberService;
+        this.messageFeignClient = messageFeignClient;
         this.messageSendService = messageSendService;
         this.userMapper = userMapper;
     }
@@ -220,11 +227,6 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     }
 
     @Override
-    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
-        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param));
-    }
-
-    @Override
     public List<RoleDTO> listRolesByProjectIdAndUserId(Long projectId, Long userId) {
         return projectUserMapper.listRolesByProjectIdAndUserId(projectId, userId);
     }
@@ -285,7 +287,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers) {
-        ProjectDTO project = projectC7nService.queryProjectById(projectId);
+        ProjectDTO project = projectC7nService.queryProjectById(projectId, true, true, true);
         projectUsers.forEach(u -> {
             // 要先在组织层插入一条角色
             MemberRole memberRole = new MemberRole();
@@ -326,6 +328,10 @@ public class ProjectUserServiceImpl implements ProjectUserService {
             projectUserDTO.setProjectId(projectId);
             projectUserDTO.setMemberRoleId(getMemberRoleId(userId, roleId, projectDTO.getOrganizationId()));
             // 1. set memberRoleId
+            // 判断用户角色关系是否已经存在，存在则跳过
+            if (projectUserMapper.selectOne(projectUserDTO) != null) {
+                return;
+            }
             if (projectUserMapper.insertSelective(projectUserDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
@@ -444,6 +450,52 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         userMemberEventPayload.setSyncAll(syncAll);
         userMemberEventPayloads.add(userMemberEventPayload);
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
+
+    }
+
+    @Override
+    public OnlineUserStatistics getUserCount(Long projectId, PageRequest pageRequest) {
+        OnlineUserStatistics onlineUserStatistics = new OnlineUserStatistics();
+
+        // 获取该项目下的所有用户id(包括在线与不在线)
+        List<Long> userIdBelongToCurrentProject = projectUserMapper.selectUsersByOptions(projectId, null, null, null)
+                .stream()
+                .map(UserDTO::getId)
+                .collect(Collectors.toList());
+
+        // 过滤不属于该项目的用户id
+        List<Long> onlineUserIds = Objects.requireNonNull(messageFeignClient.getOnlineUserIds().getBody())
+                .stream()
+                .filter(userIdBelongToCurrentProject::contains)
+                .sorted()
+                .collect(Collectors.toList());
+
+        if (onlineUserIds.size() == 0) {
+            onlineUserStatistics.setTotalOnlineUser(0);
+            onlineUserStatistics.setOnlineUserList(new Page<>());
+            return onlineUserStatistics;
+        }
+
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        int total = onlineUserIds.size();
+
+        List<Long> onlineUserIdsToGetInfo = onlineUserIds.subList(page * size, Math.min(size * (page + 1), total));
+        List<UserVO> userVOS = projectUserMapper.listRolesByProjectIdAndUserIds(projectId, onlineUserIdsToGetInfo);
+
+        Page<UserVO> userVOPage = new Page<>();
+        userVOPage.setContent(userVOS);
+        userVOPage.setSize(size);
+        userVOPage.setNumber(page);
+        userVOPage.setTotalElements(total);
+
+        int remain = total % size;
+        userVOPage.setTotalPages(remain == 0 ? total / size : total / size + 1);
+
+        onlineUserStatistics.setTotalOnlineUser(total);
+        onlineUserStatistics.setOnlineUserList(userVOPage);
+
+        return onlineUserStatistics;
 
     }
 

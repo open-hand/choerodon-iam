@@ -5,6 +5,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OperateLogService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,7 @@ public class OrganizationRetryController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     public void orgRetry(
             @PathVariable(value = "source_id") Long sourceId,
-            @PathVariable(value = "id") long id) {
+            @Encrypt @PathVariable(value = "id") long id) {
         operateLogService.orgRetry(sourceId, id);
     }
 

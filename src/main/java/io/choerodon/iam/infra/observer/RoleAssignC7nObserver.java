@@ -27,8 +27,7 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 
 /**
  * @author scp
- * @date 2020/5/25
- * @description
+ * @since 2020/5/25
  */
 @Component
 public class RoleAssignC7nObserver implements RoleAssignObserver {

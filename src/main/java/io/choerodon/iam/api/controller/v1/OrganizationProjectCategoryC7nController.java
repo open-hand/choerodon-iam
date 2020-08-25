@@ -1,19 +1,19 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-
+import io.choerodon.core.base.BaseController;
+import io.choerodon.iam.app.service.ProjectCategoryC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.iam.app.service.ProjectCategoryC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
 
 /**
  * @author flyleft

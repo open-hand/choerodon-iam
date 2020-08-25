@@ -1,20 +1,18 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.iam.api.vo.UserRoleVO;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
-import io.choerodon.iam.api.vo.UserRoleVO;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author scp
- * @date 2020/4/21
- * @description
+ * @since 2020/4/21
  */
 public interface RoleC7nMapper {
 
@@ -30,7 +28,7 @@ public interface RoleC7nMapper {
      *
      * @param tenantId  组织id
      * @param labelName 标签名
-     * @return
+     * @return Role列表
      */
     List<Role> getByTenantIdAndLabel(@Param("tenantId") Long tenantId,
                                      @Param("labelName") String labelName);
@@ -44,7 +42,7 @@ public interface RoleC7nMapper {
      * @param tenantId  组织id
      * @param labelName 角色标签name
      * @param param
-     * @return
+     * @return Role列表
      */
     List<Role> listRolesByTenantIdAndLableWithOptions(@Param("tenantId") Long tenantId,
                                                       @Param("labelName") String labelName,
@@ -55,7 +53,7 @@ public interface RoleC7nMapper {
      *
      * @param userId
      * @param tenantId
-     * @return
+     * @return Role列表
      */
     List<Role> getOrgAdminByUserIdAndTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
@@ -96,6 +94,13 @@ public interface RoleC7nMapper {
                                           @Param("orgIds") Set<Long> orgIds);
 
     List<Role> listByTenantId(@Param("tenantId") Long tenantId);
+
+    /**
+     * 查询用户组织层角色标签
+     *
+     * @return String set 集合
+     */
+    Set<String> listLabelByTenantIdAndUserId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 
     List<Role> listChildRoleByTplRoleId(@Param("roleId") Long roleId);
 }

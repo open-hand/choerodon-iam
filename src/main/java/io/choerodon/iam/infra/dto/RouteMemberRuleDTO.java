@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
  * FD_ROUTE_MEMBER_RULE DTO
  *
  * @author pengyuhua
- * @date 2019/10/25
+ * @since 2019/10/25
  */
 @Table(name = "fd_route_member_rule")
 public class RouteMemberRuleDTO extends AuditDomain {

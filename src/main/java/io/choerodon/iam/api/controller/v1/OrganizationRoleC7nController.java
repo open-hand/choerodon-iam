@@ -1,22 +1,22 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.app.service.OrganizationRoleC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 〈功能简述〉
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/22 10:05
+ * @since 2020/4/22 10:05
  */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_MENU_ROLE)
 @RestController
@@ -44,7 +44,7 @@ public class OrganizationRoleC7nController {
     @PutMapping("/{role_id}")
     public ResponseEntity<Void> update(
             @PathVariable("organization_id") Long organizationId,
-            @PathVariable("role_id") Long roleId,
+            @Encrypt @PathVariable("role_id") Long roleId,
             @RequestBody RoleVO roleVO) {
         organizationRoleC7nService.update(organizationId, roleId, roleVO);
         return ResponseEntity.noContent().build();
@@ -55,7 +55,7 @@ public class OrganizationRoleC7nController {
     @GetMapping("/{role_id}")
     public ResponseEntity<RoleVO> queryById(
             @PathVariable("organization_id") Long organizationId,
-            @PathVariable("role_id") Long roleId) {
+            @Encrypt @PathVariable("role_id") Long roleId) {
         return ResponseEntity.ok(organizationRoleC7nService.queryById(organizationId, roleId));
     }
 

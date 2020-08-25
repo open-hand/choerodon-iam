@@ -42,6 +42,8 @@ import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
@@ -54,6 +56,7 @@ import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -61,8 +64,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * @author scp
- * @date 2020/4/15
- * @description
+ * @since 2020/4/15
  */
 @Service
 public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7nService {
@@ -269,11 +271,24 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
+        ProjectDTO projectToUpdate = projectMapper.selectByPrimaryKey(projectDTO.getId());
+        CommonExAssertUtil.assertTrue(organizationId.equals(projectToUpdate.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         updateCheck(projectDTO);
         // 项目编码、类型不可编辑
         projectDTO.setCode(null);
         projectDTO.setCategory(null);
+        ProjectDTO projectRecord = projectMapper.selectByPrimaryKey(projectDTO.getId());
         Tenant organizationDTO = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
+
+        // 校验组织id是否和项目所属组织匹配
+        if (!projectRecord.getOrganizationId().equals(organizationId)) {
+            throw new CommonException(ResourceCheckConstants.ERROR_PARAM_IS_INVALID);
+        }
+        // 判断是否修改启停用状态
+        boolean updateStatus = false;
+        if (projectDTO.getEnabled() != null && !projectRecord.getEnabled().equals(projectDTO.getEnabled())) {
+            updateStatus = true;
+        }
         ProjectDTO dto;
         dto = new ProjectDTO();
         CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
@@ -284,6 +299,18 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
         ProjectDTO newProjectDTO = updateSelective(projectDTO);
+
+        // 发送修改项目启停用状态消息
+        if (updateStatus) {
+            if (Boolean.TRUE.equals(projectDTO.getEnabled())) {
+                updateProjectAndSendEvent(projectDTO.getId(), PROJECT_ENABLE, true, details.getUserId());
+            } else if (Boolean.FALSE.equals(projectDTO.getEnabled())) {
+                updateProjectAndSendEvent(projectDTO.getId(), PROJECT_DISABLE, false, details.getUserId());
+            }
+
+        }
+
+
         projectEventMsg.setProjectId(newProjectDTO.getId());
         projectEventMsg.setProjectCode(newProjectDTO.getCode());
         projectEventMsg.setProjectName(newProjectDTO.getName());
@@ -321,6 +348,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
+        ProjectDTO projectToEnable = projectMapper.selectByPrimaryKey(projectId);
+        CommonExAssertUtil.assertTrue(organizationId.equals(projectToEnable.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         organizationAssertHelper.notExisted(organizationId);
         return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
     }
@@ -330,6 +359,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
         if (organizationId != null) {
+            ProjectDTO projectToEnable = projectMapper.selectByPrimaryKey(projectId);
+            CommonExAssertUtil.assertTrue(organizationId.equals(projectToEnable.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
             organizationAssertHelper.notExisted(organizationId);
         }
         return updateProjectAndSendEvent(projectId, PROJECT_DISABLE, false, userId);
@@ -524,9 +555,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectIds.forEach(id -> {
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
             BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, simpleDateFormat.format(startTime), simpleDateFormat.format(endTime)).getBody();
-            labelRotationItemVO.setName(projectDTO.getName());
-            labelRotationItemVO.setId(id);
-            barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
+            if (labelRotationItemVO != null) {
+                labelRotationItemVO.setName(projectDTO.getName());
+                labelRotationItemVO.setId(id);
+                barLabelRotationVO.getProjectDataList().add(labelRotationItemVO);
+            }
         });
         return barLabelRotationVO;
     }

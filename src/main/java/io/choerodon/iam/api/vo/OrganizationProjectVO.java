@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.Collections;
 import java.util.List;
 

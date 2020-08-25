@@ -1,14 +1,14 @@
 package io.choerodon.iam.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -54,10 +54,11 @@ public interface OrganizationProjectC7nService {
 
     /**
      * 统计项目部署次数
+     *
      * @param projectIds
      * @param startTime
      * @param endTime
-     * @return
+     * @return BarLabelRotationVO
      */
     BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime);
 

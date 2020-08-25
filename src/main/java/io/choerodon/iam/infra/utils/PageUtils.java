@@ -1,17 +1,16 @@
 package io.choerodon.iam.infra.utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 根据page, size参数获取数据库start的行
@@ -40,24 +39,24 @@ public class PageUtils {
     /**
      * 装配Page对象
      *
-     * @param all      包含所有内容的列表
-     * @param Pageable 分页参数
+     * @param all         包含所有内容的列表
+     * @param pageRequest 分页参数
      * @return PageInfo
      */
-    public static <T> Page<T> createPageFromList(List<T> all, Pageable Pageable) {
+    public static <T> Page<T> createPageFromList(List<T> all, PageRequest pageRequest) {
         Page<T> result = new Page<>();
-        boolean queryAll = Pageable.getPageNumber() == 0 || Pageable.getPageSize() == 0;
-        result.setSize(queryAll ? all.size() : Pageable.getPageSize());
-        result.setNumber(Pageable.getPageNumber());
+        boolean queryAll = pageRequest.getPage() == 0 || pageRequest.getSize() == 0;
+        result.setSize(queryAll ? all.size() : pageRequest.getSize());
+        result.setNumber(pageRequest.getPage());
         result.setTotalElements(all.size());
-        result.setTotalPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (Pageable.getPageSize() * 1.0))));
-        int fromIndex = Pageable.getPageSize() * (Pageable.getPageNumber() - 1);
+        result.setTotalPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (pageRequest.getSize() * 1.0))));
+        int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
         int size;
         if (all.size() >= fromIndex) {
-            if (all.size() <= fromIndex + Pageable.getPageSize()) {
+            if (all.size() <= fromIndex + pageRequest.getSize()) {
                 size = all.size() - fromIndex;
             } else {
-                size = Pageable.getPageSize();
+                size = pageRequest.getSize();
             }
             result.setSize(queryAll ? all.size() : size);
             result.setContent(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
@@ -76,7 +75,7 @@ public class PageUtils {
      * @param list
      * @param <T>
      * @param <R>
-     * @return
+     * @return Page
      */
     public static <T, R> Page<T> copyPropertiesAndResetContent(Page<R> rpage, List<T> list) {
         Page<T> tPage = new Page<>();

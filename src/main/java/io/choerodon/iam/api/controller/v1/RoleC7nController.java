@@ -13,8 +13,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -35,12 +35,12 @@ public class RoleC7nController {
     @ApiOperation("角色查询 - 查询当前用户自己的角色")
     @Permission(permissionLogin = true)
     @GetMapping("/{organizationId}/roles/self/roles")
-    public ResponseEntity<Page<RoleC7nDTO>> listSelfRole(@ApiIgnore
-                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                         @PathVariable("organizationId") Long organizationId,
-                                                         @RequestParam(required = false) String name,
-                                                         @RequestParam(required = false) String level,
-                                                         @RequestParam(required = false) String params) {
+    public ResponseEntity<Page<UserPermissionVO>> listSelfRole(@ApiIgnore
+                                                               @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                               @PathVariable("organizationId") Long organizationId,
+                                                               @RequestParam(required = false) String name,
+                                                               @RequestParam(required = false) String level,
+                                                               @RequestParam(required = false) String params) {
         return Results.success(roleC7nService.listRole(pageRequest, organizationId, name, level, params));
     }
 
@@ -54,26 +54,29 @@ public class RoleC7nController {
     @GetMapping(value = "/roles/search")
     @CustomPageRequest
     public ResponseEntity<Page<io.choerodon.iam.api.vo.RoleVO>> pagedSearch(@ApiIgnore
-                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                     @RequestParam(required = false) String name,
-                                                     @RequestParam(required = false) String code,
-                                                     @RequestParam(required = false) String roleLevel,
-                                                     @RequestParam(value = "tenantId") Long tenantId,
-                                                     @RequestParam(required = false) Boolean builtIn,
-                                                     @RequestParam(required = false) Boolean enabled,
-                                                     @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(roleC7nService.pagingSearch(pageRequest,tenantId, name, code, roleLevel, builtIn, enabled, params), HttpStatus.OK);
+                                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                            @RequestParam(required = false) String name,
+                                                                            @RequestParam(required = false) String code,
+                                                                            @RequestParam(required = false) String roleLevel,
+                                                                            @RequestParam(value = "tenantId") Long tenantId,
+                                                                            @RequestParam(required = false) Boolean builtIn,
+                                                                            @RequestParam(required = false) Boolean enabled,
+                                                                            @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(roleC7nService.pagingSearch(pageRequest, tenantId, name, code, roleLevel, builtIn, enabled, params), HttpStatus.OK);
     }
 
     /**
      * 根据标签查询角色
-     * @return
+     *
+     * @param tenantId  组织id
+     * @param labelName 标签名称
+     * @return LdapAutoDTO对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据标签查询角色")
     @GetMapping(value = "/roles/search_by_label")
     public ResponseEntity<List<Role>> listByLabelName(@RequestParam(value = "tenantId") Long tenantId,
-                                                       @RequestParam(value = "labelName") String labelName) {
+                                                      @RequestParam(value = "labelName") String labelName) {
         return ResponseEntity.ok(roleC7nService.listByLabelNames(tenantId, labelName));
     }
 

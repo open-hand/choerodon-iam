@@ -1,31 +1,32 @@
 package io.choerodon.iam.infra.utils.excel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author superlee
  */
 public class DateUtil {
 
-    private DateUtil() {}
+    private DateUtil() {
+    }
 
     private static Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
     /**
      * 将字符串(格式符合规范)转换成Date
-     * @author chenssy
-     * @param value 需要转换的字符串
+     *
+     * @param value  需要转换的字符串
      * @param format 日期格式
      * @return Date
      */
-    public static Date string2Date(String value, String format){
-        if(value == null || "".equals(value)){
+    public static Date string2Date(String value, String format) {
+        if (value == null || "".equals(value)) {
             return null;
         }
         SimpleDateFormat sdf = getFormat(format);
@@ -41,19 +42,19 @@ public class DateUtil {
 
     /**
      * 获取日期显示格式，为空默认为yyyy-mm-dd HH:mm:ss
-     * @author chenssy
-     * @param format    日期格式
+     *
+     * @param format 日期格式
      * @return SimpleDateFormat
      */
-    protected static SimpleDateFormat getFormat(String format){
-        if(format == null || "".equals(format)){
+    protected static SimpleDateFormat getFormat(String format) {
+        if (format == null || "".equals(format)) {
             format = "yyyy-MM-dd HH:mm:ss";
         }
         return new SimpleDateFormat(format);
     }
 
     public static String formatDate(String date, String format) {
-        if (date == null || "".equals(date)){
+        if (date == null || "".equals(date)) {
             return "";
         }
         Date dt;

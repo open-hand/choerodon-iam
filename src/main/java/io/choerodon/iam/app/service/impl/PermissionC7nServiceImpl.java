@@ -33,8 +33,8 @@ import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
+ *
  */
 @Service
 public class PermissionC7nServiceImpl implements PermissionC7nService {

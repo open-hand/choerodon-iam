@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.dto;
 
 /**
  * @author jiameng.cao
- * @date 2019/6/14
+ * @since 2019/6/14
  */
 public class MenuCodeDTO {
     private Long menuCodeId;

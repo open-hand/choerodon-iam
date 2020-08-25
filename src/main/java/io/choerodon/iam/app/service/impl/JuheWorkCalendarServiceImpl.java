@@ -14,13 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.WorkCalendarService;
 import io.choerodon.iam.infra.config.WorkCalendarHolidayProperties;
 import io.choerodon.iam.infra.dto.WorkCalendarHolidayRefDTO;
 import io.choerodon.iam.infra.mapper.WorkCalendarHolidayRefMapper;
-import io.choerodon.iam.infra.scheduled.WorkCalendarHolidayRefJobs;
 import io.choerodon.iam.infra.utils.DateUtil;
 
 /**

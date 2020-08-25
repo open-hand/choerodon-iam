@@ -1,19 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -30,6 +16,33 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -56,10 +69,10 @@ public class TenantC7nController extends BaseController {
     @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")
     @GetMapping(value = "/check/email")
     @Permission(permissionPublic = true)
-    public ResponseEntity checkEmailIsExist(
+    public ResponseEntity<Void> checkEmailIsExist(
             @RequestParam(value = "email") String email) {
         demoRegisterService.checkEmail(email);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -70,10 +83,10 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层修改组织")
     @PutMapping(value = "/{tenant_id}")
-    public ResponseEntity update(@PathVariable(name = "tenant_id") Long id,
-                                 @RequestBody @Valid TenantVO tenantVO) {
+    public ResponseEntity<Void> update(@PathVariable(name = "tenant_id") Long id,
+                                       @RequestBody @Valid TenantVO tenantVO) {
         tenantC7nService.updateTenant(id, tenantVO);
-        return Results.success();
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -84,10 +97,10 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层修改组织")
     @PutMapping(value = "/{tenant_id}/organization_level")
-    public ResponseEntity updateOnOrganizationLevel(@PathVariable(name = "tenant_id") Long id,
-                                                    @RequestBody @Valid TenantVO tenantVO) {
+    public ResponseEntity<Void> updateOnOrganizationLevel(@PathVariable(name = "tenant_id") Long id,
+                                                          @RequestBody @Valid TenantVO tenantVO) {
         tenantC7nService.updateTenant(id, tenantVO);
-        return Results.success();
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -100,8 +113,9 @@ public class TenantC7nController extends BaseController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层根据组织id查询组织")
     @GetMapping(value = "/{tenant_id}")
-    public ResponseEntity<TenantVO> query(@PathVariable(name = "tenant_id") Long id) {
-        return new ResponseEntity<>(tenantC7nService.queryTenantById(id), HttpStatus.OK);
+    public ResponseEntity<TenantVO> query(@PathVariable(name = "tenant_id") Long id,
+                                          @RequestParam(value = "with_more_info", required = false, defaultValue = "true") Boolean withMoreInfo) {
+        return new ResponseEntity<>(tenantC7nService.queryTenantById(id, withMoreInfo), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
@@ -157,7 +171,7 @@ public class TenantC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id集合查询组织")
     @PostMapping("/ids")
-    public ResponseEntity<List<Tenant>> queryByIds(@RequestBody Set<Long> ids) {
+    public ResponseEntity<List<Tenant>> queryByIds(@Encrypt @RequestBody Set<Long> ids) {
         return Results.success(tenantC7nService.queryTenantsByIds(ids));
     }
 
@@ -194,8 +208,8 @@ public class TenantC7nController extends BaseController {
     @CustomPageRequest
     public ResponseEntity<Page<User>> pagingQueryUsersOnOrganization(@PathVariable(name = "tenant_id") Long id,
                                                                      @ApiIgnore
-                                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                     @RequestParam(required = false, name = "id") Long userId,
+                                                                     @SortDefault(value = "organizationId", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @Encrypt @RequestParam(required = false, name = "id") Long userId,
                                                                      @RequestParam(required = false) String email,
                                                                      @RequestParam(required = false) String param) {
         return new ResponseEntity<>(tenantC7nService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
@@ -210,11 +224,9 @@ public class TenantC7nController extends BaseController {
                                                         @RequestParam(required = false) String code,
                                                         @RequestParam(required = false) Boolean enabled,
                                                         @RequestParam(required = false) String params,
-                                                        @RequestBody Set<Long> orgIds) {
+                                                        @Encrypt @RequestBody Set<Long> orgIds) {
         return new ResponseEntity<>(tenantC7nService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
     }
-
-
 
 
     @GetMapping("/{tenant_id}/project/overview")

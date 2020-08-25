@@ -24,8 +24,7 @@ import java.util.Set;
 
 /**
  * @author scp
- * @date 2020/4/1
- * @description
+ * @since 2020/4/1
  */
 public interface UserC7nService {
 
@@ -84,7 +83,7 @@ public interface UserC7nService {
      * @param organizationId 如果为null，则统计平台人数
      * @param startTime
      * @param endTime
-     * @return
+     * @return UserNumberVO
      */
     UserNumberVO countByDate(Long organizationId, Date startTime, Date endTime);
 
@@ -111,7 +110,7 @@ public interface UserC7nService {
 
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 
-    void addAdminUsers(long[] ids);
+    void addAdminUsers(Long[] ids);
 
     void deleteAdminUser(long id);
 
@@ -200,7 +199,7 @@ public interface UserC7nService {
      *
      * @param organizationId
      * @param userId
-     * @return
+     * @return true 或者 false
      */
     Boolean checkIsOrgRoot(Long organizationId, Long userId);
 
@@ -307,4 +306,8 @@ public interface UserC7nService {
      * @return 项目下的用户有的角色的标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
+
+    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+
+    List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 }

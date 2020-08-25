@@ -1,9 +1,9 @@
 package io.choerodon.iam.app.service;
 
+import org.hzero.iam.domain.entity.Menu;
+
 import java.util.List;
 import java.util.Set;
-
-import org.hzero.iam.domain.entity.Menu;
 
 /**
  * 〈功能简述〉
@@ -22,7 +22,8 @@ public interface MenuC7nService {
 
     /**
      * 查询个人信息菜单,仅包含type = menu的
-     * @return
+     *
+     * @return menu列表
      */
     List<Menu> listUserInfoMenuOnlyTypeMenu();
 

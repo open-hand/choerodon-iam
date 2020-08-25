@@ -168,7 +168,6 @@ const pageDetail = {
   'global.instance.detail.description': '实例属于一个微服务。您可以在此查看实例的详细信息。',
   'global.instance.detail.link': `${docServer}/user-guide/microservice-development/microservice-management/instance/`,
 
-
   // 路由管理
   'global.route.title': '平台"{name}"的路由管理',
   'global.route.description': '路由发送请求到网关会访问服务。一个服务可以分配多个路径的路由，一个路由路径只指向一个服务。',
@@ -246,7 +245,6 @@ const pageDetail = {
   'global.inmailtemplate.modify.title': '修改站内信模板"{name}"',
   'global.inmailtemplate.modify.description': '修改站内信模板可以让您根据自己的需求，修改发送的主题、内容。',
   'global.inmailtemplate.modify.link': `${docServer}/user-guide/system-configuration/message/email-template/`,
-
 
   // 邮箱配置
   'global.mailsetting.title': '平台"{name}"的邮箱配置',
@@ -513,7 +511,6 @@ const pageDetail = {
   'organization.application.view.token': '查看token',
   'organization.application.create.and.view.token': '创建并查看token',
   'organization.application.view.interface.token': '查看应用“{interfaceName}”的token',
-  // 'organization.application.link': `${docServer}/user-guide/microservice-development/job/execution-record/`,
 
   'organization.application.create': '创建应用',
   'organization.application.sidebar.title.create': '创建应用',
@@ -543,7 +540,6 @@ const pageDetail = {
   'organization.application.add.title': '向组合应用"{name}"下添加应用',
   'organization.application.add.description': '您可以在此修改组合应用下的子应用信息。',
   'organization.application.sidebar.title': '添加子应用',
-
 
   // 项目信息
   'project.info.title': '对项目"{name}"进行项目设置',
@@ -607,7 +603,6 @@ const pageDetail = {
   'project.executable.program.class.title': '"{name}"的参数详情',
   'project.executable.program.class.description': '任务类的参数信息。在这里，您可以了解此任务类的参数信息，包括参数名，参数类型，默认值。',
   'project.executable.program.class.link': `${docServer}/user-guide/microservice-development/job/job-class/`,
-
 
   // 个人信息
   'user.userinfo.title': '用户"{name}"的个人信息',
@@ -1361,7 +1356,6 @@ const zh_CN = {
   'global.mailsetting.port.pattern': '请输入大于零的整数',
   'global.mailsetting.connect.success': '连接成功',
 
-
   // 事务定义
   'global.saga.header.title': '事务定义',
   'global.saga.code': '编码',
@@ -1741,6 +1735,8 @@ const zh_CN = {
   'organization.role.code.require.msg': '请输入角色编码',
   'organization.role.name.require.msg': '请输入角色名称',
   'organization.role.code.pattern.msg': '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
+  'organization.role.list.delete.title': '删除自定义角色',
+  'organization.role.list.delete.des': '确定删除该自定义角色吗？',
 
   // 项目层
   // 应用管理
@@ -1757,7 +1753,7 @@ const zh_CN = {
   'project.info.name': '项目名称',
   'project.info.applicationName': '应用名称',
   'project.info.agile.prefix': '问题前缀',
-  
+
   'project.info.code': '项目编码',
   'project.info.category': '项目类型',
   'project.info.app': '应用名称',
@@ -1774,7 +1770,7 @@ const zh_CN = {
   'project.info.avatar': '项目Logo',
   // 应用配置
   'application.setting.title': '应用配置',
-  'application.setting.modify': '修改应用配置',  
+  'application.setting.modify': '修改应用配置',
   'application.setting.name': '应用名称',
   'application.setting.code': '应用编码',
   'application.setting.source': '应用来源',
@@ -1818,7 +1814,6 @@ const zh_CN = {
   'user.userinfo.org.name': '组织名称',
   'user.userinfo.org.code': '组织编码',
 
-
   // 修改密码
   'user.changepwd.twopwd.pattern.msg': '两次密码输入不一致',
   'user.changepwd.header.title': '修改密码',
@@ -1851,7 +1846,6 @@ const zh_CN = {
   'user.permissioninfo.organization.redirect': '跳转至组织"{name}"',
   'user.permissioninfo.project.redirect': '跳转至项目"{name}"',
   'user.permissioninfo.role.disabled.tip': '该角色已停用',
-
 
   // 消息通知
   'user.usermsg.header.title': '消息通知',
@@ -1932,7 +1926,6 @@ const zh_CN = {
   'saga-instance.code': '实例状态总览',
   'saga-instance.saga.instance': '事务实例',
   'saga-instance.task.retry-count': '重试次数',
-
 
   // 角色标签
   'memberlabel.member.disabled.msg': '用户已被停用，无法给此用户分配角色，请先启用此用户',

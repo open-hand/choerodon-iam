@@ -55,7 +55,8 @@ export default ({ level, organizationId }) => {
     }
     if (validValue.length > 64) {
       return '编码长度不能超过64！';
-    } else if (value.trim() === '') {
+    }
+    if (value.trim() === '') {
       return '编码不能全为空！';
     }
     const reg = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
@@ -68,9 +69,8 @@ export default ({ level, organizationId }) => {
         const res = await axios.post('/iam/choerodon/v1/roles/check', JSON.stringify(params));
         if (res.failed) {
           return '编码已存在。';
-        } else {
-          return true;
         }
+        return true;
       } catch (err) {
         return '编码重名校验失败，请稍后再试。';
       }
@@ -114,21 +114,37 @@ export default ({ level, organizationId }) => {
               : undefined,
         },
       }),
+      destroy: ({ data: [data] }) => ({
+        url: `/iam/choerodon/v1/organizations/${organizationId}/roles/${data.id}`,
+        method: 'delete',
+      }),
     },
     fields: [
-      { name: 'name', type: 'string', label: '名称', required: true, validator: nameValidator },
-      { name: 'code', type: 'string', label: '编码', required: true, validator: codeValidator },
+      {
+        name: 'name', type: 'string', label: '名称', required: true, validator: nameValidator,
+      },
+      {
+        name: 'code', type: 'string', label: '编码', required: true, validator: codeValidator,
+      },
       { name: 'roleLevel', type: 'string', label: '层级' },
       { name: 'builtIn', type: 'boolean', label: '来源' },
       { name: 'enabled', type: 'boolean', label: '状态' },
-      { name: 'labels', type: 'auto', textField: 'name', valueField: 'id' },
+      {
+        name: 'labels', type: 'auto', textField: 'name', valueField: 'id',
+      },
     ],
     queryFields: [
       { name: 'name', type: 'string', label: '名称' },
       { name: 'code', type: 'string', label: '编码' },
-      { name: 'roleLevel', type: 'string', label: '层级', textField: 'value', valueField: 'key', options: levelDs },
-      { name: 'builtIn', type: 'auto', label: '来源', textField: 'value', valueField: 'key', options: buildInDs },
-      { name: 'enabled', type: 'auto', label: '状态', textField: 'value', valueField: 'key', options: enabledDs },
+      {
+        name: 'roleLevel', type: 'string', label: '层级', textField: 'value', valueField: 'key', options: levelDs,
+      },
+      {
+        name: 'builtIn', type: 'auto', label: '来源', textField: 'value', valueField: 'key', options: buildInDs,
+      },
+      {
+        name: 'enabled', type: 'auto', label: '状态', textField: 'value', valueField: 'key', options: enabledDs,
+      },
     ],
   };
 };

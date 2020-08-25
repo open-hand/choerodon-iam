@@ -49,8 +49,9 @@
         (CREATION_DATE, CREATED_BY, LAST_UPDATE_DATE, LAST_UPDATED_BY, role_id, permission_id, type, h_create_flag, h_inherit_flag)
         VALUES
          <foreach collection="rolePermissionList" item="ps" separator=",">
-          (#{ps.creationDate},#{ps.createdBy},#{ps.lastUpdateDate},#{ps.lastUpdatedBy}, #{ps.roleId},#{ps.permissionSetId},#{ps.type},#{ps.createFlag},#{ps.inheritFlag})
-          </foreach>
+             (#{ps.creationDate},#{ps.createdBy},#{ps.lastUpdateDate},#{ps.lastUpdatedBy},
+             #{ps.roleId},#{ps.permissionSetId},#{ps.type},#{ps.createFlag},#{ps.inheritFlag})
+         </foreach>
     </insert>
     <delete id="batchDeleteById">
         delete from iam_role_permission
@@ -58,5 +59,9 @@
         <foreach collection="delPsIds" item="deletePermissionId" open="(" close=")" separator="," index="i">
             #{deletePermissionId}
         </foreach>
+    </delete>
+    <delete id="deleteByRoleId">
+        delete from iam_role_permission
+        where role_id = #{roleId};
     </delete>
 </mapper>

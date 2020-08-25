@@ -158,4 +158,16 @@ public class ProjectC7nController extends BaseController {
     public ResponseEntity<ProjectDTO> queryBasicInfo(@PathVariable(name = "project_id") Long id) {
         return ResponseEntity.ok(projectService.queryBasicInfo(id));
     }
+
+    /**
+     * 根据条件查询项目信息
+     *
+     * @return 查询到的项目
+     */
+    @Permission(permissionLogin = true)
+    @PostMapping(value = "/query_by_option")
+    @ApiOperation(value = "根据条件查询项目信息")
+    public ResponseEntity<List<ProjectDTO>> queryProjectByOption(@RequestBody ProjectDTO projectDTO) {
+        return ResponseEntity.ok(projectService.queryProjectByOption(projectDTO));
+    }
 }

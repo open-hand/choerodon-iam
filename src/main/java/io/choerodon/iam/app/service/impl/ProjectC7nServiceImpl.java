@@ -304,6 +304,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
+    public List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO) {
+        return projectMapper.select(projectDTO);
+    }
+
+    @Override
     public Boolean checkProjCode(String code) {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setCode(code);

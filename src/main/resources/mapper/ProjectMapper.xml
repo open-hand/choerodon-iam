@@ -526,48 +526,4 @@
         </where>
         GROUP BY fp.id
     </select>
-    <select id="selectProjectByUserIdOrAdmin" resultMap="projectWithRoleAndCategoryDTO">
-        SELECT DISTINCT fp.*,
-        fpc.id as category_id,
-        fpc.name as category_name,
-        fpc.code as category_code,
-        fpc.object_version_number as category_version_number,
-        fpc.organization_id as category_org_id
-        FROM fd_project fp
-        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
-        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
-        or fpc.code='PROGRAM'))
-        <if test="!isAdmin">
-            INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
-            INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-            INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
-        </if>
-        <where>
-            <if test="!isAdmin">
-                AND imr.member_id = #{userId}
-                AND imr.member_type = 'user'
-            </if>
-            <if test="projectDTO != null">
-                <if test="projectDTO.id != null">
-                    AND fp.id = #{projectDTO.id}
-                </if>
-                <if test="projectDTO.name != null">
-                    AND fp.name = #{projectDTO.name}
-                </if>
-                <if test="projectDTO.code != null">
-                    AND fp.code = #{projectDTO.code}
-                </if>
-                <if test="projectDTO.category != null">
-                    AND fp.category = #{projectDTO.category}
-                </if>
-                <if test="projectDTO.enabled != null">
-                    AND fp.is_enabled = #{projectDTO.enabled}
-                </if>
-                <if test="projectDTO.createdBy != null">
-                    AND fp.created_by = #{userId}
-                </if>
-            </if>
-        </where>
-
-    </select>
 </mapper>

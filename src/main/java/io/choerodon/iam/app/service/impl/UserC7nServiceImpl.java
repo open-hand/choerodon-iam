@@ -1162,7 +1162,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         LOGGER.info("==========================switch site roles {}", roles.toString());
         List<String> rolesStr = roles.stream().map(RoleVO::getLevel).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(roles) || !rolesStr.contains(ResourceLevel.SITE.value())) {
-            throw new CommonException("error.without.site.role");
+            LOGGER.warn("error.without.site.role");
+            return;
         }
         for (RoleVO t : roles) {
             if (t.getLevel().equals(ResourceLevel.SITE.value())) {

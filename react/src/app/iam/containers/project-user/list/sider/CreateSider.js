@@ -1,6 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Spin, SelectBox, Password, Select, Tooltip, Icon } from 'choerodon-ui/pro';
+import {
+  Spin, SelectBox, Password, Select, Tooltip, Icon,
+} from 'choerodon-ui/pro';
 import _ from 'lodash';
 import Store from './stores';
 import UserOptionDataSet from './stores/UserOptionDataSet';
@@ -8,7 +10,9 @@ import './index.less';
 import TwoFormSelectEditor from '../../../../components/twoFormSelectEditor';
 
 export default observer((props) => {
-  const { prefixCls, intlPrefix, intl, modal, onOk, dsStore, roleAssignDataSet, projectId, orgRoleDataSet } = useContext(Store);
+  const {
+    prefixCls, intlPrefix, intl, modal, onOk, dsStore, roleAssignDataSet, projectId, orgRoleDataSet,
+  } = useContext(Store);
   useEffect(() => {
     if (roleAssignDataSet.length === 0) { roleAssignDataSet.create({ memberId: [''], roleId: [''] }); }
   });
@@ -42,22 +46,32 @@ export default observer((props) => {
   }
 
   function getOption({ record }) {
+    const isLdap = record.get('ldap');
+    const email = record.get('email');
+    const imgUrl = record.get('imageUrl');
+    const realName = record.get('realName');
+    const loginName = record.get('loginName');
     return (
-      <Tooltip placement="left" title={`${record.get('email')}`}>
+      <Tooltip placement="left" title={`${email}`}>
         <div className={`${prefixCls}-option`}>
           <div className={`${prefixCls}-option-avatar`}>
             {
-              record.get('imageUrl') ? <img src={record.get('imageUrl')} alt="userAvatar" style={{ width: '100%' }} />
-                : <span className={`${prefixCls}-option-avatar-noavatar`}>{record.get('realName') && record.get('realName').split('')[0]}</span>
+              imgUrl ? <img src={imgUrl} alt="userAvatar" style={{ width: '100%' }} />
+                : <span className={`${prefixCls}-option-avatar-noavatar`}>{realName && realName.split('')[0]}</span>
             }
           </div>
-          <span>{record.get('realName')}</span>
-          {record.get('ldap') && record.get('loginName') ? (
-            <span>({record.get('loginName')})</span>
-          ) : null}
+          <span>{realName}</span>
+          {isLdap && loginName ? (
+            <span>
+              {`(${loginName})`}
+            </span>
+          ) : (
+            <span>
+              {`(${email})`}
+            </span>
+          )}
         </div>
       </Tooltip>
-
     );
   }
 
@@ -89,7 +103,7 @@ export default observer((props) => {
             )}
           />
         ), (itemProps) => (
-          <Select 
+          <Select
             {...itemProps}
             labelLayout="float"
             style={{ width: '100%' }}

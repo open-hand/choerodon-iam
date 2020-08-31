@@ -87,7 +87,7 @@
     </resultMap>
 
     <select id="listUsersByIds" resultType="org.hzero.iam.domain.entity.User">
-        SELECT *,is_ldap as ldap
+        SELECT *,is_ldap as ldap,is_enabled as enabled
         FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"

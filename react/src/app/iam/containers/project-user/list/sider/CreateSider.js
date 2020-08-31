@@ -66,7 +66,7 @@ export default observer((props) => {
               {`(${loginName})`}
             </span>
           ) : (
-            <span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {`(${email})`}
             </span>
           )}

@@ -21,6 +21,7 @@ import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
 import io.choerodon.iam.infra.enums.LdapType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 
@@ -79,6 +80,9 @@ public class LdapC7nServiceImpl implements LdapC7nService {
 
     @Autowired
     private LdapAssertHelper ldapAssertHelper;
+
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapC7nServiceImpl.class);
 
@@ -210,45 +214,12 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         mapParams.put(SYNC_TYPE, LdapType.AUTO.value());
         scheduleTaskDTO.setParams(mapParams);
 
-        scheduleTaskDTO.setMethodId(getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId()).getId());
+        scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId(), EXECUTE_METHOD,"hzero-iam").getId());
 
-        ldapAutoDTO.setQuartzTaskId(createQuartzTask(ldapAutoTaskEventPayload.getOrganizationId(), scheduleTaskDTO).getId());
+        ldapAutoDTO.setQuartzTaskId(asgardServiceClientOperator.createQuartzTask(ldapAutoTaskEventPayload.getOrganizationId(), scheduleTaskDTO).getId());
         if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {
             throw new CommonException("error.update.ldap.auto");
         }
-    }
-
-    private QuartzTask createQuartzTask(Long organizationId, ScheduleTaskDTO scheduleTaskDTO) {
-        ResponseEntity<QuartzTask> quartzTaskResponseEntity;
-        try {
-            quartzTaskResponseEntity = asgardFeignClient.createOrgTask(organizationId, scheduleTaskDTO);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-        QuartzTask result = quartzTaskResponseEntity.getBody();
-        if (result == null || result.getId() == null) {
-            throw new CommonException("error.create.quartz.task");
-        }
-        return result;
-    }
-
-    private ScheduleMethodDTO getMethodDTO(Long organizationId) {
-        ResponseEntity<List<ScheduleMethodDTO>> methodsResponseEntity = null;
-        try {
-            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, "hzero-iam");
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-        List<ScheduleMethodDTO> methodDTOList = methodsResponseEntity.getBody();
-        if (methodDTOList == null || methodDTOList.size() == 0) {
-            throw new CommonException("error.list.methods");
-        }
-        Optional<ScheduleMethodDTO> methodDTO = methodDTOList.stream().filter(t -> t.getCode().equals(EXECUTE_METHOD)).findFirst();
-        if (!methodDTO.isPresent()) {
-            throw new CommonException("error.ldap.sync.method.get");
-        }
-
-        return methodDTO.get();
     }
 
     private String getAutoLdapCron(LdapAutoDTO ldapAutoDTO) {

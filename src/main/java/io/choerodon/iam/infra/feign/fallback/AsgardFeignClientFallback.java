@@ -33,6 +33,16 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
+    public ResponseEntity<QuartzTask> createSiteTask(ScheduleTaskDTO scheduleTaskDTO) {
+        throw new CommonException("error.asgard.quartzTask.createSite");
+    }
+
+    @Override
+    public ResponseEntity<QuartzTask> deleteSiteTask(String name) {
+        throw new CommonException("error.asgard.quartzTask.deleteSite");
+    }
+
+    @Override
     public void deleteOrgTask(long orgId, long id) {
         throw new CommonException("error.asgard.quartzTask.deleteOrganization");
     }
@@ -45,6 +55,11 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     @Override
     public ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(long orgId, String service) {
         throw new CommonException("error.asgard.method.query");
+    }
+
+    @Override
+    public ResponseEntity<List<ScheduleMethodDTO>> getMethodByServiceSite(String service) {
+        throw new CommonException("error.asgard.method.query.site");
     }
 
     @Override

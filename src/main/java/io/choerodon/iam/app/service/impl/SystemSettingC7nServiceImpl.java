@@ -107,7 +107,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             return null;
         }
         List<SysSettingDTO> oldSysSettingDTOList = sysSettingMapper.selectAll();
-        Map<String, SysSettingDTO> sysSettingDTOMap = oldSysSettingDTOList.stream().collect(Collectors.toMap(SysSettingDTO::getSettingKey, Function.identity()));
+        SysSettingVO oldSysSettingVO = SysSettingUtils.listToSysSettingVo(oldSysSettingDTOList);
+        Map<String, SysSettingDTO> sysSettingDTOMap = sysSettingMapper.selectAll().stream().collect(Collectors.toMap(SysSettingDTO::getSettingKey, Function.identity()));
         Map<String, String> settingDTOMap = SysSettingUtils.sysSettingVoToGeneralInfoMap(sysSettingVO);
         settingDTOMap.forEach((k, v) -> {
             SysSettingDTO settingDTO;
@@ -126,7 +127,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 }
             }
         });
-        SysSettingVO oldSysSettingVO = SysSettingUtils.listToSysSettingVo(oldSysSettingDTOList);
         if (!sysSettingVO.getAutoCleanEmailRecord().equals(oldSysSettingVO.getAutoCleanEmailRecord())
                 || !sysSettingVO.getAutoCleanEmailRecordInterval().equals(oldSysSettingVO.getAutoCleanEmailRecordInterval())) {
             handleScheduleTask(MESSAGE_TYPE_EMAIL, sysSettingVO.getAutoCleanEmailRecord(), sysSettingVO.getAutoCleanEmailRecordInterval());
@@ -157,7 +157,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             scheduleTaskDTO.setStartTimeStr(dateString);
 
             ScheduleTaskDTO.NotifyUser notifyUser = new ScheduleTaskDTO.NotifyUser();
-            notifyUser.setAdministrator(true);
+            notifyUser.setAdministrator(false);
             notifyUser.setAssigner(false);
             notifyUser.setCreator(false);
             scheduleTaskDTO.setNotifyUser(notifyUser);

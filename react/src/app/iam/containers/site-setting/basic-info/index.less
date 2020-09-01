@@ -1,3 +1,5 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 // 颜色
 @box-shadow-style-default: 0 .03rem .01rem -0.02rem rgba(0, 0, 0, 0.2), 0 .02rem .02rem 0 rgba(0, 0, 0, 0.14), 0 .01rem .05rem 0 rgba(0, 0, 0, 0.12);
 @font-color: rgba(0, 0, 0, 0.54);
@@ -140,5 +142,25 @@
                 }
             }
         }
+
+      .@{c7n-pro-prefix}-input-number:not(textarea):not(:last-child) {
+        padding-right: .5rem;
+      }
+
+      .@{c7n-pro-prefix}-input-number-inner-button {
+        right: .01rem;
+      }
+      .@{c7n-pro-prefix}-input-number-suffix {
+        right: .25rem;
+      }
+
+      .@{c7n-pro-prefix}-select-box-wrapper {
+        margin-top: .1rem;
+      }
     }
+
+  &-suffix {
+    line-height: .2rem;
+    color: rgba(0, 0, 0, 0.25);
+  }
 }

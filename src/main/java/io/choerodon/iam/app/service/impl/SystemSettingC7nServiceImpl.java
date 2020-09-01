@@ -232,6 +232,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                     || key.equals(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value())) {
                 record.setSettingValue(DEFAULT_CLEAN_NUM);
             }
+            if (key.equals(SysSettingEnum.REGISTER_ENABLED.value())) {
+                record.setSettingValue(Boolean.FALSE.toString());
+            }
             sysSettingMapper.updateByPrimaryKey(record);
         });
     }

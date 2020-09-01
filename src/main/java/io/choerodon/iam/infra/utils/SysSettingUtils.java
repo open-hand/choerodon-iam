@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.iam.api.vo.SysSettingVO;
@@ -12,6 +13,8 @@ import io.choerodon.iam.infra.dto.SysSettingDTO;
 import io.choerodon.iam.infra.enums.SysSettingEnum;
 
 public class SysSettingUtils {
+    private static final Integer DEFAULT_CLEAN_NUM = 180;
+
 
     /**
      * 系统配置列表转为系统配置Map
@@ -116,8 +119,14 @@ public class SysSettingUtils {
         settingDTOMap.put(SysSettingEnum.THEME_COLOR.value(), sysSettingVO.getThemeColor());
         settingDTOMap.put(SysSettingEnum.REGISTER_ENABLED.value(), String.valueOf(sysSettingVO.getRegisterEnabled()));
         settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD.value(), String.valueOf(sysSettingVO.getAutoCleanEmailRecord()));
+        if (sysSettingVO.getAutoCleanEmailRecordInterval() == null) {
+            sysSettingVO.setAutoCleanEmailRecordInterval(DEFAULT_CLEAN_NUM);
+        }
         settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD_INTERVAL.value(), String.valueOf(sysSettingVO.getAutoCleanEmailRecordInterval()));
         settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value(), String.valueOf(sysSettingVO.getAutoCleanWebhookRecord()));
+        if (sysSettingVO.getAutoCleanWebhookRecordInterval() == null) {
+            sysSettingVO.setAutoCleanWebhookRecordInterval(DEFAULT_CLEAN_NUM);
+        }
         settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value(), String.valueOf(sysSettingVO.getAutoCleanWebhookRecordInterval()));
         return settingDTOMap;
     }

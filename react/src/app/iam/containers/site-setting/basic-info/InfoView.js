@@ -1,6 +1,10 @@
 import React, { useContext, Fragment } from 'react';
-import { axios, Content, Header, Page, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
-import { Form, Output, Modal, message } from 'choerodon-ui/pro';
+import {
+  axios, Content, Header, Page, Permission, Breadcrumb, TabPage,
+} from '@choerodon/boot';
+import {
+  Form, Output, Modal, message,
+} from 'choerodon-ui/pro';
 import { SketchPicker } from 'react-color';
 import { withRouter } from 'react-router-dom';
 import { Button, Modal as OldModal } from 'choerodon-ui';
@@ -14,7 +18,9 @@ import Store from '../stores';
 const modalKey = Modal.key();
 
 const InfoView = observer(() => {
-  const { systemSettingDataSet: dataSet, AppState, intl, intlPrefix, presetColors, colorMap, hasRegister } = useContext(Store);
+  const {
+    systemSettingDataSet: dataSet, AppState, intl, intlPrefix, presetColors, colorMap, hasRegister,
+  } = useContext(Store);
   const favicon = dataSet.current && dataSet.current.getPristineValue('favicon');
   const systemLogo = dataSet.current && dataSet.current.getPristineValue('systemLogo');
   const themeColor = dataSet.current && dataSet.current.getPristineValue('themeColor');
@@ -26,9 +32,8 @@ const InfoView = observer(() => {
       if ((await dataSet.submit())) {
         setTimeout(() => { window.location.reload(true); }, 1000);
         return true;
-      } else {
-        return false;
       }
+      return false;
     } catch (e) {
       return false;
     }
@@ -85,6 +90,7 @@ const InfoView = observer(() => {
         try {
           await axios.delete('/iam/choerodon/v1/system/setting');
           await window.location.reload(true);
+          return true;
         } catch (e) {
           return false;
         }
@@ -93,9 +99,17 @@ const InfoView = observer(() => {
   }
   function renderThemeColor({ value }) {
     return (
-      <div style={{ width: '.2rem', height: '.2rem', background: ((value && value.split(',')[0]) || '#3F51B5'), marginTop: '.05rem', borderRadius: '.02rem' }} />
+      <div style={{
+        width: '.2rem', height: '.2rem', background: ((value && value.split(',')[0]) || '#3F51B5'), marginTop: '.05rem', borderRadius: '.02rem',
+      }}
+      />
     );
   }
+
+  function renderBoolean({ value }) {
+    return value === true ? '是' : '否';
+  }
+
   return (
     <TabPage service={['choerodon.code.site.setting.general-setting.ps.default']}>
       <Header>
@@ -118,7 +132,7 @@ const InfoView = observer(() => {
           <div className="divider" />
           <Form
             pristine
-            labelWidth={180}
+            labelWidth={190}
             dataSet={dataSet}
             labelLayout="horizontal"
             labelAlign="left"
@@ -138,11 +152,13 @@ const InfoView = observer(() => {
                 : <div className="c7n-system-setting-formImg-wrapper default-logo" />}
             </div>
             {hasRegister && (
-              <Output renderer={({ value }) => (value === true ? '是' : '否')} name="registerEnabled" newLine />
+              <Output renderer={renderBoolean} name="registerEnabled" newLine />
             )}
             {hasRegister && dataSet.current && dataSet.current.getPristineValue('registerEnabled') && (
               <Output renderer={() => (dataSet.current && dataSet.current.getPristineValue('registerUrl')) || '无'} name="registerUrl" />
             )}
+            <Output renderer={renderBoolean} name="autoCleanEmailRecord" newLine />
+            <Output renderer={renderBoolean} name="autoCleanWebhookRecord" newLine />
           </Form>
         </div>
 

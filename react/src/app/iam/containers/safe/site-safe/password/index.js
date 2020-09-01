@@ -48,7 +48,7 @@ export default observer(() => {
       <Breadcrumb />
       <Content className="site-password-content ml-15">
         <Form pristine dataSet={dataSet} labelLayout="horizontal" labelAlign="left" labelWidth={250}>
-          <Output name="forceModifyPassword" renderer={renderBoolean} />
+          {/* <Output name="forceModifyPassword" renderer={renderBoolean} /> */}
           <Output name="defaultPassword" />
           <Output name="minPasswordLength" />
           <Output name="maxPasswordLength" />

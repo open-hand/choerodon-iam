@@ -60,6 +60,50 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "平台主题色")
     private String themeColor;
 
+    @ApiModelProperty(value = "是否自动清理邮件发送记录")
+    private Boolean autoCleanEmailRecord;
+
+    @ApiModelProperty(value = "自动清理邮件发送N天前记录")
+    private Integer autoCleanEmailRecordInterval;
+
+    @ApiModelProperty(value = "是否自动清理webhook发送记录")
+    private Boolean autoCleanWebhookRecord;
+
+    @ApiModelProperty(value = "自动清理webhook发送N天前记录")
+    private Integer autoCleanWebhookRecordInterval;
+
+    public Boolean getAutoCleanEmailRecord() {
+        return autoCleanEmailRecord;
+    }
+
+    public void setAutoCleanEmailRecord(Boolean autoCleanEmailRecord) {
+        this.autoCleanEmailRecord = autoCleanEmailRecord;
+    }
+
+    public Integer getAutoCleanEmailRecordInterval() {
+        return autoCleanEmailRecordInterval;
+    }
+
+    public void setAutoCleanEmailRecordInterval(Integer autoCleanEmailRecordInterval) {
+        this.autoCleanEmailRecordInterval = autoCleanEmailRecordInterval;
+    }
+
+    public Boolean getAutoCleanWebhookRecord() {
+        return autoCleanWebhookRecord;
+    }
+
+    public void setAutoCleanWebhookRecord(Boolean autoCleanWebhookRecord) {
+        this.autoCleanWebhookRecord = autoCleanWebhookRecord;
+    }
+
+    public Integer getAutoCleanWebhookRecordInterval() {
+        return autoCleanWebhookRecordInterval;
+    }
+
+    public void setAutoCleanWebhookRecordInterval(Integer autoCleanWebhookRecordInterval) {
+        this.autoCleanWebhookRecordInterval = autoCleanWebhookRecordInterval;
+    }
+
     public String getFavicon() {
         return favicon;
     }

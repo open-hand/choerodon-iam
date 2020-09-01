@@ -50,6 +50,25 @@ public enum SysSettingEnum {
      */
     RESET_GITLAB_PASSWORD_URL("resetGitlabPasswordUrl"),
     /**
+     * 是否自动清理邮件方发送日志
+     */
+    AUTO_CLEAN_EMAIL_RECORD("autoCleanEmailRecord"),
+
+    /**
+     * 自动清理邮件方发送日志 时间间隔
+     */
+    AUTO_CLEAN_EMAIL_RECORD_INTERVAL("autoCleanEmailRecordInterval"),
+
+    /**
+     * 自动清理webhook方发送日志
+     */
+    AUTO_CLEAN_WEBHOOK_RECORD("autoCleanWebhookRecord"),
+
+    /**
+     * 自动清理webhook方发送日志 时间间隔
+     */
+    AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL("autoCleanWebhookRecordInterval"),
+    /**
      * 平台主题色
      */
     THEME_COLOR("themeColor");

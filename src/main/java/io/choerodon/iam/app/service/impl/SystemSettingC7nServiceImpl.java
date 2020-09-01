@@ -24,6 +24,7 @@ import io.choerodon.iam.api.vo.SysSettingVO;
 import io.choerodon.iam.app.service.SystemSettingC7nService;
 import io.choerodon.iam.infra.dto.SysSettingDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
+import io.choerodon.iam.infra.enums.SysSettingEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
@@ -39,6 +40,7 @@ import io.choerodon.iam.infra.utils.SysSettingUtils;
 public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
     private static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
+    private static final String DEFAULT_CLEAN_NUM = "180";
     /**
      * 清理消息类型 WEBHOOK/EMAIL
      */
@@ -222,6 +224,14 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 return;
             }
             record.setSettingValue(null);
+            if (key.equals(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD.value())
+                    || key.equals(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value())) {
+                record.setSettingValue(Boolean.FALSE.toString());
+            }
+            if (key.equals(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD_INTERVAL.value())
+                    || key.equals(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value())) {
+                record.setSettingValue(DEFAULT_CLEAN_NUM);
+            }
             sysSettingMapper.updateByPrimaryKey(record);
         });
     }

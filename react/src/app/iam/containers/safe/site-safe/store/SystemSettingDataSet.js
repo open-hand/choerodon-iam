@@ -20,13 +20,13 @@ export default ({ id = 0 }) => {
         transformResponse: (data) => {
           const parseData = JSON.parse(data);
           const {
-            defaultPassword, minPasswordLength, maxPasswordLength, forceModifyPassword,
+            defaultPassword, minPasswordLength, maxPasswordLength,
           } = parseData;
           const dft = {
             defaultPassword: defaultPassword || 'abcd1234',
             minPasswordLength: minPasswordLength || 6,
             maxPasswordLength: maxPasswordLength || 18,
-            forceModifyPassword: forceModifyPassword !== false,
+            // forceModifyPassword: forceModifyPassword !== false,
           };
           if (!defaultPassword && !minPasswordLength && !maxPasswordLength) {
             return ({ new: true, ...dft });
@@ -53,9 +53,9 @@ export default ({ id = 0 }) => {
       {
         name: 'maxPasswordLength', type: 'number', min: 0, max: 65535, validator: checkMaxLength, label: '平台默认最大密码长度', required: true,
       },
-      {
-        name: 'forceModifyPassword', type: 'boolean', label: '登录时强制修改默认密码', defaultValue: true,
-      },
+      // {
+      //   name: 'forceModifyPassword', type: 'boolean', label: '登录时强制修改默认密码', defaultValue: true,
+      // },
     ],
   };
 };

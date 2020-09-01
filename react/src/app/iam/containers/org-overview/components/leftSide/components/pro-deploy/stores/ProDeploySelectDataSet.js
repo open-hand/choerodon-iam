@@ -1,3 +1,5 @@
+import JSONbig from 'json-bigint';
+
 export default ({ orgId, ProDeployStore }) => ({
   fields: [{
     name: 'proSelect',
@@ -12,7 +14,7 @@ export default ({ orgId, ProDeployStore }) => ({
         let parseData;
         const typeOf = Object.prototype.toString;
         if (typeOf.call(data) === '[object String]') {
-          parseData = JSON.parse(data);
+          parseData = JSONbig.parse(data);
         } else {
           parseData = data;
         }

@@ -22,10 +22,10 @@ const LdapTestForm = observer(({ ldapDataSet, ldapTestDataSet, modal, orgId }) =
     if (!ldapTestDataSet.current) {
       return false;
     }
-    if (!await ldapTestDataSet.current.validate()) {
+    if (!await ldapTestDataSet.current.validate(true)) {
       return false;
     }
-    if (ldapTestDataSet.current.validate()) {
+    if (ldapTestDataSet.current.validate(true)) {
       try {
         const result = await axios.post(`/iam/v1/${orgId}/ldaps/${ldapId}/test-connect`, { account, ldapPassword });
         if (result) {

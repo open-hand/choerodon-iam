@@ -1,6 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, SelectBox, NumberField, TextField } from 'choerodon-ui/pro';
+import {
+  Form, Select, SelectBox, NumberField, TextField,
+} from 'choerodon-ui/pro';
 import { Divider, Modal } from 'choerodon-ui';
 import '../index.less';
 
@@ -83,6 +85,10 @@ export default observer(({ dataSet, onCancel, onOk }) => {
           ? (
 
             [
+              <SelectBox name="forceModifyPassword" label="登录时强制修改默认密码" colSpan={6}>
+                <Option value key="yes">是</Option>
+                <Option value={false} key="no">否</Option>
+              </SelectBox>,
               <SelectBox name="notUsername" label="是否允许密码与登录名相同" colSpan={6}>
                 <Option value key="yes">是</Option>
                 <Option value={false} key="no">否</Option>

@@ -1,19 +1,14 @@
 {
   "name": "@choerodon/base",
   "routeName": "iam",
-  "version": "0.23.2",
+  "version": "0.24.0",
   "description": "",
   "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
-  "peerDependencies": {
-    "@choerodon/boot": "0.21.4",
-    "@choerodon/master": "0.23.0"
-  },
   "dependencies": {
     "universal-cookie": "2.2.0",
-    "choerodon-ui": "^0.8.x",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
     "hjson": "^3.1.1",
@@ -27,8 +22,18 @@
     "json-bigint": "^1.0.0"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.21.4",
-    "@choerodon/master": "0.23.0"
+    "@choerodon/boot": "0.22.0",
+    "@choerodon/master": "0.24.0",
+    "babel-eslint": "^8.1.0",
+    "babel-preset-c7n-app": "^0.0.1",
+    "choerodon-ui": "0.8.x",
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-c7n-app": "^0.0.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.5",
+    "eslint-plugin-react-hooks": "^4.0.8"
   },
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",

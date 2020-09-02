@@ -1,6 +1,10 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
+
 import React, { useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action, Content, Header, axios, Breadcrumb, Page, Permission, Choerodon } from '@choerodon/boot';
+import {
+  Action, Content, Header, axios, Breadcrumb, Page, Permission, Choerodon,
+} from '@choerodon/boot';
 import { Button, Tag } from 'choerodon-ui';
 import { Table, Modal } from 'choerodon-ui/pro';
 import Store from './stores';
@@ -23,6 +27,7 @@ const ListView = () => {
     listDataSet: dataSet,
     prefixCls,
     permissions,
+    intlPrefix,
   } = context;
 
   function refresh() {
@@ -58,6 +63,18 @@ const ListView = () => {
     }
   }
 
+  function handleDelete() {
+    const record = dataSet.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    dataSet.delete(record, modalProps);
+  }
+
   function renderName({ value, record: tableRecord }) {
     if (tableRecord.get('builtIn')) {
       return <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>;
@@ -87,6 +104,13 @@ const ListView = () => {
         action: handleEnabled,
       },
     ];
+    if (!enabled) {
+      actionDatas.push({
+        service: ['choerodon.code.organization.manager.role.ps.delete'],
+        text: '删除',
+        action: handleDelete,
+      });
+    }
     return !builtIn && <Action data={actionDatas} />;
   }
 

@@ -18,6 +18,7 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
         enableLock: false,
         enablePassword: false,
         enableSecurity: false,
+        forceModifyPassword: true,
         lockedExpireTime: 0,
         lowercaseCount: 0,
         maxCheckCaptcha: 0,
@@ -72,6 +73,7 @@ export default function passwordPoliciesDataSet(organizationId, id, intl, intlPr
     { name: 'enableLock', type: 'boolean', label: '是否开启锁定' },
     { name: 'maxErrorTime', type: 'number', step: 1, min: 0, max: 65535, label: '输错次数', defaultValue: 0 },
     { name: 'lockedExpireTime', type: 'number', min: 0, label: '锁定时长', defaultValue: 0 },
+    { name: 'forceModifyPassword', type: 'boolean', label: '登录时强制修改默认密码', defaultValue: true },
   ];
 
   return {

@@ -18,7 +18,8 @@
     "react-image-lightbox": "^4.6.0",
     "react-markdown": "^4.2.2",
     "react-quill": "^1.2.6",
-    "rxjs-compat": "^6.5.3"
+    "rxjs-compat": "^6.5.3",
+    "json-bigint": "^1.0.0"
   },
   "devDependencies": {
     "@choerodon/boot": "0.22.0",

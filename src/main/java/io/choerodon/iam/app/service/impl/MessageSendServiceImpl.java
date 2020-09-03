@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
+import java.util.stream.Collectors;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -293,10 +294,9 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setTenantId(0L);
             // 接收者为组织下所有成员
             List<Receiver> receiverList = new ArrayList<>();
-            List<WebHookUser> webHookUserList = new ArrayList<>();
             List<User> users = tenantC7nMapper.listMemberIds(tenant.getTenantId());
             if (!CollectionUtils.isEmpty(users)) {
-                Long[] ids = users.toArray(new Long[]{});
+                Long[] ids = users.stream().map(User::getId).toArray(size -> new Long[size]);
                 List<User> userList = userC7nService.listUsersByIds(ids, Boolean.TRUE);
                 userList.forEach(user -> {
                     Receiver receiver = new Receiver();
@@ -309,6 +309,7 @@ public class MessageSendServiceImpl implements MessageSendService {
                     receiver.setTargetUserTenantId(tenant.getTenantId());
                     receiverList.add(receiver);
                 });
+                messageSender.setReceiverAddressList(receiverList);
             }
             Map<String, String> argsMap = new HashMap<>();
             argsMap.put("organizationName", tenant.getTenantName());

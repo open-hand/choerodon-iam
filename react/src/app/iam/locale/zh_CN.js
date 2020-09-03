@@ -1735,8 +1735,10 @@ const zh_CN = {
   'organization.role.code.require.msg': '请输入角色编码',
   'organization.role.name.require.msg': '请输入角色名称',
   'organization.role.code.pattern.msg': '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
-  'organization.role.list.delete.title': '删除自定义角色',
+  'organization.role.list.delete.title': '删除自定义角色“{name}”',
   'organization.role.list.delete.des': '确定删除该自定义角色吗？',
+  'organization.role.list.enable.title': '停用自定义角色“{name}”',
+  'organization.role.list.enable.des': '确定停用该自定义角色吗？',
 
   // 项目层
   // 应用管理

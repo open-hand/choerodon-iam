@@ -51,9 +51,24 @@ const ListView = () => {
     });
   }
 
-  async function handleEnabled() {
+  function openEnabledModal() {
     const record = dataSet.current;
     const enabled = record.get('enabled');
+    if (enabled) {
+      Modal.open({
+        key: Modal.key(),
+        title: formatMessage({ id: `${intlPrefix}.enable.title` }, { name: record.get('name') }),
+        children: formatMessage({ id: `${intlPrefix}.enable.des` }),
+        movable: false,
+        onOk: () => handleEnabled(true),
+      });
+    } else {
+      handleEnabled(false);
+    }
+  }
+
+  async function handleEnabled(enabled) {
+    const record = dataSet.current;
     const postData = record.toData();
     try {
       await axios.put(`/iam/hzero/v1/${organizationId}/roles/${enabled ? 'disable' : 'enable'}`, JSON.stringify(postData));
@@ -66,7 +81,7 @@ const ListView = () => {
   function handleDelete() {
     const record = dataSet.current;
     const modalProps = {
-      title: formatMessage({ id: `${intlPrefix}.delete.title` }),
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
       children: formatMessage({ id: `${intlPrefix}.delete.des` }),
       okText: formatMessage({ id: 'delete' }),
       okProps: { color: 'red' },
@@ -101,7 +116,7 @@ const ListView = () => {
       {
         service: [enabled ? 'choerodon.code.organization.manager.role.ps.disable' : 'choerodon.code.organization.manager.role.ps.enable'],
         text: enabled ? '停用' : '启用',
-        action: handleEnabled,
+        action: openEnabledModal,
       },
     ];
     if (!enabled) {

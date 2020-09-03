@@ -179,7 +179,7 @@ public class UserC7nController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity<Void> checkUserInfo(@RequestBody User user) {

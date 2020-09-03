@@ -52,7 +52,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private static final String CLEAN_NUM = "cleanNum";
     private static final String MESSAGE_TYPE_EMAIL = "EMAIL";
     private static final String MESSAGE_TYPE_WEBHOOK = "WEB_HOOK";
-    private static final String CRON_FORMAT = "%s %s %s %s %s %s";
     private FileClient fileClient;
 
 
@@ -146,8 +145,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             scheduleTaskDTO.setName(taskName);
             scheduleTaskDTO.setDescription(taskName);
             Date date = new Date();
-            String[] currTime = new SimpleDateFormat("HH:mm:ss").format(new Date(date.getTime() + 300000)).split(":");
-            String cron = String.format(CRON_FORMAT, currTime[2], currTime[1], currTime[0], "*", "*", "?");
+            String cron = "0 0 2 * * ?";
             scheduleTaskDTO.setCronExpression(cron);
             scheduleTaskDTO.setTriggerType("cron-trigger");
             scheduleTaskDTO.setExecuteStrategy("STOP");

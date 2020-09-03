@@ -50,4 +50,6 @@ public interface OrganizationRoleC7nService {
      * @param roleId
      */
     void delete(Long organizationId, Long roleId);
+
+    Boolean checkCodeExist(Long organizationId, String code);
 }

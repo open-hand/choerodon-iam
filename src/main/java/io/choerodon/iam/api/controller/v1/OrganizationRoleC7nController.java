@@ -69,4 +69,13 @@ public class OrganizationRoleC7nController {
         organizationRoleC7nService.delete(organizationId, roleId);
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验角色code")
+    @GetMapping("/check_code_exist")
+    public ResponseEntity<Boolean> checkCodeExist(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestParam("code") String code) {
+        return ResponseEntity.ok(organizationRoleC7nService.checkCodeExist(organizationId, code));
+    }
 }

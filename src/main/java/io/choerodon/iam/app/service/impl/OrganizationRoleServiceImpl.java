@@ -236,6 +236,14 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
 
     }
 
+    @Override
+    public Boolean checkCodeExist(Long organizationId, String code) {
+        Role role = new Role();
+        role.setTenantId(organizationId);
+        role.setCode(code);
+        return !CollectionUtils.isEmpty(roleMapper.select(role));
+    }
+
     /**
      * 校验是否时预定义角色，预定义角色无法编辑
      *

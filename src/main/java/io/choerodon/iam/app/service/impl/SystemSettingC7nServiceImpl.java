@@ -212,6 +212,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     @Override
+    @Transactional
     public void resetGeneralInfo() {
         List<SysSettingDTO> records = sysSettingMapper.selectAll();
         if (ObjectUtils.isEmpty(records)) {
@@ -237,6 +238,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             }
             sysSettingMapper.updateByPrimaryKey(record);
         });
+        // 删除定时任务
+        asgardFeignClient.deleteSiteTask(CLEAN_EMAIL_RECORD);
+        asgardFeignClient.deleteSiteTask(CLEAN_WEBHOOK_RECORD);
     }
 
     @Override

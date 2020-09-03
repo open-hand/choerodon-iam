@@ -321,7 +321,7 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userService.updateUser(userDTO), HttpStatus.OK);
     }
 
-    @Permission(permissionPublic = true)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "根据用户id查询对应的组织和项目")
     @GetMapping("/{id}/organization_project")
     public ResponseEntity<OrganizationProjectVO> queryOrganizationProjectByUserId(@PathVariable("id") Long id,

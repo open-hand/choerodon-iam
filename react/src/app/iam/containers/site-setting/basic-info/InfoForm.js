@@ -5,9 +5,10 @@ import {
   Form, TextField, TextArea, Select, SelectBox, NumberField,
 } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
-import { Button, Icon, Input } from 'choerodon-ui';
+import { Button, Icon, Tooltip } from 'choerodon-ui';
 import './index.less';
 import AvatarUploader from '../../../components/avatarUploader';
+import Tips from '../../../components/new-tips';
 
 const { Option } = Select;
 const InfoForm = observer(({
@@ -95,6 +96,11 @@ const InfoForm = observer(({
         {hasRegister && dataSet.current && dataSet.current.get('registerEnabled') && (
           <TextArea resize="vertical" name="registerUrl" />
         )}
+        <Tips
+          title="是否自动清理邮件日志"
+          helpText="若选择自动清理平台中邮件日志后，系统将在每天凌晨2点自动清理超出“保留时间”的邮件日志"
+          className="c7n-system-setting-infoForm-label"
+        />
         <SelectBox name="autoCleanEmailRecord">
           <SelectBox.Option value>是</SelectBox.Option>
           <SelectBox.Option value={false}>否</SelectBox.Option>
@@ -103,8 +109,14 @@ const InfoForm = observer(({
           <NumberField
             name="autoCleanEmailRecordInterval"
             suffix={<span className="c7n-system-setting-infoForm-suffix">天</span>}
+            addonAfter={<Tips helpText="若将日志保留时间设置为180天，即表示每天会自动清除180天之前的日志" />}
           />
         )}
+        <Tips
+          title="是否自动清理Webhook日志"
+          helpText="若选择自动清理平台中Webhook日志后，系统将在每天凌晨2点自动清理超出“保留时间”的Webhook日志"
+          className="c7n-system-setting-infoForm-label"
+        />
         <SelectBox name="autoCleanWebhookRecord">
           <SelectBox.Option value>是</SelectBox.Option>
           <SelectBox.Option value={false}>否</SelectBox.Option>
@@ -113,6 +125,7 @@ const InfoForm = observer(({
           <NumberField
             name="autoCleanWebhookRecordInterval"
             suffix={<span className="c7n-system-setting-infoForm-suffix">天</span>}
+            addonAfter={<Tips helpText="若将日志保留时间设置为180天，即表示每天会自动清除180天之前的日志" />}
           />
         )}
       </Form>

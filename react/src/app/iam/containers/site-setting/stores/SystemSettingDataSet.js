@@ -78,8 +78,8 @@ export default ({ id = 0, hasRegister }) => {
       { name: 'systemLogo', type: 'string', label: '平台导航栏图形标' },
       { name: 'defaultPassword', type: 'string', label: '平台默认密码' },
       { name: 'themeColor', type: 'string', label: '系统主题色' },
-      { name: 'autoCleanEmailRecord', type: 'boolean', label: '是否自动清理邮件日志' },
-      { name: 'autoCleanWebhookRecord', type: 'boolean', label: '是否自动清理webhook日志' },
+      { name: 'autoCleanEmailRecord', type: 'boolean' },
+      { name: 'autoCleanWebhookRecord', type: 'boolean' },
       {
         name: 'autoCleanEmailRecordInterval',
         type: 'number',

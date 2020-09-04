@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+import { axios } from '@choerodon/boot';
 
 function handleLoad({ dataSet }) {
   const record = dataSet.current;
@@ -10,34 +11,34 @@ function handleLoad({ dataSet }) {
   }
 }
 
-export default ({ level, roleId, roleLabelsDs, organizationId, menuDs }) => {
-  const codeValidator = (value, name, record) => {
+export default ({
+  level, roleId, roleLabelsDs, organizationId, menuDs, formatMessage,
+}) => {
+  const codeValidator = async (value, name, record) => {
     if (record.status !== 'add') {
       return true;
     }
+    const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (!value) {
-      return '编码必输。';
+      return formatMessage({ id: 'organization.role.code.require.msg' });
     }
-    if (value.trim() === '') {
-      return '编码不能全为空格。';
+    if (!pa.test(value)) {
+      return formatMessage({ id: 'organization.role.code.pattern.msg' });
     }
-    if (value.length > 64) {
-      return '编码长度不能超过64！';
-    } else if (value.trim() === '') {
-      return '编码不能全为空！';
-    }
-    const reg = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (!reg.test(value)) {
-      return '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾。';
+    try {
+      const res = await axios.get(`/iam/choerodon/v1/organizations/${organizationId}/roles/check_code_exist?code=${value}`);
+      if (res) {
+        return formatMessage({ id: 'organization.role.code.exist.msg' });
+      }
+      return true;
+    } catch (err) {
+      return '角色编码校验失败，请稍后再试';
     }
   };
 
   const nameValidator = (value) => {
     if (!value) {
-      return '编码必输。';
-    }
-    if (value.trim() === '') {
-      return '编码不能全为空格。';
+      return formatMessage({ id: 'organization.role.name.require.msg' });
     }
     return true;
   };
@@ -55,10 +56,18 @@ export default ({ level, roleId, roleLabelsDs, organizationId, menuDs }) => {
       },
     },
     fields: [
-      { name: 'name', type: 'string', label: '角色名称', required: true, validator: nameValidator },
-      { name: 'code', type: 'string', label: '角色编码', required: true, validator: codeValidator },
-      { name: 'roleLevel', type: 'string', label: '层级', defaultValue: level },
-      { name: 'roleLabels', type: 'object', label: 'GitLab角色标签', textField: 'name', valueField: 'id', required: level === 'project', options: roleLabelsDs },
+      {
+        name: 'name', type: 'string', label: '角色名称', required: true, validator: nameValidator,
+      },
+      {
+        name: 'code', type: 'string', label: '角色编码', required: true, validator: codeValidator,
+      },
+      {
+        name: 'roleLevel', type: 'string', label: '层级', defaultValue: level,
+      },
+      {
+        name: 'roleLabels', type: 'object', label: 'GitLab角色标签', textField: 'name', valueField: 'id', required: level === 'project', options: roleLabelsDs,
+      },
     ],
     events: {
       load: handleLoad,

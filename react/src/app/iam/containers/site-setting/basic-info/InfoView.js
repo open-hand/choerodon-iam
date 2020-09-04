@@ -157,8 +157,8 @@ const InfoView = observer(() => {
             {hasRegister && dataSet.current && dataSet.current.getPristineValue('registerEnabled') && (
               <Output renderer={() => (dataSet.current && dataSet.current.getPristineValue('registerUrl')) || '无'} name="registerUrl" />
             )}
-            <Output renderer={renderBoolean} name="autoCleanEmailRecord" newLine />
-            <Output renderer={renderBoolean} name="autoCleanWebhookRecord" newLine />
+            <Output renderer={renderBoolean} name="autoCleanEmailRecord" newLine label="是否自动清理邮件日志" />
+            <Output renderer={renderBoolean} name="autoCleanWebhookRecord" newLine label="是否自动清理webhook日志" />
           </Form>
         </div>
 

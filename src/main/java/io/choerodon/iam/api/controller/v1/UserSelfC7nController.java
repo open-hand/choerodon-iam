@@ -1,11 +1,8 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -21,8 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.List;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -83,4 +84,5 @@ public class UserSelfC7nController extends BaseController {
         userC7nService.switchSite();
         return ResponseEntity.noContent().build();
     }
+
 }

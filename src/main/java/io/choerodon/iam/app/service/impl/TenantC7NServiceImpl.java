@@ -20,6 +20,9 @@ import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
@@ -195,8 +198,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params));
+    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -214,6 +217,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                             tenantVO.setOwnerPhone(user.getPhone());
                             tenantVO.setOwnerLoginName(user.getLoginName());
                         }
+                    }
+                    //如果是注册组织，并且已经过期，则显示延期的按钮
+                    if (tenantConfigVO.getRegister() && LocalDateTime.now().minusDays(30).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                        tenantVO.setDelay(true);
                     }
                 }
         );

@@ -51,6 +51,9 @@ public class QuickLinkDTO extends AuditDomain {
     @NotEmpty
     private String scope;
 
+    @ApiModelProperty(value = "是否置顶")
+    private Boolean top;
+
     public Long getId() {
         return id;
     }
@@ -97,5 +100,13 @@ public class QuickLinkDTO extends AuditDomain {
 
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    public Boolean getTop() {
+        return top;
+    }
+
+    public void setTop(Boolean top) {
+        this.top = top;
     }
 }

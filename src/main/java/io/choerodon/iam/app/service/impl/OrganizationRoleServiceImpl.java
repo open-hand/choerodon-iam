@@ -1,34 +1,40 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.constant.MisConstants;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.MenuC7nMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.iam.infra.utils.ConvertUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.HiamMenuType;
 import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.iam.infra.mapper.LabelRelMapper;
+import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.constant.ResourceCheckConstants;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.MenuC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.ConvertUtils;
 
 /**
  * 〈功能简述〉
@@ -42,36 +48,30 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
 
     private static final String ERROR_BUILT_IN_ROLE_NOT_BE_EDIT = "error.built.in.role.not.be.edit";
     private static final String ERROR_ROLE_ID_NOT_BE_NULL = "error.role.id.not.be.null";
+    private static final String DELETE_ENABLED_ROLE_FAILED = "delete.enabled.role.failed";
 
+    @Autowired
     private RoleCreateInternalService roleCreateInternalService;
+    @Autowired
     private RoleService roleService;
+    @Autowired
     private LabelC7nService labelC7nService;
+    @Autowired
     private RolePermissionC7nService rolePermissionC7nService;
+    @Autowired
     private RoleC7nMapper roleC7nMapper;
+    @Autowired
     private RoleC7nService roleC7nService;
+    @Autowired
     private RoleMapper roleMapper;
+    @Autowired
     private MenuC7nService menuC7nService;
+    @Autowired
     private MenuC7nMapper menuC7nMapper;
-
-    public OrganizationRoleServiceImpl(RoleCreateInternalService roleCreateInternalService,
-                                       RoleService roleService,
-                                       LabelC7nService labelC7nService,
-                                       RolePermissionC7nService rolePermissionC7nService,
-                                       RoleC7nMapper roleC7nMapper,
-                                       RoleC7nService roleC7nService,
-                                       RoleMapper roleMapper,
-                                       MenuC7nService menuC7nService,
-                                       MenuC7nMapper menuC7nMapper) {
-        this.roleCreateInternalService = roleCreateInternalService;
-        this.roleService = roleService;
-        this.labelC7nService = labelC7nService;
-        this.rolePermissionC7nService = rolePermissionC7nService;
-        this.roleC7nMapper = roleC7nMapper;
-        this.roleC7nService = roleC7nService;
-        this.roleMapper = roleMapper;
-        this.menuC7nService = menuC7nService;
-        this.menuC7nMapper = menuC7nMapper;
-    }
+    @Autowired
+    private MemberRoleMapper memberRoleMapper;
+    @Autowired
+    private LabelRelMapper labelRelMapper;
 
     @Override
     @Transactional
@@ -206,6 +206,42 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
 
         roleVO.setMenuList(menus);
         return roleVO;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long organizationId, Long roleId) {
+        Assert.notNull(roleId, ERROR_ROLE_ID_NOT_BE_NULL);
+        Assert.notNull(organizationId, ResourceCheckConstants.ERROR_ORGANIZATION_ID_IS_NULL);
+        // 数据权限校验
+        Role role = roleMapper.selectByPrimaryKey(roleId);
+        CommonExAssertUtil.assertTrue(organizationId.equals(role.getTenantId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        // 启用状态角色不可删除
+        if (Boolean.TRUE.equals(role.getEnabled())) {
+            throw new CommonException(DELETE_ENABLED_ROLE_FAILED);
+        }
+        // 1. 删除用户角色关系
+        MemberRole memberRole = new MemberRole();
+        memberRole.setRoleId(roleId);
+        memberRoleMapper.delete(memberRole);
+        // 2. 删除角色标签关系
+        LabelRel labelRel = new LabelRel();
+        labelRel.setDataType("ROLE");
+        labelRel.setDataId(roleId);
+        labelRelMapper.delete(labelRel);
+        // 3. 删除角色权限
+        rolePermissionC7nService.deleteByRoleId(roleId);
+        // 4. 删除角色
+        roleMapper.deleteByPrimaryKey(roleId);
+
+    }
+
+    @Override
+    public Boolean checkCodeExist(Long organizationId, String code) {
+        Role role = new Role();
+        role.setTenantId(organizationId);
+        role.setCode(code);
+        return !CollectionUtils.isEmpty(roleMapper.select(role));
     }
 
     /**

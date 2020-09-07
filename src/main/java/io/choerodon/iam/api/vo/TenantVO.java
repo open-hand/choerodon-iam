@@ -37,6 +37,16 @@ public class TenantVO extends Tenant {
 
     private Boolean isInto = false;
 
+    private Boolean isDelay = false;
+
+    public Boolean getDelay() {
+        return isDelay;
+    }
+
+    public void setDelay(Boolean delay) {
+        isDelay = delay;
+    }
+
     public Boolean getInto() {
         return isInto;
     }

@@ -386,7 +386,8 @@ public class ProjectUserServiceImpl implements ProjectUserService {
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefId(projectId + "")
                         .withRefType(ResourceLevel.PROJECT.value())
-                        .withSagaCode(PROJECT_IMPORT_USER),
+                        .withSagaCode(PROJECT_IMPORT_USER)
+                        .withSourceId(projectId),
                 builder -> {
                     builder
                             .withPayloadAndSerialize(projectUserDTOList)

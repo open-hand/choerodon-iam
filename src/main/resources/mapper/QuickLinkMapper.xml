@@ -2,56 +2,80 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.QuickLinkMapper">
 
-     <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO" autoMapping="true">
+    <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="projectName" column="project_name"/>
+        <result property="linkUrl" column="link_url"/>
+        <result property="scope" column="scope"/>
+        <result property="top" column="top"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="projectId" column="project_id"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="creation_date" property="creationDate"/>
+        <result column="last_updated_by" property="lastUpdatedBy"/>
+        <result column="last_update_date" property="lastUpdateDate"/>
+
         <association property="user" javaType="org.hzero.iam.domain.entity.User">
             <id property="id" column="user_id"/>
             <result property="loginName" column="login_name"/>
             <result property="realName" column="real_name"/>
             <result property="imageUrl" column="image_url"/>
         </association>
-      </resultMap>
-    <select id="queryByPids" resultMap="quickLinkMap">
+    </resultMap>
+
+    <select id="querySelf" resultMap="quickLinkMap">
         SELECT
-          fql.*,
-          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
-          case when fql.scope='self' then 1 else 0 end as sort
+        fql.*,
+        iu.id as user_id, iu.login_name, iu.real_name, iu.image_url
         FROM fd_quick_link fql
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
         <where>
-            <if test="projectId == null">
-                 (fql.create_user_id = #{userId} AND fql.scope = 'self')
-                 <if test="pIds != null and pIds.size() != 0">
-                     OR (fql.scope = 'project'
-                     AND fql.project_id IN
-                         <foreach collection="pIds" index="i" item="pid" open="(" separator="," close=")">
-                             #{pid}
-                        </foreach>
-                        )
-                 </if>
-            </if>
-            <if test="projectId != null">
-                 (fql.project_id = #{projectId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
-            </if>
+            fql.create_user_id = #{userId} AND fql.scope = 'self'
         </where>
-        ORDER BY sort DESC
+        ORDER BY top DESC, id DESC
     </select>
-    <select id="queryAll" resultMap="quickLinkMap">
+    <select id="queryProjectByPids" resultMap="quickLinkMap">
         SELECT
-          fql.*,
-          iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
-          case when fql.scope='self' then 1 else 0 end as sort
+        fql.*,
+        iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
+        fp.name AS project_name
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
         <where>
-            <if test="projectId == null">
-                 (fp.ORGANIZATION_ID = #{organizationId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
+            fql.scope = 'project'
+            <if test="projectId == null and pIds != null and pIds.size() != 0">
+                AND fql.project_id IN
+                <foreach collection="pIds" index="i" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
             </if>
             <if test="projectId != null">
-                 (fql.project_id = #{projectId} AND fql.scope = 'project') OR (fql.create_user_id = #{userId} AND fql.scope = 'self')
+                AND fql.project_id = #{projectId}
             </if>
         </where>
-        ORDER BY sort DESC
+        ORDER BY top DESC, id DESC
+    </select>
+    <select id="queryAllProject" resultMap="quickLinkMap">
+        SELECT
+        fql.*,
+        iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
+        fp.name AS project_name
+        FROM fd_quick_link fql
+        LEFT JOIN fd_project fp ON fp.id = fql.project_id
+        INNER JOIN iam_user iu ON iu.id = fql.create_user_id
+        <where>
+            fql.scope = 'project'
+            <if test="projectId == null">
+                AND fp.ORGANIZATION_ID = #{organizationId}
+            </if>
+            <if test="projectId != null">
+                AND fql.project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY top DESC, id DESC
     </select>
 
 </mapper>

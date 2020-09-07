@@ -28,6 +28,12 @@ public interface AsgardFeignClient {
     ResponseEntity<QuartzTask> createOrgTask(@PathVariable("organization_id") long organizationId,
                                              @RequestBody ScheduleTaskDTO scheduleTaskDTO);
 
+    @PostMapping("/v1/schedules/tasks")
+    ResponseEntity<QuartzTask> createSiteTask(@RequestBody ScheduleTaskDTO scheduleTaskDTO);
+
+    @DeleteMapping("/v1/schedules/tasks/name")
+    ResponseEntity<QuartzTask> deleteSiteTask(@RequestParam(value = "name") String name);
+
 
     @DeleteMapping("/v1/schedules/organizations/{organization_id}/tasks/{id}")
     void deleteOrgTask(@PathVariable("organization_id") long orgId,
@@ -48,6 +54,9 @@ public interface AsgardFeignClient {
     @GetMapping("/v1/schedules/organizations/{organization_id}/methods/service")
     ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(@PathVariable("organization_id") long orgId,
                                                                @RequestParam(value = "service") String service);
+
+    @GetMapping("/v1/schedules/methods/service")
+    ResponseEntity<List<ScheduleMethodDTO>> getMethodByServiceSite(@RequestParam(value = "service") String service);
 
     @PutMapping("/v1/sagas/tasks/instances/{id}/retry")
     void retry(@PathVariable("id") long id);

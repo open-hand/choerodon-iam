@@ -20,5 +20,11 @@ public interface QuickLinkService {
 
     void delete(Long organizationId, Long id);
 
-    Page<QuickLinkVO> query(Long organizationId, Long projectId, PageRequest pageable);
+    Page<QuickLinkVO> querySelf(Long organizationId, PageRequest pageable);
+
+    Page<QuickLinkVO> queryProject(Long organizationId, Long projectId, PageRequest pageable);
+
+    void addTop(Long organizationId, Long id);
+
+    void deleteTop(Long organizationId, Long id);
 }

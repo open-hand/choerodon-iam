@@ -174,7 +174,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public User updateInfo(User user, Boolean checkLogin) {
         if (checkLogin) {
             checkLoginUser(user.getId());

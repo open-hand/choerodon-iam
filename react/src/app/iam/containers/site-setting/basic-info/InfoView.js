@@ -159,6 +159,7 @@ const InfoView = observer(() => {
             )}
             <Output renderer={renderBoolean} name="autoCleanEmailRecord" newLine label="是否自动清理邮件日志" />
             <Output renderer={renderBoolean} name="autoCleanWebhookRecord" newLine label="是否自动清理webhook日志" />
+            <Output renderer={renderBoolean} name="autoCleanAsgardRecord" newLine label="是否自动清理事务记录" />
           </Form>
         </div>
 

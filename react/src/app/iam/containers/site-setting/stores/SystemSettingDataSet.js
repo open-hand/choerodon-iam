@@ -26,6 +26,8 @@ export default ({ id = 0, hasRegister }) => {
             registerEnabled,
             autoCleanEmailRecord,
             autoCleanWebhookRecord,
+            autoCleanAsgardRecord,
+            keepFailedRecord,
           } = parseData || {};
           const dft = {
             systemName: systemName || 'Choerodon',
@@ -35,6 +37,8 @@ export default ({ id = 0, hasRegister }) => {
             registerEnabled: registerEnabled || false,
             autoCleanEmailRecord: autoCleanEmailRecord || false,
             autoCleanWebhookRecord: autoCleanWebhookRecord || false,
+            autoCleanAsgardRecord: autoCleanAsgardRecord || false,
+            keepFailedRecord: keepFailedRecord !== false,
           };
           if (data === '{}') {
             return ({ new: true, ...dft });
@@ -52,6 +56,9 @@ export default ({ id = 0, hasRegister }) => {
         }
         if (!data.autoCleanWebhookRecord && data.autoCleanWebhookRecordInterval) {
           postData.autoCleanWebhookRecordInterval = null;
+        }
+        if (!data.autoCleanAsgardRecord && data.autoCleanAsgardRecordInterval) {
+          postData.autoCleanAsgardRecordInterval = null;
         }
         return ({
           url: '/iam/choerodon/v1/system/setting',
@@ -80,6 +87,7 @@ export default ({ id = 0, hasRegister }) => {
       { name: 'themeColor', type: 'string', label: '系统主题色' },
       { name: 'autoCleanEmailRecord', type: 'boolean' },
       { name: 'autoCleanWebhookRecord', type: 'boolean' },
+      { name: 'autoCleanAsgardRecord', type: 'boolean' },
       {
         name: 'autoCleanEmailRecordInterval',
         type: 'number',
@@ -97,6 +105,20 @@ export default ({ id = 0, hasRegister }) => {
         min: 1,
         max: 1000,
         dynamicProps: ({ record }) => ({ required: record.get('autoCleanWebhookRecord') }),
+      },
+      {
+        name: 'autoCleanAsgardRecordInterval',
+        type: 'number',
+        label: '记录保留时间',
+        step: 1,
+        min: 1,
+        max: 1000,
+        dynamicProps: ({ record }) => ({ required: record.get('autoCleanAsgardRecord') }),
+      },
+      {
+        name: 'keepFailedRecord',
+        type: 'boolean',
+        defaultValue: true,
       },
       ...fields,
     ],

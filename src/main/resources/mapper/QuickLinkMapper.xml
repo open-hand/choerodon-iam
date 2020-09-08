@@ -34,7 +34,7 @@
         <where>
             fql.create_user_id = #{userId} AND fql.scope = 'self'
         </where>
-        ORDER BY top DESC, id DESC
+        ORDER BY top DESC, last_update_date DESC
     </select>
     <select id="queryProjectByPids" resultMap="quickLinkMap">
         SELECT
@@ -56,7 +56,7 @@
                 AND fql.project_id = #{projectId}
             </if>
         </where>
-        ORDER BY top DESC, id DESC
+        ORDER BY top DESC, last_update_date DESC
     </select>
     <select id="queryAllProject" resultMap="quickLinkMap">
         SELECT
@@ -75,7 +75,7 @@
                 AND fql.project_id = #{projectId}
             </if>
         </where>
-        ORDER BY top DESC, id DESC
+        ORDER BY top DESC, last_update_date DESC
     </select>
 
 </mapper>

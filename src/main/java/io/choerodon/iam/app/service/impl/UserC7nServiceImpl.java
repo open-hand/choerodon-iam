@@ -181,14 +181,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
         User dto;
         UserEventPayload userEventPayload = new UserEventPayload();
-        //跟新固定的字段
-        userRepository.updateOptional(user,
-                User.FIELD_REAL_NAME,
-                User.FIELD_EMAIL,
-                User.FIELD_PHONE,
-                User.DEFAULT_LANGUAGE,
-                User.DEFAULT_TIME_ZONE,
-                User.FIELD_IMAGE_URL);
+        dto = userService.updateUser(user);
+        // hzero update 不更新imageUrl
+        User imageUser = new User();
+        imageUser.setId(dto.getId());
+        imageUser.setImageUrl(user.getImageUrl());
+        imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
+        userMapper.updateByPrimaryKeySelective(imageUser);
         dto = userRepository.selectByPrimaryKey(user.getId());
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());

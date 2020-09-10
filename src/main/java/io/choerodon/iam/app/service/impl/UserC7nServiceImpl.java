@@ -187,7 +187,8 @@ public class UserC7nServiceImpl implements UserC7nService {
                 User.FIELD_EMAIL,
                 User.FIELD_PHONE,
                 User.DEFAULT_LANGUAGE,
-                User.DEFAULT_TIME_ZONE);
+                User.DEFAULT_TIME_ZONE,
+                User.FIELD_IMAGE_URL);
         dto = userRepository.selectByPrimaryKey(user.getId());
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());

@@ -1,8 +1,12 @@
-import React, { Component, useState, useContext, useEffect, Fragment } from 'react';
+import React, {
+  Component, useState, useContext, useEffect, Fragment, useMemo,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Divider } from 'choerodon-ui';
 import { message, Modal, TextField } from 'choerodon-ui/pro';
-import { axios, Content, Header, TabPage as Page, Breadcrumb, Permission, Choerodon } from '@choerodon/boot';
+import {
+  axios, Content, Header, TabPage as Page, Breadcrumb, Permission, Choerodon,
+} from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import GeneralSettingContext, { ContextProvider } from './stores';
 import './GeneralSetting.less';
@@ -11,11 +15,15 @@ import '../../common/ConfirmModal.scss';
 import Edit from './components/edit';
 
 const GeneralSetting = observer(() => {
-  const { store, AppState, intl: { formatMessage }, intlPrefix, prefixCls, history } = useContext(GeneralSettingContext);
+  const {
+    store, AppState, intl: { formatMessage }, intlPrefix, prefixCls, history,
+  } = useContext(GeneralSettingContext);
   const [editing, setEditing] = useState(false);
   const [categoryEnabled, setCategoryEnabled] = useState(false);
-  const [isOPERATIONS, setIsOPERATIONS] = useState(false);
-  const { id: projectId, name: projectName, organizationId } = AppState.currentMenuType;
+  const {
+    id: projectId, name: projectName, organizationId, category: ProjectCategory,
+  } = AppState.currentMenuType;
+  const isOPERATIONS = useMemo(() => ProjectCategory === 'OPERATIONS', [ProjectCategory]);
   const loadEnableCategory = () => {
     axios.get('/iam/choerodon/v1/system/setting/enable_category')
       .then((response) => {
@@ -43,10 +51,6 @@ const GeneralSetting = observer(() => {
   };
 
   useEffect(() => {
-    const pattern = new URLSearchParams(window.location.hash);
-    if (pattern.get('category') === 'OPERATIONS') {
-      setIsOPERATIONS(true);
-    }
     loadEnableCategory();
     loadProject();
     loadProjectTypes();
@@ -66,7 +70,7 @@ const GeneralSetting = observer(() => {
 
   function handleDisable() {
     const { category, categories, name } = store.getProjectInfo;
-    const isSubProject = categories.some(c => c.code === 'PROGRAM_PROJECT');
+    const isSubProject = categories.some((c) => c.code === 'PROGRAM_PROJECT');
     const okProps = {
       disabled: true,
       color: 'red',
@@ -78,7 +82,7 @@ const GeneralSetting = observer(() => {
       let extraMessage;
       if (category === 'PROGRAM') {
         extraMessage = (
-          <Fragment>
+          <>
             <div className="c7n-projects-enable-tips">
               {formatMessage({ id: 'project.info.disable.program.tips' })}
             </div>
@@ -101,7 +105,7 @@ const GeneralSetting = observer(() => {
                 });
               }}
             />
-          </Fragment>
+          </>
         );
       } else if (isSubProject) {
         extraMessage = (
@@ -139,7 +143,8 @@ const GeneralSetting = observer(() => {
         okProps,
         okText: '我已经知道后果，停用此项目',
         closable: true,
-        footer: okBtn => okBtn,
+        footer: (okBtn) => okBtn,
+        // eslint-disable-next-line consistent-return
         onOk: async () => {
           try {
             const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
@@ -159,6 +164,7 @@ const GeneralSetting = observer(() => {
         className: 'c7n-iam-confirm-modal',
         title: formatMessage({ id: 'project.info.disable.title' }),
         children: <ModalContent />,
+        // eslint-disable-next-line consistent-return
         onOk: async () => {
           try {
             const result = await axios.put(`/iam/choerodon/v1/organizations/${organizationId}/projects/${projectId}/disable`);
@@ -177,7 +183,9 @@ const GeneralSetting = observer(() => {
     }
   }
 
-  const { enabled, name, code, agileProjectCode, categories = [], creationDate, createUserName } = store.getProjectInfo;
+  const {
+    enabled, name, code, agileProjectCode, categories = [], creationDate, createUserName,
+  } = store.getProjectInfo;
   const imageUrl = store.getImageUrl;
   return (
     <Page
@@ -231,7 +239,7 @@ const GeneralSetting = observer(() => {
                     {formatMessage({ id: `${intlPrefix}.category` })}
                   </div>
                   <div className={`${prefixCls}-section-item-content`}>
-                    {(categories || []).map(c => c.name).join(',')}
+                    {(categories || []).map((c) => c.name).join(',')}
                   </div>
                 </div>
                 <div className={`${prefixCls}-section-item`}>
@@ -277,7 +285,7 @@ const GeneralSetting = observer(() => {
           </div>
           {
             !isOPERATIONS && (
-              <React.Fragment>
+              <>
                 <Divider />
                 <section className={`${prefixCls}-section`}>
                   <div className={`${prefixCls}-section-title`}>
@@ -294,7 +302,7 @@ const GeneralSetting = observer(() => {
                     </div>
                   </div>
                 </section>
-              </React.Fragment>
+              </>
             )
           }
         </div>
@@ -308,7 +316,6 @@ const GeneralSetting = observer(() => {
     </Page>
   );
 });
-
 
 export default function Index(props) {
   return (

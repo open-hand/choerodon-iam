@@ -39,7 +39,7 @@ function UserInfo(props) {
 
   function renderAvatar({ id, realName }) {
     const image = avatar && {
-      backgroundImage: `url(${Choerodon.fileServer(avatar)})`,
+      backgroundImage: `url('${Choerodon.fileServer(avatar)}')`,
     };
     return (
       <div className={`${prefixCls}-avatar-wrap`}>

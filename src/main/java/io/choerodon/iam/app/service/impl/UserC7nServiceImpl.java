@@ -182,14 +182,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         User dto;
         UserEventPayload userEventPayload = new UserEventPayload();
         dto = userService.updateUser(user);
-
         // hzero update 不更新imageUrl
         User imageUser = new User();
         imageUser.setId(dto.getId());
         imageUser.setImageUrl(user.getImageUrl());
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
-
+        dto = userRepository.selectByPrimaryKey(user.getId());
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());
         userEventPayload.setName(dto.getRealName());

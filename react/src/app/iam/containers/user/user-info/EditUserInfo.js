@@ -59,12 +59,12 @@ function EditUserInfo(props) {
             Choerodon.prompt(data.message);
           } else {
             form.resetFields();
-            UserInfoStore.setUserInfo(data);
-            // 父页面头像更新  可以通过Store 进行更新
-            resetAvatar(avatar);
+            // UserInfoStore.setUserInfo(data);
+            // // 父页面头像更新  可以通过Store 进行更新
+            // resetAvatar(avatar);
             Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
             // setSubmitting(false);
-            // props.loadUserInfo();
+            props.loadUserInfo();
             props.modal.close();
           }
         }).catch(() => {

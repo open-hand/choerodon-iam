@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Table, Icon, Button, message, Modal, Row, Col } from 'choerodon-ui/pro';
+import {
+  Table, Icon, Button, message, Modal, Row, Col,
+} from 'choerodon-ui/pro';
 import { Modal as OldModal } from 'choerodon-ui';
-import { Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb } from '@choerodon/boot';
-import { useContext } from 'react';
+import {
+  Content, Header, Page, axios, Action, Permission, TabPage, Breadcrumb,
+} from '@choerodon/boot';
+
 import { FormattedMessage } from 'react-intl';
-import Store from './store';
-import { StoreProvider } from './store';
+import Store, { StoreProvider } from './store';
+
 import EditRecord from './editRecord';
 import CreateRecord from './createRecord';
 import EditRole from './editRole';
@@ -14,7 +18,9 @@ import EditRole from './editRole';
 const { Column } = Table;
 
 const Client = observer(() => {
-  const { clientDataSet, optionsDataSet, orgId, clientStore } = useContext(Store);
+  const {
+    clientDataSet, optionsDataSet, orgId, clientStore,
+  } = useContext(Store);
   const [editModal, setEditModal] = useState(false);
   const [createModal, setCreateModal] = useState(false);
   const [editRoleModal, setEditRoleModal] = useState(false);
@@ -47,9 +53,10 @@ const Client = observer(() => {
   async function handleDelete(record) {
     OldModal.confirm({
       className: 'c7n-iam-confirm-modal',
-      title: '确认删除客户端',
+      title: '删除客户端',
       content: `确认删除客户端"${record.get('name')}"吗？`,
       maskClosable: false,
+      okText: '删除',
       onOk: async () => {
         try {
           await axios.delete(`/iam/choerodon/v1/organizations/${orgId}/clients/${record.get('id')}`);
@@ -85,7 +92,7 @@ const Client = observer(() => {
         service={['choerodon.code.organization.setting.client.ps.update']}
         defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{text}</span>)}
       >
-        <span className="link" onClick={() => handleRowClick(record)}>
+        <span role="none" className="link" onClick={() => handleRowClick(record)}>
           {text}
         </span>
       </Permission>
@@ -95,7 +102,11 @@ const Client = observer(() => {
     <TabPage service={['choerodon.code.organization.setting.client.ps.default']}>
       <Header>
         <Permission service={['choerodon.code.organization.setting.client.ps.add']}>
-          <Button color="blue" onClick={openCreateRecordModal}><Icon type="playlist_add" /> 添加客户端</Button>
+          <Button color="blue" onClick={openCreateRecordModal}>
+            <Icon type="playlist_add" />
+            {' '}
+            添加客户端
+          </Button>
         </Permission>
       </Header>
       <Breadcrumb />
@@ -105,9 +116,36 @@ const Client = observer(() => {
           <Column width={50} renderer={renderAction} />
           <Column name="authorizedGrantTypes" width={500} />
         </Table>
-        {editModal && <EditRecord onOk={() => setEditModal(false)} onCancel={() => setEditModal(false)} dataSet={clientDataSet} record={clientDataSet.current} clientStore={clientStore} />}
-        {createModal && <CreateRecord onOk={() => setCreateModal(false)} onCancel={() => setCreateModal(false)} dataSet={clientDataSet} />}
-        {editRoleModal && <EditRole optionsDataSet={optionsDataSet} organizationId={orgId} onOk={() => setEditRoleModal(false)} onCancel={() => setEditRoleModal(false)} ds={clientDataSet} dataSet={optionsDataSet} record={clientDataSet.current} />}
+        {editModal
+        && (
+        <EditRecord
+          onOk={() => setEditModal(false)}
+          onCancel={() => setEditModal(false)}
+          dataSet={clientDataSet}
+          record={clientDataSet.current}
+          clientStore={clientStore}
+        />
+        )}
+        {createModal
+        && (
+        <CreateRecord
+          onOk={() => setCreateModal(false)}
+          onCancel={() => setCreateModal(false)}
+          dataSet={clientDataSet}
+        />
+        )}
+        {editRoleModal
+        && (
+        <EditRole
+          optionsDataSet={optionsDataSet}
+          organizationId={orgId}
+          onOk={() => setEditRoleModal(false)}
+          onCancel={() => setEditRoleModal(false)}
+          ds={clientDataSet}
+          dataSet={optionsDataSet}
+          record={clientDataSet.current}
+        />
+        )}
       </Content>
     </TabPage>
   );

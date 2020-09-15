@@ -108,6 +108,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
+    @Lazy
     private UserService userService;
     @Autowired
     private TransactionalProducer producer;

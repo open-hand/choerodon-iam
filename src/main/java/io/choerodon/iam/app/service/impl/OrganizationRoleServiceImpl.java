@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
+//import org.hzero.iam.domain.service.role.impl.RoleCreateInternalService;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.HiamMenuType;
 import org.hzero.iam.infra.constant.RolePermissionType;
@@ -49,9 +49,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private static final String ERROR_BUILT_IN_ROLE_NOT_BE_EDIT = "error.built.in.role.not.be.edit";
     private static final String ERROR_ROLE_ID_NOT_BE_NULL = "error.role.id.not.be.null";
     private static final String DELETE_ENABLED_ROLE_FAILED = "delete.enabled.role.failed";
-
-    @Autowired
-    private RoleCreateInternalService roleCreateInternalService;
+    // todo scp hzero没有该类了
+//    @Autowired
+//    private RoleCreateInternalService roleCreateInternalService;
     @Autowired
     private RoleService roleService;
     @Autowired
@@ -93,16 +93,16 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         User adminUser = new User();
         adminUser.setId(details.getUserId());
         roleVO.setTenantId(organizationId);
-        Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
+//        Role role = roleCreateInternalService.createRole(roleVO, adminUser, false, false);
 
-
-        // 分配权限集
-        // 默认分配个人信息权限集
-
-        Set<Long> psIds = listUserInfoPsIds();
-
-        roleVO.getMenuIdList().addAll(psIds);
-        assignRolePermission(role.getId(), roleVO.getMenuIdList());
+//
+//        // 分配权限集
+//        // 默认分配个人信息权限集
+//
+//        Set<Long> psIds = listUserInfoPsIds();
+//
+//        roleVO.getMenuIdList().addAll(psIds);
+//        assignRolePermission(role.getId(), roleVO.getMenuIdList());
     }
 
     private Set<Long> listUserInfoPsIds() {

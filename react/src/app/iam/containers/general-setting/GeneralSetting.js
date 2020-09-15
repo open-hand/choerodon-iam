@@ -7,6 +7,8 @@ import { message, Modal, TextField } from 'choerodon-ui/pro';
 import {
   axios, Content, Header, TabPage as Page, Breadcrumb, Permission, Choerodon,
 } from '@choerodon/boot';
+import queryString from 'query-string';
+import getSearchString from '@choerodon/master/lib/containers/components/c7n/util/gotoSome';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import GeneralSettingContext, { ContextProvider } from './stores';
 import './GeneralSetting.less';
@@ -172,7 +174,9 @@ const GeneralSetting = observer(() => {
               throw result.message;
             } else {
               message.info('停用成功');
-              history.push('/projects');
+              const queryObj = queryString.parse(history.location.search);
+              const search = await getSearchString('organization', 'id', queryObj.organizationId);
+              history.push(`/projects${search}`);
             }
           } catch (err) {
             message.error(err);

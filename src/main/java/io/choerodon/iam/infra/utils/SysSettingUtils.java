@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.iam.api.vo.SysSettingVO;
@@ -56,6 +55,9 @@ public class SysSettingUtils {
         sysSettingVO.setAutoCleanEmailRecordInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD_INTERVAL.value())));
         sysSettingVO.setAutoCleanWebhookRecord(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value())));
         sysSettingVO.setAutoCleanWebhookRecordInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value())));
+        sysSettingVO.setAutoCleanSagaInstance(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value())));
+        sysSettingVO.setAutoCleanSagaInstanceInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value())));
+        sysSettingVO.setRetainFailedSagaInstance(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value())));
         String registerEnabled = settingDTOMap.get(SysSettingEnum.REGISTER_ENABLED.value());
         if (!ObjectUtils.isEmpty(registerEnabled)) {
             sysSettingVO.setRegisterEnabled(Boolean.valueOf(registerEnabled));

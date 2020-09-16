@@ -69,6 +69,17 @@ public enum SysSettingEnum {
      */
     AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL("autoCleanWebhookRecordInterval"),
     /**
+     * 自动清理事务实例记录
+     */
+    AUTO_CLEAN_SAGA_INSTANCE("autoCleanSagaInstance"),
+
+    /**
+     * 自动清理事务实例记录 时间间隔
+     */
+    AUTO_CLEAN_SAGA_INSTANCE_INTERVAL("autoCleanSagaInstanceInterval"),
+
+    RETAIN_FAILED_SAGA_INSTANCE("retainFailedSagaInstance"),
+    /**
      * 平台主题色
      */
     THEME_COLOR("themeColor");

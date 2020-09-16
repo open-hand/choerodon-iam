@@ -128,6 +128,33 @@ const InfoForm = observer(({
             addonAfter={<Tips helpText="若将日志保留时间设置为180天，即表示每天会自动清除180天之前的日志" />}
           />
         )}
+        <Tips
+          title="是否自动清理事务记录"
+          helpText="若选择自动清理平台中事务记录后，系统将在每天凌晨2点自动清理超出“保留时间”的事务记录"
+          className="c7n-system-setting-infoForm-label"
+        />
+        <SelectBox name="autoCleanSagaInstance">
+          <SelectBox.Option value>是</SelectBox.Option>
+          <SelectBox.Option value={false}>否</SelectBox.Option>
+        </SelectBox>
+        {dataSet.current && dataSet.current.get('autoCleanSagaInstance') && (
+          <NumberField
+            name="autoCleanSagaInstanceInterval"
+            suffix={<span className="c7n-system-setting-infoForm-suffix">天</span>}
+            addonAfter={<Tips helpText="若将记录保留时间设置为180天，即表示每天会自动清除180天之前的事务记录" />}
+          />
+        )}
+        {dataSet.current && dataSet.current.get('autoCleanSagaInstance') && ([
+          <Tips
+            title="是否保留失败状态记录"
+            showHelp={false}
+            className="c7n-system-setting-infoForm-label"
+          />,
+          <SelectBox name="retainFailedSagaInstance">
+            <SelectBox.Option value>是</SelectBox.Option>
+            <SelectBox.Option value={false}>否</SelectBox.Option>
+          </SelectBox>,
+        ])}
       </Form>
 
       <AvatarUploader

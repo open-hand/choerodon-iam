@@ -26,6 +26,8 @@ export default ({ id = 0, hasRegister }) => {
             registerEnabled,
             autoCleanEmailRecord,
             autoCleanWebhookRecord,
+            autoCleanSagaInstance,
+            retainFailedSagaInstance,
           } = parseData || {};
           const dft = {
             systemName: systemName || 'Choerodon',
@@ -35,6 +37,8 @@ export default ({ id = 0, hasRegister }) => {
             registerEnabled: registerEnabled || false,
             autoCleanEmailRecord: autoCleanEmailRecord || false,
             autoCleanWebhookRecord: autoCleanWebhookRecord || false,
+            autoCleanSagaInstance: autoCleanSagaInstance || false,
+            retainFailedSagaInstance: retainFailedSagaInstance !== false,
           };
           if (data === '{}') {
             return ({ new: true, ...dft });
@@ -52,6 +56,9 @@ export default ({ id = 0, hasRegister }) => {
         }
         if (!data.autoCleanWebhookRecord && data.autoCleanWebhookRecordInterval) {
           postData.autoCleanWebhookRecordInterval = null;
+        }
+        if (!data.autoCleanSagaInstance && data.autoCleanSagaInstanceInterval) {
+          postData.autoCleanSagaInstanceInterval = null;
         }
         return ({
           url: '/iam/choerodon/v1/system/setting',
@@ -80,6 +87,7 @@ export default ({ id = 0, hasRegister }) => {
       { name: 'themeColor', type: 'string', label: '系统主题色' },
       { name: 'autoCleanEmailRecord', type: 'boolean' },
       { name: 'autoCleanWebhookRecord', type: 'boolean' },
+      { name: 'autoCleanSagaInstance', type: 'boolean' },
       {
         name: 'autoCleanEmailRecordInterval',
         type: 'number',
@@ -97,6 +105,20 @@ export default ({ id = 0, hasRegister }) => {
         min: 1,
         max: 1000,
         dynamicProps: ({ record }) => ({ required: record.get('autoCleanWebhookRecord') }),
+      },
+      {
+        name: 'autoCleanSagaInstanceInterval',
+        type: 'number',
+        label: '记录保留时间',
+        step: 1,
+        min: 1,
+        max: 1000,
+        dynamicProps: ({ record }) => ({ required: record.get('autoCleanSagaInstance') }),
+      },
+      {
+        name: 'retainFailedSagaInstance',
+        type: 'boolean',
+        defaultValue: true,
       },
       ...fields,
     ],

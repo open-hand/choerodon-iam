@@ -60,4 +60,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     changeSet(author: 'superlee', id: '2019-07-18-fd-project-add-remark') {
         setTableRemarks(tableName: "FD_PROJECT", remarks: "项目表")
     }
+
+    changeSet(author: 'scp', id: '2020-09-16-updateDataType') {
+        modifyDataType(tableName: 'FD_PROJECT', columnName: 'NAME', newDataType: 'VARCHAR(110)')
+    }
+
 }

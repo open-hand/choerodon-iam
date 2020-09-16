@@ -72,6 +72,15 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "自动清理webhook发送N天前记录")
     private Integer autoCleanWebhookRecordInterval;
 
+    @ApiModelProperty(value = "自动清理事务实例记录")
+    private Boolean autoCleanSagaInstance;
+
+    @ApiModelProperty(value = "自动清理事务实例记录时间间隔")
+    private Integer autoCleanSagaInstanceInterval;
+
+    @ApiModelProperty(value = "是否保留失败的事务记录")
+    private Boolean retainFailedSagaInstance;
+
     public Boolean getAutoCleanEmailRecord() {
         return autoCleanEmailRecord;
     }
@@ -200,4 +209,27 @@ public class SysSettingVO extends AuditDomain {
         this.themeColor = themeColor;
     }
 
+    public Boolean getAutoCleanSagaInstance() {
+        return autoCleanSagaInstance;
+    }
+
+    public void setAutoCleanSagaInstance(Boolean autoCleanSagaInstance) {
+        this.autoCleanSagaInstance = autoCleanSagaInstance;
+    }
+
+    public Integer getAutoCleanSagaInstanceInterval() {
+        return autoCleanSagaInstanceInterval;
+    }
+
+    public void setAutoCleanSagaInstanceInterval(Integer autoCleanSagaInstanceInterval) {
+        this.autoCleanSagaInstanceInterval = autoCleanSagaInstanceInterval;
+    }
+
+    public Boolean getRetainFailedSagaInstance() {
+        return retainFailedSagaInstance;
+    }
+
+    public void setRetainFailedSagaInstance(Boolean retainFailedSagaInstance) {
+        this.retainFailedSagaInstance = retainFailedSagaInstance;
+    }
 }

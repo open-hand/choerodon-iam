@@ -30,7 +30,7 @@ const InfoView = observer(() => {
   async function handleSave() {
     try {
       if ((await dataSet.submit())) {
-        setTimeout(() => { window.location.reload(true); }, 1000);
+        // setTimeout(() => { window.location.reload(true); }, 1000);
         return true;
       }
       return false;
@@ -159,7 +159,7 @@ const InfoView = observer(() => {
             )}
             <Output renderer={renderBoolean} name="autoCleanEmailRecord" newLine label="是否自动清理邮件日志" />
             <Output renderer={renderBoolean} name="autoCleanWebhookRecord" newLine label="是否自动清理webhook日志" />
-            <Output renderer={renderBoolean} name="autoCleanAsgardRecord" newLine label="是否自动清理事务记录" />
+            <Output renderer={renderBoolean} name="autoCleanSagaInstance" newLine label="是否自动清理事务记录" />
           </Form>
         </div>
 

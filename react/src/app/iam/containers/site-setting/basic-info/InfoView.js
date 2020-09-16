@@ -30,7 +30,7 @@ const InfoView = observer(() => {
   async function handleSave() {
     try {
       if ((await dataSet.submit())) {
-        // setTimeout(() => { window.location.reload(true); }, 1000);
+        setTimeout(() => { window.location.reload(true); }, 1000);
         return true;
       }
       return false;

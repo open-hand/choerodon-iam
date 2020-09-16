@@ -19,6 +19,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang.RandomStringUtils;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.repository.ClientRepository;
@@ -29,6 +30,7 @@ import org.hzero.iam.infra.mapper.ClientMapper;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -54,6 +56,10 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     @Autowired
     private ClientAssertHelper clientAssertHelper;
     @Autowired
+    @Lazy
+    private RoleService roleService;
+    @Autowired
+    @Lazy
     private RoleRepository roleRepository;
     @Autowired
     private MemberRoleMapper memberRoleMapper;
@@ -116,7 +122,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             // 删除 脏数据
             List<Long> tempList = new ArrayList<>(deleteList);
             tempList.forEach(t -> {
-                if (!roleRepository.selectRoleDetails(t).getTenantId().equals(organizationId)) {
+                if (!roleService.selectRoleDetails(t).getTenantId().equals(organizationId)) {
                     MemberRole memberRole = new MemberRole();
                     memberRole.setRoleId(t);
                     memberRole.setMemberId(clientId);

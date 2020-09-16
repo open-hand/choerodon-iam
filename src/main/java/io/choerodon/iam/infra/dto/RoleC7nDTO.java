@@ -16,6 +16,15 @@ import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 public class RoleC7nDTO extends Role {
     private List<Label> labels;
     private String projName;
+    private Integer userCount;
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
 
     @ApiModelProperty(value = "角色列表")
     private List<RoleNameAndEnabledVO> roles;

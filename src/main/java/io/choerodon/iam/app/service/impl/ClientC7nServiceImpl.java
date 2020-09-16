@@ -15,9 +15,11 @@ import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.repository.ClientRepository;
@@ -28,6 +30,7 @@ import org.hzero.iam.infra.mapper.ClientMapper;
 import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -53,6 +56,10 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     @Autowired
     private ClientAssertHelper clientAssertHelper;
     @Autowired
+    @Lazy
+    private RoleService roleService;
+    @Autowired
+    @Lazy
     private RoleRepository roleRepository;
     @Autowired
     private MemberRoleMapper memberRoleMapper;
@@ -94,7 +101,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         Client client = clientRepository.selectByPrimaryKey(clientId);
         CommonExAssertUtil.assertTrue(organizationId.equals(client.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
 
-        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
+        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, null, new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
         //交集，传入的roleId与数据库里存在的roleId相交
         List<Long> intersection = existingRoleIds.stream().filter(newRoleIds::contains).collect(Collectors.toList());
         //传入的roleId与交集的差集为要插入的roleId
@@ -115,7 +122,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             // 删除 脏数据
             List<Long> tempList = new ArrayList<>(deleteList);
             tempList.forEach(t -> {
-                if (!roleRepository.selectById(t).getTenantId().equals(organizationId)) {
+                if (!roleService.selectRoleDetails(t).getTenantId().equals(organizationId)) {
                     MemberRole memberRole = new MemberRole();
                     memberRole.setRoleId(t);
                     memberRole.setMemberId(clientId);

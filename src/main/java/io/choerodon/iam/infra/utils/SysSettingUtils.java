@@ -129,6 +129,13 @@ public class SysSettingUtils {
         if (sysSettingVO.getAutoCleanWebhookRecordInterval() == null) {
             sysSettingVO.setAutoCleanWebhookRecordInterval(DEFAULT_CLEAN_NUM);
         }
+        if (sysSettingVO.getAutoCleanSagaInstanceInterval() == null) {
+            sysSettingVO.setAutoCleanSagaInstanceInterval(DEFAULT_CLEAN_NUM);
+        }
+        settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value(), String.valueOf(sysSettingVO.getAutoCleanSagaInstance()));
+        settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value(), String.valueOf(sysSettingVO.getAutoCleanSagaInstanceInterval()));
+        settingDTOMap.put(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value(), String.valueOf(sysSettingVO.getRetainFailedSagaInstance()));
+
         settingDTOMap.put(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value(), String.valueOf(sysSettingVO.getAutoCleanWebhookRecordInterval()));
         return settingDTOMap;
     }

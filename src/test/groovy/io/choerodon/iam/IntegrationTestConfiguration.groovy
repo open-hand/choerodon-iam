@@ -6,8 +6,10 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.app.service.MessageSendService
+import io.choerodon.iam.infra.feign.fallback.AsgardFeignClientFallback
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
+import org.hzero.core.redis.RedisHelper
 import org.hzero.iam.domain.repository.MenuRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -51,9 +53,15 @@ class IntegrationTestConfiguration {
     @PostConstruct
     void init() {
         liquibaseExecutor.execute()
-//        importDataService.selfGroovy("hzero_paltform", false, "src/test/resources")
         setTestRestTemplateJWT()
     }
+
+    @Bean("mockRedisHelper")
+    @Primary
+    RedisHelper redisHelper() {
+        detachedMockFactory.Mock(RedisHelper)
+    }
+
 
     @Bean
     @Primary
@@ -68,10 +76,16 @@ class IntegrationTestConfiguration {
     }
 
     @Bean
+    AsgardFeignClientFallback asgardFeignClientFallback() {
+        detachedMockFactory.Mock(AsgardFeignClientFallback)
+    }
+
+    @Bean
     @Primary
     SagaClient sagaClient() {
         detachedMockFactory.Mock(SagaClient)
     }
+
 //    @Bean
 //    @Primary
 //    UserCaptchaService userCaptchaService() {

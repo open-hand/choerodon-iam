@@ -59,6 +59,7 @@ export default ({ id = 0, hasRegister }) => {
         }
         if (!data.autoCleanSagaInstance && data.autoCleanSagaInstanceInterval) {
           postData.autoCleanSagaInstanceInterval = null;
+          postData.retainFailedSagaInstance = true;
         }
         return ({
           url: '/iam/choerodon/v1/system/setting',

@@ -13,7 +13,6 @@
 
     <properties>
         <deploy.classifier/>
-        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>

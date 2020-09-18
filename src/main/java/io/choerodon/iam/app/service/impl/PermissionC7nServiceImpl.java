@@ -90,7 +90,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         }
         Boolean finalIsOrgRoot = isOrgRoot;
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
-        LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self);
+        LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self, projectId);
         return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), finalIsOrgRoot, c));
     }
 

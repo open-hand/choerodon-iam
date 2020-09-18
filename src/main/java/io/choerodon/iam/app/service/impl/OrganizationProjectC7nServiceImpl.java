@@ -263,7 +263,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         if (customUserDetails == null) {
             throw new CommonException("error.user.not.login");
         }
-        if (customUserDetails.getUserType().equals(HiamMemberType.CLIENT.value())) {
+        if (customUserDetails.getClientId() != null && StringUtils.isEmpty(customUserDetails.getRealName())) {
             LOGGER.info("The client creation project does not assign roles by default!");
             return new HashSet<>();
         }

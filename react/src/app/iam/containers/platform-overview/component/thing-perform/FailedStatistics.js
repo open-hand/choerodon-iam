@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
+
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Table } from 'choerodon-ui/pro';
@@ -24,7 +26,12 @@ const FailedStatistics = withRouter(observer((props) => {
   };
 
   const renderSagaCode = ({ value, record }) => (
-    <a className="c7n-overview-sage" onClick={() => handleClickSagaRecord(record)}>{`${value}-${record.get('id')}`}</a>
+    <a
+      className="c7n-overview-sage"
+      onClick={() => handleClickSagaRecord(record)}
+    >
+      {`${value}-${record.get('viewId')}`}
+    </a>
   );
 
   return (

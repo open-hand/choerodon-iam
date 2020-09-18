@@ -236,7 +236,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(details.getUserId());
         } else {
-            Long userId = Long.valueOf(c7nTenantConfigService.queryNonNullCertainConfigValue(projectDTO.getId(), TenantConfigEnum.USER_ID));
+            Long userId = Long.valueOf(c7nTenantConfigService.queryNonNullCertainConfigValue(projectDTO.getOrganizationId(), TenantConfigEnum.USER_ID));
             User userDTO = userAssertHelper.userNotExisted(userId);
             projectEventMsg.setUserId(userId);
             projectEventMsg.setUserName(userDTO.getLoginName());

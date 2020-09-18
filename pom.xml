@@ -93,6 +93,13 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!--解决生成javadoc错误-->
+        <dependency>
+            <artifactId>guice</artifactId>
+            <groupId>com.google.inject</groupId>
+            <version>4.1.0</version>
+        </dependency>
+
         <!--单元测试-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

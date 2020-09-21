@@ -17,6 +17,7 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
@@ -101,7 +102,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         Client client = clientRepository.selectByPrimaryKey(clientId);
         CommonExAssertUtil.assertTrue(organizationId.equals(client.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
 
-        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, null, new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
+        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new MemberRoleSearchDTO(), new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
         //交集，传入的roleId与数据库里存在的roleId相交
         List<Long> intersection = existingRoleIds.stream().filter(newRoleIds::contains).collect(Collectors.toList());
         //传入的roleId与交集的差集为要插入的roleId

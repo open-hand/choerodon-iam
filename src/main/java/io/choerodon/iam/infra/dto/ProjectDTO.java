@@ -27,7 +27,6 @@ public class ProjectDTO extends AuditDomain {
 
     private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
-    private static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u4e00-\\u9fa5]{1,110}$";
 
     @Id
     @GeneratedValue
@@ -37,7 +36,6 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目名/必填")
     @NotEmpty(message = "error.project.name.empty")
     @Size(min = 1, max = 110, message = "error.project.name.size")
-    @Pattern(regexp = PROJECT_NAME_REG, message = "error.project.name.regex")
     private String name;
 
     @ApiModelProperty(value = "项目编码/必填")

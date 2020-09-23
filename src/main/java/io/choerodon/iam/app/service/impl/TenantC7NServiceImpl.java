@@ -6,10 +6,13 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -36,6 +39,7 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.MessageSendService;
@@ -44,6 +48,7 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
@@ -60,6 +65,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
+    private static final Integer PROBATION_TIME = 30;
+    private static final String REF_TYPE = "createOrg";
+    private static final String FAILED = "FAILED";
 
 
     @Autowired
@@ -78,6 +86,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private OrganizationAssertHelper organizationAssertHelper;
     @Autowired
     private AsgardFeignClient asgardFeignClient;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsFeignClient devopsFeignClient;
     // 注入messageClient
@@ -200,6 +210,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
         Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
+        List<Long> refIds = tenantVOPage.getContent().stream().map(TenantVO::getTenantId).collect(Collectors.toList());
+        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds);
+        Map<String, SagaInstanceDetails> sagaInstanceDetailsMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(sagaInstanceDetails)) {
+            sagaInstanceDetailsMap = sagaInstanceDetails.stream().collect(Collectors.toMap(SagaInstanceDetails::getRefId, Function.identity()));
+        }
+        Map<String, SagaInstanceDetails> finalSagaInstanceDetailsMap = sagaInstanceDetailsMap;
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -219,8 +236,16 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         }
                     }
                     //如果是注册组织，并且已经过期，则显示延期的按钮
-                    if (tenantConfigVO.getRegister() && LocalDateTime.now().minusDays(30).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                    if (tenantConfigVO.getRegister() && LocalDateTime.now().minusDays(PROBATION_TIME).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
                         tenantVO.setDelay(true);
+                    }
+                    //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
+                    if (!MapUtils.isEmpty(finalSagaInstanceDetailsMap)
+                            && !Objects.isNull(finalSagaInstanceDetailsMap.get(tenantVO.getTableId()))
+                            && FAILED.equalsIgnoreCase(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()).getStatus().trim())) {
+                        tenantVO.setSagaInstanceId(finalSagaInstanceDetailsMap.get(tenantVO.getTableId()).getId());
+                    } else {
+                        tenantVO.setSagaInstanceId(0L);
                     }
                 }
         );

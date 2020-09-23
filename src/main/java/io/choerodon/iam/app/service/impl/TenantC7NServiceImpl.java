@@ -241,9 +241,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
                     if (!MapUtils.isEmpty(finalSagaInstanceDetailsMap)
-                            && !Objects.isNull(finalSagaInstanceDetailsMap.get(tenantVO.getTableId()))
+                            && !Objects.isNull(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()))
                             && FAILED.equalsIgnoreCase(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()).getStatus().trim())) {
-                        tenantVO.setSagaInstanceId(finalSagaInstanceDetailsMap.get(tenantVO.getTableId()).getId());
+                        tenantVO.setSagaInstanceId(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()).getId());
                     } else {
                         tenantVO.setSagaInstanceId(0L);
                     }

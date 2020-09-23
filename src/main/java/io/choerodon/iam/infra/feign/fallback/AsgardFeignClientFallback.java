@@ -2,11 +2,13 @@ package io.choerodon.iam.infra.feign.fallback;
 
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -80,5 +82,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     @Override
     public ResponseEntity<SagaTaskInstanceDTO> query(Long id) {
         throw new CommonException("error.asgard.instance.detail");
+    }
+
+    @Override
+    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<Long> refIds) {
+        throw new CommonException("error.query.instance.detail");
     }
 }

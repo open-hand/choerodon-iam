@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.feign.operator;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
@@ -86,5 +87,17 @@ public class AsgardServiceClientOperator {
         return result;
     }
 
+    public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<Long> refIds) {
+        ResponseEntity<List<SagaInstanceDetails>> listResponseEntity;
+        try {
+            listResponseEntity = asgardFeignClient.queryByRefTypeAndRefIds(refType, refIds);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        if (listResponseEntity == null) {
+            throw new CommonException("error.query.saga");
+        }
+        return listResponseEntity.getBody();
+    }
 
 }

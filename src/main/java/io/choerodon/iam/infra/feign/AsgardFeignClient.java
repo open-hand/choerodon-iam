@@ -1,11 +1,14 @@
 package io.choerodon.iam.infra.feign;
 
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.feign.fallback.AsgardFeignClientFallback;
+
+import java.util.Map;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -64,4 +67,7 @@ public interface AsgardFeignClient {
     @GetMapping("/v1/sagas/tasks/instances/{id}")
     ResponseEntity<SagaTaskInstanceDTO> query(@PathVariable("id") Long id);
 
+    @GetMapping("/v1/sagas/instances/ref/business/instance")
+    ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(@RequestParam(value = "refType") String refType,
+                                                      @RequestParam(value = "refIds") List<Long> refIds);
 }

@@ -39,6 +39,17 @@ public class TenantVO extends Tenant {
 
     private Boolean isDelay = false;
 
+    @ApiModelProperty("事务实例id")
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
+
     public Boolean getDelay() {
         return isDelay;
     }

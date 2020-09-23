@@ -85,7 +85,7 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
-    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<Long> refIds) {
+    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds) {
         throw new CommonException("error.query.instance.detail");
     }
 }

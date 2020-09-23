@@ -87,7 +87,7 @@ public class AsgardServiceClientOperator {
         return result;
     }
 
-    public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<Long> refIds) {
+    public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<String> refIds) {
         ResponseEntity<List<SagaInstanceDetails>> listResponseEntity;
         try {
             listResponseEntity = asgardFeignClient.queryByRefTypeAndRefIds(refType, refIds);

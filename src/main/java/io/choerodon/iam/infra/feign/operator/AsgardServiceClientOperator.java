@@ -87,10 +87,10 @@ public class AsgardServiceClientOperator {
         return result;
     }
 
-    public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<String> refIds) {
+    public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
         ResponseEntity<List<SagaInstanceDetails>> listResponseEntity;
         try {
-            listResponseEntity = asgardFeignClient.queryByRefTypeAndRefIds(refType, refIds);
+            listResponseEntity = asgardFeignClient.queryByRefTypeAndRefIds(refType, refIds, sagaCode);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

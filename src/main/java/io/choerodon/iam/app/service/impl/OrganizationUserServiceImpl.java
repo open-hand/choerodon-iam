@@ -166,7 +166,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Page<UserDTO> userDTOS = ConvertUtils.convertPage(userPage, UserDTO.class);
         List<UserDTO> userList = userDTOS.getContent();
         List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());
-        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds));
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds, ORG_USER_CREAT));
         // 添加用户角色
         if (!CollectionUtils.isEmpty(userList)) {
             Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());

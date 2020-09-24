@@ -69,5 +69,6 @@ public interface AsgardFeignClient {
 
     @GetMapping("/v1/sagas/instances/ref/business/instance")
     ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(@RequestParam(value = "refType") String refType,
-                                                      @RequestParam(value = "refIds") List<String> refIds);
+                                                                      @RequestParam(value = "refIds") List<String> refIds,
+                                                                      @RequestParam(value = "sagaCode") String sagaCode);
 }

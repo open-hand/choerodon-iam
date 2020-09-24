@@ -12,8 +12,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
@@ -26,6 +28,7 @@ import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SysSettingEnum;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
@@ -33,9 +36,13 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.CustomContextUtil;
 import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import io.swagger.annotations.ApiModelProperty;
+import java.util.function.Function;
+import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -55,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
@@ -72,6 +80,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String USER = "user";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${spring.application.name:default}")
     private String serviceName;
@@ -99,6 +108,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final MessageSendService messageSendService;
     private final PasswordPolicyRepository passwordPolicyRepository;
     private final SysSettingMapper sysSettingMapper;
+
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
+
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
                                        MemberRoleC7nMapper memberRoleC7nMapper,
@@ -146,11 +159,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public Page<User> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
-                                                                   String roleName, Boolean enabled, Boolean locked, String params) {
+    public Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
+                                                                      String roleName, Boolean enabled, Boolean locked, String params) {
         // todo 列表排序？？？
         Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
-        List<User> userList = userPage.getContent();
+        Page<UserDTO> userDTOS = ConvertUtils.convertPage(userPage, UserDTO.class);
+        List<UserDTO> userList = userDTOS.getContent();
+        List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds));
         // 添加用户角色
         if (!CollectionUtils.isEmpty(userList)) {
             Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
@@ -163,10 +179,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     if (!CollectionUtils.isEmpty(memberRoleList)) {
                         user.setRoles(memberRoleList.stream().map(MemberRole::getRole).collect(Collectors.toList()));
                     }
+                    user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(user.getId())));
                 });
             }
         }
-        return userPage;
+        return userDTOS;
     }
 
     @Override

@@ -163,8 +163,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                                                       String roleName, Boolean enabled, Boolean locked, String params) {
         // todo 列表排序？？？
         Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
-        Page<UserDTO> userDTOS = ConvertUtils.convertPage(userPage, UserDTO.class);
-        List<UserDTO> userList = userDTOS.getContent();
+        Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
+        List<UserDTO> userList = userDTOSPage.getContent();
         List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds, ORG_USER_CREAT));
         // 添加用户角色
@@ -183,7 +183,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 });
             }
         }
-        return userDTOS;
+        return userDTOSPage;
     }
 
     @Override

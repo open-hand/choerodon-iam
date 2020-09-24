@@ -128,6 +128,7 @@ public class ProjectDTO extends AuditDomain {
 
     @Transient
     @ApiModelProperty("事务实例id")
+    @Encrypt
     private Long sagaInstanceId;
 
     public Long getSagaInstanceId() {

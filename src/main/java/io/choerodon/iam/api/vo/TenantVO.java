@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
@@ -40,6 +41,7 @@ public class TenantVO extends Tenant {
     private Boolean isDelay = false;
 
     @ApiModelProperty("事务实例id")
+    @Encrypt
     private Long sagaInstanceId;
 
     public Long getSagaInstanceId() {

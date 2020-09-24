@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.mybatis.domian.SecurityToken;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
@@ -37,6 +38,7 @@ public class UserDTO extends User {
 
     @Transient
     @ApiModelProperty(value = "事务实例id")
+    @Encrypt
     private Long sagaInstanceId;
 
     public Long getSagaInstanceId() {

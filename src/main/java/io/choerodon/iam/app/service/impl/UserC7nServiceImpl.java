@@ -645,7 +645,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             Set<Long> finalStarIds = starIds;
             //获取创建项目的事务实例id PROJECT = "project";
             List<String> refIds = projects.stream().map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
-            Map<String, SagaInstanceDetails> instanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds));
+            Map<String, SagaInstanceDetails> instanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_CREATE));
             projects.forEach(p -> {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author dengyouquan
@@ -85,7 +86,7 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
-    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds) {
+    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
         throw new CommonException("error.query.instance.detail");
     }
 }

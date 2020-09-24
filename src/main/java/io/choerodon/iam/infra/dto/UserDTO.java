@@ -35,6 +35,18 @@ public class UserDTO extends User {
     @ApiModelProperty(value = "用户角色标签,多个用英文逗号隔开")
     private String roleLabels;
 
+    @Transient
+    @ApiModelProperty(value = "事务实例id")
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
+
     public String getOrganizationCode() {
         return organizationCode;
     }

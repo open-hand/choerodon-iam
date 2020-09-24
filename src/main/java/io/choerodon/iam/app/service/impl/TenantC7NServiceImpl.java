@@ -52,6 +52,7 @@ import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -67,7 +68,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final Long OPERATION_ORG_ID = 1L;
     private static final Integer PROBATION_TIME = 30;
     private static final String REF_TYPE = "createOrg";
-    private static final String FAILED = "FAILED";
 
 
     @Autowired
@@ -211,12 +211,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
         Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds);
-        Map<String, SagaInstanceDetails> sagaInstanceDetailsMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(sagaInstanceDetails)) {
-            sagaInstanceDetailsMap = sagaInstanceDetails.stream().collect(Collectors.toMap(SagaInstanceDetails::getRefId, Function.identity()));
-        }
-        Map<String, SagaInstanceDetails> finalSagaInstanceDetailsMap = sagaInstanceDetailsMap;
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds));
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -240,13 +235,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         tenantVO.setDelay(true);
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-                    if (!MapUtils.isEmpty(finalSagaInstanceDetailsMap)
-                            && !Objects.isNull(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()))
-                            && FAILED.equalsIgnoreCase(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()).getStatus().trim())) {
-                        tenantVO.setSagaInstanceId(finalSagaInstanceDetailsMap.get(tenantVO.getTenantId()).getId());
-                    } else {
-                        tenantVO.setSagaInstanceId(0L);
-                    }
+                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
                 }
         );
         return tenantVOPage;

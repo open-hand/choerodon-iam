@@ -14,6 +14,7 @@ import org.hzero.iam.domain.entity.Role;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -124,6 +125,18 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("是否star，默认为false")
     private Boolean starFlag = false;
+
+    @Transient
+    @ApiModelProperty("事务实例id")
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
 
     public Long getId() {
         return id;

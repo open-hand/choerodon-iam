@@ -45,7 +45,7 @@ public interface OrganizationUserService {
      *
      * @return 用户列表（包括用户信息以及所分配的组织角色信息）
      */
-    Page<User> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageRequest, String loginName, String realName,
+    Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageRequest, String loginName, String realName,
                                                             String roleName, Boolean enabled, Boolean locked, String params);
 
     void updateUser(Long organizationId, User user);

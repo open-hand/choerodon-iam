@@ -153,7 +153,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
-        ProjectDTO oldProject = projectMapper.selectByPrimaryKey(projectDTO.getId());
+        AgileProjectInfoVO projectInfoVO = agileFeignClient.queryProjectInfoByProjectId(projectDTO.getAgileProjectId()).getBody();
         if (projectDTO.getAgileProjectId() != null) {
             AgileProjectInfoVO agileProject = new AgileProjectInfoVO();
             agileProject.setInfoId(projectDTO.getAgileProjectId());
@@ -184,7 +184,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(newProject.getImageUrl());
         projectEventMsg.setAgileProjectCode(projectDTO.getAgileProjectCode());
-        projectEventMsg.setOldAgileProjectCode(oldProject.getAgileProjectCode());
+        projectEventMsg.setOldAgileProjectCode(Objects.isNull(projectInfoVO) ? null : projectInfoVO.getProjectCode());
 
         try {
             String input = mapper.writeValueAsString(projectEventMsg);

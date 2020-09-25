@@ -4,6 +4,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 /**
  * @author scp
  * @since 2020/4/15
- *
  */
 @Service
 public class ProjectC7nServiceImpl implements ProjectC7nService {
@@ -153,6 +153,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
+        ProjectDTO oldProject = projectMapper.selectByPrimaryKey(projectDTO.getId());
         if (projectDTO.getAgileProjectId() != null) {
             AgileProjectInfoVO agileProject = new AgileProjectInfoVO();
             agileProject.setInfoId(projectDTO.getAgileProjectId());
@@ -183,6 +184,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(newProject.getImageUrl());
         projectEventMsg.setAgileProjectCode(projectDTO.getAgileProjectCode());
+        projectEventMsg.setOldAgileProjectCode(oldProject.getAgileProjectCode());
 
         try {
             String input = mapper.writeValueAsString(projectEventMsg);

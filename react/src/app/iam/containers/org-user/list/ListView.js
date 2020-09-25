@@ -2,9 +2,16 @@ import React, { useContext } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Action, Content, Header, axios, Permission, Breadcrumb, TabPage } from '@choerodon/boot';
+import {
+  Action, Content, Header, axios, Permission, Breadcrumb, TabPage,
+} from '@choerodon/boot';
 import { Modal as OldModal, Tooltip, Button } from 'choerodon-ui';
-import { Select, SelectBox, Table, TextField, Modal, message, Icon, Button as ProButton } from 'choerodon-ui/pro';
+import {
+  Select, SelectBox, Table, TextField, Modal, message, Icon, Button as ProButton,
+} from 'choerodon-ui/pro';
+import {
+  SagaDetails,
+} from '@choerodon/master';
 import expandMoreColumn from '../../../components/expandMoreColumn';
 import StatusTag from '../../../components/statusTag';
 import Store from './stores';
@@ -21,7 +28,8 @@ const modalStyle = {
 
 const { Column } = Table;
 export default withRouter(observer((props) => {
-  const { intlPrefix,
+  const {
+    intlPrefix,
     permissions,
     intl: { formatMessage },
     AppState,
@@ -114,7 +122,10 @@ export default withRouter(observer((props) => {
       title: '确认重置当前用户密码',
       children: (
         <div>
-          <p>{`"${record.get('realName')}"`}用户的当前密码将失效。如果您启用组织密码策略，将重置为组织默认密码，否则将重置为平台密码。</p>
+          <p>
+            {`"${record.get('realName')}"`}
+            用户的当前密码将失效。如果您启用组织密码策略，将重置为组织默认密码，否则将重置为平台密码。
+          </p>
         </div>
       ),
       onOk: () => resetPassword(record.get('id')),
@@ -249,30 +260,69 @@ export default withRouter(observer((props) => {
   function rednerEnabled({ value }) {
     return <StatusTag name={value ? '启用' : '停用'} colorCode={value ? 'COMPLETED' : 'DEFAULT'} />;
   }
+
+  const openSagaDetails = (id) => {
+    Modal.open({
+      title: formatMessage({ id: 'global.saga-instance.detail' }),
+      key: Modal.key(),
+      children: <SagaDetails sagaInstanceId={id} instance />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+      style: {
+        width: 'calc(100% - 3.5rem)',
+      },
+    });
+  };
+
   function renderUserName({ value, record }) {
-    if (record.get('organizationId').toString() !== organizationId) {
-      return (
-        <span>
-          <Permission
-            service={['choerodon.code.organization.manager.user.ps.update']}
-            defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
-          >
-            <React.Fragment>
-              <span onClick={() => handleUserRole(record)} className="link">{value}</span>
-              <div className="org-user-external-user">
-                <span className="org-user-external-user-text">
-                  外部人员
-                </span>
-              </div>
-            </React.Fragment>
-          </Permission>
-        </span>
-      );
-    }
+    const idEqual = record.get('organizationId').toString() !== organizationId;
+    const service = idEqual ? ['choerodon.code.organization.manager.user.ps.update'] : [];
     return (
-      <Permission service={[]} defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}>
-        <span onClick={() => handleModify(record)} className="link">{value}</span>
-      </Permission>
+      <span style={{
+        display: 'flex',
+        alignItems: 'center',
+      }}
+      >
+        <Permission
+          service={service}
+          defaultChildren={(<span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{value}</span>)}
+        >
+          <>
+            <span
+              role="none"
+              onClick={idEqual ? () => handleUserRole(record) : () => handleModify(record)}
+              className="link"
+              style={{
+                maxWidth: '1rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {value}
+            </span>
+            {
+              idEqual && (
+                <>
+                  <div className="org-user-external-user">
+                    <span className="org-user-external-user-text">
+                      外部人员
+                    </span>
+                  </div>
+                </>
+              )
+            }
+            {record.get('sagaInstanceId') ? (
+              <Icon
+                className="org-user-dashBoard"
+                type="developer_board"
+                onClick={() => openSagaDetails(record.get('sagaInstanceId'))}
+              />
+            ) : ''}
+          </>
+        </Permission>
+      </span>
     );
   }
   function getQueryFields() {

@@ -179,7 +179,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     if (!CollectionUtils.isEmpty(memberRoleList)) {
                         user.setRoles(memberRoleList.stream().map(MemberRole::getRole).collect(Collectors.toList()));
                     }
-                    user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(user.getId())));
+                    //用户状态启用
+                    if (user.getEnabled()) {
+                        user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(user.getId())));
+                    }
                 });
             }
         }

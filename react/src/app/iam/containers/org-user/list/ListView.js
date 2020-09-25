@@ -335,6 +335,9 @@ export default withRouter(observer((props) => {
     };
   }
   function renderAction({ record }) {
+    if (record.get('sagaInstanceId')) {
+      return null;
+    }
     let actionDatas = [{
       service: ['choerodon.code.organization.manager.user.ps.reset.password'],
       text: <FormattedMessage id={`${intlPrefix}.action.reset`} />,

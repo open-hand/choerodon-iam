@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -13,6 +14,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
  * @author scp
  * @since 2020/4/21
  */
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class TenantVO extends Tenant {
 
     @ApiModelProperty(value = "组织信息")

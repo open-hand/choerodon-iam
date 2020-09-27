@@ -1,21 +1,23 @@
 package io.choerodon.iam.infra.feign;
 
+import java.util.List;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.feign.fallback.AsgardFeignClientFallback;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * @author dengyouquan
  **/
-@FeignClient(value = "hzero-asgard",
+@FeignClient(value = "cherodon-asgard",
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
     @PutMapping("/v1/schedules/organizations/{organization_id}/tasks/disable")

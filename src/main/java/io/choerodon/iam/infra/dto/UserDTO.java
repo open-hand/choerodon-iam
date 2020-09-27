@@ -1,16 +1,19 @@
 package io.choerodon.iam.infra.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.mybatis.domian.SecurityToken;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
  * @since 20-4-23
  */
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class UserDTO extends User {
 
     public static final String EMAIL_REG = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
@@ -34,6 +37,19 @@ public class UserDTO extends User {
     @Transient
     @ApiModelProperty(value = "用户角色标签,多个用英文逗号隔开")
     private String roleLabels;
+
+    @Transient
+    @ApiModelProperty(value = "事务实例id")
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
 
     public String getOrganizationCode() {
         return organizationCode;

@@ -182,6 +182,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventMsg.setProjectCode(newProject.getCode());
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(newProject.getImageUrl());
+        projectEventMsg.setAgileProjectCode(projectDTO.getAgileProjectCode());
 
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
@@ -300,6 +301,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectDTO.setCategories(projectCategoryDTOS);
 
         return projectDTO;
+    }
+
+    @Override
+    public List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO) {
+        return projectMapper.select(projectDTO);
     }
 
     @Override

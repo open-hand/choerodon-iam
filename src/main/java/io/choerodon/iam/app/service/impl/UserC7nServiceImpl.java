@@ -7,10 +7,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -73,6 +75,7 @@ import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
@@ -95,6 +98,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private static final String SITE_ADMIN_ROLE_CODE = "role/site/default/administrator";
     private static final String ORG_ADMIN_ROLE_CODE = "role/organization/default/administrator";
+    private static final String PROJECT = "project";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserC7nServiceImpl.class);
 
     @Autowired
@@ -108,6 +112,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
+    @Lazy
     private UserService userService;
     @Autowired
     private TransactionalProducer producer;
@@ -159,6 +164,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     @Lazy
     private MessageSendService messageSendService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
 
     @Autowired
@@ -181,7 +188,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
         User dto;
         UserEventPayload userEventPayload = new UserEventPayload();
-
         dto = userService.updateUser(user);
         // hzero update 不更新imageUrl
         User imageUser = new User();
@@ -189,8 +195,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setImageUrl(user.getImageUrl());
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
-        dto = userMapper.selectByPrimaryKey(user.getId());
-
+        dto = userRepository.selectByPrimaryKey(user.getId());
         userEventPayload.setEmail(dto.getEmail());
         userEventPayload.setId(dto.getId().toString());
         userEventPayload.setName(dto.getRealName());
@@ -638,6 +643,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
             // 遍历项目,计算信息
             Set<Long> finalStarIds = starIds;
+            //获取创建项目的事务实例id PROJECT = "project";
+            List<String> refIds = projects.stream().map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
+            Map<String, SagaInstanceDetails> instanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_CREATE));
             projects.forEach(p -> {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
@@ -647,6 +655,8 @@ public class UserC7nServiceImpl implements UserC7nService {
                     if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
                         p.setInto(false);
                     }
+                    //填充实例id
+                    p.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(instanceDetailsMap, String.valueOf(p.getId())));
                 }
 
                 // 添加项目类型
@@ -663,7 +673,6 @@ public class UserC7nServiceImpl implements UserC7nService {
                 if (finalStarIds.contains(p.getId())) {
                     p.setStarFlag(true);
                 }
-
             });
         }
 

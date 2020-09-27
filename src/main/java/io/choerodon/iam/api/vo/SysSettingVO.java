@@ -60,6 +60,59 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "平台主题色")
     private String themeColor;
 
+    @ApiModelProperty(value = "是否自动清理邮件发送记录")
+    private Boolean autoCleanEmailRecord;
+
+    @ApiModelProperty(value = "自动清理邮件发送N天前记录")
+    private Integer autoCleanEmailRecordInterval;
+
+    @ApiModelProperty(value = "是否自动清理webhook发送记录")
+    private Boolean autoCleanWebhookRecord;
+
+    @ApiModelProperty(value = "自动清理webhook发送N天前记录")
+    private Integer autoCleanWebhookRecordInterval;
+
+    @ApiModelProperty(value = "自动清理事务实例记录")
+    private Boolean autoCleanSagaInstance;
+
+    @ApiModelProperty(value = "自动清理事务实例记录时间间隔")
+    private Integer autoCleanSagaInstanceInterval;
+
+    @ApiModelProperty(value = "是否保留失败的事务记录")
+    private Boolean retainFailedSagaInstance;
+
+    public Boolean getAutoCleanEmailRecord() {
+        return autoCleanEmailRecord;
+    }
+
+    public void setAutoCleanEmailRecord(Boolean autoCleanEmailRecord) {
+        this.autoCleanEmailRecord = autoCleanEmailRecord;
+    }
+
+    public Integer getAutoCleanEmailRecordInterval() {
+        return autoCleanEmailRecordInterval;
+    }
+
+    public void setAutoCleanEmailRecordInterval(Integer autoCleanEmailRecordInterval) {
+        this.autoCleanEmailRecordInterval = autoCleanEmailRecordInterval;
+    }
+
+    public Boolean getAutoCleanWebhookRecord() {
+        return autoCleanWebhookRecord;
+    }
+
+    public void setAutoCleanWebhookRecord(Boolean autoCleanWebhookRecord) {
+        this.autoCleanWebhookRecord = autoCleanWebhookRecord;
+    }
+
+    public Integer getAutoCleanWebhookRecordInterval() {
+        return autoCleanWebhookRecordInterval;
+    }
+
+    public void setAutoCleanWebhookRecordInterval(Integer autoCleanWebhookRecordInterval) {
+        this.autoCleanWebhookRecordInterval = autoCleanWebhookRecordInterval;
+    }
+
     public String getFavicon() {
         return favicon;
     }
@@ -154,5 +207,29 @@ public class SysSettingVO extends AuditDomain {
 
     public void setThemeColor(String themeColor) {
         this.themeColor = themeColor;
+    }
+
+    public Boolean getAutoCleanSagaInstance() {
+        return autoCleanSagaInstance;
+    }
+
+    public void setAutoCleanSagaInstance(Boolean autoCleanSagaInstance) {
+        this.autoCleanSagaInstance = autoCleanSagaInstance;
+    }
+
+    public Integer getAutoCleanSagaInstanceInterval() {
+        return autoCleanSagaInstanceInterval;
+    }
+
+    public void setAutoCleanSagaInstanceInterval(Integer autoCleanSagaInstanceInterval) {
+        this.autoCleanSagaInstanceInterval = autoCleanSagaInstanceInterval;
+    }
+
+    public Boolean getRetainFailedSagaInstance() {
+        return retainFailedSagaInstance;
+    }
+
+    public void setRetainFailedSagaInstance(Boolean retainFailedSagaInstance) {
+        this.retainFailedSagaInstance = retainFailedSagaInstance;
     }
 }

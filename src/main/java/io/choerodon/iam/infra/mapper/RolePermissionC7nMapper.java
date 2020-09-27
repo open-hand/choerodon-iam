@@ -33,4 +33,6 @@ public interface RolePermissionC7nMapper {
     void batchInsert(@Param("rolePermissionList") List<RolePermission> rolePermissionList);
 
     void batchDeleteById(@Param("delPsIds") Set<Long> delPsIds);
+
+    void deleteByRoleId(@Param("roleId") Long roleId);
 }

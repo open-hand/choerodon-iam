@@ -1,10 +1,12 @@
 package io.choerodon.iam.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
@@ -12,6 +14,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
  * @author scp
  * @since 2020/4/21
  */
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class TenantVO extends Tenant {
 
     @ApiModelProperty(value = "组织信息")
@@ -36,6 +39,28 @@ public class TenantVO extends Tenant {
     private String ownerEmail;
 
     private Boolean isInto = false;
+
+    private Boolean isDelay = false;
+
+    @ApiModelProperty("事务实例id")
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
+
+    public Boolean getDelay() {
+        return isDelay;
+    }
+
+    public void setDelay(Boolean delay) {
+        isDelay = delay;
+    }
 
     public Boolean getInto() {
         return isInto;

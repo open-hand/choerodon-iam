@@ -1,10 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import org.hzero.iam.domain.entity.Menu;
-import org.hzero.iam.domain.entity.RolePermission;
-
 import java.util.List;
 import java.util.Set;
+
+import org.hzero.iam.domain.entity.Menu;
+import org.hzero.iam.domain.entity.RolePermission;
 
 /**
  * 〈功能简述〉
@@ -32,4 +32,11 @@ public interface RolePermissionC7nService {
     void batchDelete(Long roleId, Set<Long> deletePermissionIds);
 
     List<Menu> listRolePermissionByRoleIdAndLabels(Long roleId, Set<String> labelNames);
+
+    /**
+     * 删除角色权限
+     *
+     * @param roleId
+     */
+    void deleteByRoleId(Long roleId);
 }

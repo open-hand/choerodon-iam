@@ -1,27 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.TenantC7nService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -42,11 +33,29 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.UpdateException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.SagaInstanceUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -57,6 +66,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
+    private static final Integer PROBATION_TIME = 30;
+    private static final String REF_TYPE = "createOrg";
+    private static final String ORG_CREATE = "org-create-organization";
 
 
     @Autowired
@@ -75,6 +87,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private OrganizationAssertHelper organizationAssertHelper;
     @Autowired
     private AsgardFeignClient asgardFeignClient;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsFeignClient devopsFeignClient;
     // 注入messageClient
@@ -195,8 +209,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params));
+    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
+        List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -215,6 +231,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                             tenantVO.setOwnerLoginName(user.getLoginName());
                         }
                     }
+                    //如果是注册组织，并且已经过期，则显示延期的按钮
+                    if (tenantConfigVO.getRegister() && LocalDateTime.now().minusDays(PROBATION_TIME).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
+                        tenantVO.setDelay(true);
+                    }
+                    //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
+                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
                 }
         );
         return tenantVOPage;
@@ -234,7 +256,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             if (Objects.isNull(tenantConfigVO.getUserId())) {
                 return;
             }
-            User user = userMapper.selectByPrimaryKey(Long.valueOf(tenantConfigVO.getUserId()));
+            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
             if (!Objects.isNull(user)) {
                 tenantVO.setOwnerEmail(user.getEmail());
                 tenantVO.setOwnerLoginName(user.getLoginName());

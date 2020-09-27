@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
@@ -30,6 +31,12 @@ public interface AsgardFeignClient {
     ResponseEntity<QuartzTask> createOrgTask(@PathVariable("organization_id") long organizationId,
                                              @RequestBody ScheduleTaskDTO scheduleTaskDTO);
 
+    @PostMapping("/v1/schedules/tasks")
+    ResponseEntity<QuartzTask> createSiteTask(@RequestBody ScheduleTaskDTO scheduleTaskDTO);
+
+    @DeleteMapping("/v1/schedules/tasks/name")
+    ResponseEntity<QuartzTask> deleteSiteTask(@RequestParam(value = "name") String name);
+
 
     @DeleteMapping("/v1/schedules/organizations/{organization_id}/tasks/{id}")
     void deleteOrgTask(@PathVariable("organization_id") long orgId,
@@ -51,10 +58,17 @@ public interface AsgardFeignClient {
     ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(@PathVariable("organization_id") long orgId,
                                                                @RequestParam(value = "service") String service);
 
+    @GetMapping("/v1/schedules/methods/service")
+    ResponseEntity<List<ScheduleMethodDTO>> getMethodByServiceSite(@RequestParam(value = "service") String service);
+
     @PutMapping("/v1/sagas/tasks/instances/{id}/retry")
     void retry(@PathVariable("id") long id);
 
     @GetMapping("/v1/sagas/tasks/instances/{id}")
     ResponseEntity<SagaTaskInstanceDTO> query(@PathVariable("id") Long id);
 
+    @GetMapping("/v1/sagas/instances/ref/business/instance")
+    ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(@RequestParam(value = "refType") String refType,
+                                                                      @RequestParam(value = "refIds") List<String> refIds,
+                                                                      @RequestParam(value = "sagaCode") String sagaCode);
 }

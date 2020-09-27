@@ -14,6 +14,7 @@ import org.hzero.iam.domain.entity.Role;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -27,7 +28,7 @@ public class ProjectDTO extends AuditDomain {
 
     private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
-    private static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
+    private static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u4e00-\\u9fa5]{1,110}$";
 
     @Id
     @GeneratedValue
@@ -36,7 +37,7 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty(value = "项目名/必填")
     @NotEmpty(message = "error.project.name.empty")
-    @Size(min = 1, max = 32, message = "error.project.name.size")
+    @Size(min = 1, max = 110, message = "error.project.name.size")
     @Pattern(regexp = PROJECT_NAME_REG, message = "error.project.name.regex")
     private String name;
 
@@ -124,6 +125,19 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("是否star，默认为false")
     private Boolean starFlag = false;
+
+    @Transient
+    @ApiModelProperty("事务实例id")
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
 
     public Long getId() {
         return id;

@@ -11,6 +11,7 @@ import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -71,7 +72,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）")
     @GetMapping(value = "/users/search")
     @CustomPageRequest
-    public ResponseEntity<Page<User>> pagingQueryUsersWithRolesOnOrganizationLevel(
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,

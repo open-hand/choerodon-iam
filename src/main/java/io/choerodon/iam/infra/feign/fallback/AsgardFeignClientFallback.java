@@ -2,15 +2,18 @@ package io.choerodon.iam.infra.feign.fallback;
 
 import io.choerodon.asgard.saga.dto.SagaTaskInstanceDTO;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.QuartzTask;
 import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author dengyouquan
@@ -33,6 +36,16 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
+    public ResponseEntity<QuartzTask> createSiteTask(ScheduleTaskDTO scheduleTaskDTO) {
+        throw new CommonException("error.asgard.quartzTask.createSite");
+    }
+
+    @Override
+    public ResponseEntity<QuartzTask> deleteSiteTask(String name) {
+        throw new CommonException("error.asgard.quartzTask.deleteSite");
+    }
+
+    @Override
     public void deleteOrgTask(long orgId, long id) {
         throw new CommonException("error.asgard.quartzTask.deleteOrganization");
     }
@@ -45,6 +58,11 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     @Override
     public ResponseEntity<List<ScheduleMethodDTO>> getMethodByService(long orgId, String service) {
         throw new CommonException("error.asgard.method.query");
+    }
+
+    @Override
+    public ResponseEntity<List<ScheduleMethodDTO>> getMethodByServiceSite(String service) {
+        throw new CommonException("error.asgard.method.query.site");
     }
 
     @Override
@@ -65,5 +83,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     @Override
     public ResponseEntity<SagaTaskInstanceDTO> query(Long id) {
         throw new CommonException("error.asgard.instance.detail");
+    }
+
+    @Override
+    public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
+        throw new CommonException("error.query.instance.detail");
     }
 }

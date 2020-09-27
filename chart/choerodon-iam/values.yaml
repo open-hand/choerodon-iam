@@ -176,7 +176,7 @@ service:
   # 是否启用 service 暴露本服务
   enabled: true
   # Service 名称
-  name: hzero-iam
+  name: choerodon-iam
   # Service 类型
   type: ClusterIP
   # 指定 service 的 clusterIP

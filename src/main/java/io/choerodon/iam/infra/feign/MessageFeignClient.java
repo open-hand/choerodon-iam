@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(value = "hzero-message", fallback = MessageFeignClientFallback.class)
+@FeignClient(value = "choerodon-message", fallback = MessageFeignClientFallback.class)
 public interface MessageFeignClient {
 
     @GetMapping("/choerodon/v1/online/current/ids")

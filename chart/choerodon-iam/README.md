@@ -1,5 +1,5 @@
-#  Hzero-iam
-Hzero-iam 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
+#  choerodon-iam
+choerodon-iam 提供一些基础功能 ，主要包括角色管理、菜单管理、用户管理、租户管理、权限刷新和单据权限管理。
                               
 ## Introduction
 
@@ -13,7 +13,7 @@ helm repo update
 ## Installing the Chart
 
 ```bash
-$ helm install c7n/hzero-iam --name hzero-iam
+$ helm install c7n/choerodon-iam --name choerodon-iam
 ```
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
@@ -21,7 +21,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 ## Uninstalling the Chart
 
 ```bash
-$ helm delete hzero-iam
+$ helm delete choerodon-iam
 ```
 
 ## Configuration
@@ -53,7 +53,7 @@ Parameter | Description	| Default
 `service.enabled` | 是否创建k8s service | `false`
 `service.type` |  service类型 | `ClusterIP`
 `service.port` | service端口 | `8030`
-`service.name` | service名称 | `hzero-iam`
+`service.name` | service名称 | `choerodon-iam`
 `resources.limits` | k8s中容器能使用资源的资源最大值 | `3Gi`
 `resources.requests` | k8s中容器使用的最小资源需求 | `2Gi`
 
@@ -71,14 +71,14 @@ Parameter | Description
 `skywalking.collector.backend_service` | SkyWalking OAP 服务地址和端口配置
 
 ```bash
-$ helm install c7n/hzero-iam \
+$ helm install c7n/choerodon-iam \
     --set env.open.SKYWALKING_OPTS="-javaagent:/agent/skywalking-agent.jar -Dskywalking.agent.application_code=hzero-iam  -Dskywalking.agent.sample_n_per_3_secs=-1 -Dskywalking.collector.backend_service=oap.skywalking:11800" \
-    --name hzero-iam
+    --name choerodon-iam
 ```
 
 ## 验证部署
 ```bash
-curl -s $(kubectl get po -n c7n-system -l choerodon.io/release=hzero-iam -o jsonpath="{.items[0].status.podIP}"):8031/actuator/health | jq -r .status
+curl -s $(kubectl get po -n c7n-system -l choerodon.io/release=choerodon-iam -o jsonpath="{.items[0].status.podIP}"):8031/actuator/health | jq -r .status
 ```
 出现以下类似信息即为成功部署
 

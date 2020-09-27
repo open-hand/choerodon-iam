@@ -1171,7 +1171,7 @@ public class UserServiceImpl implements UserService {
             for (int j = 0; j < roles.length; j++) {
                 String[] nameAndEnabled = roles[j].split("\\|");
                 boolean roleEnabled = true;
-                if (nameAndEnabled[2].equals("0")) {
+                if ("0".equals(nameAndEnabled[2])) {
                     roleEnabled = false;
                 }
                 list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], nameAndEnabled[1], roleEnabled));

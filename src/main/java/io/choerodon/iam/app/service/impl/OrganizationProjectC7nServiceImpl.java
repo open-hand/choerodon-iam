@@ -49,10 +49,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectUserDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.infra.enums.ProjectCategory;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
-import io.choerodon.iam.infra.enums.TenantConfigEnum;
+import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
@@ -381,8 +378,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO = updateSelective(projectDTO);
         String category = selectCategoryByPrimaryKey(projectId).getCategory();
         projectDTO.setCategory(category);
-        if (!(ProjectCategory.AGILE.value().equalsIgnoreCase(category) || ProjectCategory.GENERAL.value().equalsIgnoreCase(category)
-                || ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
+        if (!ProjectCategoryEnum.contains(category)) {
             throw new CommonException("error.project.type");
         }
         // 发送通知消息

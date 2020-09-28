@@ -109,7 +109,7 @@ hzero:
     oauth:
       name: choerodon-oauth
     iam:
-      name: choerdon-iam
+      name: choerodon-iam
     file:
       name: choerodon-file
     message:
@@ -200,6 +200,7 @@ hzero:
         enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
 choerodon:
   saga:
+    service: choerodon-asgard
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数

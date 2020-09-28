@@ -105,7 +105,7 @@ mybatis:
 hzero:
   service:
     platform:
-      name: cherodon-platform
+      name: choerodon-platform
     oauth:
       name: choerodon-oauth
     iam:

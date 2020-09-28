@@ -17,7 +17,7 @@
     <select id="query" resultMap="projectMap">
         SELECT fp.*,
         fpc.id AS c_id, fpc.CODE AS cateory_code, fpc.NAME as category_name,
-        iu.real_name AS create_user_name, iu.image_url AS create_user_image_url,
+        iu.real_name AS create_user_name, iu.image_url AS create_user_image_url
         FROM fd_star_project_user_rel fspur
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
         LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.ID

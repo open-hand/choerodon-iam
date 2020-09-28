@@ -53,15 +53,15 @@ env:
     # 是否启用数据权限屏蔽
     HZERO_ENABLE_DATA_PERMISSION: true
     # 是否刷新密码策略到缓存
-    HZERO_START_INIT_PASSWORD_POPLICY: false
+    HZERO_START_INIT_PASSWORD_POPLICY: true
     # 是否初始化三方登陆方式到缓存
-    HZERO_START_INIT_OPEN_LOGIN_WAY: false
+    HZERO_START_INIT_OPEN_LOGIN_WAY: true
     # 是否初始化用户到缓存
-    HZERO_START_INIT_USER: false
+    HZERO_START_INIT_USER: true
     # 是否初始化缓存LDAP
-    HZERO_START_INIT_LDAP: false
+    HZERO_START_INIT_LDAP: true
     # 是否初始化缓存客户端
-    HZERO_START_INIT_CLIENT: false
+    HZERO_START_INIT_CLIENT: true
     # 是否初始化字段权限
     HZERO_START_INIT_FIELD_PERMISSION: true
     # 初始化导入表，第一次启动服务的时候需开启此设置

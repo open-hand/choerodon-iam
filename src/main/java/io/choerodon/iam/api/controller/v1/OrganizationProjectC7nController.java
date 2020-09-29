@@ -165,7 +165,7 @@ public class OrganizationProjectC7nController extends BaseController {
     @ApiOperation(value = "查询组织下项目部署次数")
     @PostMapping("/deploy_records")
     public ResponseEntity<BarLabelRotationVO> countDeployRecords(@PathVariable(name = "organization_id") Long organizationId,
-                                                                 @Encrypt @RequestBody Set<Long> projectIds,
+                                                                 @RequestBody Set<Long> projectIds,
                                                                  @ApiParam(value = "开始时间：结构为yyyy-MM-dd HH:mm:ss", required = true)
                                                                  @RequestParam(value = "start_time") Date startTime,
                                                                  @ApiParam(value = "结束时间：结构为yyyy-MM-dd HH:mm:ss", required = true)

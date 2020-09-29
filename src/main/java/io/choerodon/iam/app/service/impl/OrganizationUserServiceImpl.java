@@ -1,7 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -39,41 +49,6 @@ import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import io.swagger.annotations.ApiModelProperty;
-import java.util.function.Function;
-import org.apache.commons.collections4.MapUtils;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.service.UserPasswordService;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.PasswordPolicyRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.saas.app.service.TenantService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -367,7 +342,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         String newPassword;
         PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
-        if (passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
+        if (passwordPolicy != null && passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
             newPassword = passwordPolicy.getOriginalPassword();
         } else {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();

@@ -73,7 +73,7 @@ env:
     # 清除过期权限
     HZERO_PERMISSION_CLEAN_PERMISSION: false
     # 资源匹配路径
-    HZERO_RESOURCE_PATTERN: /v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/*
+    HZERO_RESOURCE_PATTERN: /v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/v1/*
     # 不需要刷新权限的服务
     HZERO_PERMISSION_SKIP_PARSE_SERVICES: register,gateway,oauth,swagger
     # 是否自动刷新服务权限

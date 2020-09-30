@@ -23,6 +23,8 @@ import io.choerodon.iam.infra.enums.LdapType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+
+import org.hzero.common.HZeroService;
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -234,7 +236,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private ScheduleMethodDTO getMethodDTO(Long organizationId) {
         ResponseEntity<List<ScheduleMethodDTO>> methodsResponseEntity = null;
         try {
-            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, "hzero-iam");
+            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, HZeroService.Iam.NAME);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

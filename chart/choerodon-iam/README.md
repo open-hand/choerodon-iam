@@ -29,7 +29,7 @@ $ helm delete choerodon-iam
 Parameter | Description	| Default
 --- |  ---  |  ---  
 `replicaCount` | pod运行数量 | `1`
-`image.repository` | 镜像库地址 | `registry.choerodon.com.cn/choerodon/hzero-iam`
+`image.repository` | 镜像库地址 | `registry.choerodon.com.cn/choerodon/choerodon-iam`
 `image.pullPolicy` | 镜像拉取策略 | `IfNotPresent`
 `preJob.timeout` | job超时时间 | `300`
 `preJob.image` | job镜像库地址 | `registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.7.1`
@@ -72,7 +72,7 @@ Parameter | Description
 
 ```bash
 $ helm install c7n/choerodon-iam \
-    --set env.open.SKYWALKING_OPTS="-javaagent:/agent/skywalking-agent.jar -Dskywalking.agent.application_code=hzero-iam  -Dskywalking.agent.sample_n_per_3_secs=-1 -Dskywalking.collector.backend_service=oap.skywalking:11800" \
+    --set env.open.SKYWALKING_OPTS="-javaagent:/agent/skywalking-agent.jar -Dskywalking.agent.application_code=choerodon-iam  -Dskywalking.agent.sample_n_per_3_secs=-1 -Dskywalking.collector.backend_service=oap.skywalking:11800" \
     --name choerodon-iam
 ```
 

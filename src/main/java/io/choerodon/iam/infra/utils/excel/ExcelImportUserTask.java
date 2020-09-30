@@ -569,8 +569,7 @@ public class ExcelImportUserTask {
             logger.error("something wrong was happened when exporting the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.export");
         }
-        return "sss";
-//        return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
+        return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
     }
 
     private void processUsers(UserDTO user, List<ErrorUserVO> errorUsers, List<UserDTO> validateUsers, Long orgId) {

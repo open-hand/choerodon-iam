@@ -25,6 +25,7 @@ import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 
+import org.hzero.common.HZeroService;
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;

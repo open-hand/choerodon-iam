@@ -236,7 +236,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private ScheduleMethodDTO getMethodDTO(Long organizationId) {
         ResponseEntity<List<ScheduleMethodDTO>> methodsResponseEntity = null;
         try {
-            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId, HZeroService.Iam.NAME);
+            methodsResponseEntity = asgardFeignClient.getMethodByService(organizationId,"choerodon-iam");
         } catch (FeignException e) {
             throw new CommonException(e);
         }

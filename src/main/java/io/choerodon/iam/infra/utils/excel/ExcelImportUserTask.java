@@ -216,6 +216,7 @@ public class ExcelImportUserTask {
         logger.info("### begin to import member-role from excel, total size : {}", total);
         List<ExcelMemberRoleDTO> errorMemberRoles = new CopyOnWriteArrayList<>();
         List<ExcelMemberRoleDTO> validateMemberRoles = new CopyOnWriteArrayList<>();
+        // 1. 校验
         memberRoles.parallelStream().forEach(mr -> {
             if (StringUtils.isEmpty(mr.getLoginName())) {
                 mr.setCause("登录名为空");
@@ -227,13 +228,10 @@ public class ExcelImportUserTask {
                 validateMemberRoles.add(mr);
             }
         });
-        //去重
-        List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
-
-//        Map<Long, Set<Long>> userRoleMap = new HashMap<>();
-//        Map<Long, Set<Long>> userProjectUserMap = new HashMap<>();
+        //2. 去重
         //***优化查询次数
         // 校验参数，以及装配用户要分配的角色
+        List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
@@ -274,15 +272,6 @@ public class ExcelImportUserTask {
                 if (memberRole == null) {
                     return;
                 }
-//                // 构建用户角色对象
-//                Set<Long> roleIds = userProjectUserMap.get(memberRole.getMemberId());
-//                if (roleIds != null) {
-//                    roleIds.add(memberRole.getRoleId());
-//                } else {
-//                    roleIds = new HashSet<>();
-//                    roleIds.add(memberRole.getRoleId());
-//                    userProjectUserMap.put(memberRole.getMemberId(), roleIds);
-//                }
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
@@ -294,12 +283,6 @@ public class ExcelImportUserTask {
                     excelMemberRoleDTO.setRoleCode("未知错误，请重试！");
                     errorMemberRoles.add(excelMemberRoleDTO);
                 }
-
-//                ProjectUserDTO projectUserDTO = new ProjectUserDTO();
-//                projectUserDTO.setRoleId(roleId);
-//                projectUserDTO.setProjectId(sourceId);
-//                projectUserDTO.setMemberRoleId(memberRole.getId());
-//                projectUserService.importProjectUser(userId, Arrays.asList(projectUserDTO));
             } else {
                 memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
                 if (memberRole == null) {
@@ -316,36 +299,8 @@ public class ExcelImportUserTask {
                     excelMemberRoleDTO.setRoleCode("未知错误，请重试！");
                     errorMemberRoles.add(excelMemberRoleDTO);
                 }
-                // 构建用户角色对象
-//                Set<Long> roleIds = userRoleMap.get(memberRole.getMemberId());
-//                if (roleIds != null) {
-//                    roleIds.add(memberRole.getRoleId());
-//                } else {
-//                    roleIds = new HashSet<>();
-//                    roleIds.add(memberRole.getRoleId());
-//                    userRoleMap.put(memberRole.getMemberId(), roleIds);
-//                }
-//                roleMemberService.insertAndSendEvent(fromUserId, userDTO, memberRole, loginName);
             }
         });
-        // 添加项目层角色
-//        if (uploadHistory.getSourceType().equals(ResourceLevel.PROJECT.value())) {
-//            if (!CollectionUtils.isEmpty(userProjectUserMap)) {
-//                userProjectUserMap.forEach((k, v) -> {
-//                    projectUserService.addProjectRolesForUser(uploadHistory.getSourceId(), k, v);
-//                });
-//            }
-//
-//        }
-//        // 添加组织层角色
-//        if (uploadHistory.getSourceType().equals(ResourceLevel.ORGANIZATION.value())) {
-//            if (!CollectionUtils.isEmpty(userRoleMap)) {
-//                userRoleMap.forEach((k, v) -> {
-//                    roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), k, v);
-//                });
-//            }
-//        }
-
         Integer failedCount = errorMemberRoles.size();
         Integer successfulCount = total - failedCount;
         uploadHistory.setFailedCount(failedCount);
@@ -367,7 +322,6 @@ public class ExcelImportUserTask {
             uploadHistory.setFinished(true);
             finishFallback.callback(uploadHistory);
         }
-        mgsProjectAddUser(uploadHistory.getSourceId(), successfulCount);
     }
 
 
@@ -615,7 +569,8 @@ public class ExcelImportUserTask {
             logger.error("something wrong was happened when exporting the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.export");
         }
-        return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
+        return "sss";
+//        return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
     }
 
     private void processUsers(UserDTO user, List<ErrorUserVO> errorUsers, List<UserDTO> validateUsers, Long orgId) {

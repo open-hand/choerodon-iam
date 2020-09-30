@@ -1226,7 +1226,7 @@
     </select>
 
     <select id="listSiteUsersByRoleId" resultMap="userWithRolesMap">
-        SELECT iu.*
+        SELECT iu.*,ir.id AS role_id
         FROM iam_role ir
         INNER JOIN iam_member_role imr ON imr.role_id = ir.id
         INNER JOIN iam_user iu ON iu.id = imr.member_id

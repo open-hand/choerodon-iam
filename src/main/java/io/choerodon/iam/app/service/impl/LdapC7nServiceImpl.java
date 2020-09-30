@@ -23,12 +23,11 @@ import io.choerodon.iam.infra.enums.LdapType;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.LdapAutoMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 
 import org.hzero.common.HZeroService;
-import org.hzero.iam.domain.entity.Ldap;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.infra.mapper.TenantMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private OrganizationAssertHelper organizationAssertHelper;
 
     @Autowired
-    private TenantMapper tenantMapper;
+    private TenantC7nMapper tenantMapper;
 
     @Autowired
     private TransactionalProducer producer;

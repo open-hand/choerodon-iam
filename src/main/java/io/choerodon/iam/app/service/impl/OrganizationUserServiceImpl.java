@@ -254,11 +254,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             userMemberEventMsg.setUserId(userId);
             userMemberEventMsg.setResourceType(value);
             userMemberEventMsg.setUsername(userDTO.getLoginName());
-            Set<Long> ownRoleIds = Optional.ofNullable(roleService.listRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toSet())).orElse(Collections.emptySet());
-
-            if (!ownRoleIds.isEmpty()) {
-                userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
-            }
+            Set<Long> roleIds = userRoles.stream().map(Role::getId).collect(Collectors.toSet());
+            userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(roleIds));
             userMemberEventPayloads.add(userMemberEventMsg);
         }
         return userMemberEventPayloads;

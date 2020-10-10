@@ -72,6 +72,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String DEFAULT_PASSWORD = "password";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${spring.application.name:default}")
     private String serviceName;
@@ -373,7 +374,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
-            argsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+            argsMap.put(DEFAULT_PASSWORD, userPasswordService.getTenantDefaultPassword(organizationId));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

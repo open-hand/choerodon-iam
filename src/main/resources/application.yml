@@ -1,6 +1,6 @@
 spring:
   application:
-    name: hzero-iam
+    name: choerodon-iam
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/hzero_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false}
     username: ${SPRING_DATASOURCE_USERNAME:root}
@@ -105,11 +105,11 @@ mybatis:
 hzero:
   service:
     platform:
-      name: cherodon-platform
+      name: choerodon-platform
     oauth:
       name: choerodon-oauth
     iam:
-      name: choerdon-iam
+      name: choerodon-iam
     file:
       name: choerodon-file
     message:
@@ -200,6 +200,7 @@ hzero:
         enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
 choerodon:
   saga:
+    service: choerodon-asgard
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数

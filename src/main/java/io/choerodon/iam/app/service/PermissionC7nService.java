@@ -8,8 +8,8 @@ import org.hzero.iam.domain.entity.Permission;
 
 /**
  * @author scp
- * @since 2020/4/1
- *
+ * @date 2020/4/1
+ * @description
  */
 public interface PermissionC7nService {
 
@@ -23,7 +23,7 @@ public interface PermissionC7nService {
      */
     List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId);
 
-    List<Permission> getPermission(String[] codes);
+    List<org.hzero.iam.domain.entity.Permission> getPermission(String[] codes);
 
     void asyncRolePermission();
 

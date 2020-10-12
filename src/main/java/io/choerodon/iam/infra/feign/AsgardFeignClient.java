@@ -18,7 +18,7 @@ import io.choerodon.iam.infra.feign.fallback.AsgardFeignClientFallback;
 /**
  * @author dengyouquan
  **/
-@FeignClient(value = "cherodon-asgard",
+@FeignClient(value = "choerodon-asgard",
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
     @PutMapping("/v1/schedules/organizations/{organization_id}/tasks/disable")

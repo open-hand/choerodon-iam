@@ -1,7 +1,38 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.RoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.PasswordPolicyRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.saas.app.service.TenantService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -40,46 +71,12 @@ import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.util.function.Function;
-import org.apache.commons.collections4.MapUtils;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.service.UserPasswordService;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.PasswordPolicyRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.saas.app.service.TenantService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
-
 @Service
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
+    private static final String DEFAULT_PASSWORD = "password";
     private static final String USER = "user";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${spring.application.name:default}")
@@ -276,11 +273,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             userMemberEventMsg.setUserId(userId);
             userMemberEventMsg.setResourceType(value);
             userMemberEventMsg.setUsername(userDTO.getLoginName());
-            Set<Long> ownRoleIds = Optional.ofNullable(roleService.selectUserRole(organizationId, userId)).map(r -> r.stream().map(Role::getId).collect(Collectors.toSet())).orElse(Collections.emptySet());
-
-            if (!ownRoleIds.isEmpty()) {
-                userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(ownRoleIds));
-            }
+            Set<Long> roleIds = userRoles.stream().map(Role::getId).collect(Collectors.toSet());
+            userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(roleIds));
             userMemberEventPayloads.add(userMemberEventMsg);
         }
         return userMemberEventPayloads;
@@ -367,7 +361,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
         String newPassword;
         PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
-        if (passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
+        if (passwordPolicy != null && passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
             newPassword = passwordPolicy.getOriginalPassword();
         } else {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();
@@ -393,7 +387,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
-            argsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+            argsMap.put(DEFAULT_PASSWORD, userPasswordService.getTenantDefaultPassword(organizationId));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

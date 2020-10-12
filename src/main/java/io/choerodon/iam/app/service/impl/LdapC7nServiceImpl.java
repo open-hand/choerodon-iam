@@ -28,6 +28,9 @@ import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 
 import org.hzero.common.HZeroService;
 
+import org.hzero.iam.domain.entity.Ldap;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +76,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     private OrganizationAssertHelper organizationAssertHelper;
 
     @Autowired
-    private TenantC7nMapper tenantMapper;
+    private TenantMapper tenantMapper;
 
     @Autowired
     private TransactionalProducer producer;

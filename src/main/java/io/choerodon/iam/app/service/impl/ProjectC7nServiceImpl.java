@@ -271,7 +271,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPageAndSort(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
+        return PageHelper.doPage(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
     }
 
     protected Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {

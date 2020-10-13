@@ -14,6 +14,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -65,6 +68,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  */
 @Service
 public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7nService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationProjectC7nServiceImpl.class);
 
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
@@ -229,7 +233,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(details.getUserId());
         } else {
-            Long userId = Long.valueOf(c7nTenantConfigService.queryNonNullCertainConfigValue(projectDTO.getId(), TenantConfigEnum.USER_ID));
+            Long userId = Long.valueOf(c7nTenantConfigService.queryNonNullCertainConfigValue(projectDTO.getOrganizationId(), TenantConfigEnum.USER_ID));
             User userDTO = userAssertHelper.userNotExisted(userId);
             projectEventMsg.setUserId(userId);
             projectEventMsg.setUserName(userDTO.getLoginName());
@@ -255,6 +259,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException("error.user.not.login");
+        }
+        if (customUserDetails.getClientId() != null && StringUtils.isEmpty(customUserDetails.getRealName())) {
+            LOGGER.info("The client creation project does not assign roles by default!");
+            return new HashSet<>();
         }
         Long projectId = project.getId();
         Long userId = customUserDetails.getUserId();

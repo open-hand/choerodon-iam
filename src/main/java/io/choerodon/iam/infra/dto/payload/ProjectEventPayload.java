@@ -21,8 +21,17 @@ public class ProjectEventPayload {
     private Long programId;
     private Long applicationId;
     private String agileProjectCode;
+    private String oldAgileProjectCode;
 
     private Set<String> roleLabels;
+
+    public String getOldAgileProjectCode() {
+        return oldAgileProjectCode;
+    }
+
+    public void setOldAgileProjectCode(String oldAgileProjectCode) {
+        this.oldAgileProjectCode = oldAgileProjectCode;
+    }
 
     public Long getProjectId() {
         return projectId;

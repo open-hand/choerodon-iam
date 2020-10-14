@@ -17,7 +17,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.constant.HiamMemberType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -628,7 +627,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
 
         // 将保存时间超过7天的记录删除
-        redisTemplate.opsForHash().delete(userVisitInfoKey, fieldToDelete.toArray(new Object[0]));
+        if (!CollectionUtils.isEmpty(fieldToDelete)) {
+            redisTemplate.opsForHash().delete(userVisitInfoKey, fieldToDelete.toArray(new Object[0]));
+        }
         return result;
     }
 }

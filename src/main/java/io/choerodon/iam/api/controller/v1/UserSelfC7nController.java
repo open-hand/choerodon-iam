@@ -72,7 +72,7 @@ public class UserSelfC7nController extends BaseController {
     @ApiOperation(value = "修改密码")
     @PutMapping(value = "/users/{id}/password")
     public ResponseEntity<Void> selfUpdatePassword(@Encrypt @PathVariable Long id,
-                                                   @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
+                                                   @RequestBody UserPasswordDTO userPasswordDTO) {
         userC7nService.selfUpdatePassword(id, userPasswordDTO, true, true);
         return ResponseEntity.ok().build();
     }

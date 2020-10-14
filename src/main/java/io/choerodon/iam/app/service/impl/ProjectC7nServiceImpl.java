@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -293,6 +294,21 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
         return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
+    }
+
+    @Override
+    public Page<UserDTO> agileUsersByProjects(PageRequest pageable, AgileUserVO agileUserVO) {
+        Long organizationId = agileUserVO.getOrganizationId();
+        if (ObjectUtils.isEmpty(organizationId)) {
+            throw new CommonException("error.feign.agile.user.organizationId.null");
+        }
+        Set<Long> projectIds = agileUserVO.getProjectIds();
+        Set<Long> userIds = agileUserVO.getUserIds();
+        if (ObjectUtils.isEmpty(projectIds)) {
+            throw new CommonException("error.feign.agile.user.projectIds.empty");
+        }
+        Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
+        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectIds(projectIds, userIds, agileUserVO.getParam(), adminRoleIds));
     }
 
     @Override

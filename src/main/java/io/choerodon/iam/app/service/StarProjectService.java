@@ -29,4 +29,6 @@ public interface StarProjectService {
     void delete(Long projectId);
 
     List<ProjectDTO> query(Long organizationId, Integer size);
+
+    void updateStarProject(List<StarProjectUserRelDTO> starProjectUserRelDTOS);
 }

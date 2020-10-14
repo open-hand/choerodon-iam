@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Tenant;
 
 import io.choerodon.core.domain.Page;
@@ -85,4 +86,13 @@ public interface ProjectC7nService {
     ProjectDTO queryBasicInfo(Long id);
 
     List<ProjectDTO> queryProjectByOption(ProjectDTO projectDTO);
+
+    /**
+     * 查询多个项目项目下的项目成员，以及传入的userId的并集
+     *
+     * @param pageable
+     * @param agileUserVO
+     * @return
+     */
+    Page<UserDTO> agileUsersByProjects(PageRequest pageable, AgileUserVO agileUserVO);
 }

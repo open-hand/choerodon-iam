@@ -170,6 +170,11 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
                                               @Param("param") String param,
                                               @Param("adminRoleIds") Set<Long> adminRoleIds);
 
+    List<UserDTO> selectAgileUsersByProjectIds(@Param("projectIds") Set<Long> projectIds,
+                                               @Param("userIds") Set<Long> userIds,
+                                               @Param("param") String param,
+                                               @Param("adminRoleIds") Set<Long> adminRoleIds);
+
     /**
      * 查询用户在项目下拥有的角色
      *

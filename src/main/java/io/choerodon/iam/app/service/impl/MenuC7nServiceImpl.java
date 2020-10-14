@@ -1,5 +1,8 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.PROJECT_VISIT_INFO_KEY_TEMPLATE;
+import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.USER_VISIT_INFO_KEY_TEMPLATE;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +25,7 @@ import org.hzero.iam.infra.mapper.MenuMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -30,12 +34,14 @@ import io.choerodon.core.iam.MenuType;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -63,6 +69,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private ProjectUserMapper projectUserMapper;
     private ProjectC7nService projectC7nService;
     private UserC7nMapper userC7nMapper;
+    private RedisTemplate<String, String> redisTemplate;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -73,7 +80,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               RoleC7nMapper roleC7nMapper,
                               ProjectUserMapper projectUserMapper,
                               ProjectC7nService projectC7nService,
-                              UserC7nMapper userC7nMapper) {
+                              UserC7nMapper userC7nMapper,
+                              RedisTemplate<String, String> redisTemplate
+    ) {
+        this.redisTemplate = redisTemplate;
         this.menuC7nMapper = menuC7nMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.menuRepository = menuRepository;
@@ -124,6 +134,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         // 查询项目层菜单，（可以考虑单独抽出一个新接口）
         if (projectId != null) {
             ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
+            saveVisitInfo(projectDTO);
             // 查询用户在项目下的角色
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
             List<Long> roleIds = new ArrayList<>();
@@ -256,5 +267,20 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private String getCode(String code) {
         int index = code.lastIndexOf('.');
         return code.substring(index + 1);
+    }
+
+    private void saveVisitInfo(ProjectDTO projectDTO) {
+        if (projectDTO != null) {
+            Long userId = DetailsHelper.getUserDetails().getUserId();
+            String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId,projectDTO.getOrganizationId());
+            String projectVisitInfoKey = String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, projectDTO.getId());
+            Map<Object, Object> entries = redisTemplate.opsForHash().entries(userVisitInfoKey);
+
+            ProjectVisitInfoVO projectVisitInfoVO = new ProjectVisitInfoVO()
+                    .setLastVisitTime(new Date())
+                    .setProjectDTO(projectDTO);
+            entries.put(projectVisitInfoKey, JsonHelper.marshalByJackson(projectVisitInfoVO));
+            redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
+        }
     }
 }

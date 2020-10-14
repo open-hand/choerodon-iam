@@ -5,7 +5,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
-import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectUserService;
@@ -167,18 +166,6 @@ public class ProjectUserC7nController extends BaseController {
                                                     @Encrypt @RequestBody Set<Long> userIds,
                                                     @RequestParam(required = false) String param) {
         return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
-    }
-
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "敏捷分页模糊根据项目id集合查询项目下的用户和分配issue的用户接口")
-    @PostMapping(value = "/{project_id}/agile_users_by_projects")
-    @CustomPageRequest
-    public ResponseEntity<Page<UserDTO>> agileUsersByProjects(@PathVariable(name = "project_id") Long id,
-                                                              @ApiIgnore
-                                                              @SortDefault(value = "id", direction = Sort.Direction.DESC)
-                                                              PageRequest pageable,
-                                                              @RequestBody AgileUserVO agileUserVO) {
-        return new ResponseEntity<>(projectC7nService.agileUsersByProjects(pageable, agileUserVO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

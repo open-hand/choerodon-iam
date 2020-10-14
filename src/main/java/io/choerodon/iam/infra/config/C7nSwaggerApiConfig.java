@@ -24,6 +24,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_PROJECT = "Choerodon Project";
     public static final String CHOERODON_PROJECT_TYPE = "Choerodon Project Type";
     public static final String CHOERODON_PROJECT_USER = "Choerodon Project User";
+    public static final String CHOERODON_AGILE_PROJECT = "Choerodon Agile Project";
     public static final String CHOERODON_ORGANIZATION_PROJECT = "Choerodon Organization Project";
     public static final String CHOERODON_REPORT = "Choerodon Report";
     public static final String CHOERODON_TENANT = "Choerodon Tenant";

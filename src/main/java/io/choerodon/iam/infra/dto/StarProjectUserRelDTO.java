@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.dto;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -32,6 +33,28 @@ public class StarProjectUserRelDTO extends AuditDomain {
 
     @ApiModelProperty("用户id")
     private Long userId;
+
+    @ApiModelProperty("星标项目排序序号")
+    private Long sort;
+
+    @ApiModelProperty("组织id")
+    private Long organizationId;
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Long getSort() {
+        return sort;
+    }
+
+    public void setSort(Long sort) {
+        this.sort = sort;
+    }
 
     public Long getId() {
         return id;

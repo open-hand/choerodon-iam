@@ -13,6 +13,13 @@ import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.StarProjectMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.OptionalBean;
+
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.redis.RedisHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.util.StringUtils;
 
 /**
  * 〈功能简述〉
@@ -38,6 +46,7 @@ public class StarProjectServiceImpl implements StarProjectService {
     private static final String ERROR_PROJECT_IS_NULL = "error.project.is.null";
     private static final String ERROR_SAVE_STAR_PROJECT_FAILED = "error.save.star.project.failed";
     private static final String ERROR_DELETE_STAR_PROJECT_FAILED = "error.delete.star.project.failed";
+    private static final String IAM = "iam";
 
     @Autowired
     private StarProjectMapper starProjectMapper;
@@ -47,6 +56,8 @@ public class StarProjectServiceImpl implements StarProjectService {
     private UserC7nService userC7nService;
     @Autowired
     private ProjectMapper projectMapper;
+    @Autowired
+    private RedisHelper redisHelper;
 
     @Override
     @Transactional
@@ -57,14 +68,30 @@ public class StarProjectServiceImpl implements StarProjectService {
         projectC7nService.checkNotExistAndGet(starProjectUserRelDTO.getProjectId());
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Assert.notNull(userId, ERROR_NOT_LOGIN);
-
         starProjectUserRelDTO.setUserId(userId);
+
+        Long sort = getstarProjectSort(organizationId, userId);
+        starProjectUserRelDTO.setSort(sort);
         if (starProjectMapper.selectOne(starProjectUserRelDTO) == null) {
             if (starProjectMapper.insertSelective(starProjectUserRelDTO) > 1) {
                 throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
             }
         }
+    }
 
+    private Long getstarProjectSort(Long organizationId, Long userId) {
+        //组织id和 用户id组成key  organizationId:userId
+        String key = IAM + ":" + organizationId + ":" + userId;
+        String strValue = redisHelper.strGet(key, String.class);
+        if (StringUtils.isEmpty(strValue)) {
+            redisHelper.strSet(key, String.valueOf(getDbMaxSeq(organizationId, userId)), 3, TimeUnit.DAYS);
+        }
+        return redisHelper.strIncrement(key, 1L);
+    }
+
+    private Long getDbMaxSeq(Long organizationId, Long userId) {
+        Long dbMaxSeq = starProjectMapper.getDbMaxSeq(organizationId, userId);
+        return dbMaxSeq == null || dbMaxSeq == 0L ? BaseConstants.Digital.ONE : dbMaxSeq;
     }
 
     @Transactional
@@ -102,6 +129,20 @@ public class StarProjectServiceImpl implements StarProjectService {
 
         Set<Long> pids = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
         return starProjectMapper.query(pids, userId);
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStarProject(List<StarProjectUserRelDTO> starProjectUserRelDTOS) {
+        if (CollectionUtils.isEmpty(starProjectUserRelDTOS)){
+            return;
+        }
+        AtomicLong index = new AtomicLong(1L);
+        starProjectUserRelDTOS.forEach(starProjectUserRelDTO -> {
+            starProjectUserRelDTO.setSort(index.getAndIncrement());
+            starProjectMapper.updateByPrimaryKey(starProjectUserRelDTO);
+        });
 
     }
 }

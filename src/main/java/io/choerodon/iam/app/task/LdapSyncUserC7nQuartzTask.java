@@ -15,19 +15,22 @@ import org.hzero.iam.domain.service.ldap.LdapSyncUserTask;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
+import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.IamCheckLogService;
 import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.app.service.impl.LdapC7nServiceImpl;
-import io.choerodon.iam.infra.constant.LdapSyncC7nType;
 import io.choerodon.iam.infra.enums.LdapType;
-import io.choerodon.iam.infra.utils.StringUtil;
 
 /**
  * @author dengyouquan
@@ -44,6 +47,9 @@ public class LdapSyncUserC7nQuartzTask {
     private TenantMapper tenantMapper;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapHistoryRepository ldapHistoryRepository;
+
+    @Autowired
+    private IamCheckLogService iamCheckLogService;
 
     public LdapSyncUserC7nQuartzTask(LdapConnectService ldapConnectService,
                                      LdapC7nService ldapC7nService,
@@ -107,6 +113,21 @@ public class LdapSyncUserC7nQuartzTask {
     public void syncDisabledLdapUserOrg(Map<String, Object> map) {
         syncDisabledLdapUserSite(map);
     }
+
+
+    @JobTask(maxRetryCount = 3, code = "fixStarProjectData", description = "修复星标项目的数据")
+    @TimedTask(name = "fixStarProjectData", description = "修复星标项目的数据", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixStarProjectData(Map<String, Object> map) {
+        logger.info(">>>>>>>>>>>>>>>>>>>>begin to fix star project data<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        try {
+            iamCheckLogService.checkLog("0.24.0");
+        } catch (Exception e) {
+            logger.error("error.fix.star.project.data", e);
+        }
+        logger.info(">>>>>>>>>>>>>>>>>>>>end fix star project data<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    }
+
 
     private void syncLdapUser(Map<String, Object> map, String filter, String syncType) {
         //获取方法参数

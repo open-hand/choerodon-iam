@@ -22,4 +22,15 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_star_project_user_rel.groovy') 
         addUniqueConstraint(tableName: 'fd_star_project_user_rel', columnNames: 'PROJECT_ID, USER_ID', constraintName: 'UK_FD_STAR_PROJECT_USER_ROLE')
 
     }
+
+    changeSet(author: 'xiangwang04@hand-china.com', id: '2020-10-14-add-column') {
+        addColumn(tableName: 'fd_star_project_user_rel') {
+            column(name: 'SORT', type: 'BIGINT UNSIGNED', remarks: '排序序号', afterColumn: 'USER_ID') {
+                constraints(nullable: false)
+            }
+            column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织id', afterColumn: 'PROJECT_ID') {
+                constraints(nullable: false)
+            }
+        }
+    }
 }

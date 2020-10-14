@@ -1,11 +1,13 @@
 package io.choerodon.iam.api.controller.v1;
 
 import com.netflix.discovery.EurekaNamespace;
+
 import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,5 +57,14 @@ public class StarProjectController {
                                                   @RequestParam(value = "size", required = false) Integer size) {
         return ResponseEntity.ok(starProjectService.query(organizationId, size));
     }
+
+    @ApiOperation("更新星标项目顺序")
+    @Permission(permissionLogin = true)
+    @PutMapping
+    public ResponseEntity<Void> updateStarProject(@RequestBody List<StarProjectUserRelDTO> starProjectUserRelDTOS) {
+        starProjectService.updateStarProject(starProjectUserRelDTOS);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

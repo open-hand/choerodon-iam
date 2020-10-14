@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.PROJECT_VISIT_INFO_KEY_TEMPLATE;
+import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.USER_VISIT_INFO_KEY_TEMPLATE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 
 import java.text.SimpleDateFormat;
@@ -9,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Role;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -40,6 +44,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -57,6 +62,8 @@ import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.DateUtil;
+import io.choerodon.iam.infra.utils.JsonHelper;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -119,6 +126,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private MessageSendService messageSendService;
 
+    private RedisTemplate<String, String> redisTemplate;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -137,7 +146,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              @Lazy ProjectUserService projectUserService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
-                                             MessageSendService messageSendService) {
+                                             MessageSendService messageSendService,
+                                             RedisTemplate<String, String> redisTemplate
+    ) {
+        this.redisTemplate = redisTemplate;
         this.sagaClient = sagaClient;
         this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -593,4 +605,30 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return String.join(",", list);
     }
 
+    @Override
+    public List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, organizationId);
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(userVisitInfoKey);
+        if (entries.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> projectVisitInfoJson = new ArrayList<>();
+        entries.forEach((k, v) -> projectVisitInfoJson.add((String) v));
+
+        String projectVisitInfosJson = "[" + String.join(",", projectVisitInfoJson) + "]";
+        List<ProjectVisitInfoVO> projectVisitInfoVOList = JsonHelper.unmarshalByJackson(projectVisitInfosJson, new TypeReference<List<ProjectVisitInfoVO>>() {
+        });
+        Date now = new Date();
+        List<String> fieldToDelete = new ArrayList<>();
+        List<ProjectVisitInfoVO> result = projectVisitInfoVOList.stream().peek(p -> {
+            if (DateUtil.isExceedDay(p.getLastVisitTime(), now)) {
+                fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectDTO().getId()));
+            }
+        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
+
+        // 将保存时间超过7天的记录删除
+        redisTemplate.opsForHash().delete(userVisitInfoKey, fieldToDelete.toArray(new Object[0]));
+        return result;
+    }
 }

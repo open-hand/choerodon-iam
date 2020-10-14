@@ -1,14 +1,15 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.vo.BarLabelRotationVO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
@@ -64,4 +65,11 @@ public interface OrganizationProjectC7nService {
 
     List<ProjectDTO> listProjectsWithLimit(Long organizationId, String name);
 
+
+    /**
+     * 查询当前用户最近访问信息
+     *
+     * @return ProjectVisitInfoVO列表
+     */
+    List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId);
 }

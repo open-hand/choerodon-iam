@@ -133,7 +133,7 @@ public class StarProjectServiceImpl implements StarProjectService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
         StarProjectUserRelDTO starProjectUserRelDTO = new StarProjectUserRelDTO();
-        starProjectUserRelDTO.setUserId(17062L);
+        starProjectUserRelDTO.setUserId(userId);
         starProjectUserRelDTO.setOrganizationId(organizationId);
         List<StarProjectUserRelDTO> starProjectUserRelDTOS = starProjectMapper.select(starProjectUserRelDTO);
         if (CollectionUtils.isEmpty(starProjectUserRelDTOS)) {
@@ -142,11 +142,11 @@ public class StarProjectServiceImpl implements StarProjectService {
         Map<Long, List<StarProjectUserRelDTO>> longListMap = starProjectUserRelDTOS.stream().collect(Collectors.groupingBy(StarProjectUserRelDTO::getProjectId));
         List<Long> projectIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         AtomicLong index = new AtomicLong(1L);
+        Collections.reverse(projectIds);
         projectIds.forEach(id -> {
             StarProjectUserRelDTO starProjectUserRelDTO1 = longListMap.get(id).get(0);
             starProjectUserRelDTO1.setSort(index.getAndIncrement());
-            starProjectMapper.updateByPrimaryKey(starProjectUserRelDTO);
+            starProjectMapper.updateByPrimaryKeySelective(starProjectUserRelDTO1);
         });
-
     }
 }

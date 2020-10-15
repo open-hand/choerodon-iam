@@ -69,7 +69,7 @@ public class StarProjectServiceImpl implements StarProjectService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Assert.notNull(userId, ERROR_NOT_LOGIN);
         starProjectUserRelDTO.setUserId(userId);
-
+        starProjectUserRelDTO.setOrganizationId(organizationId);
         Long sort = getstarProjectSort(organizationId, userId);
         starProjectUserRelDTO.setSort(sort);
         if (starProjectMapper.selectOne(starProjectUserRelDTO) == null) {

@@ -79,20 +79,15 @@ public class StarProjectServiceImpl implements StarProjectService {
         }
     }
 
-    private Long getstarProjectSort(Long organizationId, Long userId) {
-        //组织id和 用户id组成key  organizationId:userId
-        String key = IAM + ":" + organizationId + ":" + userId;
-        String strValue = redisHelper.strGet(key, String.class);
-        if (StringUtils.isEmpty(strValue)) {
-            redisHelper.strSet(key, String.valueOf(getDbMaxSeq(organizationId, userId)), 3, TimeUnit.DAYS);
+    private synchronized Long getstarProjectSort(Long organizationId, Long userId) {
+        Long dbMaxSeq = starProjectMapper.getDbMaxSeq(organizationId, userId);
+        if (dbMaxSeq == null || dbMaxSeq == 0L) {
+            return Long.valueOf(BaseConstants.Digital.ONE);
         }
-        return redisHelper.strIncrement(key, 1L);
+        AtomicLong atomicLong = new AtomicLong(dbMaxSeq + 1);
+        return atomicLong.getAndIncrement();
     }
 
-    private Long getDbMaxSeq(Long organizationId, Long userId) {
-        Long dbMaxSeq = starProjectMapper.getDbMaxSeq(organizationId, userId);
-        return dbMaxSeq == null || dbMaxSeq == 0L ? BaseConstants.Digital.ONE : dbMaxSeq;
-    }
 
     @Transactional
     @Override
@@ -135,7 +130,7 @@ public class StarProjectServiceImpl implements StarProjectService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStarProject(List<StarProjectUserRelDTO> starProjectUserRelDTOS) {
-        if (CollectionUtils.isEmpty(starProjectUserRelDTOS)){
+        if (CollectionUtils.isEmpty(starProjectUserRelDTOS)) {
             return;
         }
         AtomicLong index = new AtomicLong(1L);

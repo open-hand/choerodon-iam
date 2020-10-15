@@ -15,7 +15,7 @@
 
     </resultMap>
     <select id="query" resultMap="projectMap">
-        SELECT fspur.id AS id ,fp.*,
+        SELECT fp.*,
         fpc.id AS c_id, fpc.CODE AS cateory_code, fpc.NAME as category_name,
         iu.real_name AS create_user_name, iu.image_url AS create_user_image_url
         FROM fd_star_project_user_rel fspur

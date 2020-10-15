@@ -15,7 +15,7 @@ import io.choerodon.iam.infra.mapper.StarProjectMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.OptionalBean;
 
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.hzero.core.base.BaseConstants;
@@ -26,9 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.util.StringUtils;
 
@@ -129,13 +126,25 @@ public class StarProjectServiceImpl implements StarProjectService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateStarProject(List<StarProjectUserRelDTO> starProjectUserRelDTOS) {
+    public void updateStarProject(Long organizationId, List<ProjectDTO> projectDTOS) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return;
+        }
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+
+        StarProjectUserRelDTO starProjectUserRelDTO = new StarProjectUserRelDTO();
+        starProjectUserRelDTO.setUserId(17062L);
+        starProjectUserRelDTO.setOrganizationId(organizationId);
+        List<StarProjectUserRelDTO> starProjectUserRelDTOS = starProjectMapper.select(starProjectUserRelDTO);
         if (CollectionUtils.isEmpty(starProjectUserRelDTOS)) {
             return;
         }
+        Map<Long, List<StarProjectUserRelDTO>> longListMap = starProjectUserRelDTOS.stream().collect(Collectors.groupingBy(StarProjectUserRelDTO::getProjectId));
+        List<Long> projectIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         AtomicLong index = new AtomicLong(1L);
-        starProjectUserRelDTOS.forEach(starProjectUserRelDTO -> {
-            starProjectUserRelDTO.setSort(index.getAndIncrement());
+        projectIds.forEach(id -> {
+            StarProjectUserRelDTO starProjectUserRelDTO1 = longListMap.get(id).get(0);
+            starProjectUserRelDTO1.setSort(index.getAndIncrement());
             starProjectMapper.updateByPrimaryKey(starProjectUserRelDTO);
         });
 

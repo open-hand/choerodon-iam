@@ -61,8 +61,10 @@ public class StarProjectController {
     @ApiOperation("更新星标项目顺序")
     @Permission(permissionLogin = true)
     @PutMapping
-    public ResponseEntity<Void> updateStarProject(@RequestBody List<StarProjectUserRelDTO> starProjectUserRelDTOS) {
-        starProjectService.updateStarProject(starProjectUserRelDTOS);
+    public ResponseEntity<Void> updateStarProject(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestBody List<ProjectDTO> projectDTOS) {
+        starProjectService.updateStarProject(organizationId, projectDTOS);
         return ResponseEntity.noContent().build();
     }
 

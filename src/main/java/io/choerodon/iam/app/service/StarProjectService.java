@@ -24,11 +24,12 @@ public interface StarProjectService {
 
     /**
      * 删除星标项目
+     *
      * @param projectId
      */
     void delete(Long projectId);
 
     List<ProjectDTO> query(Long organizationId, Integer size);
 
-    void updateStarProject(List<StarProjectUserRelDTO> starProjectUserRelDTOS);
+    void updateStarProject(Long organizationId, List<ProjectDTO> projectDTOS);
 }

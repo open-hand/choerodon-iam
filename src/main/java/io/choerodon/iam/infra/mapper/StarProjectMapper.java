@@ -32,5 +32,5 @@ public interface StarProjectMapper extends BaseMapper<StarProjectUserRelDTO> {
                                     @Param("isAdmin") boolean isAdmin,
                                     @Param("size") Integer size);
 
-    Long getDbMaxSeq(@Param("organizationId") Long organizationId, @Param("userId") Long userId);
+    long getDbMaxSeq(@Param("organizationId") Long organizationId, @Param("userId") Long userId);
 }

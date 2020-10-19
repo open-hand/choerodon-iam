@@ -10,12 +10,11 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author superlee
@@ -64,7 +63,6 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),GENERAL(普通应用项目),PROGRAM(普通项目群)")
     private String category;
 
-    // TODO 这里的id应该怎么加密
     @ApiModelProperty(value = "项目类型")
     @Transient
     private List<Long> categoryIds;
@@ -97,6 +95,10 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "项目所在项目群名称")
     private String programName;
+
+    @Transient
+    @ApiModelProperty(value = "是否被用户标记为星标项目")
+    private boolean star;
 
     private Long createdBy;
 
@@ -350,5 +352,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setStarFlag(Boolean starFlag) {
         this.starFlag = starFlag;
+    }
+
+    public boolean isStar() {
+        return star;
+    }
+
+    public void setStar(boolean star) {
+        this.star = star;
     }
 }

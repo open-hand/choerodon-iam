@@ -39,6 +39,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.MenuLabelEnum;
@@ -74,6 +75,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private RedisTemplate<String, String> redisTemplate;
     private ProjectMapper projectMapper;
     private UserMapper userMapper;
+    private StarProjectService starProjectService;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -87,8 +89,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               UserC7nMapper userC7nMapper,
                               RedisTemplate<String, String> redisTemplate,
                               ProjectMapper projectMapper,
-                              UserMapper userMapper
+                              UserMapper userMapper,
+                              StarProjectService starProjectService
     ) {
+        this.starProjectService = starProjectService;
         this.userMapper = userMapper;
         this.projectMapper = projectMapper;
         this.redisTemplate = redisTemplate;
@@ -150,6 +154,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             User user = userMapper.selectByPrimaryKey(userDetails.getUserId());
             projectDTO.setCreateUserName(user.getRealName());
             projectDTO.setCreateUserImageUrl(user.getImageUrl());
+            projectDTO.setStar(starProjectService.isStarProject(projectId));
             saveVisitInfo(projectDTO);
             List<Long> roleIds = new ArrayList<>();
 

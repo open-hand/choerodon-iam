@@ -1,5 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.redis.RedisHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -13,21 +25,6 @@ import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.StarProjectMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.iam.infra.utils.OptionalBean;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.redis.RedisHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
-import java.util.stream.Collectors;
-import org.springframework.util.StringUtils;
 
 /**
  * 〈功能简述〉
@@ -74,6 +71,15 @@ public class StarProjectServiceImpl implements StarProjectService {
                 throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
             }
         }
+    }
+
+    @Override
+    public boolean isStarProject(Long projectId) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        StarProjectUserRelDTO starProjectUserRelDTO = new StarProjectUserRelDTO();
+        starProjectUserRelDTO.setUserId(userId);
+        starProjectUserRelDTO.setProjectId(projectId);
+        return starProjectMapper.selectOne(starProjectUserRelDTO) != null;
     }
 
     private synchronized Long getstarProjectSort(Long organizationId, Long userId) {

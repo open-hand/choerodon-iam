@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.app.service.impl.ProjectC7nServiceImpl.ERROR_PROJECT_NOT_EXIST;
 import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.PROJECT_VISIT_INFO_KEY_TEMPLATE;
 import static io.choerodon.iam.infra.constant.ProjectVisitInfoConstants.USER_VISIT_INFO_KEY_TEMPLATE;
 
@@ -22,6 +23,7 @@ import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private ProjectC7nService projectC7nService;
     private UserC7nMapper userC7nMapper;
     private RedisTemplate<String, String> redisTemplate;
+    private ProjectMapper projectMapper;
+    private UserMapper userMapper;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -81,8 +85,12 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               ProjectUserMapper projectUserMapper,
                               ProjectC7nService projectC7nService,
                               UserC7nMapper userC7nMapper,
-                              RedisTemplate<String, String> redisTemplate
+                              RedisTemplate<String, String> redisTemplate,
+                              ProjectMapper projectMapper,
+                              UserMapper userMapper
     ) {
+        this.userMapper = userMapper;
+        this.projectMapper = projectMapper;
         this.redisTemplate = redisTemplate;
         this.menuC7nMapper = menuC7nMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
@@ -133,10 +141,16 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         String finalLang = LanguageHelper.language();
         // 查询项目层菜单，（可以考虑单独抽出一个新接口）
         if (projectId != null) {
-            ProjectDTO projectDTO = projectC7nService.checkNotExistAndGet(projectId);
-            saveVisitInfo(projectDTO);
+            ProjectDTO projectDTO = projectMapper.selectCategoryByPrimaryKey(projectId);
+            if (projectDTO == null) {
+                throw new CommonException(ERROR_PROJECT_NOT_EXIST);
+            }
             // 查询用户在项目下的角色
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+            User user = userMapper.selectByPrimaryKey(userDetails.getUserId());
+            projectDTO.setCreateUserName(user.getRealName());
+            projectDTO.setCreateUserImageUrl(user.getImageUrl());
+            saveVisitInfo(projectDTO);
             List<Long> roleIds = new ArrayList<>();
 
             if (Boolean.TRUE.equals(userDetails.getAdmin())
@@ -272,7 +286,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private void saveVisitInfo(ProjectDTO projectDTO) {
         if (projectDTO != null) {
             Long userId = DetailsHelper.getUserDetails().getUserId();
-            String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId,projectDTO.getOrganizationId());
+            String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, projectDTO.getOrganizationId());
             String projectVisitInfoKey = String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, projectDTO.getId());
             Map<Object, Object> entries = redisTemplate.opsForHash().entries(userVisitInfoKey);
 

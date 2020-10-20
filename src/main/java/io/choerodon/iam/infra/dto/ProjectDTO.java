@@ -96,10 +96,6 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目所在项目群名称")
     private String programName;
 
-    @Transient
-    @ApiModelProperty(value = "是否被用户标记为星标项目")
-    private boolean star;
-
     private Long createdBy;
 
     private Date creationDate;
@@ -352,13 +348,5 @@ public class ProjectDTO extends AuditDomain {
 
     public void setStarFlag(Boolean starFlag) {
         this.starFlag = starFlag;
-    }
-
-    public boolean isStar() {
-        return star;
-    }
-
-    public void setStar(boolean star) {
-        this.star = star;
     }
 }

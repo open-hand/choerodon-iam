@@ -154,7 +154,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             User user = userMapper.selectByPrimaryKey(userDetails.getUserId());
             projectDTO.setCreateUserName(user.getRealName());
             projectDTO.setCreateUserImageUrl(user.getImageUrl());
-            projectDTO.setStar(starProjectService.isStarProject(projectId));
+            projectDTO.setStarFlag(starProjectService.isStarProject(projectId));
             saveVisitInfo(projectDTO);
             List<Long> roleIds = new ArrayList<>();
 

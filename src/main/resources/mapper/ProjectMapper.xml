@@ -2,7 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectMapper">
-
     <resultMap id="ProjectMapCategoryMap" type="io.choerodon.iam.api.vo.ProjectMapCategoryVO" autoMapping="true">
         <association property="projectCategoryDTO" javaType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
             <result property="name" column="category_name"/>
@@ -300,9 +299,8 @@
                 )
             </if>
         </where>
-         GROUP BY fp.id
+        GROUP BY fp.id
         order by fp.is_enabled desc,fp.creation_date desc
-
     </select>
 
     <select id="selectAllProjectsByUserIdOrAdmin" resultMap="projectWithCategoryMap">
@@ -525,5 +523,22 @@
             </if>
         </where>
         GROUP BY fp.id
+    </select>
+
+    <select id="selectProjectWithCategoryByPrimaryKey" resultMap="projectWithCategoryMap">
+        select fp.*,
+        fpc.id as category_id,
+        fpc.name as category_name,
+        fpc.code as category_code,
+        fpc.object_version_number as category_version_number,
+        fpc.organization_id as category_org_id
+        from fd_project fp
+        left join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        left join fd_project_category fpc on fpc.id = fpmc.category_id
+        Where fp.id IN
+        <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
+            #{projectId}
+        </foreach>
+        order by fpmc.id asc
     </select>
 </mapper>

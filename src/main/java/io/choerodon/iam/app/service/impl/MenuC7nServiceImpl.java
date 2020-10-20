@@ -151,10 +151,6 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             }
             // 查询用户在项目下的角色
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-            User user = userMapper.selectByPrimaryKey(userDetails.getUserId());
-            projectDTO.setCreateUserName(user.getRealName());
-            projectDTO.setCreateUserImageUrl(user.getImageUrl());
-            projectDTO.setStarFlag(starProjectService.isStarProject(projectId));
             saveVisitInfo(projectDTO);
             List<Long> roleIds = new ArrayList<>();
 
@@ -225,7 +221,6 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
     @Override
     public List<Menu> listUserInfoMenuOnlyTypeMenu() {
-
         return menuC7nMapper.listUserInfoMenuOnlyTypeMenu();
     }
 
@@ -297,7 +292,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
             ProjectVisitInfoVO projectVisitInfoVO = new ProjectVisitInfoVO()
                     .setLastVisitTime(new Date())
-                    .setProjectDTO(projectDTO);
+                    .setProjectId(projectDTO.getId());
             entries.put(projectVisitInfoKey, JsonHelper.marshalByJackson(projectVisitInfoVO));
             redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
         }

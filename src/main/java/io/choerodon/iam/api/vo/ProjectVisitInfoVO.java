@@ -10,14 +10,16 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
  */
 public class ProjectVisitInfoVO {
     private ProjectDTO projectDTO;
+    private Long projectId;
     private Date lastVisitTime;
 
-    public ProjectDTO getProjectDTO() {
-        return projectDTO;
+
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public ProjectVisitInfoVO setProjectDTO(ProjectDTO projectDTO) {
-        this.projectDTO = projectDTO;
+    public ProjectVisitInfoVO setProjectId(Long projectId) {
+        this.projectId = projectId;
         return this;
     }
 
@@ -27,6 +29,15 @@ public class ProjectVisitInfoVO {
 
     public ProjectVisitInfoVO setLastVisitTime(Date lastVisitTime) {
         this.lastVisitTime = lastVisitTime;
+        return this;
+    }
+
+    public ProjectDTO getProjectDTO() {
+        return projectDTO;
+    }
+
+    public ProjectVisitInfoVO setProjectDTO(ProjectDTO projectDTO) {
+        this.projectDTO = projectDTO;
         return this;
     }
 }

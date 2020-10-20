@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import groovy.lang.Lazy;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.redis.RedisHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,12 @@ public class StarProjectServiceImpl implements StarProjectService {
         starProjectUserRelDTO.setUserId(userId);
         starProjectUserRelDTO.setProjectId(projectId);
         return starProjectMapper.selectOne(starProjectUserRelDTO) != null;
+    }
+
+    @Override
+    public List<Long> listStarProjectIds(Set<Long> projectIds) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        return starProjectMapper.query(projectIds, userId).stream().map(ProjectDTO::getId).collect(Collectors.toList());
     }
 
     private synchronized Long getstarProjectSort(Long organizationId, Long userId) {

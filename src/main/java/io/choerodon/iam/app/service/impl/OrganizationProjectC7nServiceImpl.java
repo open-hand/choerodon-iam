@@ -127,6 +127,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private RedisTemplate<String, String> redisTemplate;
 
+    private StarProjectService starProjectService;
+
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -146,8 +148,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              MessageSendService messageSendService,
-                                             RedisTemplate<String, String> redisTemplate
+                                             RedisTemplate<String, String> redisTemplate,
+                                             @Lazy StarProjectService starProjectService
     ) {
+        this.starProjectService = starProjectService;
         this.redisTemplate = redisTemplate;
         this.sagaClient = sagaClient;
         this.userC7nService = userC7nService;
@@ -622,7 +626,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<String> fieldToDelete = new ArrayList<>();
         List<ProjectVisitInfoVO> result = projectVisitInfoVOList.stream().peek(p -> {
             if (DateUtil.isExceedDay(p.getLastVisitTime(), now)) {
-                fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectDTO().getId()));
+                fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
             }
         }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
 
@@ -630,6 +634,22 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         if (!CollectionUtils.isEmpty(fieldToDelete)) {
             redisTemplate.opsForHash().delete(userVisitInfoKey, fieldToDelete.toArray(new Object[0]));
         }
+
+        Set<Long> projectIds = result.stream().map(ProjectVisitInfoVO::getProjectId).collect(Collectors.toSet());
+        // 如果记录为空，直接返回
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return result;
+        }
+        List<ProjectDTO> projectDTOS = projectMapper.selectProjectWithCategoryByPrimaryKey(projectIds);
+        List<Long> starProjectIds = starProjectService.listStarProjectIds(projectIds);
+        projectDTOS.forEach(p -> {
+            if (starProjectIds.contains(p.getId())) {
+                p.setStarFlag(true);
+            }
+        });
+        Map<Long, ProjectDTO> projectDTOMap = projectDTOS.stream()
+                .collect(Collectors.toMap(ProjectDTO::getId, projectDTO -> projectDTO));
+        result.forEach(r -> r.setProjectDTO(projectDTOMap.get(r.getProjectId())));
         return result;
     }
 }

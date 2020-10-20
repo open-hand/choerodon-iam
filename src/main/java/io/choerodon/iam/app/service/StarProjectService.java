@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
@@ -40,4 +41,12 @@ public interface StarProjectService {
      * @return boolean
      */
     boolean isStarProject(Long projectId);
+
+    /**
+     * 查询多个项目是否为星标项目
+     *
+     * @param projectIds 项目id列表
+     * @return
+     */
+    List<Long> listStarProjectIds(Set<Long> projectIds);
 }

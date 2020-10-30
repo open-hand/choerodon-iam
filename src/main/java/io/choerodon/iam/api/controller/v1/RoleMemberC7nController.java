@@ -187,7 +187,7 @@ public class RoleMemberC7nController extends BaseController {
         return new ResponseEntity<>(roleC7nService.listRolesByName(organizationId, roleName, roleCode, labelName, onlySelectEnable), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "分页查询全平台层用户（未禁用）")
     @GetMapping(value = "/all/users")
     @CustomPageRequest

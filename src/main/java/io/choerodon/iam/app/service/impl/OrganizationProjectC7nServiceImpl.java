@@ -650,6 +650,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Map<Long, ProjectDTO> projectDTOMap = projectDTOS.stream()
                 .collect(Collectors.toMap(ProjectDTO::getId, projectDTO -> projectDTO));
         result.forEach(r -> r.setProjectDTO(projectDTOMap.get(r.getProjectId())));
+        //按照visit date 时间排序
+        result = result.stream().sorted(Comparator.comparing(ProjectVisitInfoVO::getLastVisitTime).reversed()).collect(Collectors.toList());
         return result;
     }
 }

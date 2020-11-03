@@ -22,4 +22,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
         addUniqueConstraint(tableName: 'FD_PROJECT_USER', columnNames: 'PROJECT_ID, MEMBER_ROLE_ID', constraintName: 'UK_FD_PROJECT_USER_ROLE')
 
     }
+
+    changeSet(author: 'scp', id: '2020-11-03-rename-table') {
+        renameTable(newTableName: 'fd_project_permission', oldTableName: 'fd_project_user')
+    }
 }

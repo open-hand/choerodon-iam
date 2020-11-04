@@ -37,7 +37,7 @@
         FROM  fd_star_project_user_rel fspur
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
         <if test="!isAdmin">
-            INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.ID
+            INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.ID
             INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         </if>
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}

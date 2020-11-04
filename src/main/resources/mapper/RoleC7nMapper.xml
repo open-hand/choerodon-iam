@@ -176,7 +176,7 @@
             fp.name AS proj_name,
             2 as sort
             FROM iam_member_role imr
-            inner join fd_project_user fpu on fpu.MEMBER_ROLE_ID = imr.id
+            inner join fd_project_permission fpu on fpu.MEMBER_ROLE_ID = imr.id
             INNER JOIN fd_project fp ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_role ir ON imr.role_id = ir.id
             inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
@@ -310,7 +310,7 @@
         INNER JOIN iam_role ir ON ir.id = imr.role_id
         INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{roleLabelDataType} AND data_id = ir.id
         INNER JOIN iam_label il ON il.id = hlr.label_id
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         <where>
             imr.member_type = 'user' AND imr.member_id =#{userId}
             AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ROLE'

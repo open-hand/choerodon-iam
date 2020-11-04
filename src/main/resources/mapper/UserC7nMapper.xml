@@ -355,7 +355,7 @@
                il.name     AS label_name,
                il.type     AS label_type,
                il.FD_LEVEL AS label_LEVEL
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                 INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
                 INNER JOIN iam_role ir ON imr.role_id = ir.id
                 left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
@@ -511,7 +511,7 @@
         FROM
         iam_user iu
         INNER JOIN iam_member_role imr ON (iu.id = imr.member_id AND imr.member_type = 'user')
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN iam_role ir ON (ir.id = imr.role_id AND ir.is_enabled = TRUE )
         INNER JOIN hiam_label_rel irl ON (irl.data_id = ir.id AND irl.data_type = 'ROLE')
         INNER JOIN iam_label il ON il.id = irl.label_id
@@ -1202,7 +1202,7 @@
 
     <select id="queryUserLabelsInProjectLevel" resultType="String">
         SELECT il.name AS label_name
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                  INNER JOIN iam_role ir ON fpu.MEMBER_ROLE_ID = ir.id
                  INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
                  left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
@@ -1214,7 +1214,7 @@
 
     <select id="doesUserHaveLabelInProject" resultType="boolean">
         SELECT COUNT(1)
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN iam_role ir ON ir.id = imr.role_id
         left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
@@ -1244,7 +1244,7 @@
         SELECT *
         FROM iam_role ir
         INNER JOIN iam_member_role imr ON imr.role_id = ir.id
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND ir.id = #{roleId} and fpu.PROJECT_ID = #{projectId}
     </select>
@@ -1257,7 +1257,7 @@
 
     <select id="listRoleLabelsForUserInTheProject" resultMap="userProjectLabels">
         SELECT fpu.PROJECT_ID, imr.member_id, il.name AS label_name
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id AND imr.member_type = 'user'
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN hiam_label_rel hlr on ir.id = hlr.data_id AND hlr.data_type = 'ROLE'

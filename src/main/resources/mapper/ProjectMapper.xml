@@ -91,7 +91,7 @@
         SELECT DISTINCT
         imr.member_id
         FROM
-        fd_project_user fpu
+        fd_project_permission fpu
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         WHERE
         fpu.PROJECT_ID = #{projectId}
@@ -104,7 +104,7 @@
         FROM
         fd_project fp
         INNER JOIN hzero_platform.iam_member_role imr ON imr.source_id = fp.ORGANIZATION_ID
-        INNER JOIN hzero_platform.fd_project_user pu ON pu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN hzero_platform.fd_project_permission pu ON pu.MEMBER_ROLE_ID = imr.id
         WHERE imr.member_id = #{userId}
         AND fp.organization_id = #{orgId}
         AND fp.id = pu.PROJECT_ID
@@ -116,7 +116,7 @@
     <select id="countProjectsWithRolesSize" resultType="int">
         SELECT COUNT(1)
         FROM fd_project fp
-        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        INNER JOIN fd_project_permission fpu ON fpu.project_id = fp.id
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         LEFT JOIN iam_role ir ON imr.role_id = ir.id
         LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
@@ -147,7 +147,7 @@
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date
         FROM fd_project fp
-        INNER JOIN fd_project_user fpu ON fpu.project_id = fp.id
+        INNER JOIN fd_project_permission fpu ON fpu.project_id = fp.id
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         LEFT JOIN iam_role ir ON imr.role_id = ir.id
         LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
@@ -255,12 +255,12 @@
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
-                INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
             <otherwise>
-                LEFT JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
@@ -315,7 +315,7 @@
         inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
         or fpc.code='PROGRAM'))
         <if test="!isAdmin">
-            INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+            INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
             INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
         </if>
@@ -363,7 +363,7 @@
     <select id="selectProjectsByUserId" resultMap="projectDTO">
         select distinct fp.*
         from fd_project fp
-        INNER JOIN fd_project_user fpu ON (fp.id = fpu.PROJECT_ID)
+        INNER JOIN fd_project_permission fpu ON (fp.id = fpu.PROJECT_ID)
         INNER JOIN iam_member_role imr ON (imr.id = fpu.MEMBER_ROLE_ID)
         <where>
             imr.member_id = #{userId}
@@ -409,7 +409,7 @@
         INNER JOIN iam_role ir ON ir.id = imr.role_id
         INNER JOIN hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
         INNER JOIN iam_label il ON il.id = hlr.label_id
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         <where>
             imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization'
             AND imr.source_id = #{organizationId} AND il.name = 'PROJECT_ADMIN'
@@ -451,12 +451,12 @@
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
-                INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
             <otherwise>
-                LEFT JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
@@ -502,12 +502,12 @@
         FROM fd_project fp
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
-                INNER JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
             <otherwise>
-                LEFT JOIN fd_project_user fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>

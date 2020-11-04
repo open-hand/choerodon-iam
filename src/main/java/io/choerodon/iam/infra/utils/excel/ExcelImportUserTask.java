@@ -36,7 +36,7 @@ import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -45,7 +45,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
@@ -87,9 +87,9 @@ public class ExcelImportUserTask {
 
     private UserMapper userMapper;
 
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
 
-    private ProjectUserMapper projectUserMapper;
+    private ProjectPermissionMapper projectPermissionMapper;
 
     private ProjectAssertHelper projectAssertHelper;
     private MessageClient messageClient;
@@ -98,8 +98,8 @@ public class ExcelImportUserTask {
     public ExcelImportUserTask(RoleMemberService roleMemberService,
                                OrganizationUserService organizationUserService,
                                FileClient fileClient,
-                               ProjectUserService projectUserService,
-                               ProjectUserMapper projectUserMapper,
+                               ProjectPermissionService projectPermissionService,
+                               ProjectPermissionMapper projectPermissionMapper,
                                ProjectAssertHelper projectAssertHelper,
                                UserC7nService userService,
                                UserPasswordValidator userPasswordValidator,
@@ -121,9 +121,9 @@ public class ExcelImportUserTask {
         this.roleAssertHelper = roleAssertHelper;
         this.randomInfoGenerator = randomInfoGenerator;
         this.roleC7nMapper = roleC7nMapper;
-        this.projectUserService = projectUserService;
+        this.projectPermissionService = projectPermissionService;
         this.roleRepository = roleRepository;
-        this.projectUserMapper = projectUserMapper;
+        this.projectPermissionMapper = projectPermissionMapper;
         this.projectAssertHelper = projectAssertHelper;
         this.userMapper = userMapper;
         this.messageClient = messageClient;
@@ -275,7 +275,7 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    projectUserService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds);
+                    projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());
@@ -376,7 +376,7 @@ public class ExcelImportUserTask {
         memberRole.setMemberType("user");
         memberRole.setMemberId(userId);
         memberRole.setRoleId(roleId);
-        if (!CollectionUtils.isEmpty(projectUserMapper.selectByRoleIdAndUserId(roleId, sourceId, userId))) {
+        if (!CollectionUtils.isEmpty(projectPermissionMapper.selectByRoleIdAndUserId(roleId, sourceId, userId))) {
             emr.setCause("该用户已经被分配了该角色，sourceId={" + sourceId + "}");
             errorMemberRoles.add(emr);
             return null;

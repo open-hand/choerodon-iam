@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.app.service.ProjectPermissionService;
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 
 
@@ -28,11 +28,11 @@ public class OrganizationListener {
     private final Gson gson = new Gson();
 
     private LdapC7nService ldapC7nService;
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
 
-    public OrganizationListener(LdapC7nService ldapC7nService,ProjectUserService projectUserService) {
+    public OrganizationListener(LdapC7nService ldapC7nService,ProjectPermissionService projectPermissionService) {
         this.ldapC7nService = ldapC7nService;
-        this.projectUserService = projectUserService;
+        this.projectPermissionService = projectPermissionService;
     }
 
     @SagaTask(code = TASK_CREATE_LDAP_AUTO, sagaCode = CREATE_LDAP_AUTO, seq = 10, description = "ldap自动同步创建/删除quartzTask")
@@ -44,9 +44,9 @@ public class OrganizationListener {
 
     @SagaTask(code = TASK_PROJECT_IMPORT_USER, sagaCode = PROJECT_IMPORT_USER, seq = 10, description = "项目层导入用户")
     public void projectImportUser(String message) {
-        List<ProjectUserDTO> userDTOList = gson.fromJson(message,
-                new TypeToken<List<ProjectUserDTO>>() {
+        List<ProjectPermissionDTO> userDTOList = gson.fromJson(message,
+                new TypeToken<List<ProjectPermissionDTO>>() {
                 }.getType());
-        projectUserService.assignUsersProjectRoles(userDTOList.get(0).getMemberId(), userDTOList);
+        projectPermissionService.assignUsersProjectRoles(userDTOList.get(0).getMemberId(), userDTOList);
     }
 }

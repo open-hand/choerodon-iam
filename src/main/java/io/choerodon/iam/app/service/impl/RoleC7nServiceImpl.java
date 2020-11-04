@@ -49,15 +49,15 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
 
     private RoleC7nMapper roleC7nMapper;
-    private ProjectUserMapper projectUserMapper;
+    private ProjectPermissionMapper projectPermissionMapper;
     private ProjectMapper projectMapper;
     private RoleMapper roleMapper;
     private UserC7nMapper userC7nMapper;
     private ClientC7nMapper clientC7nMapper;
 
-    public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectUserMapper projectUserMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
+    public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectPermissionMapper projectPermissionMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
         this.roleC7nMapper = roleC7nMapper;
-        this.projectUserMapper = projectUserMapper;
+        this.projectPermissionMapper = projectPermissionMapper;
         this.projectMapper = projectMapper;
         this.roleMapper = roleMapper;
         this.userC7nMapper = userC7nMapper;
@@ -73,7 +73,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         }
         List<Role> roles = roleC7nMapper.listRolesByTenantIdAndLableWithOptions(projectDTO.getOrganizationId(), LabelC7nConstants.PROJECT_ROLE, param);
         List<io.choerodon.iam.api.vo.agile.RoleVO> roleVOList = ConvertUtils.convertList(roles, io.choerodon.iam.api.vo.agile.RoleVO.class);
-        List<RoleUserCountVO> roleUserCountVOS = projectUserMapper.countProjectRoleUser(projectId);
+        List<RoleUserCountVO> roleUserCountVOS = projectPermissionMapper.countProjectRoleUser(projectId);
         Map<Long, io.choerodon.iam.api.vo.agile.RoleVO> roleMap = roleVOList.stream().collect(Collectors.toMap(RoleDTO::getId, v -> v));
         // 给角色添加用户数
         roleUserCountVOS.forEach(v -> {

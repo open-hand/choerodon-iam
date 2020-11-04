@@ -10,7 +10,6 @@ import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 /**
  * @author scp
  * @since 2020/5/23
- *
  */
 public interface ClientC7nMapper {
 
@@ -20,6 +19,13 @@ public interface ClientC7nMapper {
             @Param("sourceType") String sourceType,
             @Param("clientRoleSearchDTO") ClientRoleQueryVO clientRoleSearchDTO,
             @Param("param") String param);
+
+    List<Long> listClientsInProject(@Param("organizationId") Long organizationId);
+
+    List<Client> listClientByProjectId(@Param("organizationId") Long organizationId,
+                                       @Param("projectId") Long projectId,
+                                       @Param("name") String name,
+                                       @Param("enabledFlag") Integer enabledFlag);
 
     Integer selectClientCountFromMemberRoleByOptions(
             @Param("roleId") Long roleId,

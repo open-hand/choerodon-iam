@@ -73,6 +73,8 @@ public class ClientVO {
     @NotEmpty(message = "error.sourceType.null")
     private String sourceType;
 
+    @ApiModelProperty(value = "项目Id")
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -193,5 +195,13 @@ public class ClientVO {
     public ClientVO setAccessRoles(String accessRoles) {
         this.accessRoles = accessRoles;
         return this;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

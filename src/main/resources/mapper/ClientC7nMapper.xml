@@ -51,4 +51,45 @@
         </if>
         ) t
     </select>
+
+    <select id="listClientsInProject" resultType="java.lang.Long">
+        SELECT
+            oc.id
+        FROM
+            oauth_client oc
+        WHERE
+            oc.id IN (
+                SELECT
+                    ocr.client_id
+                FROM
+                    fd_project fp
+                    JOIN oauth_client_resource ocr ON ocr.source_id = fp.id
+                                                      AND ocr.source_type = 'project'
+                WHERE
+                    fp.ORGANIZATION_ID = #{organizationId}
+            )
+    </select>
+
+    <select id="listClientByProjectId" resultType="org.hzero.iam.domain.entity.Client">
+        SELECT
+            oc.id,
+            oc. NAME AS NAME,
+            oc.organization_id,
+            httl.tenant_name,
+            oc.authorized_grant_types,
+            oc.object_version_number,
+            oc.enabled_flag
+        FROM
+            oauth_client oc
+            JOIN oauth_client_resource ocr on ocr.client_id=oc.id and ocr.source_type='project' and ocr.source_id=#{projectId}
+        where
+            oc.organization_id=#{organizationId}
+        <if test="name != null and name != ''">
+            <bind name="nameLike" value="'%' + name + '%'"/>
+            AND oc.name LIKE #{nameLike}
+        </if>
+        <if test="enabledFlag != null">
+            AND oc.enabled_flag = #{enabledFlag}
+        </if>
+    </select>
 </mapper>

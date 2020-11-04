@@ -25,7 +25,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.QuickLinkDTO;
 import io.choerodon.iam.infra.enums.QuickLinkShareScopeEnum;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.QuickLinkMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -54,7 +54,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
     @Autowired
     private ProjectMapper projectMapper;
     @Autowired
-    private ProjectUserMapper projectUserMapper;
+    private ProjectPermissionMapper projectPermissionMapper;
     @Autowired
     private OrganizationProjectC7nService organizationProjectC7nService;
 
@@ -146,7 +146,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
 
         Page<QuickLinkVO> page = new Page<QuickLinkVO>();
         if (Boolean.FALSE.equals(userDetails.getAdmin()) && Boolean.FALSE.equals(userC7nService.checkIsOrgRoot(organizationId, userId))) {
-            List<ProjectDTO> projectDTOS = projectUserMapper.listOwnedProject(organizationId, userId);
+            List<ProjectDTO> projectDTOS = projectPermissionMapper.listOwnedProject(organizationId, userId);
             Set<Long> pIds;
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 pIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());

@@ -195,7 +195,7 @@ public class OrganizationProjectC7nController extends BaseController {
     /**
      * 查询当前用户最近访问项目信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "查询当前用户最近访问信息")
     @GetMapping(value = "/latest_visit")
     public ResponseEntity<List<ProjectVisitInfoVO>> queryLatestVisitProjectInfo(

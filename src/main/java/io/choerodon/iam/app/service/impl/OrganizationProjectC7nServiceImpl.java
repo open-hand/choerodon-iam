@@ -148,6 +148,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              @Lazy ProjectUserService projectUserService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
+                                             @Lazy
                                              MessageSendService messageSendService,
                                              RedisTemplate<String, String> redisTemplate,
                                              @Lazy StarProjectService starProjectService
@@ -173,6 +174,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.asgardFeignClient = asgardFeignClient;
         this.messageSendService = messageSendService;
     }
+
 
 
     @Override

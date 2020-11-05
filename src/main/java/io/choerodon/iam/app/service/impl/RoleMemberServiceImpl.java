@@ -138,6 +138,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  MemberRoleRepository memberRoleRepository,
                                  @Lazy
                                  MessageSendService messageSendService,
+                                 @Lazy
                                  UserC7nService userC7nService,
                                  @Lazy
                                          ProjectC7nService projectC7nService) {

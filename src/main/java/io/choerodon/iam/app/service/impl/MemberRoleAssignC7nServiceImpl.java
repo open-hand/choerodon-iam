@@ -55,7 +55,6 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                 }
                 List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());
                 if (labelList.contains(RoleLabelEnum.PROJECT_ROLE.value())
-                        && (memberRole.getMemberType().equals(MemberType.USER.value()))
                         && (CollectionUtils.isEmpty(memberRole.getAdditionalParams())
                         || ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))
                         || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE)))) {

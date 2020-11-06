@@ -291,7 +291,7 @@ public class MessageSendServiceImpl implements MessageSendService {
                 return;
             }
             // 默认为0L,都填0L,可不填写
-            messageSender.setTenantId(0L);
+            messageSender.setTenantId(tenant.getTenantId());
             // 接收者为组织下所有成员
             List<Receiver> receiverList = new ArrayList<>();
             List<User> users = tenantC7nMapper.listMemberIds(tenant.getTenantId());

@@ -87,4 +87,7 @@ public interface TenantC7nService {
      * @param organizationId 组织id
      */
     int countProjectNum(Long organizationId);
+
+    Tenant queryDefault();
+
 }

@@ -25,7 +25,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class EnterpriseInfoDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt
     @ApiModelProperty(value = "主键ID")
     private Long id;
 

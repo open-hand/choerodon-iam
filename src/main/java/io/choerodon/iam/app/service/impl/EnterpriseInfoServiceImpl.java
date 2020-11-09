@@ -17,6 +17,8 @@ import org.springframework.util.CollectionUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.EnterpriseInfoVO;
 import io.choerodon.iam.app.service.EnterpriseInfoService;
 import io.choerodon.iam.infra.dto.EnterpriseInfoDTO;
@@ -54,6 +56,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     public Boolean checkEnterpriseInfoComplete() {
+        // 只校验admin账户,不是默认的admin账户直接返回true
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (!userDetails.getUsername().equals("admin")) {
+            return true;
+        }
+
         List<EnterpriseInfoDTO> enterpriseInfoDTOS = enterpriseInfoMapper.selectAll();
         return CollectionUtils.isEmpty(enterpriseInfoDTOS);
     }

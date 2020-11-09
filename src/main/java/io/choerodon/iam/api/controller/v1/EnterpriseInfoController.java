@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +35,7 @@ public class EnterpriseInfoController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "完善企业信息")
     @PutMapping
-    public ResponseEntity<Void> updateEnterpriseInfo(@RequestBody EnterpriseInfoVO enterpriseInfoVO) {
+    public ResponseEntity<Void> updateEnterpriseInfo(@RequestBody @Valid EnterpriseInfoVO enterpriseInfoVO) {
         enterpriseInfoService.saveEnterpriseInfo(enterpriseInfoVO);
         return ResponseEntity.noContent().build();
     }

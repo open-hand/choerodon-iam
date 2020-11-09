@@ -14,7 +14,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @since 2020/11/4 17:42
  */
 public class EnterpriseInfoVO {
-    @Encrypt
     @ApiModelProperty(value = "主键ID")
     private Long id;
 

@@ -67,7 +67,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
-    private static final Integer PROBATION_TIME = 30;
+    private static final Integer PROBATION_TIME = 14;
     private static final String REF_TYPE = "createOrg";
     private static final String ORG_CREATE = "org-create-organization";
 

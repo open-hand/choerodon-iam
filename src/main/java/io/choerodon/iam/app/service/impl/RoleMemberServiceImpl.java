@@ -109,7 +109,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private ExcelImportUserTask.FinishFallback finishFallback;
     private TransactionalProducer producer;
     private MemberRoleService memberRoleService;
-    private ProjectUserMapper projectUserMapper;
+    private ProjectPermissionMapper projectPermissionMapper;
     private MemberRoleRepository memberRoleRepository;
     private MessageClient messageClient;
     private MessageSendService messageSendService;
@@ -128,7 +128,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ClientMapper clientMapper,
                                  UploadHistoryMapper uploadHistoryMapper,
                                  OrganizationUserService organizationUserService,
-                                 ProjectUserMapper projectUserMapper,
+                                 ProjectPermissionMapper projectPermissionMapper,
                                  UserMapper userMapper,
                                  ProjectAssertHelper projectAssertHelper,
                                  ExcelImportUserTask excelImportUserTask,
@@ -157,7 +157,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         this.finishFallback = finishFallback;
         this.memberRoleService = memberRoleService;
         this.projectAssertHelper = projectAssertHelper;
-        this.projectUserMapper = projectUserMapper;
+        this.projectPermissionMapper = projectPermissionMapper;
         this.messageClient = messageClient;
         this.producer = producer;
         this.memberRoleRepository = memberRoleRepository;
@@ -577,9 +577,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                       Long userId) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
         // 当前项目需要删除的 memberRoleIds
-        List<MemberRole> projectMemberRoles = projectUserMapper.listMemberRoleByProjectIdAndUserId(sourceId, userId, roleIds);
+        List<MemberRole> projectMemberRoles = projectPermissionMapper.listMemberRoleByProjectIdAndUserId(sourceId, userId, roleIds);
         // 获取当前用户在该组织下其他项目用到的memberRoleIds
-        List<Long> otherMemberRoleIds = projectUserMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId(), roleIds).stream().map(MemberRole::getId).collect(Collectors.toList());
+        List<Long> otherMemberRoleIds = projectPermissionMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId(), roleIds).stream().map(MemberRole::getId).collect(Collectors.toList());
         // 组织层和项目层都要被删除的角色
         List<MemberRole> delMemberRoles = new ArrayList<>();
         projectMemberRoles.forEach(t -> {
@@ -590,7 +590,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (!CollectionUtils.isEmpty(delMemberRoles)) {
             memberRoleService.batchDeleteMemberRole(sourceId, delMemberRoles);
         }
-        projectUserMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toSet()));
+        projectPermissionMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toSet()));
 
     }
 
@@ -842,7 +842,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventMsg.setUserId(userId);
         userMemberEventMsg.setSyncAll(syncAll);
         if (!CollectionUtils.isEmpty(roleIds)) {
-            Set<Long> allRoleIds = projectUserMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null).stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
+            Set<Long> allRoleIds = projectPermissionMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null).stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
             allRoleIds.removeAll(roleIds);
             userMemberEventMsg.setRoleLabels(labelC7nMapper.selectLabelNamesInRoleIds(allRoleIds));
         }

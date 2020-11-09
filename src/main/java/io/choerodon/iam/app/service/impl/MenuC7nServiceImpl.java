@@ -69,7 +69,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private MenuMapper menuMapper;
     private MemberRoleC7nMapper memberRoleC7nMapper;
     private RoleC7nMapper roleC7nMapper;
-    private ProjectUserMapper projectUserMapper;
+    private ProjectPermissionMapper projectPermissionMapper;
     private ProjectC7nService projectC7nService;
     private UserC7nMapper userC7nMapper;
     private RedisTemplate<String, String> redisTemplate;
@@ -84,7 +84,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                               UserRepository userRepository,
                               MemberRoleC7nMapper memberRoleC7nMapper,
                               RoleC7nMapper roleC7nMapper,
-                              ProjectUserMapper projectUserMapper,
+                              ProjectPermissionMapper projectPermissionMapper,
                               ProjectC7nService projectC7nService,
                               UserC7nMapper userC7nMapper,
                               RedisTemplate<String, String> redisTemplate,
@@ -103,7 +103,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         this.userRepository = userRepository;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
         this.roleC7nMapper = roleC7nMapper;
-        this.projectUserMapper = projectUserMapper;
+        this.projectPermissionMapper = projectPermissionMapper;
         this.projectC7nService = projectC7nService;
         this.userC7nMapper = userC7nMapper;
     }
@@ -159,7 +159,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                 Role tenantAdminRole = roleC7nMapper.getTenantAdminRole(projectDTO.getOrganizationId());
                 roleIds.add(tenantAdminRole.getId());
             } else {
-                List<RoleDTO> roleDTOS = projectUserMapper.listRolesByProjectIdAndUserId(projectId, userDetails.getUserId());
+                List<RoleDTO> roleDTOS = projectPermissionMapper.listRolesByProjectIdAndUserId(projectId, userDetails.getUserId());
                 if (CollectionUtils.isEmpty(roleDTOS)) {
                     throw new CommonException("error.not.project.member");
                 }

@@ -5,6 +5,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.iam.domain.entity.Client;
 
 import java.util.List;
@@ -45,4 +46,9 @@ public interface ClientC7nService {
     void assignRoles(Long organizationId, Long clientId, List<Long> roleIds);
 
     ClientVO create(ClientVO clientVO);
+
+    void delete(Long tenantId, Long clientId);
+
+    Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest);
+
 }

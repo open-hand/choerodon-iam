@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.api.vo.UserRoleVO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
@@ -94,6 +95,11 @@ public interface RoleC7nMapper {
                                           @Param("orgIds") Set<Long> orgIds);
 
     List<Role> listByTenantId(@Param("tenantId") Long tenantId);
+
+    List<Role> listMemberRolesForProjectClient(@Param("tenantId") Long tenantId,
+                                               @Param("clientId") Long clientId,
+                                               @Param("projectId") Long projectId,
+                                               @Param("roleName") String roleName);
 
     /**
      * 查询用户组织层角色标签

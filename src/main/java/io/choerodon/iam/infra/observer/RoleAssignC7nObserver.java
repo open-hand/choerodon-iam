@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
@@ -35,7 +35,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private LabelC7nMapper labelC7nMapper;
     @Autowired
     @Lazy
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
     @Autowired
     @Lazy
     private UserAssertHelper userAssertHelper;
@@ -59,7 +59,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                     }
                 }
             }
-            projectUserService.assignUsersProjectRolesEvent(memberRoleList.get(0).getSourceId(), ResourceLevel.ORGANIZATION, userRoleLabelsMap);
+            projectPermissionService.assignUsersProjectRolesEvent(memberRoleList.get(0).getSourceId(), ResourceLevel.ORGANIZATION, userRoleLabelsMap);
 
         }
     }

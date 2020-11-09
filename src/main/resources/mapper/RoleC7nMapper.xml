@@ -176,7 +176,7 @@
             fp.name AS proj_name,
             2 as sort
             FROM iam_member_role imr
-            inner join fd_project_user fpu on fpu.MEMBER_ROLE_ID = imr.id
+            inner join fd_project_permission fpu on fpu.MEMBER_ROLE_ID = imr.id
             INNER JOIN fd_project fp ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_role ir ON imr.role_id = ir.id
             inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
@@ -310,7 +310,7 @@
         INNER JOIN iam_role ir ON ir.id = imr.role_id
         INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{roleLabelDataType} AND data_id = ir.id
         INNER JOIN iam_label il ON il.id = hlr.label_id
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         <where>
             imr.member_type = 'user' AND imr.member_id =#{userId}
             AND fpu.PROJECT_ID = #{projectId} AND il.name = 'PROJECT_ROLE'
@@ -368,6 +368,39 @@
         WHERE
             il.id = hlr.label_id
             AND il.`name` LIKE concat(concat('%', 'TENANT'), '%')
+    </select>
+    
+    <select id="listMemberRolesForProjectClient" resultType="org.hzero.iam.domain.entity.Role">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+            imr.id member_role_id,
+            ir.id,
+            ir. CODE AS CODE,
+            ir.fd_level,
+            irt. NAME AS NAME,
+            ir.h_tenant_id,
+            ir.h_parent_role_assign_level,
+            ir.h_parent_role_assign_level_val,
+            imr.start_date_active,
+            imr.end_date_active
+        FROM
+            iam_member_role imr
+            JOIN iam_role ir ON ir.id = imr.role_id
+            JOIN iam_role_tl irt ON (
+            ir.id = irt.id
+            AND irt.lang = #{lang}
+            )
+            JOIN fd_project_permission fpp ON fpp.MEMBER_ROLE_ID = imr.id
+                                              AND fpp.project_id = #{projectId}
+        WHERE
+            imr.member_id = #{clientId}
+            AND imr.member_type = 'client'
+            AND ir.is_enabled = 1
+            AND ir.h_tenant_id = #{tenantId}
+        <if test="roleName != null and roleName != ''">
+            <bind name="nameLike" value="'%' + roleName + '%'" />
+            and irt.name LIKE #{nameLike}
+        </if>
     </select>
 
 </mapper>

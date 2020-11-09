@@ -34,6 +34,7 @@ import org.hzero.iam.infra.mapper.TenantMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +66,9 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     public static final String LDAP_TEMPLATE = "ldapTemplate";
 
     private static final String OBJECT_CLASS = "objectclass";
+
+    @Value("${spring.application.name}")
+    private String APPLICATION_NAME;
 
     @Autowired
     private LdapAutoMapper ldapAutoMapper;
@@ -217,7 +221,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         mapParams.put(SYNC_TYPE, LdapType.AUTO.value());
         scheduleTaskDTO.setParams(mapParams);
 
-        scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId(), EXECUTE_METHOD,"hzero-iam").getId());
+        scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId(), EXECUTE_METHOD, APPLICATION_NAME).getId());
 
         ldapAutoDTO.setQuartzTaskId(asgardServiceClientOperator.createQuartzTask(ldapAutoTaskEventPayload.getOrganizationId(), scheduleTaskDTO).getId());
         if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {

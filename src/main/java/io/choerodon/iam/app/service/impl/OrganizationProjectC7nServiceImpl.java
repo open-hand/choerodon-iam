@@ -140,6 +140,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
+                                             @Lazy
                                              UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
@@ -147,6 +148,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              @Lazy ProjectPermissionService projectPermissionService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
+                                             @Lazy
                                              MessageSendService messageSendService,
                                              RedisTemplate<String, String> redisTemplate,
                                              @Lazy StarProjectService starProjectService
@@ -172,6 +174,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.asgardFeignClient = asgardFeignClient;
         this.messageSendService = messageSendService;
     }
+
 
 
     @Override

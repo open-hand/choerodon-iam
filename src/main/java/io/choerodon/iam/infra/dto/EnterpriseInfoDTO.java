@@ -36,6 +36,8 @@ public class EnterpriseInfoDTO extends AuditDomain {
     private String adminPhone;
     @ApiModelProperty(value = "admin邮箱")
     private String adminEmail;
+    @ApiModelProperty(value = "公司名称")
+    private String enterpriseName;
     @ApiModelProperty(value = "公司规模")
     private String enterpriseScale;
     @ApiModelProperty(value = "所属行业")
@@ -97,6 +99,14 @@ public class EnterpriseInfoDTO extends AuditDomain {
         this.enterpriseType = enterpriseType;
     }
 
+    public String getEnterpriseName() {
+        return enterpriseName;
+    }
+
+    public void setEnterpriseName(String enterpriseName) {
+        this.enterpriseName = enterpriseName;
+    }
+
     @Override
     public String toString() {
         return "EnterpriseInfoDTO{" +
@@ -105,6 +115,7 @@ public class EnterpriseInfoDTO extends AuditDomain {
                 ", adminName='" + adminName + '\'' +
                 ", adminPhone='" + adminPhone + '\'' +
                 ", adminEmail='" + adminEmail + '\'' +
+                ", enterpriseName='" + enterpriseName + '\'' +
                 ", enterpriseScale='" + enterpriseScale + '\'' +
                 ", enterpriseType='" + enterpriseType + '\'' +
                 '}';

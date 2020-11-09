@@ -20,6 +20,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_enterprise_info.groovy') {
             column(name: 'ADMIN_EMAIL', type: 'VARCHAR(128)', remarks: '管理员邮箱地址') {
                 constraints(nullable: false)
             }
+            column(name: 'ENTERPRISE_NAME', type: 'INT UNSIGNED', remarks: '公司名称') {
+                constraints(nullable: false)
+            }
             column(name: 'ENTERPRISE_SCALE', type: 'INT UNSIGNED', remarks: '公司规模') {
                 constraints(nullable: false)
             }

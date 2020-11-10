@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.iam.api.vo.EnterpriseInfoVO;
@@ -35,7 +36,7 @@ public class EnterpriseInfoController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "完善企业信息")
     @PutMapping
-    public ResponseEntity<Void> updateEnterpriseInfo(@RequestBody @Valid EnterpriseInfoVO enterpriseInfoVO) {
+    public ResponseEntity<Void> updateEnterpriseInfo(@RequestBody @Validated EnterpriseInfoVO enterpriseInfoVO) {
         enterpriseInfoService.saveEnterpriseInfo(enterpriseInfoVO);
         return ResponseEntity.noContent().build();
     }

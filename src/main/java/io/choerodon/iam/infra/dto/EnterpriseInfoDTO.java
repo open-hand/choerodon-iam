@@ -30,18 +30,21 @@ public class EnterpriseInfoDTO extends AuditDomain {
 
     @ApiModelProperty(value = "组织名称")
     private String organizationName;
-    @ApiModelProperty(value = "admin姓名")
-    private String adminName;
-    @ApiModelProperty(value = "admin手机号")
-    private String adminPhone;
-    @ApiModelProperty(value = "admin邮箱")
-    private String adminEmail;
     @ApiModelProperty(value = "公司名称")
     private String enterpriseName;
-    @ApiModelProperty(value = "公司规模")
-    private String enterpriseScale;
     @ApiModelProperty(value = "所属行业")
     private String enterpriseType;
+    @ApiModelProperty(value = "公司规模")
+    private String enterpriseScale;
+
+    @ApiModelProperty(value = "admin姓名")
+    private String adminName;
+    @ApiModelProperty(value = "admin邮箱")
+    private String adminEmail;
+    @ApiModelProperty(value = "admin手机号")
+    private String adminPhone;
+
+
 
     public Long getId() {
         return id;

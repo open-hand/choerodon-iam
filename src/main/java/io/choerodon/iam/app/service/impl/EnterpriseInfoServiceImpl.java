@@ -63,7 +63,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         List<EnterpriseInfoDTO> enterpriseInfoDTOS = enterpriseInfoMapper.selectAll();
-        return CollectionUtils.isEmpty(enterpriseInfoDTOS);
+        return !CollectionUtils.isEmpty(enterpriseInfoDTOS);
     }
 
     @Override

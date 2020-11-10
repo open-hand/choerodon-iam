@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.retrofit;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 import io.choerodon.iam.api.vo.EnterpriseInfoVO;
@@ -15,6 +16,6 @@ import io.choerodon.iam.api.vo.EnterpriseInfoVO;
  */
 public interface IamClient {
 
-    @POST("/iam/choerodon/v1/enterprises")
-    Call<ResponseBody> saveEnterpriseInfo(EnterpriseInfoVO enterpriseInfoVO);
+    @POST("/iam/choerodon/v1/site/enterprises")
+    Call<ResponseBody> saveEnterpriseInfo(@Body EnterpriseInfoVO enterpriseInfoVO);
 }

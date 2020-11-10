@@ -2,9 +2,10 @@ package io.choerodon.iam.api.vo;
 
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.core.util.Regexs;
 
 /**
  * 〈功能简述〉
@@ -24,10 +25,10 @@ public class EnterpriseInfoVO {
     @NotNull(message = "error.admin.name.is.null")
     private String adminName;
     @ApiModelProperty(value = "admin手机号")
-    @NotNull(message = "error.admin.phone.is.null")
+    @Pattern(regexp = Regexs.MOBILE, message = "error.admin.phone.format.invalid")
     private String adminPhone;
     @ApiModelProperty(value = "admin邮箱")
-    @NotNull(message = "error.admin.email.is.null")
+    @Pattern(regexp = Regexs.EMAIL, message = "error.admin.email.format.invalid")
     private String adminEmail;
     @ApiModelProperty(value = "公司名称")
     @NotNull(message = "error.enterprise.name.is.null")

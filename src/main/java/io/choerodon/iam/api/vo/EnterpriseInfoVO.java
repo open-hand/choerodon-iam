@@ -29,6 +29,9 @@ public class EnterpriseInfoVO {
     @ApiModelProperty(value = "admin邮箱")
     @NotNull(message = "error.admin.email.is.null")
     private String adminEmail;
+    @ApiModelProperty(value = "公司名称")
+    @NotNull(message = "error.enterprise.name.is.null")
+    private String enterpriseName;
     @ApiModelProperty(value = "公司规模")
     @NotNull(message = "error.enterprise.scale.is.null")
     private String enterpriseScale;
@@ -92,6 +95,14 @@ public class EnterpriseInfoVO {
         this.enterpriseType = enterpriseType;
     }
 
+    public String getEnterpriseName() {
+        return enterpriseName;
+    }
+
+    public void setEnterpriseName(String enterpriseName) {
+        this.enterpriseName = enterpriseName;
+    }
+
     @Override
     public String toString() {
         return "EnterpriseInfoVO{" +
@@ -100,6 +111,7 @@ public class EnterpriseInfoVO {
                 ", adminName='" + adminName + '\'' +
                 ", adminPhone='" + adminPhone + '\'' +
                 ", adminEmail='" + adminEmail + '\'' +
+                ", enterpriseName='" + enterpriseName + '\'' +
                 ", enterpriseScale='" + enterpriseScale + '\'' +
                 ", enterpriseType='" + enterpriseType + '\'' +
                 '}';

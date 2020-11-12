@@ -19,6 +19,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
     public void configure(InterceptorChainBuilder<User> builder) {
         builder
                 .selectChain(UserOperation.CREATE_USER)
+                .pre()
+                .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .post()
                 .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
 

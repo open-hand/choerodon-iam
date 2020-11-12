@@ -749,7 +749,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
     }
 
-    private void checkEmail(User user) {
+    @Override
+    public void checkEmail(User user) {
         boolean createCheck = StringUtils.isEmpty(user.getId());
         String email = user.getEmail();
         User userDTO = new User();

@@ -312,4 +312,5 @@ public interface UserC7nService {
 
     List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 
+    void checkEmail(User user);
 }

@@ -58,7 +58,7 @@ public class UserValidator {
      *
      * @param email 用户邮箱
      */
-    private static void validateEmail(String email) {
+    public static void validateEmail(String email) {
         if (StringUtils.isEmpty(email)) {
             throw new CommonException("error.user.email.empty");
         }

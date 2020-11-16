@@ -19,6 +19,7 @@ import org.hzero.iam.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +44,7 @@ public class MessageSendServiceImpl implements MessageSendService {
     private ProjectMapper projectMapper;
 
     @Autowired
+    @Lazy
     private UserC7nService userC7nService;
 
     @Autowired

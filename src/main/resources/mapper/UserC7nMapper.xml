@@ -966,10 +966,15 @@
         where iu.is_enabled = 1
         <choose>
             <when test="sourceType == 'site'">
-                and (
-                iu.real_name like concat('%', concat(#{userName}, '%'))
-                or iu.login_name like concat('%', concat(#{userName}, '%'))
-                )
+                <if test="exactMatchFlag == true">
+                    and (iu.real_name = #{userName} or iu.login_name = #{userName})
+                </if>
+                <if test="exactMatchFlag == null or exactMatchFlag == false">
+                    and (
+                    iu.real_name like concat('%', concat(#{userName}, '%'))
+                    or iu.login_name like concat('%', concat(#{userName}, '%'))
+                    )
+                </if>
             </when>
             <otherwise>
                 and (iu.real_name = #{userName} or iu.login_name = #{userName})

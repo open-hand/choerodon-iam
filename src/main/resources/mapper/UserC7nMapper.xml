@@ -980,10 +980,16 @@
             select iu2.*
             from iam_user iu2
             where iu2.is_enabled = 1
-            and (
-            iu2.real_name like concat('%', concat(#{userName}, '%'))
-            or iu2.login_name like concat('%', concat(#{userName}, '%'))
-            )
+            <if test="exactMatchFlag == true">
+                and (iu2.real_name = #{userName} or iu2.login_name = #{userName})
+            </if>
+            <if test="exactMatchFlag == null or exactMatchFlag == false">
+                and (
+                iu2.real_name like concat('%', concat(#{userName}, '%'))
+                or iu2.login_name like concat('%', concat(#{userName}, '%'))
+                )
+            </if>
+
             <if test="sourceType == 'organization'">
                 and iu2.organization_id = #{sourceId}
             </if>

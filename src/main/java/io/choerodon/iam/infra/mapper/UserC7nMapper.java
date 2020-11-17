@@ -241,11 +241,13 @@ public interface UserC7nMapper {
      * @param sourceType 资源层级
      * @param sourceId   资源Id
      * @param userName   用户名
+     * @param exactMatchFlag
      * @return 启用状态的用户列表
      */
     List<User> listEnableUsersByName(@Param("sourceType") String sourceType,
                                      @Param("sourceId") Long sourceId,
-                                     @Param("userName") String userName);
+                                     @Param("userName") String userName,
+                                     @Param("exactMatchFlag") Boolean exactMatchFlag);
 
     /**
      * 根据组织Id和用户Id查询该用户是否分配了组织管理员角色.

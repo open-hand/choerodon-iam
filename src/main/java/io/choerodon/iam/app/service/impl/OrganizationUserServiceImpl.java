@@ -163,7 +163,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
         List<UserDTO> userList = userDTOSPage.getContent();
         List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());
-        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds, ORG_USER_CREAT));
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap =new HashMap<>();
+        if (CollectionUtils.isEmpty(refIds)){
+            stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds, ORG_USER_CREAT));
+        }
         // 添加用户角色
         if (!CollectionUtils.isEmpty(userList)) {
             Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
@@ -171,6 +174,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             if (!CollectionUtils.isEmpty(memberRoles)) {
                 Map<Long, List<MemberRole>> roleMap = memberRoles.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
+                Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
                 userList.forEach(user -> {
                     List<MemberRole> memberRoleList = roleMap.get(user.getId());
                     if (!CollectionUtils.isEmpty(memberRoleList)) {
@@ -178,7 +182,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     }
                     //用户状态启用
                     if (user.getEnabled()) {
-                        user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(user.getId())));
+                        user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(user.getId())));
                     }
                 });
             }

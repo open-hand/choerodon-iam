@@ -153,7 +153,7 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/organizations/{organization_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @RequestParam(name = "user_name") String userName,
-                                                                   @RequestParam(name = "exactMatchFlag", required = false) Boolean exactMatchFlag) {
+                                                                   @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.ORGANIZATION.value(), organizationId, userName, exactMatchFlag), HttpStatus.OK);
     }
@@ -163,7 +163,7 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/projects/{project_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                               @RequestParam(name = "user_name") String userName,
-                                                              @RequestParam(name = "exactMatchFlag", required = false) Boolean exactMatchFlag) {
+                                                              @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.PROJECT.value(), projectId, userName, exactMatchFlag), HttpStatus.OK);
     }
@@ -173,7 +173,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "全局层查询启用状态的用户列表")
     @GetMapping(value = "/site/enableUsers")
     public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName,
-                                                           @RequestParam(name = "exactMatchFlag", required = false) Boolean exactMatchFlag) {
+                                                           @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
                 (ResourceLevel.SITE.value(), 0L, userName, exactMatchFlag), HttpStatus.OK);
     }

@@ -181,8 +181,8 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         Assert.notNull(id, ResourceCheckConstants.ERROR_TARGET_ID_IS_NULL);
 
         QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
-        if (Boolean.FALSE.equals(quickLinkDTO.getTop())) {
-            quickLinkDTO.setTop(true);
+        if (Boolean.FALSE.equals(quickLinkDTO.getTopFlag())) {
+            quickLinkDTO.setTopFlag(true);
             if (quickLinkMapper.updateByPrimaryKeySelective(quickLinkDTO) != 1) {
                 throw new CommonException(ERROR_UPDATE_QUICK_LINK_FAILED);
             }
@@ -195,8 +195,8 @@ public class QuickLinkServiceImpl implements QuickLinkService {
         Assert.notNull(id, ResourceCheckConstants.ERROR_TARGET_ID_IS_NULL);
 
         QuickLinkDTO quickLinkDTO = quickLinkMapper.selectByPrimaryKey(id);
-        if (Boolean.TRUE.equals(quickLinkDTO.getTop())) {
-            quickLinkDTO.setTop(false);
+        if (Boolean.TRUE.equals(quickLinkDTO.getTopFlag())) {
+            quickLinkDTO.setTopFlag(false);
             if (quickLinkMapper.updateByPrimaryKeySelective(quickLinkDTO) != 1) {
                 throw new CommonException(ERROR_UPDATE_QUICK_LINK_FAILED);
             }

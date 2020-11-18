@@ -52,7 +52,7 @@ public class QuickLinkDTO extends AuditDomain {
     private String scope;
 
     @ApiModelProperty(value = "是否置顶")
-    private Boolean top;
+    private Boolean topFlag;
 
     public Long getId() {
         return id;
@@ -102,11 +102,11 @@ public class QuickLinkDTO extends AuditDomain {
         this.scope = scope;
     }
 
-    public Boolean getTop() {
-        return top;
+    public Boolean getTopFlag() {
+        return topFlag;
     }
 
-    public void setTop(Boolean top) {
-        this.top = top;
+    public void setTopFlag(Boolean topFlag) {
+        this.topFlag = topFlag;
     }
 }

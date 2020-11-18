@@ -89,7 +89,11 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                 }
             }
             if (!CollectionUtils.isEmpty(userMemberEventPayloads)) {
-                roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
+                Long userId = 0L;
+                if (DetailsHelper.getUserDetails() != null) {
+                    userId = DetailsHelper.getUserDetails().getUserId();
+                }
+                roleMemberService.updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
             }
         }
 

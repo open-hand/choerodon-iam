@@ -46,6 +46,7 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
      * @param memberRoleList 成员角色
      */
     protected void checkValidityAndInit(List<MemberRole> memberRoleList) {
+        super.checkValidityAndInit(memberRoleList);
         Map<Long, List<MemberRole>> listMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
         for (Long memberId : listMap.keySet()) {
             List<Long> oldTenantRoleIds = memberRoleC7nMapper.listRoleByUserIdAndLevel(memberId, ResourceLevel.ORGANIZATION.value()).stream().map(Role::getId).collect(Collectors.toList());
@@ -62,7 +63,6 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                 }
             }
         }
-        super.checkValidityAndInit(memberRoleList);
     }
 
     protected void saveMemberRole(List<MemberRole> memberRoleList) {

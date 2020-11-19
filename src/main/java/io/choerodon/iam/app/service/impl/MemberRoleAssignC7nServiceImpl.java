@@ -60,7 +60,7 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
     /**
      *  原本用于hzero界面操作 同步gitlab角色
      *  但是已经有了 {@link RoleAssignC7nObserver}
-     *  测试没有问题 在下个版本删除
+     *  在下个版本删除
      */
 //    protected void saveMemberRole(List<MemberRole> memberRoleList) {
 //        super.saveMemberRole(memberRoleList);

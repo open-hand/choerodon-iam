@@ -57,4 +57,29 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
         }
     }
 
+    /**
+     * 重写批量移除角色
+     * 不能在hzero界面移除项目层角色
+     * c7n未使用发方法
+     *
+     * @param memberRoleList
+     * @param checkAuth
+     */
+    @Override
+    public void revokeMemberRole(List<MemberRole> memberRoleList, boolean checkAuth) {
+        if (CollectionUtils.isEmpty(memberRoleList)) {
+            return;
+        }
+        for (MemberRole memberRole : memberRoleList) {
+            List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());
+            if (labelList.contains(RoleLabelEnum.PROJECT_ROLE.value())
+                    && (CollectionUtils.isEmpty(memberRole.getAdditionalParams())
+                    || ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))
+                    || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE)))) {
+                throw new CommonException("error.role.type");
+            }
+        }
+        super.revokeMemberRole(memberRoleList, checkAuth);
+    }
+
 }

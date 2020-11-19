@@ -23,6 +23,7 @@ import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 
 /**
@@ -38,44 +39,30 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private ProjectUserService projectUserService;
     @Autowired
     @Lazy
-    private UserAssertHelper userAssertHelper;
-    @Autowired
-    @Lazy
     private RoleMemberService roleMemberService;
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
         if (isHzeroMemberRole(memberRoleList)) {
-            Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
-            for (MemberRole memberRole : memberRoleList) {
-                List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(memberRole.getRoleId());
-                if (!CollectionUtils.isEmpty(labelDTOS)) {
-                    Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
-                    Set<String> roleLabels = userRoleLabelsMap.get(memberRole.getMemberId());
-                    if (!CollectionUtils.isEmpty(roleLabels)) {
-                        roleLabels.addAll(labelNames);
-                    } else {
-                        userRoleLabelsMap.put(memberRole.getMemberId(), labelNames);
-                    }
-                }
-            }
+            Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(memberRoleList);
             projectUserService.assignUsersProjectRolesEvent(memberRoleList.get(0).getSourceId(), ResourceLevel.ORGANIZATION, userRoleLabelsMap);
-
         }
     }
 
     @Override
     public void revokeMemberRole(List<MemberRole> memberRoleList) {
         if (isHzeroMemberRole(memberRoleList)) {
-            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-            UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
-            userMemberEventMsg.setResourceId(memberRoleList.get(0).getSourceId());
-            userMemberEventMsg.setResourceType(ResourceLevel.PROJECT.value());
-            User user = userAssertHelper.userNotExisted(DetailsHelper.getUserDetails().getUserId());
-            userMemberEventMsg.setUsername(user.getLoginName());
-            userMemberEventMsg.setUserId(user.getId());
-            roleMemberService.deleteMemberRoleForSaga(user.getId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, memberRoleList.get(0).getSourceId());
-
+            Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(memberRoleList);
+            userRoleLabelsMap.forEach((userId, labels) -> {
+                List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+                UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+                userMemberEventMsg.setResourceId(memberRoleList.get(0).getSourceId());
+                userMemberEventMsg.setResourceType(ResourceLevel.ORGANIZATION.value());
+                userMemberEventMsg.setUserId(userId);
+                userMemberEventMsg.setRoleLabels(labels);
+                userMemberEventPayloads.add(userMemberEventMsg);
+                roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, memberRoleList.get(0).getSourceId());
+            });
         }
     }
 
@@ -86,5 +73,22 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
                 && (memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
                 && (StringUtils.isEmpty(memberRoleList.get(0).getSourceType()) || memberRoleList.get(0).getSourceType().contains(ResourceLevel.ORGANIZATION.value()));
+    }
+
+    private Map<Long, Set<String>> getUserRoleLabelsMap(List<MemberRole> memberRoleList) {
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        for (MemberRole memberRole : memberRoleList) {
+            List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(memberRole.getRoleId());
+            if (!CollectionUtils.isEmpty(labelDTOS)) {
+                Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> roleLabels = userRoleLabelsMap.get(memberRole.getMemberId());
+                if (!CollectionUtils.isEmpty(roleLabels)) {
+                    roleLabels.addAll(labelNames);
+                } else {
+                    userRoleLabelsMap.put(memberRole.getMemberId(), labelNames);
+                }
+            }
+        }
+        return userRoleLabelsMap;
     }
 }

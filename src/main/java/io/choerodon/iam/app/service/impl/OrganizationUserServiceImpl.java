@@ -545,8 +545,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     public static List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles) {
+        return role2MemberRole(organizationId, userId, roles, true);
+    }
+
+    public static List<MemberRole> role2MemberRole(Long organizationId, Long userId, List<Role> roles, Boolean addParams) {
         Map<String, Object> additionalParams = new HashMap<>();
-        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        if (addParams == null || addParams) {
+            additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        }
         return roles.stream().map(role -> {
                     MemberRole memberRole = new MemberRole();
                     memberRole.setAssignLevel(ResourceLevel.ORGANIZATION.value());

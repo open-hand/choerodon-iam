@@ -17,63 +17,13 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
 
     @Override
     public void configure(InterceptorChainBuilder<User> builder) {
-        /**
-         * 覆盖hzero拦截器 改为非异步
-         */
-        builder
-                .selectChain(UserOperation.CREATE_USER)
-                .pre()
-                .addInterceptor(ValidationInterceptor.class)
-                .post()
-                .addInterceptor(CommonMemberRoleInterceptor.class)
-                .addInterceptor(UserConfigInterceptor.class)
-                .addInterceptor(SendMessageInterceptor.class)
-                .addInterceptor(LastHandlerInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.UPDATE_USER)
-                .pre()
-                .addInterceptor(ValidationInterceptor.class)
-                .post()
-                .addInterceptor(CommonMemberRoleInterceptor.class)
-                .addInterceptor(UserConfigInterceptor.class)
-                .addInterceptor(LastHandlerInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.REGISTER_USER)
-                .post()
-                .addInterceptor(RegisterMemberRoleInterceptor.class)
-                .addInterceptor(UserConfigInterceptor.class)
-                .addInterceptor(LastHandlerInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.CREATE_USER_INTERNAL)
-                .pre()
-                .addInterceptor(ValidationInterceptor.class)
-                .post()
-                .addInterceptor(InternalMemberRoleInterceptor.class)
-                .addInterceptor(UserConfigInterceptor.class)
-                .addInterceptor(LastHandlerInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.UPDATE_USER_INTERNAL)
-                .pre()
-                .addInterceptor(ValidationInterceptor.class)
-                .post()
-                .addInterceptor(LastHandlerInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.IMPORT_USER)
-                .post()
-                .addInterceptor(InternalMemberRoleInterceptor.class)
-                .addInterceptor(UserConfigInterceptor.class)
-                .addInterceptor(LastHandlerInterceptor.class);
 
         /**
          * c7n 自定义拦截器
          */
         builder
                 .selectChain(UserOperation.CREATE_USER)
+                .sync()
                 .pre()
                 .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .post()
@@ -81,6 +31,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
+                .sync()
                 .pre()
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
@@ -89,17 +40,20 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
 
         builder
                 .selectChain(UserOperation.UPDATE_USER_INTERNAL)
+                .sync()
                 .pre()
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER)
+                .sync()
                 .pre()
                 .addInterceptor(C7nUserEmailInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)
+                .sync()
                 .pre()
                 .addInterceptor(C7nUserEmailInterceptor.class)
                 .post()
@@ -107,6 +61,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
 
         builder
                 .selectChain(UserOperation.REGISTER_USER)
+                .sync()
                 .pre()
                 .addInterceptor(C7nUserEmailInterceptor.class)
                 .post()

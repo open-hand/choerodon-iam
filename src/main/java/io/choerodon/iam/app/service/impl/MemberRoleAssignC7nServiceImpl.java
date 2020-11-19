@@ -70,7 +70,9 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
         // hzero界面分配角色 同步gitlab角色
         if (!CollectionUtils.isEmpty(memberRoleList)
                 && memberRoleList.get(0).getMemberType().equals(MemberType.USER.value())
-                && !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRoleList.get(0).getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))) {
+                && (CollectionUtils.isEmpty(memberRoleList.get(0).getAdditionalParams())
+                || ObjectUtils.isEmpty(memberRoleList.get(0).getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))
+                || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRoleList.get(0).getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE)))) {
             Map<Long, List<MemberRole>> listMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             Long organizationId = 0L;

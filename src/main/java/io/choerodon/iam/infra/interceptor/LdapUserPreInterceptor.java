@@ -52,7 +52,7 @@ public class LdapUserPreInterceptor implements HandlerInterceptor<User> {
                                 .andEqualTo(Role.FIELD_TENANT_ID, user.getOrganizationId())
                         )
                         .build()).stream().filter(e -> "member".equals(e.getCode())).collect(Collectors.toList());
-                user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), (Long) null, roleList));
+                user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), (Long) null, roleList, false));
             }
         }
     }

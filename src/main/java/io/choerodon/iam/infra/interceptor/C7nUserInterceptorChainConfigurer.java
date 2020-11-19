@@ -77,7 +77,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .pre()
                 .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
@@ -85,7 +85,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorAfter(LdapUserPostInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(LdapUserPostInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER_INTERNAL)
@@ -103,13 +103,13 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .pre()
                 .addInterceptor(C7nUserEmailInterceptor.class)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.REGISTER_USER)
                 .pre()
                 .addInterceptor(C7nUserEmailInterceptor.class)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
     }
 }

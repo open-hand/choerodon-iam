@@ -68,7 +68,9 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
     protected void saveMemberRole(List<MemberRole> memberRoleList) {
         super.saveMemberRole(memberRoleList);
         // hzero界面分配角色 同步gitlab角色
-        if (!CollectionUtils.isEmpty(memberRoleList) && memberRoleList.get(0).getMemberType().equals(MemberType.USER.value())) {
+        if (!CollectionUtils.isEmpty(memberRoleList)
+                && memberRoleList.get(0).getMemberType().equals(MemberType.USER.value())
+                && !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(memberRoleList.get(0).getAdditionalParams().get(MemberRoleConstants.MEMBER_TYPE))) {
             Map<Long, List<MemberRole>> listMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             Long organizationId = 0L;
@@ -77,7 +79,8 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                 if (!CollectionUtils.isEmpty(memberRoles)) {
                     Set<Long> roleIds = memberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
                     Set<String> labelNames = labelC7nMapper.selectLabelNamesInRoleIds(roleIds);
-                    if (!CollectionUtils.isEmpty(roleIds) && labelNames.contains(RoleLabelEnum.TENANT_ROLE.value())) {
+                    if (!CollectionUtils.isEmpty(roleIds)
+                            && labelNames.contains(RoleLabelEnum.TENANT_ROLE.value())) {
                         organizationId = memberRoles.get(0).getSourceId();
                         UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
                         userMemberEventPayload.setUserId(memberId);

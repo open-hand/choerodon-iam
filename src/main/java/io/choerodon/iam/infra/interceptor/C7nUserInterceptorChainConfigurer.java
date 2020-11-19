@@ -17,38 +17,54 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
 
     @Override
     public void configure(InterceptorChainBuilder<User> builder) {
+
+        /**
+         * c7n 自定义拦截器
+         */
         builder
                 .selectChain(UserOperation.CREATE_USER)
+                .sync()
                 .pre()
                 .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
-
-        builder
-                .selectChain(UserOperation.REGISTER_USER)
-                .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
+                .sync()
                 .pre()
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
-                .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
+                .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
+                .post()
+                .addInterceptorAfter(LdapUserPostInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER_INTERNAL)
+                .sync()
                 .pre()
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
 
         builder
-                .selectChain(UserOperation.CREATE_USER_INTERNAL)
-                .post()
-                .addInterceptorAfter(LdapUserPostInterceptor.class, UserConfigInterceptor.class);
+                .selectChain(UserOperation.UPDATE_USER)
+                .sync()
+                .pre()
+                .addInterceptor(C7nUserEmailInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)
+                .sync()
+                .pre()
+                .addInterceptor(C7nUserEmailInterceptor.class)
                 .post()
-                .addInterceptorAfter(GitlabUserInterceptor.class, UserConfigInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
+
+        builder
+                .selectChain(UserOperation.REGISTER_USER)
+                .sync()
+                .pre()
+                .addInterceptor(C7nUserEmailInterceptor.class)
+                .post()
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
     }
 }

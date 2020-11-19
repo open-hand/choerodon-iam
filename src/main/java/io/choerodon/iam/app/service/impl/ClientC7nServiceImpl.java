@@ -7,6 +7,7 @@ import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.asserts.ClientAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
 import io.choerodon.iam.infra.mapper.ClientC7nMapper;
@@ -32,9 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -126,7 +125,13 @@ public class ClientC7nServiceImpl implements ClientC7nService {
                 }
             });
             if (!CollectionUtils.isEmpty(deleteList)) {
-                deleteList.forEach(t -> delMemberRoles.add(getMemberRole(clientId, t, organizationId)));
+                Map<String, Object> additionalParams = new HashMap<>();
+                additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+                deleteList.forEach(t -> {
+                    MemberRole delMemberRole = getMemberRole(clientId, t, organizationId);
+                    delMemberRole.setAdditionalParams(additionalParams);
+                    delMemberRoles.add(delMemberRole);
+                });
                 memberRoleService.batchDeleteMemberRole(organizationId, delMemberRoles);
             }
         }

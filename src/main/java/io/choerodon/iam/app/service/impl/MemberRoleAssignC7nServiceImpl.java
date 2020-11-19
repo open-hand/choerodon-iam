@@ -60,7 +60,6 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
     /**
      * 重写批量移除角色
      * 不能在hzero界面移除项目层角色
-     * c7n未使用发方法
      *
      * @param memberRoleList
      * @param checkAuth

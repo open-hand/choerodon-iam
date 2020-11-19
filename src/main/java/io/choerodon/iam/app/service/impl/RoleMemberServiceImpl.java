@@ -581,8 +581,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         List<Long> otherMemberRoleIds = projectUserMapper.listMemberRoleWithOutProjectId(sourceId, userId, projectDTO.getOrganizationId(), roleIds).stream().map(MemberRole::getId).collect(Collectors.toList());
         // 组织层和项目层都要被删除的角色
         List<MemberRole> delMemberRoles = new ArrayList<>();
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         projectMemberRoles.forEach(t -> {
             if (!otherMemberRoleIds.contains(t.getId())) {
+                t.setAdditionalParams(additionalParams);
                 delMemberRoles.add(t);
             }
         });

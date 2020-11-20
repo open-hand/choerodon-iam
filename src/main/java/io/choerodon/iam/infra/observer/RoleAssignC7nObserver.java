@@ -5,7 +5,10 @@ import java.util.stream.Collectors;
 
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.service.role.observer.RoleAssignObserver;
+import org.hzero.iam.infra.mapper.MemberRoleMapper;
+import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -36,17 +39,16 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     @Autowired
     @Lazy
     private RoleMemberService roleMemberService;
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
         if (isHzeroMemberRole(memberRoleList)) {
-            Map<Long, List<MemberRole>> userMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
-            userMemberMap.forEach((userId, userMemberList) -> {
-                Map<Long, List<MemberRole>> sourceMemberMap = userMemberList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
-                sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
-                    Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
-                    projectUserService.assignUsersProjectRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap);
-                });
+            Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
+            sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
+                Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
+                projectUserService.assignUsersProjectRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap);
             });
         }
     }
@@ -54,24 +56,24 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     @Override
     public void revokeMemberRole(List<MemberRole> memberRoleList) {
         if (isHzeroMemberRole(memberRoleList)) {
-            Map<Long, List<MemberRole>> userMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
-            userMemberMap.forEach((userId, userMemberList) -> {
-                Map<Long, List<MemberRole>> sourceMemberMap = userMemberList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
-                sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
-                    Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
-                    userRoleLabelsMap.forEach((uid, labels) -> {
-                        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-                        UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
-                        userMemberEventMsg.setResourceId(memberRoleList.get(0).getSourceId());
-                        userMemberEventMsg.setResourceType(ResourceLevel.ORGANIZATION.value());
-                        userMemberEventMsg.setUserId(uid);
-                        userMemberEventMsg.setRoleLabels(labels);
-                        userMemberEventPayloads.add(userMemberEventMsg);
-                        roleMemberService.deleteMemberRoleForSaga(uid, userMemberEventPayloads, ResourceLevel.ORGANIZATION, sourceId);
-                    });
+            memberRoleList.forEach(t -> {
+                Role role = roleMapper.selectByPrimaryKey(t.getRoleId());
+                t.setSourceId(role.getTenantId());
+            });
+            Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
+            sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
+                Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
+                userRoleLabelsMap.forEach((userId, labels) -> {
+                    List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+                    UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
+                    userMemberEventMsg.setResourceId(sourceId);
+                    userMemberEventMsg.setResourceType(ResourceLevel.ORGANIZATION.value());
+                    userMemberEventMsg.setUserId(userId);
+                    userMemberEventMsg.setRoleLabels(labels);
+                    userMemberEventPayloads.add(userMemberEventMsg);
+                    roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, sourceId);
                 });
             });
-
         }
     }
 

@@ -661,15 +661,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     public void updateMemberRole(Long fromUserId, List<UserMemberEventPayload> userMemberEventPayloads, ResourceLevel level, Long sourceId) {
         // 发送saga同步角色
-        producer.apply(StartSagaBuilder.newBuilder()
-                        .withRefId(fromUserId.toString())
-                        .withRefType("user")
-                        .withSourceId(sourceId)
-                        .withLevel(level)
-                        .withSagaCode(MEMBER_ROLE_UPDATE)
-                        .withPayloadAndSerialize(userMemberEventPayloads),
-                builder -> {
-                });
+//        producer.apply(StartSagaBuilder.newBuilder()
+//                        .withRefId(fromUserId.toString())
+//                        .withRefType("user")
+//                        .withSourceId(sourceId)
+//                        .withLevel(level)
+//                        .withSagaCode(MEMBER_ROLE_UPDATE)
+//                        .withPayloadAndSerialize(userMemberEventPayloads),
+//                builder -> {
+//                });
     }
 
     @Override

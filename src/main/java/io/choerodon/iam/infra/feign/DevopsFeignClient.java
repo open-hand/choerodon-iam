@@ -97,10 +97,10 @@ public interface DevopsFeignClient {
 //            @ApiParam(value = "查询参数", required = false)
 //            @RequestParam(value = "params", required = false) String params);
 //
-    @GetMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
+    @PostMapping(value = "/v1/projects/{project_id}/app_service/list_by_project_id")
     ResponseEntity<Map<Long, Integer>> countAppServerByProjectId(@ApiParam(value = "项目ID", required = true)
                                                                  @PathVariable(value = "project_id") Long projectId,
-                                                                 @RequestParam("longList") List<Long> longList);
+                                                                 @RequestBody List<Long> longList);
 
     /**
      * 格式 yyyy-MM-dd HH:mm:ss

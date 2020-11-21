@@ -4,7 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
@@ -19,7 +19,7 @@ import java.util.Set;
  * @author zmf
  * @since 20-4-21
  */
-public interface ProjectUserService {
+public interface ProjectPermissionService {
     /**
      * 项目层分页查询用户列表（包括用户信息以及所分配的项目角色信息）.
      *
@@ -90,12 +90,12 @@ public interface ProjectUserService {
 
     List<RoleVO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
-    void assignUsersProjectRoles(Long projectId, List<ProjectUserDTO> projectUserDTOList);
+    void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList);
 
     void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap);
 
 
-    void importProjectUser(Long projectId, List<ProjectUserDTO> projectUserDTOList);
+    void importProjectUser(Long projectId, List<ProjectPermissionDTO> projectUserDTOList);
 
     /**
      * 内部用于给项目层分配角色
@@ -103,7 +103,7 @@ public interface ProjectUserService {
      * @param projectId    项目id
      * @param projectUsers 项目-用户-角色信息
      */
-    void assignProjectUserRolesInternal(Long projectId, List<ProjectUserDTO> projectUsers);
+    void assignProjectUserRolesInternal(Long projectId, List<ProjectPermissionDTO> projectUsers);
 
     void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds);
 
@@ -118,4 +118,5 @@ public interface ProjectUserService {
      */
     OnlineUserStatistics getUserCount(Long projectId, PageRequest pageRequest);
 
+    Long getMemberRoleId(Long userId, String memberType, Long roleId, Long organizationId);
 }

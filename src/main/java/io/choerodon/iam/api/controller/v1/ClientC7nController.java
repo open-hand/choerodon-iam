@@ -1,12 +1,15 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.constant.MisConstants;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
@@ -62,18 +65,7 @@ public class ClientC7nController extends BaseController {
     public ResponseEntity<Void> delete(
             @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("client_id") Long clientId) {
-        Client clientToDelete = clientRepository.selectByPrimaryKey(clientId);
-        if (clientToDelete == null) {
-            return new ResponseEntity<>(HttpStatus.OK);
-        }
-
-        CommonExAssertUtil.assertTrue(organizationId.equals(clientToDelete.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
-
-        Client client = new Client();
-        client.setOrganizationId(organizationId);
-        client.setId(clientId);
-        client.setName(clientToDelete.getName());
-        clientService.delete(client);
+        clientC7nService.delete(organizationId, clientId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -105,5 +97,12 @@ public class ClientC7nController extends BaseController {
         clientVO.setOrganizationId(organizationId);
         this.validObject(clientVO);
         return Results.success(clientC7nService.create(clientVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("分页模糊查询客户端")
+    @GetMapping({"/clients"})
+    public ResponseEntity<Page<Client>> list(@PathVariable Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest) {
+        return Results.success(clientC7nService.pageClient(organizationId, name, enabledFlag, pageRequest));
     }
 }

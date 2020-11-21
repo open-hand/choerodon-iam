@@ -50,7 +50,7 @@ public class RoleMemberC7nController extends BaseController {
     public static final String MEMBER_ROLE = "member-role";
 
     private RoleC7nService roleC7nService;
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
     private UserC7nService userC7nService;
     private RoleMemberService roleMemberService;
     private ClientC7nService clientC7nService;
@@ -61,10 +61,10 @@ public class RoleMemberC7nController extends BaseController {
                                    UserC7nService userC7nService,
                                    ClientC7nService clientC7nService,
                                    UploadHistoryService uploadHistoryService,
-                                   ProjectUserService projectUserService,
+                                   ProjectPermissionService projectPermissionService,
                                    RoleMemberService roleMemberService) {
         this.roleC7nService = roleC7nService;
-        this.projectUserService = projectUserService;
+        this.projectPermissionService = projectPermissionService;
         this.uploadHistoryService = uploadHistoryService;
         this.userC7nService = userC7nService;
         this.clientC7nService = clientC7nService;
@@ -105,7 +105,7 @@ public class RoleMemberC7nController extends BaseController {
             @Encrypt @RequestParam(name = "role_id") Long roleId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
-        return ResponseEntity.ok(projectUserService.pagingQueryUsersByRoleIdOnProjectLevel(
+        return ResponseEntity.ok(projectPermissionService.pagingQueryUsersByRoleIdOnProjectLevel(
                 pageRequest, roleAssignmentSearchDTO, roleId, projectId, doPage));
     }
 
@@ -117,7 +117,7 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserRolesByUserIdAndProjectId(@PathVariable(name = "project_id") Long projectId,
                                                                           @Encrypt @PathVariable(name = "user_id") Long userId) {
-        return ResponseEntity.ok(projectUserService.listRolesByProjectIdAndUserId(projectId, userId));
+        return ResponseEntity.ok(projectPermissionService.listRolesByProjectIdAndUserId(projectId, userId));
     }
 
     /**
@@ -134,7 +134,7 @@ public class RoleMemberC7nController extends BaseController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return ResponseEntity.ok(projectUserService.pagingQueryUsersWithRoles(
+        return ResponseEntity.ok(projectPermissionService.pagingQueryUsersWithRoles(
                 pageRequest, roleAssignmentSearchDTO, projectId));
     }
 
@@ -145,34 +145,37 @@ public class RoleMemberC7nController extends BaseController {
                                                                                         @RequestParam(name = "role_name") String roleName,
                                                                                         @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                                                 Boolean onlySelectEnable) {
-        return new ResponseEntity<>(projectUserService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
+        return new ResponseEntity<>(projectPermissionService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层查询启用状态的用户列表")
     @GetMapping(value = "/organizations/{organization_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
-                                                                   @RequestParam(name = "user_name") String userName) {
+                                                                   @RequestParam(name = "user_name") String userName,
+                                                                   @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.ORGANIZATION.value(), organizationId, userName), HttpStatus.OK);
+                (ResourceLevel.ORGANIZATION.value(), organizationId, userName, exactMatchFlag), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询启用状态的用户列表")
     @GetMapping(value = "/projects/{project_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                              @RequestParam(name = "user_name") String userName) {
+                                                              @RequestParam(name = "user_name") String userName,
+                                                              @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.PROJECT.value(), projectId, userName), HttpStatus.OK);
+                (ResourceLevel.PROJECT.value(), projectId, userName, exactMatchFlag), HttpStatus.OK);
     }
 
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层查询启用状态的用户列表")
     @GetMapping(value = "/site/enableUsers")
-    public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName) {
+    public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName,
+                                                           @RequestParam(name = "exact_match_flag", required = false) Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.SITE.value(), 0L, userName), HttpStatus.OK);
+                (ResourceLevel.SITE.value(), 0L, userName, exactMatchFlag), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

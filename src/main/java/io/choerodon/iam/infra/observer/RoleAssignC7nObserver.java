@@ -35,7 +35,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private LabelC7nMapper labelC7nMapper;
     @Autowired
     @Lazy
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
     @Autowired
     @Lazy
     private RoleMemberService roleMemberService;

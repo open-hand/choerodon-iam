@@ -265,9 +265,10 @@ public interface UserC7nService {
      * @param sourceType 资源层级
      * @param sourceId   资源Id
      * @param userName   用户名
+     * @param exactMatchFlag
      * @return 启用状态的用户列表
      */
-    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName);
+    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag);
 
     /**
      * 给用户分配组织管理员角色

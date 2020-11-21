@@ -49,7 +49,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .selectChain(UserOperation.UPDATE_USER)
                 .sync()
                 .pre()
-                .addInterceptor(C7nUserEmailInterceptor.class);
+                .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
+                .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)

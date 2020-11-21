@@ -13,11 +13,13 @@ import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
 import io.choerodon.iam.infra.mapper.ClientC7nMapper;
 import io.choerodon.iam.infra.mapper.OauthClientResourceMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.hzero.core.util.Results;
 import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -33,6 +35,8 @@ import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -184,5 +188,35 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         }
         clientVO.setId(clientToCreate.getId());
         return clientVO;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long tenantId, Long clientId) {
+        Client clientToDelete = clientRepository.selectByPrimaryKey(clientId);
+        if (clientToDelete == null) {
+            return;
+        }
+        CommonExAssertUtil.assertTrue(tenantId.equals(clientToDelete.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        Client client = new Client();
+        client.setOrganizationId(tenantId);
+        client.setId(clientId);
+        client.setName(clientToDelete.getName());
+        clientService.delete(client);
+        OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
+        oauthClientResourceDTO.setClientId(clientId);
+        if (oauthClientResourceMapper.delete(oauthClientResourceDTO) != 1) {
+            throw new CommonException("error.clientResource.delete");
+        }
+    }
+
+    @Override
+    public Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest) {
+        PageRequest pageRequest1 = new PageRequest(0, 0);
+        Page<Client> clients = clientService.pageClient(organizationId, name, enabledFlag, pageRequest1);
+        // 剔除组织下项目层创建的client 减少覆盖hzero逻辑
+        List<Long> projectClientIds = clientC7nMapper.listClientsInProject(organizationId);
+        List<Client> clientList = clients.getContent().stream().filter(t -> !projectClientIds.contains(t.getId())).collect(Collectors.toList());
+        return PageUtils.createPageFromList(clientList, pageRequest);
     }
 }

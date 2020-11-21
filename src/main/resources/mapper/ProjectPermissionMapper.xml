@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.iam.infra.mapper.ProjectUserMapper">
+<mapper namespace="io.choerodon.iam.infra.mapper.ProjectPermissionMapper">
     <resultMap id="userWithRolesMap" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="realName" column="real_name"/>
@@ -46,7 +46,7 @@
         from iam_user iu
         ) iut
         left join iam_member_role imr on iut.id = imr.member_id
-        left join fd_project_user fdu on (imr.id = fdu.MEMBER_ROLE_ID)
+        left join fd_project_permission fdu on (imr.id = fdu.MEMBER_ROLE_ID)
         JOIN iam_role ir on ir.id = imr.role_id
         <if test="roleName != null">
             left join iam_role ir2 on ir2.id = imr.role_id
@@ -96,7 +96,7 @@
         from iam_user iu
         ) iut
         join iam_member_role imr ON iut.id = imr.member_id
-        join fd_project_user fdu on fdu.MEMBER_ROLE_ID = imr.id
+        join fd_project_permission fdu on fdu.MEMBER_ROLE_ID = imr.id
         JOIN iam_role ir2 on ir2.id=imr.role_id
         <if test="roleName != null">
             left join iam_role ir on ir.id = imr.role_id
@@ -129,7 +129,7 @@
         </if>
         ) t2
         join iam_member_role imr2 ON t2.id = imr2.member_id
-        join fd_project_user fdu2 on imr2.id = fdu2.MEMBER_ROLE_ID and fdu2.PROJECT_ID = #{sourceId}
+        join fd_project_permission fdu2 on imr2.id = fdu2.MEMBER_ROLE_ID and fdu2.PROJECT_ID = #{sourceId}
         left join iam_role ir2 on ir2.id = imr2.role_id
         left join hpfm_tenant fo on (t2.organization_id = fo.tenant_id)
         left join hpfm_tenant_config htc ON fo.tenant_id = htc.tenant_id and htc.config_key = 'code'
@@ -161,7 +161,7 @@
         </if>
         ) iut
         left join iam_member_role imr ON iut.id = imr.member_id
-        left join fd_project_user fdu on imr.id = fdu.MEMBER_ROLE_ID
+        left join fd_project_permission fdu on imr.id = fdu.MEMBER_ROLE_ID
         JOIN iam_role ir2 on ir2.id=imr.role_id
         <where>
             fdu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
@@ -172,7 +172,7 @@
 
         (select imr2.role_id, imr2.member_id
         from iam_member_role imr2
-        inner join fd_project_user fpu2 on (imr2.id = fpu2.MEMBER_ROLE_ID and fpu2.PROJECT_ID = #{projectId,jdbcType=BIGINT})
+        inner join fd_project_permission fpu2 on (imr2.id = fpu2.MEMBER_ROLE_ID and fpu2.PROJECT_ID = #{projectId,jdbcType=BIGINT})
         ) mr ON t2.id = mr.member_id
 
         left join iam_role ir2 on ir2.id = mr.role_id
@@ -184,7 +184,7 @@
     <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_member_role imr
-                 INNER join fd_project_user fpu ON fpu.member_role_id = imr.id
+                 INNER join fd_project_permission fpu ON fpu.member_role_id = imr.id
                  INNER JOIN iam_user iu ON iu.id = imr.member_id
                  INNER JOIN iam_role ir ON imr.role_id = ir.id
                  INNER JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
@@ -196,7 +196,7 @@
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
     <select id="listUsersByName" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         INNER JOIN iam_role ir ON imr.role_id = ir.id
@@ -222,7 +222,7 @@
                iu.login_name
         FROM iam_user iu
                  INNER JOIN iam_member_role imr ON iu.id = imr.member_id
-                 INNER JOIN fd_project_user fpu ON imr.id = fpu.MEMBER_ROLE_ID
+                 INNER JOIN fd_project_permission fpu ON imr.id = fpu.MEMBER_ROLE_ID
                  INNER JOIN iam_role ir ON ir.id = imr.role_id
         WHERE ir.code = 'role/project/default/project-owner'
           AND fpu.PROJECT_ID = #{projectId}
@@ -230,7 +230,7 @@
 
     <select id="listUsersByNameWithLimit" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         WHERE fpu.PROJECT_ID = #{projectId}
@@ -244,19 +244,20 @@
 
     <select id="listProjectRoleIds" resultType="java.lang.Long">
         SELECT imr.ROLE_ID
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                  INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
-          AND imr.MEMBER_ID = #{userId,jdbcType=BIGINT}
+          AND imr.MEMBER_ID = #{userId,jdbcType=BIGINT} and imr.member_type='user'
     </select>
 
     <select id="listRolesByProjectIdAndUserIds" resultType="io.choerodon.iam.api.vo.UserVO">
         SELECT imr.member_id as id, GROUP_CONCAT(ir.name) as role_names,ANY_VALUE(iu.login_name) as login_name,ANY_VALUE(iu.real_name) as real_name,ANY_VALUE(iu.image_url) as image_url
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                      INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                      INNER JOIN iam_role ir ON imr.role_id = ir.id
                      INNER JOIN iam_user iu ON iu.id=imr.member_id
                 WHERE fpu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
+                  and imr.member_type='user'
                   AND imr.MEMBER_ID IN
         <foreach collection="userIds" item="userId" separator="," open="(" close=")">
             #{userId}
@@ -267,7 +268,7 @@
 
     <select id="countProjectRoleUser" resultType="io.choerodon.iam.api.vo.agile.RoleUserCountVO">
         SELECT imr.ROLE_ID, COUNT(*) AS USER_NUMBER
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                  INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId}
         GROUP BY imr.ROLE_ID
@@ -285,7 +286,7 @@
         iu.user_type
         FROM iam_user iu
         INNER JOIN iam_member_role imr ON iu.id = imr.member_id
-        LEFT JOIN fd_project_user fpu ON imr.id = fpu.MEMBER_ROLE_ID
+        LEFT JOIN fd_project_permission fpu ON imr.id = fpu.MEMBER_ROLE_ID
         <where>
             fpu.PROJECT_ID = #{projectId}
             <if test="userId != null">
@@ -349,7 +350,7 @@
                     else 0
                 end as weight
                 from iam_member_role imr
-                join fd_project_user fpu on imr.id = fpu.member_role_id
+                join fd_project_permission fpu on imr.id = fpu.member_role_id
                 left join iam_user iu on imr.member_id = iu.id
                 where fpu.project_id = #{projectId}
                     <if test="userId != null">
@@ -374,7 +375,7 @@
 
     <select id="listProjectUsersByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_user iu ON imr.member_id = iu.id
         <where>
@@ -424,7 +425,7 @@
                     else 0
                 end as weight
                 from iam_member_role imr
-                join fd_project_user fpu on imr.id = fpu.member_role_id
+                join fd_project_permission fpu on imr.id = fpu.member_role_id
                 where fpu.project_id = #{projectId}
                 <if test="userIds != null and userIds.size > 0">
                     union
@@ -477,7 +478,7 @@
         else 0
         end as weight
         from iam_member_role imr
-        join fd_project_user fpu on imr.id = fpu.member_role_id
+        join fd_project_permission fpu on imr.id = fpu.member_role_id
         where fpu.project_id in
         <foreach item="projectId" index="index" collection="projectIds" open="(" separator="," close=")">
             #{projectId}
@@ -511,11 +512,11 @@
 
     <select id="listRolesByProjectIdAndUserId" resultType="org.hzero.iam.api.dto.RoleDTO">
         SELECT ir.*
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
                  INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                  INNER JOIN iam_role ir ON ir.id = imr.ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId}
-          and imr.MEMBER_ID = #{userId}
+          and imr.MEMBER_ID = #{userId} and imr.member_type='user'
     </select>
 
     <select id="listProjectUser" resultType="io.choerodon.iam.infra.dto.UserDTO">
@@ -529,7 +530,7 @@
         ELSE
         iu.email
         end as login_name
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         JOIN iam_user iu ON iu.id = imr.member_id
         WHERE fpu.PROJECT_ID = #{projectId}
@@ -571,7 +572,7 @@
 
     <select id="listByProjectIdAndUserIds" resultMap="projectUserMap">
         SELECT imr.MEMBER_ID, ir.*
-        FROM fd_project_user fpu
+        FROM fd_project_permission fpu
         INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_role ir ON ir.id = imr.ROLE_ID
         WHERE fpu.PROJECT_ID = #{projectId}
@@ -579,15 +580,31 @@
         <foreach collection="userIds" item="userId" open="(" close=")" separator="," index="i">
             #{userId}
         </foreach>
+        and imr.member_type='user'
     </select>
 
     <select id="listMemberRoleByProjectIdAndUserId" resultType="org.hzero.iam.domain.entity.MemberRole">
         SELECT imr.*
         FROM iam_member_role imr
                  JOIN iam_role ir ON ir.id = imr.role_id
-                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+                 JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID = #{projectId}
-        WHERE imr.member_id = #{userId}
+        WHERE imr.member_id = #{userId} and imr.member_type='user'
+        <if test="roleIds!=null">
+            AND imr.role_id IN
+            <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
+                #{roleId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="listMemberRoleByProjectIdAndClientId" resultType="org.hzero.iam.domain.entity.MemberRole">
+        SELECT imr.*
+        FROM iam_member_role imr
+        JOIN iam_role ir ON ir.id = imr.role_id
+        JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        AND fpu.PROJECT_ID = #{projectId}
+        WHERE imr.member_id = #{clientId} and imr.member_type='client'
         <if test="roleIds!=null">
             AND imr.role_id IN
             <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
@@ -600,7 +617,7 @@
         SELECT imr.*
         FROM iam_member_role imr
                  JOIN iam_role ir ON ir.id = imr.role_id
-                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+                 JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID = #{projectId}
         WHERE imr.member_id = #{userId}
           and imr.role_id = #{roleId}
@@ -610,7 +627,7 @@
         SELECT imr.*
         FROM iam_member_role imr
                  JOIN iam_role ir ON ir.id = imr.role_id
-                 JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+                 JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
             AND fpu.PROJECT_ID NOT IN (#{projectId})
         WHERE imr.member_id = #{userId}
           AND imr.source_id = #{tenantId}
@@ -626,7 +643,7 @@
     <delete id="deleteByIds">
         DELETE fpu.*
         FROM
-        fd_project_user fpu
+        fd_project_permission fpu
         WHERE
         fpu.PROJECT_ID = #{projectId}
         AND fpu.MEMBER_ROLE_ID IN
@@ -638,7 +655,7 @@
         SELECT fp.*
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON (ir.id = imr.role_id AND ir.is_enabled = true)
-        INNER JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
     </select>

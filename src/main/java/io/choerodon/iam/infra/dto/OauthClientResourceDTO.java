@@ -10,6 +10,8 @@ import javax.persistence.Table;
 
 /**
  * 客户端关系表
+ * 原本用于存放客户端与集群的关系
+ * 现添加客户端与项目的关系
  *
  * @author lihao
  */

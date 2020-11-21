@@ -54,7 +54,7 @@ import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
@@ -121,7 +121,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private OrganizationResourceLimitService organizationResourceLimitService;
 
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
 
     private MessageSendService messageSendService;
 
@@ -145,7 +145,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
-                                             @Lazy ProjectUserService projectUserService,
+                                             @Lazy ProjectPermissionService projectPermissionService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              @Lazy
@@ -169,7 +169,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
-        this.projectUserService = projectUserService;
+        this.projectPermissionService = projectPermissionService;
         this.roleC7nMapper = roleC7nMapper;
         this.asgardFeignClient = asgardFeignClient;
         this.messageSendService = messageSendService;
@@ -285,7 +285,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Long projectId = project.getId();
         Long userId = customUserDetails.getUserId();
         // 为创建者分配项目层的角色关系
-        projectUserService.assignProjectUserRolesInternal(projectId, roles.stream().map(role -> new ProjectUserDTO(userId, projectId, role.getId())).collect(Collectors.toList()));
+        projectPermissionService.assignProjectUserRolesInternal(projectId, roles.stream().map(role -> new ProjectPermissionDTO(userId, projectId, role.getId())).collect(Collectors.toList()));
 
         // 查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
         return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toSet()));

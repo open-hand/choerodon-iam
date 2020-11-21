@@ -46,6 +46,7 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
@@ -402,6 +403,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         ProjectDTO example = new ProjectDTO();
         example.setOrganizationId(organizationId);
         return projectMapper.selectCount(example);
+    }
+
+    @Override
+    public Tenant queryDefault() {
+        Tenant record = new Tenant();
+        record.setTenantNum(TenantConstants.OPERATION_TENANT_CODE);
+        return tenantMapper.selectOne(record);
     }
 
     /**

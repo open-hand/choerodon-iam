@@ -31,4 +31,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_quick_link.groovy') {
             column(name: 'top', type: "TINYINT UNSIGNED", remarks: '是否置顶', defaultValue: "0", afterColumn: 'scope')
         }
     }
+    changeSet(author: 'wanghao', id: '2020-11-18-fd-quick-link-update-column') {
+        sql("""
+           alter table fd_quick_link change top top_flag TINYINT UNSIGNED  DEFAULT '0' COMMENT '是否置顶';
+        """)
+
+    }
 }

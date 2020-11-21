@@ -8,6 +8,13 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationUserService;
 
+/**
+ * GitlabUserInterceptor和{@link LdapUserPostInterceptor} 作用一样
+ * 发送saga devops创建gitlab用户
+ * GitlabUserInterceptor：拦截hzero界面操作
+ * LdapUserPostInterceptor：处理ldap用户
+ *
+ */
 @Component
 public class GitlabUserInterceptor implements HandlerInterceptor<User> {
     private final OrganizationUserService organizationUserService;

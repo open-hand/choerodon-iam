@@ -366,8 +366,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     public void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap) {
-        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         userRoleLabelsMap.forEach((k, v) -> {
+            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
             userMemberEventPayload.setUserId(k);
             userMemberEventPayload.setRoleLabels(v);

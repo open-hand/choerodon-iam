@@ -48,8 +48,8 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
             if (!CollectionUtils.isEmpty(memberRoleList)) {
                 Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
                 sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
-                    sourceMemberList = sourceMemberList.stream().filter(t -> (t.getAdditionalParams() == null || !t.getAdditionalParams().containsKey(MemberRoleConstants.MEMBER_OLD_ROLE))).collect(Collectors.toList());
-                    if (!CollectionUtils.isEmpty(sourceMemberList)) {
+                    List<MemberRole> tempList = sourceMemberList.stream().filter(t -> (t.getAdditionalParams() == null || !t.getAdditionalParams().containsKey(MemberRoleConstants.MEMBER_OLD_ROLE))).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(tempList)) {
                         Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
                         projectUserService.assignUsersProjectRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap);
                     }

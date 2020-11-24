@@ -124,6 +124,8 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                     } else {
                         userMemberEventPayload.setPreviousRoleLabels(userOldRoleLabelsMap.get(k));
                     }
+                } else {
+                    userMemberEventPayload.setPreviousRoleLabels(new HashSet<>());
                 }
                 userMemberEventPayload.setResourceId(sourceId);
                 userMemberEventPayload.setResourceType(level.value());

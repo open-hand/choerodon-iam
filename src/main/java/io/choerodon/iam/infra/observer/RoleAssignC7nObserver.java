@@ -23,6 +23,7 @@ import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
@@ -40,6 +41,8 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private RoleMemberService roleMemberService;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private RoleC7nMapper roleC7nMapper;
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
@@ -125,7 +128,9 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                         userMemberEventPayload.setPreviousRoleLabels(userOldRoleLabelsMap.get(k));
                     }
                 } else {
-                    userMemberEventPayload.setPreviousRoleLabels(new HashSet<>());
+                    Set<String> oldLabels = roleC7nMapper.listLabelByTenantIdAndUserId(k, sourceId);
+                    oldLabels.removeAll(v);
+                    userMemberEventPayload.setPreviousRoleLabels(oldLabels);
                 }
                 userMemberEventPayload.setResourceId(sourceId);
                 userMemberEventPayload.setResourceType(level.value());

@@ -24,6 +24,7 @@ import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
@@ -35,12 +36,11 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private LabelC7nMapper labelC7nMapper;
     @Autowired
     @Lazy
-    private ProjectUserService projectUserService;
-    @Autowired
-    @Lazy
     private RoleMemberService roleMemberService;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private RoleC7nMapper roleC7nMapper;
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
@@ -48,11 +48,18 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
             if (!CollectionUtils.isEmpty(memberRoleList)) {
                 Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
                 sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
-                    List<MemberRole> tempList = sourceMemberList.stream().filter(t -> (t.getAdditionalParams() == null || !t.getAdditionalParams().containsKey(MemberRoleConstants.MEMBER_OLD_ROLE))).collect(Collectors.toList());
-                    if (!CollectionUtils.isEmpty(tempList)) {
-                        Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
-                        projectUserService.assignUsersProjectRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap);
-                    }
+                    Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
+                    userRoleLabelsMap.forEach((k, v) -> {
+                        v.addAll(roleC7nMapper.listLabelByTenantIdAndUserId(k, sourceId));
+                        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+                        UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+                        userMemberEventPayload.setUserId(k);
+                        userMemberEventPayload.setRoleLabels(v);
+                        userMemberEventPayload.setResourceId(sourceId);
+                        userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+                        userMemberEventPayloads.add(userMemberEventPayload);
+                        roleMemberService.updateMemberRole(k, userMemberEventPayloads, ResourceLevel.ORGANIZATION, sourceId);
+                    });
                 });
             }
         }

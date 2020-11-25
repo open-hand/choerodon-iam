@@ -15,8 +15,8 @@ import javax.persistence.*;
  */
 @VersionAudit
 @ModifyAudit
-@Table(name = "fd_project_user")
-public class ProjectUserDTO extends AuditDomain {
+@Table(name = "fd_project_permission")
+public class ProjectPermissionDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Encrypt
@@ -39,10 +39,10 @@ public class ProjectUserDTO extends AuditDomain {
     @Encrypt
     private Long roleId;
 
-    public ProjectUserDTO() {
+    public ProjectPermissionDTO() {
     }
 
-    public ProjectUserDTO(Long memberId, Long projectId, Long roleId) {
+    public ProjectPermissionDTO(Long memberId, Long projectId, Long roleId) {
         this.memberId = memberId;
         this.projectId = projectId;
         this.roleId = roleId;
@@ -84,7 +84,7 @@ public class ProjectUserDTO extends AuditDomain {
         return memberRoleId;
     }
 
-    public ProjectUserDTO setMemberRoleId(Long memberRoleId) {
+    public ProjectPermissionDTO setMemberRoleId(Long memberRoleId) {
         this.memberRoleId = memberRoleId;
         return this;
     }

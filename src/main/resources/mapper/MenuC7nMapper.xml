@@ -215,7 +215,7 @@
     <if test="projectId!=null and isOrgRoot==false">
         JOIN iam_member_role imr ON imr.role_id = ir.id
         AND imr.member_id = #{userId}
-        JOIN fd_project_user fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         AND fpu.PROJECT_ID = #{projectId}
     </if>
     join iam_role_permission irp on (

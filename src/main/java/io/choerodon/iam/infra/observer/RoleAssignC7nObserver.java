@@ -16,7 +16,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
@@ -35,7 +35,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private LabelC7nMapper labelC7nMapper;
     @Autowired
     @Lazy
-    private ProjectUserService projectUserService;
+    private ProjectPermissionService projectPermissionService;
     @Autowired
     @Lazy
     private RoleMemberService roleMemberService;

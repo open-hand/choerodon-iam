@@ -1,34 +1,32 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'script/db/fd_invitation_info.groovy') {
-    changeSet(author: 'hzero@163.com', id: '2020-05-19-fd-invitation-info') {
-        if (helper.dbType().isSupportSequence()) {
-            createSequence(sequenceName: 'FD_INVITATION_INFO_S', startValue: "1")
-        }
-        createTable(tableName: "FD_INVITATION_INFO") {
+databaseChangeLog(logicalFilePath: 'script/db/fd_enterprise_info.groovy') {
+    changeSet(author: 'wanghao', id: '2020-11-04-fd_enterprise_info') {
+        createTable(tableName: "fd_enterprise_info") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true, primaryKeyName: 'PK_FD_INVITATION_INFO')
+                constraints(primaryKey: true)
             }
-            column(name: 'EMAIL', type: 'VARCHAR(128)', remarks: '邀请用户邮箱') {
-            }
-            column(name: 'ORG_ID', type: 'BIGINT UNSIGNED', remarks: '邀请用户进入的组织') {
-                constraints(nullable: false)
-            }
-            column(name: 'PROJECT_ID', type: 'BIGINT UNSIGNED', remarks: '邀请用户被分配了角色的项目id'){
+            column(name: 'ORGANIZATION_NAME', type: 'VARCHAR(255)', remarks: '组织名称') {
                 constraints(nullable: false)
             }
 
-            column(name: 'ROLE_ID',  type: 'VARCHAR(64)', remarks: '邀请用户被分配的角色id集合') {
+            column(name: 'ADMIN_NAME', type: 'VARCHAR(128)', remarks: 'admin姓名') {
                 constraints(nullable: false)
             }
 
-            column(name: 'URL_TOKEN',  type: 'VARCHAR(64)', remarks: '链接token') {
+            column(name: 'ADMIN_PHONE', type: 'VARCHAR(32)', remarks: '管理员手机号') {
                 constraints(nullable: false)
             }
-            column(name: 'URL_END_DATE',  type: 'DATETIME', remarks: '链接到期时间') {
+            column(name: 'ADMIN_EMAIL', type: 'VARCHAR(128)', remarks: '管理员邮箱地址') {
                 constraints(nullable: false)
             }
-            column(name: 'IS_ENABLED', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '是否启用。1启用，0未启用') {
+            column(name: 'ENTERPRISE_NAME', type: 'VARCHAR(255)', remarks: '公司名称') {
+                constraints(nullable: false)
+            }
+            column(name: 'ENTERPRISE_SCALE', type: 'VARCHAR(50)', remarks: '公司规模') {
+                constraints(nullable: false)
+            }
+            column(name: 'ENTERPRISE_TYPE', type: 'VARCHAR(50)', remarks: '行业') {
                 constraints(nullable: false)
             }
 
@@ -45,5 +43,4 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_invitation_info.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-
 }

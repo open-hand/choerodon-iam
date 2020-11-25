@@ -50,7 +50,7 @@ import io.choerodon.iam.infra.feign.AgileFeignClient;
 import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectUserMapper;
+import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -85,7 +85,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected TenantMapper organizationMapper;
     protected AgileFeignClient agileFeignClient;
     protected TestManagerFeignClient testManagerFeignClient;
-    protected ProjectUserMapper projectUserMapper;
+    protected ProjectPermissionMapper projectPermissionMapper;
     protected TransactionalProducer transactionalProducer;
 
     protected RoleC7nMapper roleC7nMapper;
@@ -101,7 +101,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  TestManagerFeignClient testManagerFeignClient,
                                  AgileFeignClient agileFeignClient,
                                  TransactionalProducer transactionalProducer,
-                                 ProjectUserMapper projectUserMapper,
+                                 ProjectPermissionMapper projectPermissionMapper,
                                  RoleC7nMapper roleC7nMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -113,7 +113,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.organizationMapper = organizationMapper;
         this.agileFeignClient = agileFeignClient;
         this.testManagerFeignClient = testManagerFeignClient;
-        this.projectUserMapper = projectUserMapper;
+        this.projectPermissionMapper = projectPermissionMapper;
         this.transactionalProducer = transactionalProducer;
         this.roleC7nMapper = roleC7nMapper;
     }
@@ -274,7 +274,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageRequest, () -> projectUserMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
     }
 
     protected Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {
@@ -293,7 +293,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
     }
 
     @Override
@@ -308,7 +308,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             throw new CommonException("error.feign.agile.user.projectIds.empty");
         }
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectUserMapper.selectAgileUsersByProjectIds(projectIds, userIds, agileUserVO.getParam(), adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectIds(projectIds, userIds, agileUserVO.getParam(), adminRoleIds));
     }
 
     @Override

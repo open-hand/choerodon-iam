@@ -118,6 +118,19 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.queryTenantById(id, withMoreInfo), HttpStatus.OK);
     }
 
+    /**
+     * 查询默认运营组织信息
+     *
+     * @return 组织信息
+     */
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询默认运营组织信息")
+    @GetMapping(value = "/default")
+    public ResponseEntity<Tenant> queryDefault() {
+        return ResponseEntity.ok(tenantC7nService.queryDefault());
+    }
+
+
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层根据组织名称查询组织")
     @GetMapping(value = "/listByName")

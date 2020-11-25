@@ -7,10 +7,10 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectUserService;
+import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -38,17 +38,17 @@ import java.util.Set;
 @RequestMapping(value = "/choerodon/v1/projects")
 public class ProjectUserC7nController extends BaseController {
 
-    private final ProjectUserService projectUserService;
+    private final ProjectPermissionService projectPermissionService;
     private final OrganizationResourceLimitService organizationResourceLimitService;
     private final RoleMemberService roleMemberService;
 
     private final ProjectC7nService projectC7nService;
 
-    public ProjectUserC7nController(ProjectUserService projectUserService,
+    public ProjectUserC7nController(ProjectPermissionService projectPermissionService,
                                     RoleMemberService roleMemberService,
                                     OrganizationResourceLimitService organizationResourceLimitService,
                                     ProjectC7nService projectC7nService) {
-        this.projectUserService = projectUserService;
+        this.projectPermissionService = projectPermissionService;
         this.roleMemberService = roleMemberService;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.projectC7nService = projectC7nService;
@@ -73,7 +73,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) Boolean enabled,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(projectUserService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
+        return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
                 enabled, params), HttpStatus.OK);
     }
 
@@ -91,7 +91,7 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) String roleName,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(projectUserService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
+        return new ResponseEntity<>(projectPermissionService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
     }
 
 
@@ -103,7 +103,7 @@ public class ProjectUserC7nController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "多个用户id", required = true)
             @Encrypt @RequestBody Set<Long> userIds) {
-        return new ResponseEntity<>(projectUserService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
+        return new ResponseEntity<>(projectPermissionService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
 
@@ -115,7 +115,7 @@ public class ProjectUserC7nController extends BaseController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "角色标签", required = true)
             @PathVariable("role_lable") String roleLable) {
-        return ResponseEntity.ok(projectUserService.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLable));
+        return ResponseEntity.ok(projectPermissionService.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLable));
     }
 
 
@@ -127,7 +127,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/search_by_name")
     public ResponseEntity<List<UserDTO>> listUsersByName(@PathVariable(name = "project_id") Long projectId,
                                                          @RequestParam(required = false) String param) {
-        return ResponseEntity.ok(projectUserService.listUsersByName(projectId, param));
+        return ResponseEntity.ok(projectPermissionService.listUsersByName(projectId, param));
     }
 
 
@@ -135,7 +135,7 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation("根据项目id查询项目下的项目所有者")
     @GetMapping("/{project_id}/owner/list")
     public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
-        return ResponseEntity.ok(projectUserService.listProjectOwnerById(projectId));
+        return ResponseEntity.ok(projectPermissionService.listProjectOwnerById(projectId));
     }
 
 
@@ -144,7 +144,7 @@ public class ProjectUserC7nController extends BaseController {
     @GetMapping(value = "/{project_id}/users/search_by_name/with_limit")
     public ResponseEntity<List<UserDTO>> listUsersByNameWithLimit(@PathVariable(name = "project_id") Long projectId,
                                                                   @RequestParam(name = "param", required = false) String param) {
-        return ResponseEntity.ok(projectUserService.listUsersByNameWithLimit(projectId, param));
+        return ResponseEntity.ok(projectPermissionService.listUsersByNameWithLimit(projectId, param));
     }
 
 
@@ -172,8 +172,8 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量分配用户角色")
     @PostMapping(value = "/{project_id}/users/assign_roles")
     public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestBody List<ProjectUserDTO> projectUserDTOList) {
-        projectUserService.assignUsersProjectRoles(projectId, projectUserDTOList);
+                                                               @RequestBody List<ProjectPermissionDTO> projectUserDTOList) {
+        projectPermissionService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return ResponseEntity.noContent().build();
     }
 
@@ -184,7 +184,7 @@ public class ProjectUserC7nController extends BaseController {
                                                               @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                               @Encrypt @PathVariable(name = "user_id") Long userId,
                                                               @Encrypt @RequestBody Set<Long> roleIds) {
-        projectUserService.updateUserRoles(userId, projectId, roleIds, syncAll);
+        projectPermissionService.updateUserRoles(userId, projectId, roleIds, syncAll);
         return ResponseEntity.noContent().build();
     }
 
@@ -226,7 +226,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest
     ) {
-        return Optional.ofNullable(projectUserService.getUserCount(projectId, pageRequest))
+        return Optional.ofNullable(projectPermissionService.getUserCount(projectId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.iam.project.overview.user"));
     }

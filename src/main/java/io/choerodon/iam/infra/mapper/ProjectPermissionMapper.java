@@ -4,7 +4,7 @@ import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectUserDTO;
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -19,7 +19,7 @@ import java.util.Set;
  * @author zmf
  * @since 20-4-21
  */
-public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
+public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO> {
     /**
      * 项目层查询用户总数.
      * 1. 查询当前项目分配了项目角色的用户
@@ -194,6 +194,17 @@ public interface ProjectUserMapper extends BaseMapper<ProjectUserDTO> {
      */
     List<MemberRole> listMemberRoleByProjectIdAndUserId(@Param("projectId") Long projectId,
                                                         @Param("userId") Long userId,
+                                                        @Param("roleIds") List<Long> roleIds);
+
+    /**
+     * 查询client在项目下拥有的memberRole
+     *
+     * @param projectId
+     * @param clientId
+     * @return MemberRole列表
+     */
+    List<MemberRole> listMemberRoleByProjectIdAndClientId(@Param("projectId") Long projectId,
+                                                        @Param("clientId") Long clientId,
                                                         @Param("roleIds") List<Long> roleIds);
 
     /**

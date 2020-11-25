@@ -7,12 +7,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -989,9 +987,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName) {
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag) {
         validateSourceNotExisted(sourceType, sourceId);
-        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag);
     }
 
     @Override

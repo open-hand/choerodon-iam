@@ -18,6 +18,8 @@ public class UserMemberEventPayload {
 
     private Set<String> roleLabels;
 
+    private Set<String> previousRoleLabels;
+
     private String uuid;
 
     private Boolean syncAll;
@@ -76,5 +78,13 @@ public class UserMemberEventPayload {
 
     public void setSyncAll(Boolean syncAll) {
         this.syncAll = syncAll;
+    }
+
+    public Set<String> getPreviousRoleLabels() {
+        return previousRoleLabels;
+    }
+
+    public void setPreviousRoleLabels(Set<String> previousRoleLabels) {
+        this.previousRoleLabels = previousRoleLabels;
     }
 }

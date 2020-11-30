@@ -450,4 +450,12 @@ public class UserC7nController extends BaseController {
             @Encrypt @RequestBody Set<Long> projectIds) {
         return ResponseEntity.ok(userC7nService.listRoleLabelsForUserInTheProject(userId, projectIds));
     }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询平台层市场审核员的用户")
+    @GetMapping(value = "/roles/site/market_auditor")
+    public ResponseEntity<List<User>> listMarketAuditor() {
+        return ResponseEntity.ok(userC7nService.listMarketAuditor());
+    }
 }

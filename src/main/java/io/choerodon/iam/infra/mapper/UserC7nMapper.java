@@ -5,6 +5,7 @@ import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.User;
 
@@ -19,6 +20,8 @@ import java.util.Set;
  */
 public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
+
+    List<User> listMarketAuditor();
 
     List<User> listUsersByEmails(@Param("emails") String[] emails);
 
@@ -238,9 +241,9 @@ public interface UserC7nMapper {
      * 2. 组织层: 精确匹配全局用户以及模糊匹配本组织用户
      * 3. 项目层：精确匹配全局用户以及模糊匹配项目所在组织用户
      *
-     * @param sourceType 资源层级
-     * @param sourceId   资源Id
-     * @param userName   用户名
+     * @param sourceType     资源层级
+     * @param sourceId       资源Id
+     * @param userName       用户名
      * @param exactMatchFlag
      * @return 启用状态的用户列表
      */

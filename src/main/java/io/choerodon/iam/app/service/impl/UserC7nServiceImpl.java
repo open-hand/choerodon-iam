@@ -777,6 +777,11 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
     }
 
+    @Override
+    public List<User> listMarketAuditor() {
+        return userC7nMapper.listMarketAuditor();
+    }
+
     private UserWithGitlabIdVO toUserWithGitlabIdDTO(User user, @Nullable Long gitlabUserId) {
         if (user == null) {
             return null;

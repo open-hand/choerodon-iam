@@ -104,7 +104,7 @@
             iu.*
         FROM
             iam_user iu
-            JOIN iam_role ir ON ir.`code` = 'role/site/default/marketAuditor'
+            JOIN iam_role ir ON ir.`code` = 'role/site/default/auditor'
                                 AND ir.fd_level = 'site'
             JOIN iam_member_role imr ON imr.member_id = iu.id
                                         AND imr.role_id = ir.id

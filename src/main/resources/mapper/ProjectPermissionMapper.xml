@@ -181,7 +181,7 @@
     </select>
 
 
-    <select id="listProjectUsersByProjectIdAndRoleLabel" resultType="io.choerodon.iam.infra.dto.UserDTO">
+    <select id="listProjectUsersByProjectIdAndRoleLabel" resultMap="userDTO">
         SELECT iu.*
         FROM iam_member_role imr
                  INNER join fd_project_permission fpu ON fpu.member_role_id = imr.id

@@ -119,4 +119,11 @@ public interface ProjectPermissionService {
     OnlineUserStatistics getUserCount(Long projectId, PageRequest pageRequest);
 
     Long getMemberRoleId(Long userId, String memberType, Long roleId, Long organizationId);
+
+    /**
+     * 校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户
+     * @param projectId
+     * @return
+     */
+    Boolean checkAdminPermission(Long projectId);
 }

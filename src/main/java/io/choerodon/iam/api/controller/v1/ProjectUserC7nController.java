@@ -230,4 +230,13 @@ public class ProjectUserC7nController extends BaseController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.iam.project.overview.user"));
     }
+
+    @ApiOperation("校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{project_id}/check_admin_permission")
+    public ResponseEntity<Boolean> checkAdminPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(projectPermissionService.checkAdminPermission(projectId));
+    }
 }

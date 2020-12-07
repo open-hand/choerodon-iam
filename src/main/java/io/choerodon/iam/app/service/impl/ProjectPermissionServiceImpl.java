@@ -6,6 +6,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.api.vo.ProjectUserVO;
@@ -520,5 +521,34 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         } else {
             return queryMemberRole.getId();
         }
+    }
+
+    @Override
+    public Boolean checkAdminPermission(Long projectId) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (Boolean.TRUE.equals(userDetails.getAdmin())) {
+            return true;
+        }
+        ProjectDTO projectDTO = projectC7nService.queryBasicInfo(projectId);
+        Set<String> roleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(userDetails.getUserId(), projectDTO.getOrganizationId());
+        if (!CollectionUtils.isEmpty(roleLabels)
+                && roleLabels.contains(RoleLabelEnum.TENANT_ADMIN.value())) {
+            return true;
+        }
+        List<RoleDTO> roleDTOS = projectPermissionMapper.listRolesByProjectIdAndUserId(projectId, userDetails.getUserId());
+        if (!CollectionUtils.isEmpty(roleDTOS)
+                && roleDTOS.stream()
+                .anyMatch(roleDTO -> {
+                    List<Label> labels = roleC7nMapper.listRoleLabels(roleDTO.getId());
+                    if (CollectionUtils.isEmpty(labels)) {
+                        return false;
+                    }
+                    return labels.stream().anyMatch(label -> RoleLabelEnum.TENANT_ADMIN.value().equals(label.getName()));
+                })) {
+            return true;
+        }
+
+
+        return false;
     }
 }

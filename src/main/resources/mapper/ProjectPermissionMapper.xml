@@ -14,13 +14,15 @@
         <result property="tenantName" column="user_org_name"/>
         <result property="organizationCode" column="user_org_code"/>
         <result property="objectVersionNumber" column="user_version_number"/>
-        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
+        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleC7nDTO"
                     autoMapping="true" notNullColumn="role_id">
             <id property="id" column="role_id"/>
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>
             <result property="enabled" column="role_is_enabled"/>
             <result property="tenantId" column="role_org_id"/>
+            <result property="startTime" column="start_time"/>
+            <result property="endTime" column="end_time"/>
         </collection>
     </resultMap>
 
@@ -82,7 +84,9 @@
         fo.tenant_name as user_org_name,
         htc.config_value as user_org_code,
         ir2.id as role_id,ir2.code as role_code,
-        ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.h_tenant_id as role_org_id
+        ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.h_tenant_id as role_org_id,
+        fdu2.start_time,
+        fdu2.end_time
         from
         (
         select distinct t1.*

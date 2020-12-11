@@ -308,8 +308,9 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
-    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
-        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
+    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId,
+                                                               @RequestParam(name = "with_time", required = false) Boolean withTime) {
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value(), withTime);
     }
 
 

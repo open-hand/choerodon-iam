@@ -19,6 +19,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -204,8 +205,9 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/{project_id}/role_members/batch_import")
     public ResponseEntity<Void> import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
-                                                           @RequestPart MultipartFile file) {
-        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
+                                                           @RequestPart MultipartFile file,
+                                                           @RequestParam(name = "with_time", required = false) Boolean withTime) {
+        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file, withTime);
         return ResponseEntity.noContent().build();
     }
 

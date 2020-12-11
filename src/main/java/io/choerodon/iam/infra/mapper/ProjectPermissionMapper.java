@@ -8,10 +8,12 @@ import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -204,8 +206,8 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleByProjectIdAndClientId(@Param("projectId") Long projectId,
-                                                        @Param("clientId") Long clientId,
-                                                        @Param("roleIds") List<Long> roleIds);
+                                                          @Param("clientId") Long clientId,
+                                                          @Param("roleIds") List<Long> roleIds);
 
     /**
      * 查询用户在当前组织 其他项目下 拥有MemberRole
@@ -238,4 +240,10 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
 
     List<ProjectDTO> listOwnedProject(@Param("organizationId") Long organizationId,
                                       @Param("userId") Long userId);
+
+    void updateActiveTime(@Param("projectId") Long projectId,
+                          @Param("userId") Long userId,
+                          @Param("roleIds") Set<Long> roleIds,
+                          @Param("startTime") Date startTime,
+                          @Param("endTime") Date endTime);
 }

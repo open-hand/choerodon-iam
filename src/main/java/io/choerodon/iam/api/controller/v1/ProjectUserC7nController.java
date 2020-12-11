@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectPermissionVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
@@ -185,6 +186,17 @@ public class ProjectUserC7nController extends BaseController {
                                                               @Encrypt @PathVariable(name = "user_id") Long userId,
                                                               @Encrypt @RequestBody Set<Long> roleIds) {
         projectPermissionService.updateUserRoles(userId, projectId, roleIds, syncAll);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层更新用户角色")
+    @PutMapping(value = "/{project_id}/users/{user_id}/assign_roles/with_time")
+    public ResponseEntity<Void> updateUserRolesOnProjectLevelWithTime(@PathVariable(name = "project_id") Long projectId,
+                                                                      @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                                      @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                                      @RequestBody ProjectPermissionVO projectPermissionVO) {
+        projectPermissionService.updateUserRoles(userId, projectId, projectPermissionVO, syncAll);
         return ResponseEntity.noContent().build();
     }
 

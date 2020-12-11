@@ -275,7 +275,7 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds);
+                    projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, emr.getStartTime(), emr.getEndTime());
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());
@@ -325,9 +325,9 @@ public class ExcelImportUserTask {
     }
 
 
-
     /**
      * 项目下导入用户 发送消息
+     *
      * @param projectId
      * @param count
      */
@@ -342,13 +342,13 @@ public class ExcelImportUserTask {
         map.put("objectKind", SendSettingBaseEnum.PROJECT_ADD_USER.value());
         map.put("projectId", projectId);
         map.put("addCount", count);
-        ProjectDTO projectDTO=projectAssertHelper.projectNotExisted(projectId);
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
         map.put("organizationId", projectDTO.getOrganizationId());
         messageSender.setObjectArgs(map);
 
-        Map<String,Object> objectMap=new HashMap<>();
-        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),projectId);
-        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),projectDTO.getOrganizationId());
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectId);
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), projectDTO.getOrganizationId());
         messageSender.setAdditionalInformation(objectMap);
         messageClient.async().sendMessage(messageSender);
     }

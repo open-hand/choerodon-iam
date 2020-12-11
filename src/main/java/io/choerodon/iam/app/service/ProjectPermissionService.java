@@ -3,14 +3,17 @@ package io.choerodon.iam.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectPermissionVO;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.iam.api.dto.RoleDTO;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,9 +108,11 @@ public interface ProjectPermissionService {
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectPermissionDTO> projectUsers);
 
-    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds);
+    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Date startTime, Date endTime);
 
     void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
+
+    void updateUserRoles(Long userId, Long sourceId, ProjectPermissionVO projectPermissionVO, Boolean syncAll);
 
     /**
      * 查询项目下活跃成员信息
@@ -122,6 +127,7 @@ public interface ProjectPermissionService {
 
     /**
      * 校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户
+     *
      * @param projectId
      * @return
      */

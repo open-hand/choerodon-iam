@@ -141,7 +141,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
                                              @Lazy
-                                             UserC7nService userC7nService,
+                                                     UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
@@ -149,7 +149,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              @Lazy
-                                             MessageSendService messageSendService,
+                                                     MessageSendService messageSendService,
                                              RedisTemplate<String, String> redisTemplate,
                                              @Lazy StarProjectService starProjectService
     ) {
@@ -174,7 +174,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.asgardFeignClient = asgardFeignClient;
         this.messageSendService = messageSendService;
     }
-
 
 
     @Override
@@ -233,6 +232,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .withSourceId(project.getOrganizationId()),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
+                    projectDTO.setStartTime(project.getStartTime());
+                    projectDTO.setEndTime(project.getEndTime());
                     Set<String> roleLabels = initMemberRole(projectDTO);
                     ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
                     builder

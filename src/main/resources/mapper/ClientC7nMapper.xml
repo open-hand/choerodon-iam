@@ -75,7 +75,6 @@
             oc.id,
             oc. NAME AS NAME,
             oc.organization_id,
-            httl.tenant_name,
             oc.authorized_grant_types,
             oc.object_version_number,
             oc.enabled_flag

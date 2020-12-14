@@ -41,6 +41,15 @@ public class ClientProjectC7nController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "随机的客户端创建信息生成")
+    @GetMapping(value = "/createInfo")
+    public ResponseEntity<Client> createInfo(
+            @PathVariable("organization_id") Long organizationId) {
+        return new ResponseEntity<>(clientC7nService.getDefaultCreateData(organizationId), HttpStatus.OK);
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "创建客户端，该接口会保存客户端关系")
     @PostMapping
     public ResponseEntity<ClientVO> create(
@@ -87,7 +96,7 @@ public class ClientProjectC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("分页模糊查询客户端")
     @GetMapping({"/clients"})
-    public ResponseEntity<Page<Client>> list(@PathVariable Long organizationId,
+    public ResponseEntity<Page<Client>> list(@PathVariable("organization_id") Long organizationId,
                                              @PathVariable("project_id") Long projectId,
                                              String name, Integer enabledFlag, PageRequest pageRequest) {
         return Results.success(clientProjectC7nService.pageClient(organizationId, projectId, name, enabledFlag, pageRequest));

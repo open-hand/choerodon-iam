@@ -119,7 +119,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     @Transactional
     public void update(Long organizationId, Long roleId, RoleVO roleVO) {
         Role role = roleMapper.selectByPrimaryKey(roleId);
-        CommonExAssertUtil.assertTrue(organizationId.equals(role.getTenantId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        if (role.getTenantId() != null) {
+            CommonExAssertUtil.assertTrue(organizationId.equals(role.getTenantId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
+        }
 
         roleVO.setId(roleId);
 

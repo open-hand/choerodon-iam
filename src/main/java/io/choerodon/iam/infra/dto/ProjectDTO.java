@@ -129,9 +129,11 @@ public class ProjectDTO extends AuditDomain {
     @Encrypt
     private Long sagaInstanceId;
 
+    @Transient
     @ApiModelProperty("立项开始时间")
     private Date startTime;
 
+    @Transient
     @ApiModelProperty("立项结束时间")
     private Date endTime;
 

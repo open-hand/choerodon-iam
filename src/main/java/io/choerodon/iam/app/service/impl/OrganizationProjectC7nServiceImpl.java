@@ -232,10 +232,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .withSourceId(project.getOrganizationId()),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
-                    projectDTO.setStartTime(project.getStartTime());
-                    projectDTO.setEndTime(project.getEndTime());
                     Set<String> roleLabels = initMemberRole(projectDTO);
                     ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
+                    projectEventPayload.setStartTime(project.getStartTime());
+                    projectEventPayload.setEndTime(project.getEndTime());
                     builder
                             .withPayloadAndSerialize(projectEventPayload)
                             .withRefId(String.valueOf(projectDTO.getId()))
@@ -266,8 +266,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());
         projectEventMsg.setOrganizationName(tenant.getTenantName());
         projectEventMsg.setOrganizationId(tenant.getTenantId());
-        projectEventMsg.setStartTime(projectDTO.getStartTime());
-        projectEventMsg.setEndTime(projectDTO.getEndTime());
         return projectEventMsg;
     }
 

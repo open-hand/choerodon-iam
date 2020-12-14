@@ -44,7 +44,8 @@ public class ClientProjectC7nController {
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
     public ResponseEntity<Client> createInfo(
-            @PathVariable("organization_id") Long organizationId) {
+            @PathVariable("organization_id") Long organizationId,
+            @PathVariable("project_id") Long projectId) {
         return new ResponseEntity<>(clientC7nService.getDefaultCreateData(organizationId), HttpStatus.OK);
     }
 

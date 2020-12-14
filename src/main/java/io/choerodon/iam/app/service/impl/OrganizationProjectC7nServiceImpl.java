@@ -265,6 +265,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());
         projectEventMsg.setOrganizationName(tenant.getTenantName());
         projectEventMsg.setOrganizationId(tenant.getTenantId());
+        projectEventMsg.setStartTime(projectDTO.getStartTime());
+        projectEventMsg.setEndTime(projectDTO.getEndTime());
         return projectEventMsg;
     }
 

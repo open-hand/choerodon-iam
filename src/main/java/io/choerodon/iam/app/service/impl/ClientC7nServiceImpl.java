@@ -137,11 +137,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
                 }
             });
             if (!CollectionUtils.isEmpty(deleteList)) {
-                Map<String, Object> additionalParams = new HashMap<>();
-                additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
                 deleteList.forEach(t -> {
                     MemberRole delMemberRole = getMemberRole(clientId, t, organizationId);
-                    delMemberRole.setAdditionalParams(additionalParams);
                     delMemberRoles.add(delMemberRole);
                 });
                 memberRoleService.batchDeleteMemberRole(organizationId, delMemberRoles);
@@ -157,6 +154,9 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         memberRole.setSourceType(ResourceLevel.ORGANIZATION.value());
         memberRole.setSourceId(organizationId);
         memberRole.setAssignLevelValue(organizationId);
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        memberRole.setAdditionalParams(additionalParams);
         return memberRole;
     }
 
@@ -203,6 +203,15 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         client.setId(clientId);
         client.setName(clientToDelete.getName());
         clientService.delete(client);
+        // 删除client对应角色
+        List<MemberRole> memberRoleList = new ArrayList<>();
+        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new MemberRoleSearchDTO(), new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
+        existingRoleIds.forEach(t -> {
+            MemberRole delMemberRole = getMemberRole(clientId, t, tenantId);
+            memberRoleList.add(delMemberRole);
+        });
+        memberRoleService.batchDeleteMemberRole(tenantId, memberRoleList);
+
         OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
         oauthClientResourceDTO.setClientId(clientId);
         if (oauthClientResourceMapper.delete(oauthClientResourceDTO) != 1) {

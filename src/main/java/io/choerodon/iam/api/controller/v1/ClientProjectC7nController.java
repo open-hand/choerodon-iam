@@ -124,19 +124,19 @@ public class ClientProjectC7nController {
 
     @ApiOperation("客户端 - 查询分配给客户端的角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping({"/client-roles/{clientId}"})
+    @GetMapping({"/client-roles/{client_id}"})
     public ResponseEntity<List<Role>> listClientRoles(@PathVariable("organization_id") Long organizationId,
                                                       @PathVariable("project_id") Long projectId,
-                                                      @Encrypt @PathVariable Long clientId,
+                                                      @Encrypt @PathVariable("client_id") Long clientId,
                                                       @RequestParam(value = "role_name", required = false) String roleName) {
         return Results.success(clientProjectC7nService.selectMemberRoles(organizationId, projectId, clientId, roleName));
     }
 
     @ApiOperation("客户端 - 查询客户端详情")
-    @GetMapping({"/{clientId}"})
+    @GetMapping({"/{client_id}"})
     public ResponseEntity<Client> query(@PathVariable("organization_id") Long organizationId,
                                         @PathVariable("project_id") Long projectId,
-                                        @Encrypt @PathVariable Long clientId) {
+                                        @Encrypt @PathVariable("client_id") Long clientId) {
         return Results.success(clientService.detailClient(organizationId, clientId));
     }
 

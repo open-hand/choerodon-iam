@@ -1,14 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hzero.boot.platform.lov.adapter.LovAdapter;
 import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
+import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
@@ -62,6 +60,9 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     @Autowired
     @Lazy
     private RoleRepository roleRepository;
+    @Autowired
+    @Lazy
+    private MemberRoleService memberRoleService;
 
 
     @Override
@@ -102,8 +103,10 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
         Set<Long> deleteRoleIds = oldRoleIds.stream().filter(v -> !roleIds.contains(v)).collect(Collectors.toSet());
         // 要新增的角色
         Set<Long> insertRoleIds = roleIds.stream().filter(v -> !oldRoleIds.contains(v)).collect(Collectors.toSet());
-        // 更新client角色
-        clientC7nService.assignRoles(organizationId, clientId, roleIds);
+
+        List<MemberRole> addMemberRoles = new ArrayList<>();
+
+        List<MemberRole> delMemberRoles = new ArrayList<>();
 
         // 删除角色
         Set<Long> deleteMemberRoleIds = new HashSet<>();
@@ -113,12 +116,17 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
                 if (memberRoleId != null) {
                     deleteMemberRoleIds.add(memberRoleId);
                 }
+                MemberRole delMemberRole = clientC7nService.getMemberRole(clientId, v, organizationId);
+                delMemberRoles.add(delMemberRole);
             });
             projectPermissionMapper.deleteByIds(projectId, deleteMemberRoleIds);
+            memberRoleService.batchDeleteMemberRole(organizationId, delMemberRoles);
         }
 
         // 新增角色
         if (!CollectionUtils.isEmpty(insertRoleIds)) {
+            insertRoleIds.forEach(v -> addMemberRoles.add(clientC7nService.getMemberRole(clientId, v, organizationId)));
+            memberRoleService.batchAssignMemberRoleInternal(addMemberRoles);
             insertRoleIds.forEach(v -> {
                 ProjectPermissionDTO projectPermissionDTO = new ProjectPermissionDTO();
                 projectPermissionDTO.setProjectId(projectId);

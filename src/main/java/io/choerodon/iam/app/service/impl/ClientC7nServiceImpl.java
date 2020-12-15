@@ -146,7 +146,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         }
     }
 
-    private MemberRole getMemberRole(Long clientId, Long roleId, Long organizationId) {
+    @Override
+    public MemberRole getMemberRole(Long clientId, Long roleId, Long organizationId) {
         MemberRole memberRole = new MemberRole();
         memberRole.setMemberId(clientId);
         memberRole.setMemberType(Constants.MemberType.CLIENT);

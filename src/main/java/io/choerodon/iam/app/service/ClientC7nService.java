@@ -7,6 +7,7 @@ import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.MemberRole;
 
 import java.util.List;
 
@@ -50,5 +51,7 @@ public interface ClientC7nService {
     void delete(Long tenantId, Long clientId);
 
     Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest);
+
+    MemberRole getMemberRole(Long clientId, Long roleId, Long organizationId);
 
 }

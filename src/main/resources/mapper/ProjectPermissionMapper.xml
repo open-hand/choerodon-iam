@@ -651,6 +651,24 @@
             #{memberRoleId}
         </foreach>
     </delete>
+
+    <delete id="deleteByClientId">
+        DELETE fpu
+        FROM
+            fd_project_permission fpu
+        WHERE
+            fpu.PROJECT_ID = #{projectId}
+            AND fpu.MEMBER_ROLE_ID IN (
+                SELECT
+                    imr.id
+                FROM
+                    iam_member_role imr
+                WHERE
+                    imr.member_id = #{clientId}
+                    AND imr.member_type = 'client'
+            )
+    </delete>
+
     <select id="listOwnedProject" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
         SELECT fp.*
         FROM iam_member_role imr

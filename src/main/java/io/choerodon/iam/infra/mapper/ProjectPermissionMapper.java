@@ -222,6 +222,10 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
     void deleteByIds(@Param("projectId") Long projectId,
                      @Param("memberRoleIds") Set<Long> memberRoleIds);
 
+    void deleteByClientId(@Param("projectId") Long projectId,
+                          @Param("clientId") Long  clientId);
+
+
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,
                                   @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 

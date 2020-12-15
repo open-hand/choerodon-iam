@@ -3,16 +3,11 @@ package io.choerodon.iam.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.hzero.boot.platform.lov.adapter.LovAdapter;
-import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.repository.RoleRepository;
-import org.hzero.iam.domain.vo.RoleVO;
-import org.hzero.iam.infra.constant.HiamMemberType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -59,9 +54,6 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     private RoleC7nMapper roleC7nMapper;
     @Autowired
     @Lazy
-    private RoleRepository roleRepository;
-    @Autowired
-    @Lazy
     private MemberRoleService memberRoleService;
 
 
@@ -71,17 +63,15 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     }
 
     @Override
+    @Transactional
     public void delete(Long tenantId, Long projectId, Long clientId) {
-        checkPermission(projectId, clientId);
-        List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new MemberRoleSearchDTO(), new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
-        projectPermissionMapper.deleteByIds(projectId, new HashSet<>(existingRoleIds));
         clientC7nService.delete(tenantId, clientId);
+        projectPermissionMapper.deleteByClientId(projectId, clientId);
     }
 
 
     @Override
     public void update(Long tenantId, Long projectId, Client client) {
-        checkPermission(projectId, client.getId());
         Client oldClient = clientService.detailClient(tenantId, client.getId());
         client.setOrganizationId(tenantId);
         client.setTimeZone(oldClient.getTimeZone());

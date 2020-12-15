@@ -11,6 +11,7 @@ import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,8 +124,8 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     }
 
     @Override
-    public Page<RoleVO> selectMemberRoles(Long organizationId, Long projectId, Long clientId, String roleName, PageRequest pageRequest) {
-        return PageHelper.doPage(pageRequest, () -> roleC7nMapper.listMemberRolesForProjectClient(organizationId, clientId, projectId, roleName));
+    public List<Role> selectMemberRoles(Long organizationId, Long projectId, Long clientId, String roleName) {
+        return roleC7nMapper.listMemberRolesForProjectClient(organizationId, clientId, projectId, roleName);
     }
 
     private void checkPermission(Long projectId, Long clientId) {

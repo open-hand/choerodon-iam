@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.vo.RoleVO;
 
 import io.choerodon.core.domain.Page;
@@ -27,5 +28,5 @@ public interface ClientProjectC7nService {
 
     void assignRoles(Long organizationId, Long projectId, Long clientId, List<Long> roleIds);
 
-    Page<RoleVO> selectMemberRoles(Long organizationId, Long projectId, Long clientId, String roleName, PageRequest pageRequest);
+    List<Role> selectMemberRoles(Long organizationId, Long projectId, Long clientId, String roleName);
 }

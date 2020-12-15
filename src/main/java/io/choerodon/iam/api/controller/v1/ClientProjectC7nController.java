@@ -5,8 +5,9 @@ import java.util.List;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.vo.RoleVO;
+import org.hzero.iam.domain.entity.Role;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -34,10 +35,14 @@ public class ClientProjectC7nController {
 
     private final ClientProjectC7nService clientProjectC7nService;
     private final ClientC7nService clientC7nService;
+    private final ClientService clientService;
 
-    public ClientProjectC7nController(@Lazy ClientProjectC7nService clientProjectC7nService, ClientC7nService clientC7nService) {
+    public ClientProjectC7nController(@Lazy ClientProjectC7nService clientProjectC7nService,
+                                      ClientC7nService clientC7nService,
+                                      ClientService clientService) {
         this.clientProjectC7nService = clientProjectC7nService;
         this.clientC7nService = clientC7nService;
+        this.clientService = clientService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -117,15 +122,22 @@ public class ClientProjectC7nController {
     }
 
 
-    @ApiOperation("客户端 - 分页查询分配给客户端的角色")
+    @ApiOperation("客户端 - 查询分配给客户端的角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping({"/client-roles/{clientId}"})
-    public ResponseEntity<Page<RoleVO>> listClientRoles(@PathVariable("organization_id") Long organizationId,
-                                                        @PathVariable("project_id") Long projectId,
-                                                        @Encrypt @PathVariable Long clientId,
-                                                        @RequestParam("role_name") String roleName, PageRequest pageRequest) {
-        return Results.success(clientProjectC7nService.selectMemberRoles(organizationId, projectId, clientId, roleName, pageRequest));
+    public ResponseEntity<List<Role>> listClientRoles(@PathVariable("organization_id") Long organizationId,
+                                                      @PathVariable("project_id") Long projectId,
+                                                      @Encrypt @PathVariable Long clientId,
+                                                      @RequestParam(value = "role_name", required = false) String roleName) {
+        return Results.success(clientProjectC7nService.selectMemberRoles(organizationId, projectId, clientId, roleName));
     }
 
+    @ApiOperation("客户端 - 查询客户端详情")
+    @GetMapping({"/{clientId}"})
+    public ResponseEntity<Client> query(@PathVariable("organization_id") Long organizationId,
+                                        @PathVariable("project_id") Long projectId,
+                                        @Encrypt @PathVariable Long clientId) {
+        return Results.success(clientService.detailClient(organizationId, clientId));
+    }
 
 }

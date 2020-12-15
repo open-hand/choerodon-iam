@@ -133,6 +133,7 @@ public class ClientProjectC7nController {
     }
 
     @ApiOperation("客户端 - 查询客户端详情")
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping({"/{client_id}"})
     public ResponseEntity<Client> query(@PathVariable("organization_id") Long organizationId,
                                         @PathVariable("project_id") Long projectId,

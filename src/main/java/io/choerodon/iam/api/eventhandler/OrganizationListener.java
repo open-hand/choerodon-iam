@@ -13,6 +13,8 @@ import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.iam.api.eventhandler.payload.ClientPayload;
+import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.app.service.LdapC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
@@ -29,10 +31,12 @@ public class OrganizationListener {
 
     private LdapC7nService ldapC7nService;
     private ProjectPermissionService projectPermissionService;
+    private ClientC7nService clientC7nService;
 
-    public OrganizationListener(LdapC7nService ldapC7nService,ProjectPermissionService projectPermissionService) {
+    public OrganizationListener(LdapC7nService ldapC7nService, ProjectPermissionService projectPermissionService, ClientC7nService clientC7nService) {
         this.ldapC7nService = ldapC7nService;
         this.projectPermissionService = projectPermissionService;
+        this.clientC7nService = clientC7nService;
     }
 
     @SagaTask(code = TASK_CREATE_LDAP_AUTO, sagaCode = CREATE_LDAP_AUTO, seq = 10, description = "ldap自动同步创建/删除quartzTask")
@@ -48,5 +52,11 @@ public class OrganizationListener {
                 new TypeToken<List<ProjectPermissionDTO>>() {
                 }.getType());
         projectPermissionService.assignUsersProjectRoles(userDTOList.get(0).getMemberId(), userDTOList);
+    }
+
+    @SagaTask(code = DELETE_CLIENT, sagaCode = DELETE_CLIENT, seq = 10, description = "删除client角色")
+    public void deleteClientRole(String message) throws IOException {
+        ClientPayload clientPayload = mapper.readValue(message, ClientPayload.class);
+        clientC7nService.deleteClientRole(clientPayload.getClientId(), clientPayload.getTenantId());
     }
 }

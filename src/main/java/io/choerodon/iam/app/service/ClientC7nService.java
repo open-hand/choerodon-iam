@@ -50,6 +50,8 @@ public interface ClientC7nService {
 
     void delete(Long tenantId, Long clientId);
 
+    void deleteClientRole(Long clientId, Long tenantId);
+
     Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest);
 
     MemberRole getMemberRole(Long clientId, Long roleId, Long organizationId);

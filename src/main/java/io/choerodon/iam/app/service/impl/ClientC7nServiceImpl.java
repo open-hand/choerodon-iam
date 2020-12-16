@@ -1,25 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ClientRoleQueryVO;
-import io.choerodon.iam.api.vo.ClientVO;
-import io.choerodon.iam.app.service.ClientC7nService;
-import io.choerodon.iam.infra.asserts.ClientAssertHelper;
-import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.constant.MisConstants;
-import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
-import io.choerodon.iam.infra.mapper.ClientC7nMapper;
-import io.choerodon.iam.infra.mapper.OauthClientResourceMapper;
-import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.DELETE_CLIENT;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.hzero.core.util.Results;
 import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -35,14 +21,31 @@ import org.hzero.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.eventhandler.payload.ClientPayload;
+import io.choerodon.iam.api.vo.ClientRoleQueryVO;
+import io.choerodon.iam.api.vo.ClientVO;
+import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.iam.infra.asserts.ClientAssertHelper;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
+import io.choerodon.iam.infra.mapper.ClientC7nMapper;
+import io.choerodon.iam.infra.mapper.OauthClientResourceMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -75,6 +78,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     private ClientRepository clientRepository;
     @Autowired
     private OauthClientResourceMapper oauthClientResourceMapper;
+    @Autowired
+    private TransactionalProducer producer;
 
 
     @Override
@@ -193,6 +198,8 @@ public class ClientC7nServiceImpl implements ClientC7nService {
 
     @Override
     @Transactional
+    @Saga(code = DELETE_CLIENT,
+            description = "删除客户端角色", inputSchema = "{}")
     public void delete(Long tenantId, Long clientId) {
         Client clientToDelete = clientRepository.selectByPrimaryKey(clientId);
         if (clientToDelete == null) {
@@ -204,6 +211,34 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         client.setId(clientId);
         client.setName(clientToDelete.getName());
         clientService.delete(client);
+        OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
+        oauthClientResourceDTO.setClientId(clientId);
+        if (oauthClientResourceMapper.delete(oauthClientResourceDTO) != 1) {
+            throw new CommonException("error.clientResource.delete");
+        }
+        sendEvent(clientId, tenantId);
+    }
+
+
+    public void sendEvent(Long clientId, Long tenantId) {
+        try {
+            ClientPayload clientPayload = new ClientPayload(clientId, tenantId);
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withSagaCode(DELETE_CLIENT)
+                            .withPayloadAndSerialize(clientPayload)
+                            .withRefType("users")
+                            .withRefId(clientId + "")
+                            .withLevel(ResourceLevel.ORGANIZATION)
+                            .withSourceId(tenantId),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event", e);
+        }
+    }
+
+    @Override
+    public void deleteClientRole(Long clientId, Long tenantId) {
         // 删除client对应角色
         List<MemberRole> memberRoleList = new ArrayList<>();
         List<Long> existingRoleIds = roleRepository.selectMemberRoles(clientId, HiamMemberType.CLIENT, new MemberRoleSearchDTO(), new PageRequest(0, 0)).getContent().stream().map(org.hzero.iam.domain.vo.RoleVO::getId).collect(Collectors.toList());
@@ -212,12 +247,6 @@ public class ClientC7nServiceImpl implements ClientC7nService {
             memberRoleList.add(delMemberRole);
         });
         memberRoleService.batchDeleteMemberRole(tenantId, memberRoleList);
-
-        OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
-        oauthClientResourceDTO.setClientId(clientId);
-        if (oauthClientResourceMapper.delete(oauthClientResourceDTO) != 1) {
-            throw new CommonException("error.clientResource.delete");
-        }
     }
 
     @Override

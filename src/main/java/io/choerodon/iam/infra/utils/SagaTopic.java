@@ -105,6 +105,7 @@ public final class SagaTopic {
         public static final String TASK_PROJECT_IMPORT_USER = "task-project-import-user";
 
         public static final String CREATE_LDAP_AUTO = "create-ldap-auto";
+        public static final String DELETE_CLIENT = "delete-client";
 
     }
 

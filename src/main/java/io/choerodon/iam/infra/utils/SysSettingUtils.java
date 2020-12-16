@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.iam.api.vo.SysSettingVO;
 import io.choerodon.iam.infra.dto.SysSettingDTO;
@@ -56,8 +57,12 @@ public class SysSettingUtils {
         sysSettingVO.setAutoCleanWebhookRecord(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value())));
         sysSettingVO.setAutoCleanWebhookRecordInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value())));
         sysSettingVO.setAutoCleanSagaInstance(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value())));
-        sysSettingVO.setAutoCleanSagaInstanceInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value())));
-        sysSettingVO.setRetainFailedSagaInstance(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value())));
+        if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value()))) {
+            sysSettingVO.setAutoCleanSagaInstanceInterval(Integer.valueOf(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value())));
+        }
+        if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value()))) {
+            sysSettingVO.setRetainFailedSagaInstance(Boolean.valueOf(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value())));
+        }
         String registerEnabled = settingDTOMap.get(SysSettingEnum.REGISTER_ENABLED.value());
         if (!ObjectUtils.isEmpty(registerEnabled)) {
             sysSettingVO.setRegisterEnabled(Boolean.valueOf(registerEnabled));

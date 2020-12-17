@@ -247,7 +247,7 @@
     </select>
 
     <select id="selectProjectsByUserIdOrAdmin" resultMap="projectMap">
-        <bind name="now" value="@java.time.LocalDate@now().toString()" />
+        <bind name="now" value="@java.time.LocalDate@now()" />
         SELECT fp.*,
         iu.real_name as create_user_name,
         iu.image_url as create_user_image_url,

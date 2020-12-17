@@ -63,7 +63,9 @@ public class C7nUserServiceImpl extends UserServiceImpl {
         User user = userMapper.selectOne(queryDTO);
         Assert.notNull(user, "hiam.warn.user.notFound");
         if (user.getEnabled() == null || BooleanUtils.isFalse(user.getEnabled())) {
-            user.setPhone(user.getPhone().replace(PHONE_SUFFIX, ""));
+            if (!StringUtils.isEmpty(user.getPhone())) {
+                user.setPhone(user.getPhone().replace(PHONE_SUFFIX, ""));
+            }
             user.unfrozen();
             userRepository.updateOptional(user, User.FIELD_ENABLED, User.FIELD_PHONE);
         }

@@ -16,14 +16,12 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
@@ -35,14 +33,9 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private LabelC7nMapper labelC7nMapper;
     @Autowired
     @Lazy
-    private ProjectPermissionService projectPermissionService;
-    @Autowired
-    @Lazy
     private RoleMemberService roleMemberService;
     @Autowired
     private RoleMapper roleMapper;
-    @Autowired
-    private RoleC7nMapper roleC7nMapper;
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
@@ -50,12 +43,9 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
             if (!CollectionUtils.isEmpty(memberRoleList)) {
                 Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));
                 sourceMemberMap.forEach((sourceId, sourceMemberList) -> {
-                    List<MemberRole> oldMemberRoleList = sourceMemberList.stream().filter(t -> (t.getAdditionalParams() != null && t.getAdditionalParams().containsKey(MemberRoleConstants.MEMBER_OLD_ROLE))).collect(Collectors.toList());
-                    if (CollectionUtils.isEmpty(oldMemberRoleList) || oldMemberRoleList.size() != sourceMemberList.size()) {
-                        Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
-                        Map<Long, Set<String>> userOldRoleLabelsMap = getUserRoleLabelsMap(oldMemberRoleList);
-                        assignUsersRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap, userOldRoleLabelsMap);
-                    }
+                    Map<Long, Set<String>> userRoleLabelsMap = getUserRoleLabelsMap(sourceMemberList);
+                    Map<Long, Set<String>> userOldRoleLabelsMap = getUserOldRoleLabelsMap(sourceMemberList);
+                    assignUsersRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap, userOldRoleLabelsMap);
                 });
             }
         }
@@ -114,6 +104,19 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         return userRoleLabelsMap;
     }
 
+    private Map<Long, Set<String>> getUserOldRoleLabelsMap(List<MemberRole> memberRoleList) {
+        if (CollectionUtils.isEmpty(memberRoleList)) {
+            return new HashMap<>();
+        }
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        for (MemberRole memberRole : memberRoleList) {
+            if (!ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE))) {
+                userRoleLabelsMap.put(memberRole.getMemberId(), castList(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE), String.class));
+            }
+        }
+        return userRoleLabelsMap;
+    }
+
     private void assignUsersRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap, Map<Long, Set<String>> userOldRoleLabelsMap) {
         if (!CollectionUtils.isEmpty(userRoleLabelsMap)) {
             userRoleLabelsMap.forEach((k, v) -> {
@@ -121,16 +124,10 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
                 userMemberEventPayload.setUserId(k);
                 userMemberEventPayload.setRoleLabels(v);
-                if (!CollectionUtils.isEmpty(userOldRoleLabelsMap)) {
-                    if (CollectionUtils.isEmpty(userOldRoleLabelsMap.get(k))) {
-                        userMemberEventPayload.setPreviousRoleLabels(new HashSet<>());
-                    } else {
-                        userMemberEventPayload.setPreviousRoleLabels(userOldRoleLabelsMap.get(k));
-                    }
+                if (!CollectionUtils.isEmpty(userOldRoleLabelsMap.get(k))) {
+                    userMemberEventPayload.setPreviousRoleLabels(userOldRoleLabelsMap.get(k));
                 } else {
-                    Set<String> oldLabels = roleC7nMapper.listLabelByTenantIdAndUserId(k, sourceId);
-                    oldLabels.removeAll(v);
-                    userMemberEventPayload.setPreviousRoleLabels(oldLabels);
+                    userMemberEventPayload.setPreviousRoleLabels(new HashSet<>());
                 }
                 userMemberEventPayload.setResourceId(sourceId);
                 userMemberEventPayload.setResourceType(level.value());
@@ -138,6 +135,18 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 roleMemberService.updateMemberRole(k, userMemberEventPayloads, level, sourceId);
             });
         }
+    }
+
+
+    private <T> Set<T> castList(Object obj, Class<T> clazz) {
+        HashSet<T> result = new HashSet<T>();
+        if (obj instanceof HashSet<?>) {
+            for (Object o : (HashSet<?>) obj) {
+                result.add(clazz.cast(o));
+            }
+            return result;
+        }
+        return null;
     }
 
 }

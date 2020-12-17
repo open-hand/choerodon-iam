@@ -28,4 +28,8 @@ public interface MemberRoleC7nMapper {
 
     List<Role> listRoleByUserIdAndLevel(@Param("userId") Long userId,
                                         @Param("level") String level);
+
+
+    List<Role> listRoleByUserIdAndTenantId(@Param("userId") Long userId,
+                                           @Param("tenantId") Long tenantId);
 }

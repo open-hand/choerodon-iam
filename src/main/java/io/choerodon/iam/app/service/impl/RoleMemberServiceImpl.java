@@ -115,12 +115,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private MessageSendService messageSendService;
     private UserC7nService userC7nService;
     private ProjectC7nService projectC7nService;
+    private RoleC7nMapper roleC7nMapper;
 
 
     public RoleMemberServiceImpl(TenantMapper tenantMapper,
                                  ProjectMapper projectMapper,
                                  MemberRoleMapper memberRoleMapper,
                                  MemberRoleC7nMapper memberRoleC7nMapper,
+                                 RoleC7nMapper roleC7nMapper,
                                  RoleMapper roleMapper,
                                  UserAssertHelper userAssertHelper,
                                  MemberRoleService memberRoleService,
@@ -137,15 +139,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  MessageClient messageClient,
                                  MemberRoleRepository memberRoleRepository,
                                  @Lazy
-                                 MessageSendService messageSendService,
+                                         MessageSendService messageSendService,
                                  @Lazy
-                                 UserC7nService userC7nService,
+                                         UserC7nService userC7nService,
                                  @Lazy
                                          ProjectC7nService projectC7nService) {
         this.tenantMapper = tenantMapper;
         this.projectMapper = projectMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
+        this.roleC7nMapper = roleC7nMapper;
         this.roleMapper = roleMapper;
         this.userAssertHelper = userAssertHelper;
         this.labelC7nMapper = labelC7nMapper;
@@ -297,11 +300,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         User userDTO = userAssertHelper.userNotExisted(memberId);
         List<MemberRole> returnList = new ArrayList<>();
+        Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(memberId, sourceId);
+
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
         userMemberEventMsg.setResourceId(sourceId);
         userMemberEventMsg.setUserId(memberId);
         userMemberEventMsg.setResourceType(sourceType);
+        userMemberEventMsg.setPreviousRoleLabels(previousRoleLabels);
         userMemberEventMsg.setUsername(userDTO.getLoginName());
         userMemberEventMsg.setSyncAll(syncAll);
 
@@ -747,7 +753,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (!CollectionUtils.isEmpty(newRoleIds)) {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);
         }
-
+        Set<String> previousRoleLabels = new HashSet<>();
+        if (!CollectionUtils.isEmpty(oldIds)) {
+            previousRoleLabels = labelC7nMapper.selectLabelNamesInRoleIds(oldIds);
+        }
         // 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
@@ -755,6 +764,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayload.setRoleLabels(labelNames);
         userMemberEventPayload.setResourceId(tenantId);
         userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
+        userMemberEventPayload.setPreviousRoleLabels(previousRoleLabels);
         userMemberEventPayloads.add(userMemberEventPayload);
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);
 
@@ -795,6 +805,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (!CollectionUtils.isEmpty(newRoleIds)) {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(newRoleIds);
         }
+        Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(userId, tenantId);
 
         // 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
@@ -802,6 +813,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         userMemberEventPayload.setUserId(userId);
         userMemberEventPayload.setRoleLabels(labelNames);
         userMemberEventPayload.setResourceId(tenantId);
+        userMemberEventPayload.setPreviousRoleLabels(previousRoleLabels);
         userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
         userMemberEventPayloads.add(userMemberEventPayload);
         updateMemberRole(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, tenantId);

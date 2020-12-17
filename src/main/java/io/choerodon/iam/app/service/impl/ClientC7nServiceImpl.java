@@ -213,9 +213,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         clientService.delete(client);
         OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
         oauthClientResourceDTO.setClientId(clientId);
-        if (oauthClientResourceMapper.delete(oauthClientResourceDTO) != 1) {
-            throw new CommonException("error.clientResource.delete");
-        }
+        oauthClientResourceMapper.delete(oauthClientResourceDTO);
         sendEvent(clientId, tenantId);
     }
 

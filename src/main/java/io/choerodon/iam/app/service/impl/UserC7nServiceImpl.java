@@ -1003,7 +1003,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         userIds.forEach(id -> {
-            labelNames.addAll(roleC7nMapper.listLabelByTenantIdAndUserId(id, organizationId));
+            Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(id, organizationId);
+            labelNames.addAll(previousRoleLabels);
             List<MemberRole> memberRoleList = new ArrayList<>();
             MemberRole memberRoleDTO = new MemberRole();
             memberRoleDTO.setRoleId(tenantAdminRole.getId());
@@ -1025,9 +1026,8 @@ public class UserC7nServiceImpl implements UserC7nService {
             userMemberEventPayload.setResourceId(organizationId);
             userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
             userMemberEventPayload.setRoleLabels(labelNames);
+            userMemberEventPayload.setPreviousRoleLabels(previousRoleLabels);
             userMemberEventPayloads.add(userMemberEventPayload);
-
-
             // 构建消息对象
             User user = userMapper.selectByPrimaryKey(id);
             notifyUserList.add(user);
@@ -1092,13 +1092,16 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS) {
-        Map<Long, Set<String>> userRolelabelsMap = new HashMap<>();
-        Map<Long, List<User>> rolelUsersMap = new HashMap<>();
+        Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
+        Map<Long, Set<String>> userOldRoleLabelsMap = new HashMap<>();
+        Map<Long, List<User>> roleUsersMap = new HashMap<>();
         Map<Long, String> roleNameMap = new HashMap<>();
         Tenant tenant = tenantMapper.selectByPrimaryKey(organizationId);
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
         memberRoleDTOS.forEach(memberRoleDTO -> {
+            Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(memberRoleDTO.getMemberId(), organizationId);
+            userOldRoleLabelsMap.put(memberRoleDTO.getMemberId(), previousRoleLabels);
             User user = userMapper.selectByPrimaryKey(memberRoleDTO.getMemberId());
             Role role = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
 
@@ -1114,21 +1117,21 @@ public class UserC7nServiceImpl implements UserC7nService {
             List<LabelDTO> labelDTOS = labelC7nMapper.selectByRoleId(role.getId());
             if (!CollectionUtils.isEmpty(labelDTOS)) {
                 Set<String> labelNames = labelDTOS.stream().map(Label::getName).collect(Collectors.toSet());
-                Set<String> roleLabels = userRolelabelsMap.get(memberRoleDTO.getMemberId());
+                Set<String> roleLabels = userRoleLabelsMap.get(memberRoleDTO.getMemberId());
                 if (roleLabels != null) {
                     roleLabels.addAll(labelNames);
                 } else {
-                    userRolelabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
+                    userRoleLabelsMap.put(memberRoleDTO.getMemberId(), labelNames);
                 }
             }
             // 构建消息对象
-            List<User> userList = rolelUsersMap.get(memberRoleDTO.getRoleId());
+            List<User> userList = roleUsersMap.get(memberRoleDTO.getRoleId());
             if (userList != null) {
                 userList.add(user);
             } else {
                 userList = new ArrayList<>();
                 userList.add(user);
-                rolelUsersMap.put(memberRoleDTO.getRoleId(), userList);
+                roleUsersMap.put(memberRoleDTO.getRoleId(), userList);
             }
 
             memberRoleDTO.setMemberType(MemberType.USER.value());
@@ -1143,10 +1146,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         // 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-        userRolelabelsMap.forEach((k, v) -> {
+        userRoleLabelsMap.forEach((k, v) -> {
             UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
             userMemberEventPayload.setUserId(k);
             userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setPreviousRoleLabels(userOldRoleLabelsMap.get(k));
             userMemberEventPayload.setResourceId(organizationId);
             userMemberEventPayload.setResourceType(ResourceLevel.ORGANIZATION.value());
             userMemberEventPayloads.add(userMemberEventPayload);
@@ -1155,7 +1159,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
 
         // 发送消息
-        rolelUsersMap.forEach((k, v) -> messageSendService.sendAddMemberMsg(tenant, roleNameMap.get(k), v));
+        roleUsersMap.forEach((k, v) -> messageSendService.sendAddMemberMsg(tenant, roleNameMap.get(k), v));
 
     }
 

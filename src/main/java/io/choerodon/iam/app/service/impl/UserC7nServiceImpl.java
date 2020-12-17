@@ -35,7 +35,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -88,14 +87,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class UserC7nServiceImpl implements UserC7nService {
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
 
-    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
-
-    private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
-    private static final String USER_NOT_FOUND_EXCEPTION = "error.user.not.found";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
-    private static final String SITE_ADMIN_ROLE_CODE = "role/site/default/administrator";
-    private static final String ORG_ADMIN_ROLE_CODE = "role/organization/default/administrator";
     private static final String PROJECT = "project";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserC7nServiceImpl.class);
 

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * @author scp
@@ -46,7 +47,9 @@ public class C7nUserServiceImpl extends UserServiceImpl {
         Assert.notNull(user, "hiam.warn.user.notFound");
         if (BooleanUtils.isTrue(user.getEnabled())) {
             user.frozen();
-            user.setPhone(user.getPhone() + PHONE_SUFFIX);
+            if (!StringUtils.isEmpty(user.getPhone())) {
+                user.setPhone(user.getPhone() + PHONE_SUFFIX);
+            }
             userRepository.updateOptional(user, User.FIELD_ENABLED, User.FIELD_PHONE);
             oauthAdminService.invalidByUsername(user.getLoginName());
         }

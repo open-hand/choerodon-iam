@@ -616,6 +616,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, organizationId);
+        boolean isAdmin = userC7nService.isRoot(userId);
+        boolean isOrgAdmin = userC7nService.checkIsOrgRoot(organizationId, userId);
+        List<Long> activeProjectIds = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, null, isAdmin, isOrgAdmin, null).stream().map(ProjectDTO::getId).collect(Collectors.toList());
+
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(userVisitInfoKey);
         if (entries.isEmpty()) {
             return new ArrayList<>();
@@ -631,8 +635,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<ProjectVisitInfoVO> result = projectVisitInfoVOList.stream().peek(p -> {
             if (DateUtil.isExceedDay(p.getLastVisitTime(), now)) {
                 fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
+            } else if (!activeProjectIds.contains(p.getProjectId())) {
+                fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
             }
-        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
+        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now) && activeProjectIds.contains(p.getProjectId())).collect(Collectors.toList());
 
         // 将保存时间超过7天的记录删除
         if (!CollectionUtils.isEmpty(fieldToDelete)) {

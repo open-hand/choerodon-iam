@@ -135,7 +135,10 @@ public class StarProjectServiceImpl implements StarProjectService {
         boolean isOrgAdmin = userC7nService.checkIsOrgRoot(organizationId, userId);
         List<Long> activeProjectIds = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, null, isAdmin, isOrgAdmin, null).stream().map(ProjectDTO::getId).collect(Collectors.toList());
 
-        Set<Long> pids = projectDTOS.stream().filter(t->activeProjectIds.contains(t.getId())).map(ProjectDTO::getId).collect(Collectors.toSet());
+        Set<Long> pids = projectDTOS.stream().filter(t -> activeProjectIds.contains(t.getId())).map(ProjectDTO::getId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(pids)) {
+            return new ArrayList<>();
+        }
         return starProjectMapper.query(pids, userId);
 
     }

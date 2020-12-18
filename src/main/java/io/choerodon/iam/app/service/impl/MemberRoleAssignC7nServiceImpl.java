@@ -51,8 +51,9 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
             Map<String, Object> additionalParams = new HashMap<>();
             for (Long memberId : listMap.keySet()) {
                 for (MemberRole memberRole : listMap.get(memberId)) {
-                    Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(memberId, memberRole.getSourceId());
-                    List<Long> oldTenantRoleIds = memberRoleC7nMapper.listRoleByUserIdAndTenantId(memberId, memberRole.getSourceId()).stream().map(Role::getId).collect(Collectors.toList());
+                    Role role = roleRepository.selectByPrimaryKey(memberRole.getRoleId());
+                    Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(memberId, role.getTenantId());
+                    List<Long> oldTenantRoleIds = memberRoleC7nMapper.listRoleByUserIdAndTenantId(memberId, role.getTenantId()).stream().map(Role::getId).collect(Collectors.toList());
                     additionalParams.put(MemberRoleConstants.MEMBER_OLD_ROLE, previousRoleLabels);
                     if (memberRole.getAdditionalParams() == null) {
                         memberRole.setAdditionalParams(additionalParams);
@@ -60,7 +61,6 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                         memberRole.getAdditionalParams().putAll(additionalParams);
                     }
                     if (oldTenantRoleIds.contains(memberRole.getRoleId())) {
-                        memberRoleList.remove(memberRole);
                         continue;
                     }
                     List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());

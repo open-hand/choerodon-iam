@@ -54,6 +54,7 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                     memberRole.getAdditionalParams().putAll(additionalParams);
                 }
                 if (oldTenantRoleIds.contains(memberRole.getRoleId())) {
+                    memberRoleList.remove(memberRole);
                     continue;
                 }
                 List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());

@@ -95,8 +95,6 @@ public class ClientC7nController extends BaseController {
     public ResponseEntity<ClientVO> create(
             @PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
         clientVO.setOrganizationId(organizationId);
-        clientVO.setSourceId(organizationId);
-        clientVO.setSourceType(ResourceLevel.ORGANIZATION.value());
         this.validObject(clientVO);
         return Results.success(clientC7nService.create(clientVO));
     }

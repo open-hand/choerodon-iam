@@ -184,12 +184,14 @@ public class ClientC7nServiceImpl implements ClientC7nService {
         Client clientToCreate = new Client();
         BeanUtils.copyProperties(clientVO, clientToCreate);
         clientService.create(clientToCreate);
-        OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
-        oauthClientResourceDTO.setClientId(clientToCreate.getId());
-        oauthClientResourceDTO.setSourceId(clientVO.getSourceId());
-        oauthClientResourceDTO.setSourceType(clientVO.getSourceType());
-        if (oauthClientResourceMapper.insertSelective(oauthClientResourceDTO) != 1) {
-            throw new CommonException("error.clientResource.create");
+        if (clientVO.getSourceId() != null) {
+            OauthClientResourceDTO oauthClientResourceDTO = new OauthClientResourceDTO();
+            oauthClientResourceDTO.setClientId(clientToCreate.getId());
+            oauthClientResourceDTO.setSourceId(clientVO.getSourceId());
+            oauthClientResourceDTO.setSourceType(clientVO.getSourceType());
+            if (oauthClientResourceMapper.insertSelective(oauthClientResourceDTO) != 1) {
+                throw new CommonException("error.clientResource.create");
+            }
         }
         clientVO.setId(clientToCreate.getId());
         return clientVO;

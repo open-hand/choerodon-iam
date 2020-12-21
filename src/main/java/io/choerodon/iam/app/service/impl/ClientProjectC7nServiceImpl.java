@@ -79,8 +79,8 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     }
 
     @Override
-    public Page<Client> pageClient(Long organizationId, Long projectId, String name, Integer enabledFlag, PageRequest pageRequest) {
-        return PageHelper.doPageAndSort(pageRequest, () -> clientC7nMapper.listClientByProjectId(organizationId, projectId, name, enabledFlag));
+    public Page<Client> pageClient(Long organizationId, Long projectId, String name, String params, PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest, () -> clientC7nMapper.listClientBySourceId(organizationId, projectId, ResourceLevel.PROJECT.value(), name, params));
     }
 
     @Override

@@ -42,7 +42,6 @@ import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
 import io.choerodon.iam.infra.mapper.ClientC7nMapper;
 import io.choerodon.iam.infra.mapper.OauthClientResourceMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -248,12 +247,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     }
 
     @Override
-    public Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest) {
-        PageRequest pageRequest1 = new PageRequest(0, 0);
-        Page<Client> clients = clientService.pageClient(organizationId, name, enabledFlag, pageRequest1);
-        // 剔除组织下项目层创建的client 减少覆盖hzero逻辑
-        List<Long> projectClientIds = clientC7nMapper.listClientsInProject(organizationId);
-        List<Client> clientList = clients.getContent().stream().filter(t -> !projectClientIds.contains(t.getId())).collect(Collectors.toList());
-        return PageUtils.createPageFromList(clientList, pageRequest);
+    public Page<Client> pageClient(Long organizationId, String name, String params, PageRequest pageRequest) {
+        return PageHelper.doPage(pageRequest, () -> clientC7nMapper.listClientsByTenantId(organizationId, name, params));
     }
 }

@@ -24,7 +24,7 @@ public interface ClientProjectC7nService {
 
     void update(Long tenantId, Long projectId, Client client);
 
-    Page<Client> pageClient(Long organizationId, Long projectId, String name, Integer enabledFlag, PageRequest pageRequest);
+    Page<Client> pageClient(Long organizationId, Long projectId, String name, String params, PageRequest pageRequest);
 
     void assignRoles(Long organizationId, Long projectId, Long clientId, List<Long> roleIds);
 

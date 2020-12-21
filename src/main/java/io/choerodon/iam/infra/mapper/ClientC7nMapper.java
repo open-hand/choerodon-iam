@@ -22,10 +22,16 @@ public interface ClientC7nMapper {
 
     List<Long> listClientsInProject(@Param("organizationId") Long organizationId);
 
-    List<Client> listClientByProjectId(@Param("organizationId") Long organizationId,
-                                       @Param("projectId") Long projectId,
-                                       @Param("name") String name,
-                                       @Param("enabledFlag") Integer enabledFlag);
+    List<Client> listClientBySourceId(@Param("organizationId") Long organizationId,
+                                      @Param("sourceId") Long sourceId,
+                                      @Param("sourceType") String sourceType,
+                                      @Param("name") String name,
+                                      @Param("params") String params);
+
+    List<Client> listClientsByTenantId(@Param("organizationId") Long organizationId,
+                                      @Param("name") String name,
+                                      @Param("params") String params);
+
 
     Integer selectClientCountFromMemberRoleByOptions(
             @Param("roleId") Long roleId,

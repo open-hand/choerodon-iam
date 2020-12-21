@@ -95,14 +95,19 @@ public class ClientC7nController extends BaseController {
     public ResponseEntity<ClientVO> create(
             @PathVariable("organization_id") Long organizationId, @RequestBody ClientVO clientVO) {
         clientVO.setOrganizationId(organizationId);
+        clientVO.setSourceId(organizationId);
+        clientVO.setSourceType(ResourceLevel.ORGANIZATION.value());
         this.validObject(clientVO);
         return Results.success(clientC7nService.create(clientVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("分页模糊查询客户端")
-    @GetMapping({"/clients"})
-    public ResponseEntity<Page<Client>> list(@PathVariable Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest) {
-        return Results.success(clientC7nService.pageClient(organizationId, name, enabledFlag, pageRequest));
+    @GetMapping
+    public ResponseEntity<Page<Client>> list(@PathVariable("organization_id") Long organizationId,
+                                             @RequestParam(value = "name", required = false) String name,
+                                             @RequestParam(value = "params", required = false) String params,
+                                             PageRequest pageRequest) {
+        return Results.success(clientC7nService.pageClient(organizationId, name, params, pageRequest));
     }
 }

@@ -91,6 +91,8 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                     throw new CommonException("error.role.type");
                 }
             }
+        } else {
+            checkAuth = false;
         }
         super.revokeMemberRole(memberRoleList, checkAuth);
     }

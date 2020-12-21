@@ -86,7 +86,17 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
                 throw new CommonException("error.role.type");
             }
         }
-        super.revokeMemberRole(memberRoleList, checkAuth);
+        // hzero没有提供内部删除角色方法
+        // c7n存在部分旧数据删除校验异常 这里添加补偿机制
+        try {
+            super.revokeMemberRole(memberRoleList, checkAuth);
+        } catch (Exception e) {
+            if (checkAuth) {
+                super.revokeMemberRole(memberRoleList, false);
+            } else {
+                throw e;
+            }
+        }
     }
 
 }

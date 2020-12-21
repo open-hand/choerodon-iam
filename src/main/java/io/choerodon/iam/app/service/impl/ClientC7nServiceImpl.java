@@ -250,6 +250,6 @@ public class ClientC7nServiceImpl implements ClientC7nService {
 
     @Override
     public Page<Client> pageClient(Long organizationId, String name, String params, PageRequest pageRequest) {
-        return PageHelper.doPage(pageRequest, () -> clientC7nMapper.listClientsByTenantId(organizationId, name, params));
+        return PageHelper.doPageAndSort(pageRequest, () -> clientC7nMapper.listClientsByTenantId(organizationId, name, params));
     }
 }

@@ -1,22 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
-import io.choerodon.iam.app.service.*;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -34,9 +21,23 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.UserNumberVO;
+import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author superlee

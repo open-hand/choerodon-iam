@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -20,7 +21,10 @@ import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.app.service.ClientProjectC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -102,11 +106,13 @@ public class ClientProjectC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("分页模糊查询客户端")
     @GetMapping({"/clients"})
+    @CustomPageRequest
     public ResponseEntity<Page<Client>> list(@PathVariable("organization_id") Long organizationId,
                                              @PathVariable("project_id") Long projectId,
                                              @RequestParam(value = "name", required = false) String name,
                                              @RequestParam(value = "params", required = false) String params,
-                                             PageRequest pageRequest) {
+                                             @ApiIgnore
+                                             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
         return Results.success(clientProjectC7nService.pageClient(organizationId, projectId, name, params, pageRequest));
     }
 

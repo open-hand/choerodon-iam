@@ -52,7 +52,7 @@ public interface ClientC7nService {
 
     void deleteClientRole(Long clientId, Long tenantId);
 
-    Page<Client> pageClient(Long organizationId, String name, Integer enabledFlag, PageRequest pageRequest);
+    Page<Client> pageClient(Long organizationId, String name, String params, PageRequest pageRequest);
 
     MemberRole getMemberRole(Long clientId, Long roleId, Long organizationId);
 

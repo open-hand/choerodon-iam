@@ -104,8 +104,10 @@ public class ClientProjectC7nController {
     @GetMapping({"/clients"})
     public ResponseEntity<Page<Client>> list(@PathVariable("organization_id") Long organizationId,
                                              @PathVariable("project_id") Long projectId,
-                                             String name, Integer enabledFlag, PageRequest pageRequest) {
-        return Results.success(clientProjectC7nService.pageClient(organizationId, projectId, name, enabledFlag, pageRequest));
+                                             @RequestParam(value = "name", required = false) String name,
+                                             @RequestParam(value = "params", required = false) String params,
+                                             PageRequest pageRequest) {
+        return Results.success(clientProjectC7nService.pageClient(organizationId, projectId, name, params, pageRequest));
     }
 
 

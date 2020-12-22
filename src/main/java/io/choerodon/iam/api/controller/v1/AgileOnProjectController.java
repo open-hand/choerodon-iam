@@ -53,7 +53,7 @@ public class AgileOnProjectController {
      *
      * @param projectId 要查询的项目ID
      */
-    @Permission(permissionWithin = true)
+    @Permission(permissionLogin = true)
     @GetMapping(value = "/check-permission/{project_id}")
     @ApiOperation(value = "校验当前用户能否进去项目")
     public ResponseEntity<Boolean> checkPermissionByProjectId(@PathVariable(name = "project_id") Long projectId) {

@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +34,10 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.AgileProjectInfoVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -89,6 +91,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected TransactionalProducer transactionalProducer;
 
     protected RoleC7nMapper roleC7nMapper;
+    protected UserC7nService userC7nService;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  OrganizationAssertHelper organizationAssertHelper,
@@ -102,6 +105,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  AgileFeignClient agileFeignClient,
                                  TransactionalProducer transactionalProducer,
                                  ProjectPermissionMapper projectPermissionMapper,
+                                 @Lazy
+                                         UserC7nService userC7nService,
                                  RoleC7nMapper roleC7nMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -116,6 +121,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.projectPermissionMapper = projectPermissionMapper;
         this.transactionalProducer = transactionalProducer;
         this.roleC7nMapper = roleC7nMapper;
+        this.userC7nService = userC7nService;
     }
 
     @Override
@@ -334,4 +340,19 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
 
+    @Override
+    public Boolean checkPermissionByProjectId(Long projectId) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null) {
+            return false;
+        }
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        boolean isAdmin = userC7nService.isRoot(userDetails.getUserId());
+        boolean isOrgAdmin = userC7nService.checkIsOrgRoot(projectDTO.getOrganizationId(), userDetails.getUserId());
+        if (isAdmin || isOrgAdmin) {
+            return true;
+        } else {
+            return projectMapper.checkPermissionByProjectId(projectDTO.getOrganizationId(), projectId, userDetails.getUserId());
+        }
+    }
 }

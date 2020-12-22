@@ -31,11 +31,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-<<<<<<< e20bb25bc3813faa3a761f0ff3f1a19efeb6afca
-import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
-=======
->>>>>>> [IMP] 删除feign业务服务
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.UserC7nService;

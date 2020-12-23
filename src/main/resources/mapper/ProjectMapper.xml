@@ -50,6 +50,7 @@
             <result property="objectVersionNumber" column="category_version_number"/>
         </collection>
     </resultMap>
+
     <resultMap id="projectMap" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
@@ -531,10 +532,13 @@
         fpc.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
-        fpc.organization_id as category_org_id
+        fpc.organization_id as category_org_id,
+        iu.real_name as create_user_name,
+        iu.image_url as create_user_image_url
         from fd_project fp
         left join fd_project_map_category fpmc on fp.id = fpmc.project_id
         left join fd_project_category fpc on fpc.id = fpmc.category_id
+        left join iam_user iu on fp.CREATED_BY=iu.id
         Where fp.id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}

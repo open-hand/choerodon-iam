@@ -80,7 +80,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         return (CollectionUtils.isEmpty(objectMap)
                 || ObjectUtils.isEmpty(objectMap.get(MemberRoleConstants.MEMBER_TYPE))
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
-                && (memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
+                && (memberRoleList.get(0).getMemberType() == null || memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
                 && (StringUtils.isEmpty(memberRoleList.get(0).getSourceType()) || memberRoleList.get(0).getSourceType().contains(ResourceLevel.ORGANIZATION.value()));
     }
 

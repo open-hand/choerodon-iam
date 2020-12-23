@@ -11,6 +11,7 @@ import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -42,6 +43,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     private static final String OPERATION_TENANT_CODE = "operation";
     private static final String ADMIN_LOGIN_NAME = "admin";
+
+    @Value("${choerodon.url: https://api.choerodon.com.cn}")
+    private String choerodonUrl;
 
     @Autowired
     private EnterpriseInfoMapper enterpriseInfoMapper;
@@ -95,7 +99,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         try {
-            IamClient iamClient = (IamClient) retrofitClientFactory.getRetrofitBean("https://api.choerodon.com.cn", IamClient.class);
+            IamClient iamClient = (IamClient) retrofitClientFactory.getRetrofitBean(choerodonUrl, IamClient.class);
             Call<ResponseBody> call = iamClient.saveEnterpriseInfo(enterpriseInfoVO);
             call.execute();
         } catch (IOException e) {

@@ -18,6 +18,7 @@ public class SimplifiedUserVO {
     private String imageUrl;
     @ApiModelProperty(value = "邮箱")
     private String email;
+    private Boolean ldap;
 
     public Long getId() {
         return id;
@@ -57,5 +58,13 @@ public class SimplifiedUserVO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getLdap() {
+        return ldap;
+    }
+
+    public void setLdap(Boolean ldap) {
+        this.ldap = ldap;
     }
 }

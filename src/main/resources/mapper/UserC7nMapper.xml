@@ -1144,7 +1144,8 @@
         login_name,
         real_name,
         image_url,
-        email
+        email,
+        is_ldap AS ldap
         FROM
         iam_user
         WHERE
@@ -1157,7 +1158,7 @@
     </select>
 
     <select id="selectUsersOptional" resultMap="simplifiedUserDTO">
-        select id, login_name, real_name, image_url, email
+        select id, login_name, real_name, image_url, email,is_ldap AS ldap
         from iam_user
         where organization_id = #{organizationId}
         and is_enabled = 1
@@ -1168,7 +1169,7 @@
             )
         </if>
         union
-        select id, login_name, real_name, image_url, email
+        select id, login_name, real_name, image_url, email, is_ldap AS ldap
         from iam_user
         where organization_id != #{organizationId}
         and is_enabled = 1

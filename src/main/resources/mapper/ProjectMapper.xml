@@ -50,6 +50,7 @@
             <result property="objectVersionNumber" column="category_version_number"/>
         </collection>
     </resultMap>
+
     <resultMap id="projectMap" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
@@ -531,14 +532,33 @@
         fpc.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
-        fpc.organization_id as category_org_id
+        fpc.organization_id as category_org_id,
+        iu.real_name as create_user_name,
+        iu.image_url as create_user_image_url
         from fd_project fp
         left join fd_project_map_category fpmc on fp.id = fpmc.project_id
         left join fd_project_category fpc on fpc.id = fpmc.category_id
+        left join iam_user iu on fp.CREATED_BY=iu.id
         Where fp.id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}
         </foreach>
         order by fpmc.id asc
+    </select>
+
+    <select id="checkPermissionByProjectId" resultType="java.lang.Boolean">
+        SELECT
+            COUNT(*)
+        FROM
+            fd_project_permission fpp
+            JOIN iam_member_role imr ON imr.id = fpp.MEMBER_ROLE_ID
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_id = #{organizationId}
+                AND imr.source_type = 'organization'
+            JOIN fd_project fp ON fp.ID = fpp.PROJECT_ID
+                AND fp.IS_ENABLED = 1
+        WHERE
+            fpp.PROJECT_ID = #{projectId}
     </select>
 </mapper>

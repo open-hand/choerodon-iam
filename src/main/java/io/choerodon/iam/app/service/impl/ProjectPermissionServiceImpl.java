@@ -543,7 +543,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                     if (CollectionUtils.isEmpty(labels)) {
                         return false;
                     }
-                    return labels.stream().anyMatch(label -> RoleLabelEnum.TENANT_ADMIN.value().equals(label.getName()));
+                    return labels.stream().anyMatch(label -> RoleLabelEnum.PROJECT_ADMIN.value().equals(label.getName()));
                 })) {
             return true;
         }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
+
 import org.hzero.iam.domain.entity.Tenant;
 
 import io.choerodon.core.domain.Page;
@@ -95,4 +96,6 @@ public interface ProjectC7nService {
      * @return
      */
     Page<UserDTO> agileUsersByProjects(PageRequest pageable, AgileUserVO agileUserVO);
+
+    Boolean checkPermissionByProjectId(Long projectId);
 }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import retrofit2.Call;
+import retrofit2.Retrofit;
 
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
@@ -29,10 +30,10 @@ import io.choerodon.iam.app.service.EnterpriseInfoService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.EnterpriseInfoDTO;
-import io.choerodon.iam.infra.factory.RetrofitClientFactory;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.mapper.EnterpriseInfoMapper;
 import io.choerodon.iam.infra.retrofit.IamClient;
+import io.choerodon.iam.infra.retrofit.RetrofitHandler;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 
 /**
@@ -66,9 +67,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
     @Autowired
     private TransactionalProducer producer;
-    @Autowired
-    private RetrofitClientFactory retrofitClientFactory;
-
 
 
     @Override
@@ -127,7 +125,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         try {
-            IamClient iamClient = (IamClient) retrofitClientFactory.getRetrofitBean(choerodonUrl, IamClient.class);
+            Retrofit retrofit = RetrofitHandler.initRetrofit(choerodonUrl);
+            IamClient iamClient = retrofit.create(IamClient.class);
+
             Call<ResponseBody> call = iamClient.saveEnterpriseInfo(enterpriseInfoVO);
             call.execute();
         } catch (IOException e) {

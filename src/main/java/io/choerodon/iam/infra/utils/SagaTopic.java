@@ -90,6 +90,8 @@ public final class SagaTopic {
         private Organization() {
         }
 
+        //组织服务创建组织
+        public static final String ORG_CREATE = "org-create-organization";
         //启用组织
         public static final String ORG_ENABLE = "iam-enable-organization";
 

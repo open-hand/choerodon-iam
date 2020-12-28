@@ -21,6 +21,9 @@ public class EnterpriseInfoVO {
     @ApiModelProperty(value = "组织名称")
     @NotNull(message = "error.organization.name.is.null")
     private String organizationName;
+    @ApiModelProperty(value = "组织编码")
+    @NotNull(message = "error.tenant.num.is.null")
+    private String tenantNum;
     @ApiModelProperty(value = "admin姓名")
     @NotNull(message = "error.admin.name.is.null")
     private String adminName;
@@ -104,11 +107,20 @@ public class EnterpriseInfoVO {
         this.enterpriseName = enterpriseName;
     }
 
+    public String getTenantNum() {
+        return tenantNum;
+    }
+
+    public void setTenantNum(String tenantNum) {
+        this.tenantNum = tenantNum;
+    }
+
     @Override
     public String toString() {
         return "EnterpriseInfoVO{" +
                 "id=" + id +
                 ", organizationName='" + organizationName + '\'' +
+                ", tenantNum='" + tenantNum + '\'' +
                 ", adminName='" + adminName + '\'' +
                 ", adminPhone='" + adminPhone + '\'' +
                 ", adminEmail='" + adminEmail + '\'' +

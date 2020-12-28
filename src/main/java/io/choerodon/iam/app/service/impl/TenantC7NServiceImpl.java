@@ -407,9 +407,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public Tenant queryDefault() {
-        Tenant record = new Tenant();
-        record.setTenantNum(TenantConstants.OPERATION_TENANT_CODE);
-        return tenantMapper.selectOne(record);
+        return tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);
     }
 
     /**

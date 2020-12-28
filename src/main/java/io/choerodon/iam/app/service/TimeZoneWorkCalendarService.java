@@ -73,4 +73,6 @@ public interface TimeZoneWorkCalendarService {
     TimeZoneWorkCalendarDTO update(TimeZoneWorkCalendarDTO timeZoneWorkCalendarDTO);
 
     TimeZoneWorkCalendarDTO queryTimeZoneDetailByOrganizationId(Long organizationId);
+
+    void handleOrganizationInitTimeZone(Long organizationId);
 }

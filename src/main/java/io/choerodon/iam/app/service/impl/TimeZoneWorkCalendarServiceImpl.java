@@ -227,4 +227,22 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
     public TimeZoneWorkCalendarDTO queryTimeZoneDetailByOrganizationId(Long organizationId) {
         return timeZoneWorkCalendarMapper.queryTimeZoneDetailByOrganizationId(organizationId);
     }
+
+    @Override
+    @Transactional
+    public void handleOrganizationInitTimeZone(Long organizationId) {
+        TimeZoneWorkCalendarDTO timeZoneWorkCalendarDTO = new TimeZoneWorkCalendarDTO();
+        timeZoneWorkCalendarDTO.setOrganizationId(organizationId);
+        TimeZoneWorkCalendarDTO query = timeZoneWorkCalendarMapper.selectOne(timeZoneWorkCalendarDTO);
+        if (query == null) {
+            TimeZoneWorkCalendarDTO timeZoneWorkCalendar = new TimeZoneWorkCalendarDTO();
+            timeZoneWorkCalendar.setAreaCode("Asia");
+            timeZoneWorkCalendar.setTimeZoneCode("Asia/Shanghai");
+            timeZoneWorkCalendar.setSaturdayWork(false);
+            timeZoneWorkCalendar.setSundayWork(false);
+            timeZoneWorkCalendar.setUseHoliday(true);
+            timeZoneWorkCalendar.setOrganizationId(organizationId);
+            create(timeZoneWorkCalendar);
+        }
+    }
 }

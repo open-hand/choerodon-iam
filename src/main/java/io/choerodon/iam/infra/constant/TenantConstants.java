@@ -6,6 +6,7 @@ package io.choerodon.iam.infra.constant;
  *
  */
 public class TenantConstants {
+    public static final String DEFAULT_CATEGORY = "DEFAULT";
     public static final Long DEFAULT_TENANT_TD = 0L;
-    public static final String OPERATION_TENANT_CODE = "operation";
+    public static final Long DEFAULT_C7N_TENANT_TD = 1L;
 }

@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.iam.app.task.PermissionFixRunner;
 import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.iam.app.service.impl.UserServiceImpl;
 import org.hzero.iam.domain.entity.User;

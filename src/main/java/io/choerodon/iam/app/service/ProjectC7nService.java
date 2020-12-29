@@ -106,4 +106,12 @@ public interface ProjectC7nService {
      */
     void deleteProjectCategory(Long projectId, List<Long> categoryIds);
 
+    /**
+     * 添加项目类型
+     * @param projectId
+     * @param categoryIds
+     * @return
+     */
+    void addProjectCategory(Long projectId, List<Long> categoryIds);
+
 }

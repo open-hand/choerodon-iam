@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.ADD_PROJECT_CATEGORY;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.AgileProjectInfoVO;
+import io.choerodon.core.utils.ConvertUtils;
+import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
@@ -52,10 +55,7 @@ import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.AgileFeignClient;
 import io.choerodon.iam.infra.feign.TestManagerFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -68,6 +68,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectC7nServiceImpl.class);
 
     protected static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
+    protected static final String CATEGORY_REF_TYPE = "projectCategory";
 
     protected OrganizationProjectC7nService organizationProjectC7nService;
 
@@ -95,6 +96,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected RoleC7nMapper roleC7nMapper;
     protected UserC7nService userC7nService;
 
+    private ProjectCategoryMapper projectCategoryMapper;
+
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  OrganizationAssertHelper organizationAssertHelper,
                                  UserMapper userMapper,
@@ -109,7 +112,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  ProjectPermissionMapper projectPermissionMapper,
                                  @Lazy
                                          UserC7nService userC7nService,
-                                 RoleC7nMapper roleC7nMapper) {
+                                 RoleC7nMapper roleC7nMapper,
+                                 ProjectCategoryMapper projectCategoryMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.organizationAssertHelper = organizationAssertHelper;
         this.userMapper = userMapper;
@@ -124,6 +128,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.transactionalProducer = transactionalProducer;
         this.roleC7nMapper = roleC7nMapper;
         this.userC7nService = userC7nService;
+        this.projectCategoryMapper = projectCategoryMapper;
     }
 
     @Override
@@ -361,13 +366,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public void deleteProjectCategory(Long projectId, List<Long> categoryIds) {
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
-        Assert.notNull(projectDTO, "error.project.not.exist");
-        if (CollectionUtils.isEmpty(categoryIds)) {
-            return;
-        }
-        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-        projectMapCategoryDTO.setProjectId(projectId);
-        List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
+        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
+        if (dbProjectCategoryIds == null) return;
         //要删除的集合
         List<Long> ids = dbProjectCategoryIds.stream().filter(aLong -> categoryIds.contains(aLong)).collect(Collectors.toList());
         //至少需要保留一个项目类型
@@ -375,7 +375,73 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             return;
         }
         //批量删除
-        projectMapCategoryMapper.batchDelete(projectId,categoryIds);
+        projectMapCategoryMapper.batchDelete(projectId, categoryIds);
 
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    @Saga(code = ADD_PROJECT_CATEGORY, description = "iam添加项目类型", inputSchemaClass = ProjectEventPayload.class)
+    public void addProjectCategory(Long projectId, List<Long> categoryIds) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
+        if (dbProjectCategoryIds == null) return;
+        //要添加的集合
+        List<Long> ids = categoryIds.stream().filter(aLong -> !dbProjectCategoryIds.contains(aLong)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        //批量插入
+        List<ProjectMapCategoryDTO> projectMapCategoryDTOS = new ArrayList<>();
+        for (Long categoryId : ids) {
+            ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
+            mapCategoryDTO.setProjectId(projectId);
+            mapCategoryDTO.setCategoryId(categoryId);
+            projectMapCategoryDTOS.add(mapCategoryDTO);
+        }
+        projectMapCategoryMapper.batchInsert(projectMapCategoryDTOS);
+
+        //发送saga做添加项目类型的后续处理
+        ProjectEventPayload projectEventPayload = new ProjectEventPayload();
+        projectEventPayload.setProjectId(projectId);
+        projectEventPayload.setProjectCode(projectDTO.getCode());
+        projectEventPayload.setProjectName(projectDTO.getName());
+        Tenant organization = getOrganizationByProjectId(projectId);
+        projectEventPayload.setOrganizationCode(organization.getTenantNum());
+        projectEventPayload.setOrganizationName(organization.getTenantName());
+        projectEventPayload.setOrganizationId(organization.getTenantId());
+        projectEventPayload.setUserId(DetailsHelper.getUserDetails().getUserId());
+        projectEventPayload.setUserName(DetailsHelper.getUserDetails().getUsername());
+        //加添项目类型的数据
+        List<ProjectMapCategoryVO> projectMapCategoryVOS = ConvertUtils.convertList(projectMapCategoryDTOS, ProjectMapCategoryVO.class);
+        projectMapCategoryVOS.forEach(projectMapCategoryVO -> {
+            projectMapCategoryVO.setProjectCategoryDTO(projectCategoryMapper.selectByPrimaryKey(projectMapCategoryVO.getCategoryId()));
+        });
+        projectEventPayload.setProjectMapCategoryVOList(projectMapCategoryVOS);
+        try {
+            String input = mapper.writeValueAsString(projectEventPayload);
+            transactionalProducer.apply(StartSagaBuilder.newBuilder()
+                            .withRefId(String.valueOf(projectId))
+                            .withRefType(CATEGORY_REF_TYPE)
+                            .withSagaCode(ADD_PROJECT_CATEGORY)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(projectId)
+                            .withJson(input),
+                    builder -> {
+                    });
+        } catch (Exception e) {
+            throw new CommonException("error.projectCategory.update.event", e);
+        }
+    }
+
+    private List<Long> validateAndGetDbCategoryIds(ProjectDTO projectDTO, List<Long> categoryIds) {
+        Assert.notNull(projectDTO, ERROR_PROJECT_NOT_EXIST);
+        if (CollectionUtils.isEmpty(categoryIds)) {
+            return null;
+        }
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectDTO.getId());
+        List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
+        return dbProjectCategoryIds;
     }
 }

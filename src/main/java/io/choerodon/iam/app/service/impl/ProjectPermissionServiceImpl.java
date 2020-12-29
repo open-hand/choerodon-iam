@@ -551,4 +551,10 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
         return false;
     }
+
+    @Override
+    public List<UserDTO> getUserListByProjectId(Long projectId) {
+        List<UserDTO> users = projectPermissionMapper.getUserListByProjectId(projectId);
+        return users;
+    }
 }

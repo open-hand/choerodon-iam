@@ -126,4 +126,11 @@ public interface ProjectPermissionService {
      * @return
      */
     Boolean checkAdminPermission(Long projectId);
+
+    /**
+     * 查询项目下的用户和校色
+     * @param projectId
+     * @return
+     */
+    List<UserDTO> getUserListByProjectId(Long projectId);
 }

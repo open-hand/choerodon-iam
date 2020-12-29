@@ -72,6 +72,8 @@ public final class SagaTopic {
         public static final String PROJECT_DISABLE = "iam-disable-project";
         //启用项目
         public static final String PROJECT_ENABLE = "iam-enable-project";
+        //项目添加项目类型
+        public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
 
     }
 

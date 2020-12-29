@@ -77,6 +77,15 @@ public class ProjectUserC7nController extends BaseController {
                 enabled, params), HttpStatus.OK);
     }
 
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询项目下的所有用户")
+    @GetMapping(value = "/{project_id}/users")
+    public ResponseEntity<List<UserDTO>> getUserListByProjectId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(name = "project_id") Long projectId) {
+        return new ResponseEntity<>(projectPermissionService.getUserListByProjectId(projectId), HttpStatus.OK);
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己")
     @GetMapping(value = "/{project_id}/users/search/list")

@@ -170,4 +170,15 @@ public class ProjectC7nController extends BaseController {
     public ResponseEntity<List<ProjectDTO>> queryProjectByOption(@RequestBody ProjectDTO projectDTO) {
         return ResponseEntity.ok(projectService.queryProjectByOption(projectDTO));
     }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping(value = "/{project_id}/project_category")
+    @ApiOperation(value = "项目删除项目类型")
+    public ResponseEntity<Void> deleteProjectCategory(@PathVariable(name = "project_id") Long projectId,
+                                                      @Encrypt @RequestParam List<Long> categoryIds) {
+        projectService.deleteProjectCategory(projectId, categoryIds);
+
+        return ResponseEntity.noContent().build();
+    }
 }

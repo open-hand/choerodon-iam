@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -42,6 +43,7 @@ import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
@@ -316,5 +318,26 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         } else {
             return projectMapper.checkPermissionByProjectId(projectDTO.getOrganizationId(), projectId, userDetails.getUserId());
         }
+    }
+
+    @Override
+    public void deleteProjectCategory(Long projectId, List<Long> categoryIds) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        Assert.notNull(projectDTO, "error.project.not.exist");
+        if (CollectionUtils.isEmpty(categoryIds)) {
+            return;
+        }
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectId);
+        List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
+        //要删除的集合
+        List<Long> ids = dbProjectCategoryIds.stream().filter(aLong -> categoryIds.contains(aLong)).collect(Collectors.toList());
+        //至少需要保留一个项目类型
+        if (dbProjectCategoryIds.size() == ids.size() || ids.size() == 0) {
+            return;
+        }
+        //批量删除
+        projectMapCategoryMapper.batchDelete(projectId,categoryIds);
+
     }
 }

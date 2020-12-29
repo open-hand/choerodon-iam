@@ -1,13 +1,16 @@
 package io.choerodon.iam.infra.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.mybatis.domian.SecurityToken;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.iam.api.vo.ProjectPermissionVO;
 
 /**
  * @author zmf
@@ -42,6 +45,18 @@ public class UserDTO extends User {
     @ApiModelProperty(value = "事务实例id")
     @Encrypt
     private Long sagaInstanceId;
+
+    @Transient
+    @JsonIgnore
+    private List<ProjectPermissionVO> projectPermissionVOs;
+
+    public List<ProjectPermissionVO> getProjectPermissionVOs() {
+        return projectPermissionVOs;
+    }
+
+    public void setProjectPermissionVOs(List<ProjectPermissionVO> projectPermissionVOs) {
+        this.projectPermissionVOs = projectPermissionVOs;
+    }
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;

@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.vo;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +31,25 @@ public class RoleVO extends Role {
     private Set<Long> menuIdList;
 
     private List<Menu> menuList;
+
+    private Date startTime;
+    private Date endTime;
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
 
     public Set<Long> getMenuIdList() {
         return menuIdList;

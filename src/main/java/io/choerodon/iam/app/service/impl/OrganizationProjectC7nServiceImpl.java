@@ -141,7 +141,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
                                              @Lazy
-                                             UserC7nService userC7nService,
+                                                     UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
@@ -149,7 +149,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              @Lazy
-                                             MessageSendService messageSendService,
+                                                     MessageSendService messageSendService,
                                              RedisTemplate<String, String> redisTemplate,
                                              @Lazy StarProjectService starProjectService
     ) {
@@ -174,7 +174,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.asgardFeignClient = asgardFeignClient;
         this.messageSendService = messageSendService;
     }
-
 
 
     @Override
@@ -235,6 +234,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                     ProjectDTO projectDTO = create(project);
                     Set<String> roleLabels = initMemberRole(projectDTO);
                     ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
+                    projectEventPayload.setStartTime(project.getStartTime());
+                    projectEventPayload.setEndTime(project.getEndTime());
                     builder
                             .withPayloadAndSerialize(projectEventPayload)
                             .withRefId(String.valueOf(projectDTO.getId()))
@@ -615,6 +616,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, organizationId);
+        boolean isAdmin = userC7nService.isRoot(userId);
+        boolean isOrgAdmin = userC7nService.checkIsOrgRoot(organizationId, userId);
+        List<Long> activeProjectIds = projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, null, isAdmin, isOrgAdmin, null).stream().map(ProjectDTO::getId).collect(Collectors.toList());
+
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(userVisitInfoKey);
         if (entries.isEmpty()) {
             return new ArrayList<>();
@@ -630,8 +635,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<ProjectVisitInfoVO> result = projectVisitInfoVOList.stream().peek(p -> {
             if (DateUtil.isExceedDay(p.getLastVisitTime(), now)) {
                 fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
+            } else if (!activeProjectIds.contains(p.getProjectId())) {
+                fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
             }
-        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
+        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now) && activeProjectIds.contains(p.getProjectId())).collect(Collectors.toList());
 
         // 将保存时间超过7天的记录删除
         if (!CollectionUtils.isEmpty(fieldToDelete)) {

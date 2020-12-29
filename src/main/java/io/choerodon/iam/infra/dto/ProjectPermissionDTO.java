@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.dto;
 
-import java.util.Date;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -40,12 +38,6 @@ public class ProjectPermissionDTO extends AuditDomain {
     @ApiModelProperty("角色id")
     @Encrypt
     private Long roleId;
-
-    @ApiModelProperty("开始时间")
-    private Date startTime;
-
-    @ApiModelProperty("结束时间")
-    private Date endTime;
 
     public ProjectPermissionDTO() {
     }
@@ -95,21 +87,5 @@ public class ProjectPermissionDTO extends AuditDomain {
     public ProjectPermissionDTO setMemberRoleId(Long memberRoleId) {
         this.memberRoleId = memberRoleId;
         return this;
-    }
-
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
     }
 }

@@ -5,7 +5,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
-import io.choerodon.iam.api.vo.ProjectPermissionVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
@@ -19,7 +18,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -191,23 +189,11 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "项目层更新用户角色")
-    @PutMapping(value = "/{project_id}/users/{user_id}/assign_roles/with_time")
-    public ResponseEntity<Void> updateUserRolesOnProjectLevelWithTime(@PathVariable(name = "project_id") Long projectId,
-                                                                      @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                                                      @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                                      @RequestBody ProjectPermissionVO projectPermissionVO) {
-        projectPermissionService.updateUserRoles(userId, projectId, projectPermissionVO, syncAll);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/{project_id}/role_members/batch_import")
     public ResponseEntity<Void> import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
-                                                           @RequestPart MultipartFile file,
-                                                           @RequestParam(name = "with_time", required = false) Boolean withTime) {
-        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file, withTime);
+                                                           @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
         return ResponseEntity.noContent().build();
     }
 

@@ -248,7 +248,6 @@
     </select>
 
     <select id="selectProjectsByUserIdOrAdmin" resultMap="projectMap">
-        <bind name="now" value="@java.time.LocalDate@now()" />
         SELECT fp.*,
         iu.real_name as create_user_name,
         iu.image_url as create_user_image_url,
@@ -258,14 +257,6 @@
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
                 INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
-                AND (
-                fpu.start_time IS NULL
-                OR fpu.start_time &lt;= #{now}
-                )
-                AND (
-                fpu.end_time IS NULL
-                OR fpu.end_time &gt;= #{now}
-                )
                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>

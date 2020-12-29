@@ -143,7 +143,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
     public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                                        @RequestParam(name = "role_name", required = false) String roleName,
+                                                                                        @RequestParam(name = "role_name") String roleName,
                                                                                         @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                                                 Boolean onlySelectEnable) {
         return new ResponseEntity<>(projectPermissionService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);
@@ -309,9 +309,8 @@ public class RoleMemberC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
-    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId,
-                                                               @RequestParam(name = "with_time", required = false) Boolean withTime) {
-        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value(), withTime);
+    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
+        return roleMemberService.downloadTemplatesByResourceLevel(ExcelSuffix.XLSX.value(), ResourceLevel.PROJECT.value());
     }
 
 

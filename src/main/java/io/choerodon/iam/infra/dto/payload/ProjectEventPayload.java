@@ -1,6 +1,5 @@
 package io.choerodon.iam.infra.dto.payload;
 
-import java.util.Date;
 import java.util.Set;
 
 /**
@@ -23,26 +22,8 @@ public class ProjectEventPayload {
     private Long applicationId;
     private String agileProjectCode;
     private String oldAgileProjectCode;
-    private Date startTime;
-    private Date endTime;
 
     private Set<String> roleLabels;
-
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
 
     public String getOldAgileProjectCode() {
         return oldAgileProjectCode;

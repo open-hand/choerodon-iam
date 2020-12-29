@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.BooleanUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -74,7 +73,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String SITE_MEMBERROLE_TEMPLATES_PATH = "/templates/siteMemberRoleTemplates";
     private static final String ORGANIZATION_MEMBERROLE_TEMPLATES_PATH = "/templates/organizationMemberRoleTemplates";
     private static final String PROJECT_MEMBERROLE_TEMPLATES_PATH = "/templates/projectMemberRoleTemplates";
-    private static final String PROJECT_MEMBERROLE_WITHTIME_TEMPLATES_PATH = "/templates/projectMemberRoleWithTimeTemplates";
     private static final String DOT_SEPARATOR = ".";
     private static final String SITE_ROOT = "role/site/default/administrator";
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
@@ -378,11 +376,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel) {
-        return downloadTemplatesByResourceLevel(suffix, resourceLevel, null);
-    }
-
-    @Override
-    public ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel, Boolean withTime) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");
@@ -405,11 +398,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         } else if (ResourceLevel.ORGANIZATION.value().equals(resourceLevel)) {
             excelPath = ORGANIZATION_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
         } else if (ResourceLevel.PROJECT.value().equals(resourceLevel)) {
-            if (withTime != null && withTime) {
-                excelPath = PROJECT_MEMBERROLE_WITHTIME_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
-            } else {
-                excelPath = PROJECT_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
-            }
+            excelPath = PROJECT_MEMBERROLE_TEMPLATES_PATH + DOT_SEPARATOR + suffix;
         } else {
             return null;
         }
@@ -433,15 +422,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file, Boolean withTime) {
+    public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceId(sourceId, sourceType);
-        ExcelReadConfig excelReadConfig;
-        if (BooleanUtils.isTrue(withTime)) {
-            excelReadConfig = initExcelReadConfigWithTime();
-        } else {
-            excelReadConfig = initExcelReadConfig();
-        }
+        ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
         try {
             List<ExcelMemberRoleDTO> memberRoles = ExcelReadHelper.read(file, ExcelMemberRoleDTO.class, excelReadConfig);
@@ -457,11 +441,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         } catch (IllegalArgumentException e) {
             throw new CommonException("error.excel.illegal.column", e);
         }
-    }
-
-    @Override
-    public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
-        import2MemberRole(sourceId, sourceType, file, null);
     }
 
     private void validateSourceId(Long sourceId, String sourceType) {
@@ -481,19 +460,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("登录名*", "loginName");
         propertyMap.put("角色标签*", "roleCode");
-        excelReadConfig.setSkipSheetNames(skipSheetNames);
-        excelReadConfig.setPropertyMap(propertyMap);
-        return excelReadConfig;
-    }
-
-    private ExcelReadConfig initExcelReadConfigWithTime() {
-        ExcelReadConfig excelReadConfig = new ExcelReadConfig();
-        String[] skipSheetNames = {"readme"};
-        Map<String, String> propertyMap = new HashMap<>();
-        propertyMap.put("登录名*", "loginName");
-        propertyMap.put("角色标签*", "roleCode");
-        propertyMap.put("开始时间*", "startTime");
-        propertyMap.put("结束时间*", "endTime");
         excelReadConfig.setSkipSheetNames(skipSheetNames);
         excelReadConfig.setPropertyMap(propertyMap);
         return excelReadConfig;

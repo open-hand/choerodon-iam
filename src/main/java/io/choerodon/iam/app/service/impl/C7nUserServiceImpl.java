@@ -6,6 +6,8 @@ import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.feign.OauthAdminFeignClient;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import org.springframework.util.StringUtils;
 public class C7nUserServiceImpl extends UserServiceImpl {
 
     private static final String PHONE_SUFFIX = "*#*";
+    private static final Logger LOGGER = LoggerFactory.getLogger(C7nUserServiceImpl.class);
+
 
     @Autowired
     @Lazy
@@ -44,7 +48,10 @@ public class C7nUserServiceImpl extends UserServiceImpl {
         queryDTO.setId(userId);
         queryDTO.setOrganizationId(organizationId);
         User user = userMapper.selectOne(queryDTO);
-        Assert.notNull(user, "hiam.warn.user.notFound");
+        if (user == null) {
+            LOGGER.warn("hiam.warn.user.notFound:{}", userId);
+            return;
+        }
         if (BooleanUtils.isTrue(user.getEnabled())) {
             user.frozen();
             if (!StringUtils.isEmpty(user.getPhone())) {

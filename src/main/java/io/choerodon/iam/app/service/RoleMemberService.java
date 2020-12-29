@@ -31,7 +31,7 @@ public interface RoleMemberService {
     /**
      * @param projectId
      * @param userId
-     * @param syncAll   删除子项目所有权限
+     * @param syncAll 删除子项目所有权限
      */
     void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll);
 
@@ -50,15 +50,11 @@ public interface RoleMemberService {
     void insertAndSendEvent(Long fromUserId, User userDTO, MemberRole memberRole, String loginName);
 
     Set<Long> insertOrUpdateRolesByMemberIdExecute(Long fromUserId, Boolean isEdit, Long sourceId,
-                                                   Long memberId, String sourceType,
-                                                   List<MemberRole> memberRoleList,
-                                                   List<MemberRole> returnList, String memberType);
+                                                    Long memberId, String sourceType,
+                                                    List<MemberRole> memberRoleList,
+                                                    List<MemberRole> returnList, String memberType);
 
     ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel);
-
-    ResponseEntity<Resource> downloadTemplatesByResourceLevel(String suffix, String resourceLevel, Boolean withTime);
-
-    void import2MemberRole(Long sourceId, String sourceType, MultipartFile file, Boolean withTime);
 
     void import2MemberRole(Long sourceId, String sourceType, MultipartFile file);
 

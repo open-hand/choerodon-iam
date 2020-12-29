@@ -26,11 +26,4 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
     changeSet(author: 'scp', id: '2020-11-03-rename-table') {
         renameTable(newTableName: 'fd_project_permission', oldTableName: 'fd_project_user')
     }
-
-    changeSet(author: 'scp', id: '2020-12-10-add-column') {
-        addColumn(tableName: 'fd_project_permission') {
-            column(name: 'START_TIME', type: 'DATETIME', remarks: '开始时间', afterColumn: 'MEMBER_ROLE_ID')
-            column(name: 'END_TIME', type: 'DATETIME', remarks: '结束时间', afterColumn: 'MEMBER_ROLE_ID')
-        }
-    }
 }

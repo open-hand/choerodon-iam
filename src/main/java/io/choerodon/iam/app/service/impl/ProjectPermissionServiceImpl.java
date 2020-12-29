@@ -8,7 +8,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectUserVO;
+import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.ProjectC7nService;
@@ -63,7 +66,6 @@ import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     private static final String ERROR_SAVE_PROJECTUSER_FAILED = "error.save.projectUser.failed";
-    private static final String ERROR_UPDATE_PROJECTUSER_FAILED = "error.update.projectUser.failed";
     private ProjectPermissionMapper projectPermissionMapper;
     private DevopsFeignClient devopsFeignClient;
     private ProjectC7nService projectC7nService;
@@ -154,8 +156,6 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                     RoleVO roleVO = ConvertUtils.convertObject(u, RoleVO.class);
                     roleVO.setProjectAdminFlag(null);
                     roleVO.setProjectMemberFlag(roleIsMember.get(roleVO.getId()));
-                    roleVO.setStartTime(user.getProjectPermissionVOs().get(0).getStartTime());
-                    roleVO.setEndTime(user.getProjectPermissionVOs().get(0).getEndTime());
                     return roleVO;
                 }).collect(Collectors.toList());
                 user.setRoles(newResult);
@@ -281,14 +281,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList) {
         Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
-        map.forEach((k, v) -> {
-            if (!CollectionUtils.isEmpty(v)) {
-                addProjectRolesForUser(projectId, k,
-                        v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()),
-                        v.get(0).getStartTime(), v.get(0).getEndTime()
-                );
-            }
-        });
+        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet())));
+
     }
 
 
@@ -322,7 +316,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
-    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Date startTime, Date endTime) {
+    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds) {
         Assert.notNull(projectId, "error.projectId.is.null");
         Assert.notNull(userId, "error.userId.is.null");
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
@@ -337,19 +331,9 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             projectPermissionDTO.setMemberRoleId(getMemberRoleId(userId, MemberType.USER.value(), roleId, projectDTO.getOrganizationId()));
             // 1. set memberRoleId
             // 判断用户角色关系是否已经存在，存在则跳过
-            ProjectPermissionDTO result = projectPermissionMapper.selectOne(projectPermissionDTO);
-            if (result != null) {
-                result.setStartTime(startTime);
-                result.setEndTime(endTime);
-                if (startTime != null && endTime != null) {
-                    if (projectPermissionMapper.updateByPrimaryKey(result) != 1) {
-                        throw new CommonException(ERROR_UPDATE_PROJECTUSER_FAILED);
-                    }
-                }
+            if (projectPermissionMapper.selectOne(projectPermissionDTO) != null) {
                 return;
             }
-            projectPermissionDTO.setStartTime(startTime);
-            projectPermissionDTO.setEndTime(endTime);
             if (projectPermissionMapper.insertSelective(projectPermissionDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
@@ -415,17 +399,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
-    public void updateUserRoles(Long userId, Long sourceId, ProjectPermissionVO projectPermissionVO, Boolean syncAll) {
-        updateUserRoles(userId, sourceId, projectPermissionVO.getRoleIds(), syncAll, projectPermissionVO.getStartTime(), projectPermissionVO.getEndTime());
-    }
-
-    @Override
-    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
-        updateUserRoles(userId, projectId, roleIdList, syncAll, null, null);
-    }
-
     @Transactional
-    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll, Date startTime, Date endTime) {
+    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
 
         List<MemberRole> oldMemberRoleList = projectPermissionMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null);
@@ -455,8 +430,6 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                 ProjectPermissionDTO projectPermissionDTO = new ProjectPermissionDTO();
                 projectPermissionDTO.setProjectId(projectId);
                 projectPermissionDTO.setMemberRoleId(getMemberRoleId(userId, MemberType.USER.value(), v, projectDTO.getOrganizationId()));
-                projectPermissionDTO.setStartTime(startTime);
-                projectPermissionDTO.setEndTime(endTime);
                 if (projectPermissionMapper.selectOne(projectPermissionDTO) == null) {
                     if (projectPermissionMapper.insertSelective(projectPermissionDTO) != 1) {
                         throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
@@ -469,13 +442,6 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(roleIdList);
         }
 
-        // 更新角色有效期时间
-        if (startTime != null && endTime != null) {
-            oldRoleIds.removeAll(deleteRoleIds);
-            if (!CollectionUtils.isEmpty(oldRoleIds)) {
-                projectPermissionMapper.updateActiveTime(projectId, userId, oldRoleIds, startTime, endTime);
-            }
-        }
         // 4. 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();

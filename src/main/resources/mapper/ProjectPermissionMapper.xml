@@ -24,35 +24,6 @@
         </collection>
     </resultMap>
 
-    <resultMap id="userWithRolesMapWithTime" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true">
-        <id property="id" column="id"/>
-        <result property="realName" column="real_name"/>
-        <result property="loginName" column="login_name"/>
-        <result property="enabled" column="is_enabled"/>
-        <result property="ldap" column="is_ldap"/>
-        <result property="imageUrl" column="image_url"/>
-        <result property="locked" column="is_locked"/>
-        <result property="organizationId" column="organization_id"/>
-        <result property="tenantName" column="user_org_name"/>
-        <result property="organizationCode" column="user_org_code"/>
-        <result property="objectVersionNumber" column="user_version_number"/>
-        <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
-                    autoMapping="true" notNullColumn="role_id">
-            <id property="id" column="role_id"/>
-            <result property="name" column="role_name"/>
-            <result property="code" column="role_code"/>
-            <result property="enabled" column="role_is_enabled"/>
-            <result property="tenantId" column="role_org_id"/>
-        </collection>
-        <collection property="projectPermissionVOs" ofType="io.choerodon.iam.api.vo.ProjectPermissionVO"
-                    autoMapping="true" notNullColumn="role_id">
-            <id property="roleId" column="role_id"/>
-            <result property="startTime" column="start_time"/>
-            <result property="endTime" column="end_time"/>
-        </collection>
-    </resultMap>
-
-
     <resultMap id="userDTO" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled"/>
@@ -104,16 +75,14 @@
         ) t
     </select>
 
-    <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMapWithTime">
+    <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMap">
         select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
         fo.tenant_name as user_org_name,
         htc.config_value as user_org_code,
         ir2.id as role_id,ir2.code as role_code,
-        ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.h_tenant_id as role_org_id,
-        fdu2.start_time,
-        fdu2.end_time
+        ir2.name as role_name, ir2.is_enabled as role_is_enabled,ir2.h_tenant_id as role_org_id
         from
         (
         select distinct t1.*
@@ -709,20 +678,6 @@
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
     </select>
 
-    <update id="updateActiveTime">
-        UPDATE fd_project_permission fdp
-        JOIN iam_member_role imr ON imr.role_id in
-        <foreach collection="roleIds" open="(" separator="," close=")" item="roleId">
-            #{roleId}
-        </foreach>
-            AND imr.member_id = #{userId}
-            AND imr.member_type = 'user'
-            AND imr.id = fdp.MEMBER_ROLE_ID
-        SET fdp.START_TIME = #{startTime},
-        fdp.END_TIME = #{endTime}
-        WHERE
-        fdp.PROJECT_ID = #{projectId}
-    </update>
 
 
 </mapper>

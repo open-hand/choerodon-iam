@@ -4,6 +4,7 @@ import io.choerodon.iam.api.vo.ProjectMapCategorySimpleVO;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -27,5 +28,7 @@ public interface ProjectMapCategoryMapper extends BaseMapper<ProjectMapCategoryD
     int batchInsert(@Param("records") List<ProjectMapCategoryDTO> records);
 
     List<ProjectMapCategorySimpleVO> selectAllProjectMapCategories();
+
+    int batchDelete(@Param("projectId") Long projectId, @Param("ids") List<Long> ids);
 
 }

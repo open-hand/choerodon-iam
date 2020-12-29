@@ -98,4 +98,12 @@ public interface ProjectC7nService {
     Page<UserDTO> agileUsersByProjects(PageRequest pageable, AgileUserVO agileUserVO);
 
     Boolean checkPermissionByProjectId(Long projectId);
+
+    /**
+     * 删除项目得类型
+     * @param projectId
+     * @param categoryIds
+     */
+    void deleteProjectCategory(Long projectId, List<Long> categoryIds);
+
 }

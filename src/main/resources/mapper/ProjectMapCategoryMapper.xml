@@ -36,4 +36,13 @@
             (#{r.projectId},#{r.categoryId})
         </foreach>
     </insert>
+
+    <delete id="batchDelete"  parameterType="java.util.List">
+        delete from fd_project_map_category fpmc
+        where  fpmc.PROJECT_ID = #{projectId}
+        AND fpmc.CATEGORY_ID IN
+        <foreach collection="ids" item="categoryId" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+    </delete>
 </mapper>

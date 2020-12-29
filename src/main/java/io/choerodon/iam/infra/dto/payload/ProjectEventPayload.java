@@ -1,6 +1,10 @@
 package io.choerodon.iam.infra.dto.payload;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
+
+import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 
 /**
  * @author flyleft
@@ -24,6 +28,18 @@ public class ProjectEventPayload {
     private String oldAgileProjectCode;
 
     private Set<String> roleLabels;
+    /**
+     * 项目类型的集合
+     */
+    private List<ProjectMapCategoryVO> projectMapCategoryVOList;
+
+    public List<ProjectMapCategoryVO> getProjectMapCategoryVOList() {
+        return projectMapCategoryVOList;
+    }
+
+    public void setProjectMapCategoryVOList(List<ProjectMapCategoryVO> projectMapCategoryVOList) {
+        this.projectMapCategoryVOList = projectMapCategoryVOList;
+    }
 
     public String getOldAgileProjectCode() {
         return oldAgileProjectCode;

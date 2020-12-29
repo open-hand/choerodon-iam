@@ -136,6 +136,60 @@
     </select>
 
 
+    <select id="getUserListByProjectId" resultMap="userWithRolesMap">
+        SELECT
+	      t2.id,
+	      t2.real_name,
+	      t2.target_login_name AS login_name,
+	      t2.is_enabled,
+	      t2.is_ldap,
+	      t2.is_locked,
+	      t2.organization_id,
+	      t2.email,
+	      t2.LANGUAGE,
+	      t2.time_zone,
+	      t2.phone,
+	      t2.image_url,
+	      t2.object_version_number AS user_version_number,
+	      fo.tenant_name AS user_org_name,
+	      htc.config_value AS user_org_code,
+	      ir2.id AS role_id,
+	      ir2.CODE AS role_code,
+	      ir2.NAME AS role_name,
+	      ir2.is_enabled AS role_is_enabled,
+	      ir2.h_tenant_id AS role_org_id
+        FROM
+        	(
+        SELECT DISTINCT
+        	t1.*
+        FROM
+        	(
+        SELECT
+        	iut.*
+        FROM
+	      ( SELECT iu.*, CASE WHEN iu.is_ldap = 1 THEN iu.login_name ELSE iu.email END AS target_login_name FROM iam_user iu ) iut
+	      JOIN iam_member_role imr ON iut.id = imr.member_id
+	      JOIN fd_project_permission fdu ON fdu.MEMBER_ROLE_ID = imr.id
+	      JOIN iam_role ir2 ON ir2.id = imr.role_id
+	      LEFT JOIN iam_role ir ON ir.id = imr.role_id
+         WHERE
+	     fdu.PROJECT_ID = #{projectId,jdbcType=BIGINT}
+
+	     ) t1
+       ORDER BY
+	   t1.is_enabled DESC,
+	   t1.id DESC
+	   ) t2
+	   JOIN iam_member_role imr2 ON t2.id = imr2.member_id
+	   JOIN fd_project_permission fdu2 ON imr2.id = fdu2.MEMBER_ROLE_ID
+	   AND fdu2.PROJECT_ID = #{projectId,jdbcType=BIGINT}
+	   LEFT JOIN iam_role ir2 ON ir2.id = imr2.role_id
+	   LEFT JOIN hpfm_tenant fo ON ( t2.organization_id = fo.tenant_id )
+	   LEFT JOIN hpfm_tenant_config htc ON fo.tenant_id = htc.tenant_id
+       AND htc.config_key = 'code'
+    </select>
+
+
     <select id="listUserWithRolesOnProjectLevelByIds" resultMap="userWithRolesMap">
         select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled, t2.image_url,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.is_ldap,

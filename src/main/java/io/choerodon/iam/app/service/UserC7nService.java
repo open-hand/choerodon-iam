@@ -316,4 +316,7 @@ public interface UserC7nService {
     void checkEmail(User user);
 
     List<User> listMarketAuditor();
+
+    List<User> listRoot();
+
 }

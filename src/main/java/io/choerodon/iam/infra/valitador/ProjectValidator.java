@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.valitador;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -18,6 +18,7 @@ import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 public class ProjectValidator {
     private ProjectCategoryMapper projectCategoryMapper;
 
+    @Autowired
     private DevopsFeignClient devopsFeignClient;
 
     public ProjectValidator(ProjectCategoryMapper projectCategoryMapper) {
@@ -36,12 +37,13 @@ public class ProjectValidator {
             throw new CommonException("error.project.category.not.existed", category);
         }
         //如果创建devops模块，必须要求当前用户的gitlab同步用户同步成功
-        if (StringUtils.equalsIgnoreCase(ProjectCategoryEnum.DEVOPS.value(), category.trim())) {
-            UserAttrVO userAttrVO = devopsFeignClient.queryByUserId(BaseConstants.DEFAULT_TENANT_ID, DetailsHelper.getUserDetails().getUserId()).getBody();
-            if (userAttrVO == null) {
-                throw new CommonException("error.user.gitlab.not.exist", category);
-            }
-        }
+        // TODO: 2020/12/30  
+//        if (StringUtils.equalsIgnoreCase(ProjectCategoryEnum.DEVOPS.value(), category.trim())) {
+//            UserAttrVO userAttrVO = devopsFeignClient.queryByUserId(BaseConstants.DEFAULT_TENANT_ID, DetailsHelper.getUserDetails().getUserId()).getBody();
+//            if (userAttrVO == null) {
+//                throw new CommonException("error.user.gitlab.not.exist", category);
+//            }
+//        }
 
         return projectCategoryDTO;
     }

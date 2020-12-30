@@ -79,7 +79,7 @@ public class ProjectUserC7nController extends BaseController {
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询项目下的所有用户")
-    @GetMapping(value = "/{project_id}/users")
+    @GetMapping(value = "/{project_id}/all/users")
     public ResponseEntity<List<UserDTO>> getUserListByProjectId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId) {

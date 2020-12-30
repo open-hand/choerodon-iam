@@ -6,6 +6,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jiameng.cao
@@ -34,4 +35,6 @@ public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
     List<ProjectCategoryDTO> fuzzyQuery(@Param("name") String name,
                                         @Param("code") String code,
                                         @Param("param") String param);
+
+    List<Long> ListIdByCodes(@Param("codes") Set<String> codes);
 }

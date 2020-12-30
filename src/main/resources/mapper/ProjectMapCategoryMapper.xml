@@ -31,7 +31,7 @@
     </select>
 
     <insert id="batchInsert" parameterType="java.util.List">
-        INSERT INTO FD_PROJECT_MAP_CATEGORY(PROJECT_ID,CATEGORY_ID) VALUES
+        INSERT IGNORE INTO FD_PROJECT_MAP_CATEGORY(PROJECT_ID,CATEGORY_ID) VALUES
         <foreach collection="records" item="r" separator=",">
             (#{r.projectId},#{r.categoryId})
         </foreach>

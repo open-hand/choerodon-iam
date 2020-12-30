@@ -561,4 +561,14 @@
         WHERE
             fpp.PROJECT_ID = #{projectId}
     </select>
+
+    <select id="listCategoryByProjectId" resultType="java.lang.String">
+        SELECT
+            fdc.`CODE`
+        FROM
+            fd_project_map_category fpmc
+            LEFT JOIN fd_project_category fdc ON fdc.id = fpmc.CATEGORY_ID
+        WHERE
+            fpmc.PROJECT_ID = #{projectId}
+    </select>
 </mapper>

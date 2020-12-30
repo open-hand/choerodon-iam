@@ -38,7 +38,7 @@ public enum ProjectCategoryEnum {
         this.value = value;
     }
 
-    private static HashMap<String, ProjectCategoryEnum> valuesMap = new HashMap<>(3);
+    private static HashMap<String, ProjectCategoryEnum> valuesMap = new HashMap<>(8);
 
     static {
         ProjectCategoryEnum[] var0 = values();

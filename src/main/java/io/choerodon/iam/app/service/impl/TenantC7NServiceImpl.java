@@ -45,9 +45,11 @@ import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
@@ -106,6 +108,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private MessageSendService messageSendService;
     @Autowired
     private TenantMapper tenantMapper;
+    @Autowired
+    private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -410,6 +414,17 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);
     }
 
+    @Override
+    public void createDefaultTenant(String tenantName, String tenantNum) {
+        Tenant defaultTenant = new Tenant();
+        defaultTenant.setTenantName(tenantName);
+        defaultTenant.setTenantNum(tenantNum);
+        defaultTenant.setEnabledFlag(1);
+        initConfig(defaultTenant);
+        tenantService.createTenant(defaultTenant);
+        timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());
+    }
+
     /**
      * 查询用户可访问的组织，into判断是否可进
      *
@@ -504,5 +519,30 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         Tenant tenant = new Tenant();
         BeanUtils.copyProperties(tenantVO, tenant);
         return tenant;
+    }
+
+    private void initConfig(Tenant defaultTenant) {
+        List<TenantConfig> tenantConfigs = new ArrayList<>();
+
+        TenantConfig userId = new TenantConfig();
+        userId.setConfigKey(TenantConfigEnum.USER_ID.value());
+        userId.setConfigValue(String.valueOf(1L));
+        tenantConfigs.add(userId);
+
+        TenantConfig register = new TenantConfig();
+        register.setConfigValue("false");
+        register.setConfigKey(TenantConfigEnum.IS_REGISTER.value());
+        tenantConfigs.add(register);
+
+        TenantConfig category = new TenantConfig();
+        category.setConfigKey(TenantConfigEnum.CATEGORY.value());
+        category.setConfigValue(TenantConstants.DEFAULT_CATEGORY);
+        tenantConfigs.add(category);
+
+        TenantConfig token = new TenantConfig();
+        token.setConfigKey(TenantConfigEnum.REMOTE_TOKEN_ENABLED.value());
+        token.setConfigValue("true");
+        tenantConfigs.add(token);
+        defaultTenant.setTenantConfigs(tenantConfigs);
     }
 }

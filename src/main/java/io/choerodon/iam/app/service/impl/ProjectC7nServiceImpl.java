@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -37,6 +38,8 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 import io.choerodon.core.utils.ConvertUtils;
+import io.choerodon.iam.api.vo.ProjectCategoryVO;
+import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
 import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
@@ -432,6 +435,22 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         } catch (Exception e) {
             throw new CommonException("error.projectCategory.update.event", e);
         }
+    }
+
+    @Override
+    public ProjectCategoryWarpVO queryProjectCategory(Long projectId) {
+        ProjectCategoryWarpVO projectCategoryWarpVO = new ProjectCategoryWarpVO();
+        ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
+        mapCategoryDTO.setProjectId(projectId);
+
+        List<ProjectMapCategoryDTO> selectedCategory = projectMapCategoryMapper.select(mapCategoryDTO);
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(StringUtils.join(selectedCategory.stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList()), ","));
+        projectCategoryWarpVO.setSelectedProjectCategory(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+        List<Long> ids = projectCategoryDTOS.stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
+
+        List<ProjectCategoryDTO> unSelected = projectCategoryMapper.selectAll().stream().filter(projectCategoryDTO -> !ids.contains(projectCategoryDTO.getId())).collect(Collectors.toList());
+        projectCategoryWarpVO.setUnSelectedProjectCategory(ConvertUtils.convertList(unSelected, ProjectCategoryVO.class));
+        return projectCategoryWarpVO;
     }
 
     private List<Long> validateAndGetDbCategoryIds(ProjectDTO projectDTO, List<Long> categoryIds) {

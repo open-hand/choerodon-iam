@@ -17,8 +17,11 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ProjectCategoryVO;
+import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -185,9 +188,15 @@ public class ProjectC7nController extends BaseController {
     @PostMapping(value = "/{project_id}/project_category")
     @ApiOperation(value = "项目添加项目类型")
     public ResponseEntity<Void> addProjectCategory(@PathVariable(name = "project_id") Long projectId,
-                                                      @Encrypt @RequestParam List<Long> categoryIds) {
+                                                   @Encrypt @RequestParam List<Long> categoryIds) {
         projectService.addProjectCategory(projectId, categoryIds);
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping(value = "/{project_id}/project_category")
+    @ApiOperation(value = "查询该项目类型，返回已选和未选的项目类型")
+    public ResponseEntity<ProjectCategoryWarpVO> queryProjectCategory(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(projectService.queryProjectCategory(projectId));
+    }
 }

@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 
 import org.hzero.iam.domain.entity.Tenant;
@@ -101,6 +102,7 @@ public interface ProjectC7nService {
 
     /**
      * 删除项目得类型
+     *
      * @param projectId
      * @param categoryIds
      */
@@ -108,10 +110,12 @@ public interface ProjectC7nService {
 
     /**
      * 添加项目类型
+     *
      * @param projectId
      * @param categoryIds
      * @return
      */
     void addProjectCategory(Long projectId, List<Long> categoryIds);
 
+    ProjectCategoryWarpVO queryProjectCategory(Long projectId);
 }

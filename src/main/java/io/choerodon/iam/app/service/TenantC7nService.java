@@ -90,4 +90,6 @@ public interface TenantC7nService {
 
     Tenant queryDefault();
 
+    void createDefaultTenant(String tenantName, String tenantNum);
+
 }

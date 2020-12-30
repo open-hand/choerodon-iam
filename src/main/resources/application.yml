@@ -198,6 +198,10 @@ hzero:
           enable: true    # API 审计开关，默认 true，如果全局开关关闭，此值无效
       annotation-audit:
         enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
+  tenant-init:
+    enable-async: false # 是否开启异步创建组织
+
+
 choerodon:
   saga:
     service: choerodon-asgard

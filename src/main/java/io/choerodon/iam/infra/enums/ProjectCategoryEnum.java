@@ -6,7 +6,9 @@ package io.choerodon.iam.infra.enums;
 public enum ProjectCategoryEnum {
     AGILE("AGILE"),
     GENERAL("GENERAL"),
-    OPERATIONS("OPERATIONS");
+    OPERATIONS("OPERATIONS"),
+    DEVOPS("DEVOPS");
+
     private String value;
 
     public String value() {

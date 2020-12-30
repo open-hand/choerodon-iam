@@ -88,4 +88,16 @@
         </if>
     </select>
 
+    <select id="ListIdByCodes" resultType="java.lang.Long">
+        SELECT
+            fpc.id
+        FROM
+            fd_project_category fpc
+        WHERE
+            fpc.`CODE` IN
+        <foreach collection="codes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
 </mapper>

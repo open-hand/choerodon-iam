@@ -123,4 +123,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     Boolean checkPermissionByProjectId(@Param("organizationId") Long organizationId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 
+    List<String> listCategoryByProjectId(@Param("projectId") Long projectId);
+
 }

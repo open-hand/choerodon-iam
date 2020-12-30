@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -119,4 +120,11 @@ public interface DevopsFeignClient {
     ResponseEntity<List<UserAttrVO>> listByUserIds(
             @ApiParam(value = "用户id", required = true)
             @RequestBody Set<Long> iamUserIds);
+
+    @GetMapping("/v1/projects/{project_id}/users/{user_id}")
+    ResponseEntity<UserAttrVO> queryByUserId(@PathVariable(value = "project_id") Long projectId,
+                                             @ApiParam(value = "用户id", required = true)
+                                             @PathVariable(value = "user_id") Long userId);
+
+
 }

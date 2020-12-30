@@ -458,4 +458,11 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<List<User>> listMarketAuditor() {
         return ResponseEntity.ok(userC7nService.listMarketAuditor());
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询系统的所有root用户 包括admin")
+    @GetMapping(value = "/root")
+    public ResponseEntity<List<User>> listRoot() {
+        return ResponseEntity.ok(userC7nService.listRoot());
+    }
 }

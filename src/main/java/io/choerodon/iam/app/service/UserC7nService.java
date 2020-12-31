@@ -325,4 +325,11 @@ public interface UserC7nService {
      * @return 用户数量
      */
     UserCountVO countAllUsers();
+
+    /**
+     * 获取所有用户id
+     *
+     * @return 用户id
+     */
+    Set<Long> listAllUserIds();
 }

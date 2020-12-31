@@ -1323,4 +1323,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         int count = userMapper.selectCount(new UserDTO());
         return new UserCountVO(count);
     }
+
+    @Override
+    public Set<Long> listAllUserIds() {
+        return userC7nMapper.listAllUserIds();
+    }
 }

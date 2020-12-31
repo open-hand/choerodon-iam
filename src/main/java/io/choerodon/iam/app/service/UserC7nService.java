@@ -319,4 +319,10 @@ public interface UserC7nService {
 
     List<User> listRoot();
 
+    /**
+     * 计算所有用户的数量
+     *
+     * @return 用户数量
+     */
+    UserCountVO countAllUsers();
 }

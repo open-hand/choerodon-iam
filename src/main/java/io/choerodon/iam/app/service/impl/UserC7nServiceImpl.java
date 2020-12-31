@@ -1317,4 +1317,10 @@ public class UserC7nServiceImpl implements UserC7nService {
         String trimDirectory = directory.substring(0, 59 - suffix.length());
         return trimDirectory + suffix;
     }
+
+    @Override
+    public UserCountVO countAllUsers() {
+        int count = userMapper.selectCount(new UserDTO());
+        return new UserCountVO(count);
+    }
 }

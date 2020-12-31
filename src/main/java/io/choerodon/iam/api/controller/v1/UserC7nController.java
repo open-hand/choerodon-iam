@@ -465,4 +465,11 @@ public class UserC7nController extends BaseController {
     public ResponseEntity<List<User>> listRoot() {
         return ResponseEntity.ok(userC7nService.listRoot());
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询平台中所有用户的数量")
+    @GetMapping(value = "/all_user_count")
+    public ResponseEntity<UserCountVO> countAllUsers() {
+        return ResponseEntity.ok(userC7nService.countAllUsers());
+    }
 }

@@ -408,5 +408,12 @@ public interface UserC7nMapper {
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(@Param("userId") Long userId,
                                                                @Param("projectIds") Set<Long> projectIds);
+
+    /**
+     * 查出所有用户的id
+     *
+     * @return 用户id
+     */
+    Set<Long> listAllUserIds();
 }
 

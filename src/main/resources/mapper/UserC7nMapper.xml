@@ -1293,4 +1293,9 @@
             #{projectId,jdbcType=BIGINT}
         </foreach>
     </select>
+
+    <select id="listAllUserIds" resultType="java.lang.Long">
+        SELECT iam_user.id
+        FROM iam_user
+    </select>
 </mapper>

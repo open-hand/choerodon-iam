@@ -188,7 +188,7 @@ public class ProjectC7nController extends BaseController {
     @PostMapping(value = "/{project_id}/project_category")
     @ApiOperation(value = "项目添加项目类型")
     public ResponseEntity<Void> addProjectCategory(@PathVariable(name = "project_id") Long projectId,
-                                                   @Encrypt @RequestParam List<Long> categoryIds) {
+                                                   @Encrypt @RequestBody List<Long> categoryIds) {
         projectService.addProjectCategory(projectId, categoryIds);
         return ResponseEntity.noContent().build();
     }

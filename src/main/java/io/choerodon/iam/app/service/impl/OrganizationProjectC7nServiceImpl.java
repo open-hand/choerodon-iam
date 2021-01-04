@@ -133,6 +133,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private StarProjectService starProjectService;
 
     @Autowired
+    @Lazy
     private ProjectC7nService projectC7nService;
 
 

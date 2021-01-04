@@ -388,16 +388,16 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Saga(code = ADD_PROJECT_CATEGORY, description = "iam添加项目类型", inputSchemaClass = ProjectEventPayload.class)
     public void addProjectCategory(Long projectId, List<Long> categoryIds) {
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
-        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
-        if (dbProjectCategoryIds == null) return;
-        //要添加的集合
-        List<Long> ids = categoryIds.stream().filter(aLong -> !dbProjectCategoryIds.contains(aLong)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(ids)) {
-            return;
-        }
+//        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
+//        if (dbProjectCategoryIds == null) return;
+//        //要添加的集合
+//        List<Long> ids = categoryIds.stream().filter(aLong -> !dbProjectCategoryIds.contains(aLong)).collect(Collectors.toList());
+//        if (CollectionUtils.isEmpty(ids)) {
+//            return;
+//        }
         //批量插入
         List<ProjectMapCategoryDTO> projectMapCategoryDTOS = new ArrayList<>();
-        for (Long categoryId : ids) {
+        for (Long categoryId : categoryIds) {
             ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
             mapCategoryDTO.setProjectId(projectId);
             mapCategoryDTO.setCategoryId(categoryId);

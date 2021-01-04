@@ -20,6 +20,7 @@ import org.hzero.iam.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -130,6 +131,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private RedisTemplate<String, String> redisTemplate;
 
     private StarProjectService starProjectService;
+
+    @Autowired
+    private ProjectC7nService projectC7nService;
 
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
@@ -325,6 +329,20 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
         ProjectDTO newProjectDTO = updateSelective(projectDTO);
+
+        //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
+        List<Long> categoryIds = projectDTO.getCategoryIds();
+        if (CollectionUtils.isEmpty(categoryIds)){
+            throw new CommonException("error.choose.least.one.category");
+        }
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectDTO.getId());
+        List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
+        List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
+        List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
+        List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
+        projectC7nService.addProjectCategory(projectDTO.getId(),addProjectCategoryIds);
+        projectC7nService.deleteProjectCategory(projectDTO.getId(),deleteProjectCategoryIds);
 
         // 发送修改项目启停用状态消息
         if (updateStatus) {

@@ -33,7 +33,6 @@ public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService 
     @Override
     public List<ProjectCategoryDTO> list() {
         ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-        projectCategoryDTO.setBuiltInFlag(true);
         projectCategoryDTO.setDisplayFlag(true);
         return projectCategoryMapper.select(projectCategoryDTO)
                 .stream()

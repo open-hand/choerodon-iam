@@ -41,8 +41,10 @@ import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.ProjectCategoryVO;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
@@ -141,7 +143,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              TransactionalProducer producer,
                                              DevopsFeignClient devopsFeignClient,
                                              @Lazy
-                                             UserC7nService userC7nService,
+                                                     UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
                                              C7nTenantConfigService c7nTenantConfigService,
@@ -149,7 +151,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
                                              @Lazy
-                                             MessageSendService messageSendService,
+                                                     MessageSendService messageSendService,
                                              RedisTemplate<String, String> redisTemplate,
                                              @Lazy StarProjectService starProjectService
     ) {
@@ -176,18 +178,17 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
 
-
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
-        ProjectCategoryDTO projectCategoryDTO = projectValidator.validateProjectCategory(projectDTO.getCategory());
+        projectValidator.validateProjectCategory(projectDTO.getCategories());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null ? true : enabled);
         ProjectDTO res;
         res = sendCreateProjectEvent(projectDTO);
-        insertProjectMapCategory(projectCategoryDTO.getId(), res.getId());
+        insertProjectMapCategory(projectDTO.getCategories(), res.getId());
         //创建项目成功发送webhook
         Map<String, String> params = new HashMap<>();
         params.put("projectId", String.valueOf(res.getId()));
@@ -214,13 +215,15 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
 
-    private void insertProjectMapCategory(Long categoryId, Long projectId) {
-        ProjectMapCategoryDTO example = new ProjectMapCategoryDTO();
-        example.setCategoryId(categoryId);
-        example.setProjectId(projectId);
-        if (projectMapCategoryMapper.insertSelective(example) != 1) {
-            throw new InsertException("error.project.map.category.insert");
-        }
+    private void insertProjectMapCategory(List<ProjectCategoryDTO> projectCategoryVOS, Long projectId) {
+        projectCategoryVOS.forEach(projectCategoryVO -> {
+            ProjectMapCategoryDTO example = new ProjectMapCategoryDTO();
+            example.setCategoryId(projectCategoryVO.getId());
+            example.setProjectId(projectId);
+            if (projectMapCategoryMapper.insertSelective(example) != 1) {
+                throw new InsertException("error.project.map.category.insert");
+            }
+        });
     }
 
     private ProjectDTO sendCreateProjectEvent(ProjectDTO project) {
@@ -259,7 +262,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setRoleLabels(roleLabels);
         projectEventMsg.setProjectId(projectDTO.getId());
         projectEventMsg.setProjectCode(projectDTO.getCode());
-        projectEventMsg.setProjectCategory(projectDTO.getCategory());
+        projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectDTO.getCategories(), ProjectCategoryVO.class));
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(projectDTO.getImageUrl());
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());
@@ -426,7 +429,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Long projectId = projectDTO.getId();
         ProjectEventPayload payload = new ProjectEventPayload();
         payload.setProjectId(projectId);
-        payload.setProjectCategory(projectDTO.getCategory());
+        payload.setProjectCategoryVOS(ConvertUtils.convertList(projectDTO.getCategories(), ProjectCategoryVO.class));
         payload.setProgramId(programId);
         //saga
         try {

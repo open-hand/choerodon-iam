@@ -59,6 +59,7 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.AgileFeignClient;
 import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.StringUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -416,11 +417,10 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventPayload.setUserId(DetailsHelper.getUserDetails().getUserId());
         projectEventPayload.setUserName(DetailsHelper.getUserDetails().getUsername());
         //加添项目类型的数据
-        List<ProjectMapCategoryVO> projectMapCategoryVOS = ConvertUtils.convertList(projectMapCategoryDTOS, ProjectMapCategoryVO.class);
-        projectMapCategoryVOS.forEach(projectMapCategoryVO -> {
-            projectMapCategoryVO.setProjectCategoryDTO(projectCategoryMapper.selectByPrimaryKey(projectMapCategoryVO.getCategoryId()));
-        });
-        projectEventPayload.setProjectMapCategoryVOList(projectMapCategoryVOS);
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(StringUtils.join(categoryIds, ","));
+        if (!CollectionUtils.isEmpty(projectCategoryDTOS)) {
+            projectEventPayload.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+        }
         try {
             String input = mapper.writeValueAsString(projectEventPayload);
             transactionalProducer.apply(StartSagaBuilder.newBuilder()

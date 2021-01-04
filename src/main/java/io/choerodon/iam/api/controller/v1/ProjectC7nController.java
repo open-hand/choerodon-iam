@@ -176,24 +176,6 @@ public class ProjectC7nController extends BaseController {
 
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping(value = "/{project_id}/project_category")
-    @ApiOperation(value = "项目删除项目类型")
-    public ResponseEntity<Void> deleteProjectCategory(@PathVariable(name = "project_id") Long projectId,
-                                                      @Encrypt @RequestParam List<Long> categoryIds) {
-        projectService.deleteProjectCategory(projectId, categoryIds);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping(value = "/{project_id}/project_category")
-    @ApiOperation(value = "项目添加项目类型")
-    public ResponseEntity<Void> addProjectCategory(@PathVariable(name = "project_id") Long projectId,
-                                                   @Encrypt @RequestBody List<Long> categoryIds) {
-        projectService.addProjectCategory(projectId, categoryIds);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/{project_id}/project_category")
     @ApiOperation(value = "查询该项目类型，返回已选和未选的项目类型")
     public ResponseEntity<ProjectCategoryWarpVO> queryProjectCategory(@PathVariable(name = "project_id") Long projectId) {

@@ -13,7 +13,7 @@ public class CustomLayoutConfigDTO extends AuditDomain {
 
     private Long id;
     private String sourceType;
-    private String sourceId;
+    private Long sourceId;
     private String data;
 
 
@@ -33,11 +33,11 @@ public class CustomLayoutConfigDTO extends AuditDomain {
         this.sourceType = sourceType;
     }
 
-    public String getSourceId() {
+    public Long getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(String sourceId) {
+    public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
     }
 

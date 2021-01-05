@@ -10,5 +10,11 @@ import io.choerodon.iam.infra.dto.CustomLayoutConfigDTO;
  * @since 2021/1/5 18:05
  */
 public interface CustomLayoutConfigService {
-    CustomLayoutConfigDTO saveCustomWorkBeachConfig(CustomLayoutConfigDTO customLayoutConfigDTO);
+    CustomLayoutConfigDTO saveOrUpdateCustomWorkBeachConfig(CustomLayoutConfigDTO customLayoutConfigDTO);
+
+    CustomLayoutConfigDTO saveOrUpdateCustomProjectOverview(Long projectId, CustomLayoutConfigDTO customLayoutConfigDTO);
+
+    CustomLayoutConfigDTO queryCustomWorkBeachConfig();
+
+    CustomLayoutConfigDTO queryCustomProjectOverview(Long projectId);
 }

@@ -415,6 +415,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
+    @Transactional
     public void createDefaultTenant(String tenantName, String tenantNum) {
         Tenant defaultTenant = new Tenant();
         defaultTenant.setTenantName(tenantName);

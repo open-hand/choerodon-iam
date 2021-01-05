@@ -28,10 +28,14 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
+            LOGGER.info(">>>>>>>>>>>>>>>>>> check default tenant is created <<<<<<<<<<<<<<<<<<<<<<<");
             Tenant tenant = tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);
             if (tenant == null) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>> Default tenant is not created, create it now <<<<<<<<<<<<<<<<<<<<<<<");
                 // 默认组织不存在则创建
                 tenantC7nService.createDefaultTenant(TenantConstants.DEFAULT_TENANT_NAME, TenantConstants.DEFAULT_TENANT_NUM);
+            } else {
+                LOGGER.info(">>>>>>>>>>>>>>>>>> Default tenant is created <<<<<<<<<<<<<<<<<<<<<<<");
             }
         } catch (Exception e) {
             throw new CommonException("error.init.default.tenant", e);

@@ -41,4 +41,11 @@ public class EnterpriseInfoController {
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "校验是否可以修改组织编码（组织下创建了项目则不能修改）")
+    @GetMapping("/default/check_enable_update_tenant_num")
+    public ResponseEntity<Boolean> checkEnableUpdateTenantNum() {
+        return ResponseEntity.ok(enterpriseInfoService.checkEnableUpdateTenantNum());
+    }
+
 }

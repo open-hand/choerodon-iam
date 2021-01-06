@@ -26,7 +26,9 @@ import io.choerodon.iam.app.service.EnterpriseInfoService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.EnterpriseInfoDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.EnterpriseInfoMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.retrofit.IamClient;
 import io.choerodon.iam.infra.retrofit.RetrofitHandler;
 import io.choerodon.iam.infra.utils.ConvertUtils;
@@ -58,7 +60,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     private UserMapper userMapper;
     @Autowired
     private TenantC7nService tenantC7nService;
-
+    @Autowired
+    private ProjectMapper projectMapper;
 
 
     @Override
@@ -122,6 +125,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         } catch (IOException e) {
             LOGGER.info("::Retrofit::An exception occurred during execution:{}", e);
         }
+    }
+
+    @Override
+    public Boolean checkEnableUpdateTenantNum() {
+        ProjectDTO record = new ProjectDTO();
+        record.setOrganizationId(TenantConstants.DEFAULT_C7N_TENANT_TD);
+        return projectMapper.selectCount(record) == 0;
     }
 
 }

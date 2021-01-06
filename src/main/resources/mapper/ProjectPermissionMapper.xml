@@ -397,10 +397,10 @@
                 imr.member_id,
                 case
                     when imr.role_id = #{projectAdminId}
-                    then 20
+                    then 30
                     when imr.role_id = #{projectMemberId}
-                    then 10
-                    else 0
+                    then 20
+                    else 10
                 end as weight
                 from iam_member_role imr
                 join fd_project_permission fpu on imr.id = fpu.member_role_id

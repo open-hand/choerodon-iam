@@ -57,13 +57,13 @@ public class CustomLayoutConfigServiceImpl implements CustomLayoutConfigService 
             customLayoutConfigDTO.setSourceId(sourceId);
             customLayoutConfigMapper.insertSelective(customLayoutConfigDTO);
         } else {
-            customLayoutConfigRecord.setSourceType(null);
-            customLayoutConfigRecord.setSourceId(null);
-            customLayoutConfigRecord.setData(customLayoutConfigDTO.getData());
+            customLayoutConfigDTO.setId(customLayoutConfigRecord.getId());
+            customLayoutConfigDTO.setSourceType(null);
+            customLayoutConfigDTO.setSourceId(null);
 
-            customLayoutConfigMapper.updateByPrimaryKeySelective(customLayoutConfigRecord);
+            customLayoutConfigMapper.updateByPrimaryKeySelective(customLayoutConfigDTO);
         }
-        return customLayoutConfigMapper.selectByPrimaryKey(customLayoutConfigRecord.getId());
+        return customLayoutConfigMapper.selectByPrimaryKey(customLayoutConfigDTO.getId());
     }
     private CustomLayoutConfigDTO queryCustomLayoutConfig(CustomLayoutConfigTypeEnum sourceType, Long sourceId) {
         CustomLayoutConfigDTO record = new CustomLayoutConfigDTO();

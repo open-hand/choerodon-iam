@@ -142,14 +142,15 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * @param userId
      * @param email
      * @param param
-     * @param adminRoleIds
      * @return userDTO list
      */
     List<UserDTO> selectUsersByOptionsOrderByRoles(@Param("projectId") Long projectId,
                                                    @Param("userId") Long userId,
                                                    @Param("email") String email,
                                                    @Param("param") String param,
-                                                   @Param("adminRoleIds") Set<Long> adminRoleIds);
+                                                   @Param("projectAdminId") Long projectAdminId,
+                                                   @Param("projectMemberId") Long projectMemberId
+                                                   );
 
 
     /**

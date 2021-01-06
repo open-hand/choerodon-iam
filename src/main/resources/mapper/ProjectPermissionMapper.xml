@@ -396,10 +396,9 @@
                 select
                 imr.member_id,
                 case
-                    when imr.role_id in
-                        <foreach collection="adminRoleIds" item="adminRole" separator="," open="(" close=")">
-                            #{adminRole}
-                        </foreach>
+                    when imr.role_id = #{projectAdminId}
+                    then 20
+                    when imr.role_id = #{projectMemberId}
                     then 10
                     else 0
                 end as weight

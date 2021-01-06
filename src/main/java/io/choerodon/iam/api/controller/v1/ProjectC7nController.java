@@ -138,7 +138,7 @@ public class ProjectC7nController extends BaseController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询项目下的用户")
-    @GetMapping(value = "/{project_id}/users")
+    @GetMapping(value = "/{project_id}")
     @CustomPageRequest
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long projectId,
                                               @ApiIgnore

@@ -290,8 +290,25 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             return new Page<>();
         }
         Long organizationId = project.getOrganizationId();
-        Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, adminRoleIds));
+        Role projectAdmin = queryProjectAdminByTenantId(organizationId);
+        Role projectMember = queryProjectMemberByTenantId(organizationId);
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId()));
+    }
+
+    private Role queryProjectAdminByTenantId(Long organizationId) {
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
+        if (ObjectUtils.isEmpty(roles)) {
+            throw new CommonException("error.project.role.not.existed");
+        }
+        return roles.get(0);
+    }
+
+    private Role queryProjectMemberByTenantId(Long organizationId) {
+        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
+        if (ObjectUtils.isEmpty(roles)) {
+            throw new CommonException("error.project.role.not.existed");
+        }
+        return roles.get(0);
     }
 
     protected Set<Long> getRoleIdsByLabel(Long organizationId, String labelName) {

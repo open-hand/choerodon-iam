@@ -59,6 +59,8 @@ public class CustomLayoutConfigServiceImpl implements CustomLayoutConfigService 
         } else {
             customLayoutConfigDTO.setSourceType(null);
             customLayoutConfigDTO.setSourceId(null);
+            customLayoutConfigDTO.setData(customLayoutConfigDTO.getData());
+
             customLayoutConfigMapper.updateByPrimaryKeySelective(customLayoutConfigDTO);
         }
         return customLayoutConfigMapper.selectByPrimaryKey(customLayoutConfigDTO.getId());

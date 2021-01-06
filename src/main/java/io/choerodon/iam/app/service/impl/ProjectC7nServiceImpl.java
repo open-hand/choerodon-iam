@@ -295,7 +295,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId()));
     }
 
-    private Role queryProjectAdminByTenantId(Long organizationId) {
+    protected Role queryProjectAdminByTenantId(Long organizationId) {
         List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
         if (ObjectUtils.isEmpty(roles)) {
             throw new CommonException("error.project.role.not.existed");
@@ -303,7 +303,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return roles.get(0);
     }
 
-    private Role queryProjectMemberByTenantId(Long organizationId) {
+    protected Role queryProjectMemberByTenantId(Long organizationId) {
         List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(organizationId, RoleLabelEnum.PROJECT_MEMBER.value());
         if (ObjectUtils.isEmpty(roles)) {
             throw new CommonException("error.project.role.not.existed");

@@ -241,6 +241,7 @@ public class OrganizationUserController extends BaseController {
         projectDTO.setCategory(category);
         projectDTO.setEnabled(enabled);
         projectDTO.setCreatedBy(createdBy);
+
         return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable), HttpStatus.OK);
     }
 

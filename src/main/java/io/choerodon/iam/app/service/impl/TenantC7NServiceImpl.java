@@ -242,7 +242,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         tenantVO.setDelay(true);
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
                 }
         );
         return tenantVOPage;

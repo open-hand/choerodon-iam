@@ -63,6 +63,9 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),GENERAL(普通应用项目),PROGRAM(普通项目群)")
     private String category;
 
+    @ApiModelProperty("项目当前的操作类型")
+    private String operateType;
+
     @ApiModelProperty(value = "项目类型")
     @Transient
     private List<Long> categoryIds;
@@ -128,6 +131,28 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("事务实例id")
     @Encrypt
     private Long sagaInstanceId;
+    /**
+     * {@link io.choerodon.iam.infra.enums.ProjectStatusEnum}
+     */
+    @Transient
+    @ApiModelProperty("项目的状态")
+    private String projectStatus;
+
+    public String getOperateType() {
+        return operateType;
+    }
+
+    public void setOperateType(String operateType) {
+        this.operateType = operateType;
+    }
+
+    public String getProjectStatus() {
+        return projectStatus;
+    }
+
+    public void setProjectStatus(String projectStatus) {
+        this.projectStatus = projectStatus;
+    }
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;

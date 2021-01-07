@@ -179,4 +179,26 @@ public class SagaInstanceDetails {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "SagaInstanceDetails{" +
+                "id=" + id +
+                ", sagaCode='" + sagaCode + '\'' +
+                ", status='" + status + '\'' +
+                ", description='" + description + '\'' +
+                ", service='" + service + '\'' +
+                ", level='" + level + '\'' +
+                ", refType='" + refType + '\'' +
+                ", refId='" + refId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", completedCount=" + completedCount +
+                ", runningCount=" + runningCount +
+                ", rollbackCount=" + rollbackCount +
+                ", failedCount=" + failedCount +
+                ", waitToBePulledCount=" + waitToBePulledCount +
+                ", viewId='" + viewId + '\'' +
+                '}';
+    }
 }

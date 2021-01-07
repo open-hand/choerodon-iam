@@ -182,7 +182,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     }
                     //用户状态启用
                     if (user.getEnabled()) {
-                        user.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(user.getId())));
+                        user.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(user.getId())));
                     }
                 });
             }

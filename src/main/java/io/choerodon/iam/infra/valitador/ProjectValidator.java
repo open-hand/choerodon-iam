@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.valitador;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
+
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 
 @Component
@@ -22,7 +22,7 @@ public class ProjectValidator {
     private ProjectCategoryMapper projectCategoryMapper;
 
     @Autowired
-    private DevopsFeignClient devopsFeignClient;
+    private DevopsFeignClientOperator devopsFeignClientOperator;
 
     public ProjectValidator(ProjectCategoryMapper projectCategoryMapper) {
         this.projectCategoryMapper = projectCategoryMapper;
@@ -36,7 +36,7 @@ public class ProjectValidator {
         validateProjectCategoryCode(projectCategoryDTOS);
         //如果创建devops模块，必须要求当前用户的gitlab同步用户同步成功
         if (codes.contains(ProjectCategoryEnum.N_DEVOPS.value())) {
-            UserAttrVO userAttrVO = devopsFeignClient.queryByUserId(BaseConstants.DEFAULT_TENANT_ID, DetailsHelper.getUserDetails().getUserId()).getBody();
+            UserAttrVO userAttrVO = devopsFeignClientOperator.queryByUserId(BaseConstants.DEFAULT_TENANT_ID, DetailsHelper.getUserDetails().getUserId());
             if (userAttrVO == null) {
                 throw new CommonException("error.user.gitlab.not.exist", DetailsHelper.getUserDetails().getUserId());
             }

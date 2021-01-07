@@ -35,12 +35,12 @@ public class AgileFeignClientFallback implements AgileFeignClient {
 //    }
 
     @Override
-    public ResponseEntity<AgileProjectInfoVO> updateProjectInfo(Long projectId, AgileProjectInfoVO agileProjectInfoVO) {
+    public ResponseEntity<String> updateProjectInfo(Long projectId, AgileProjectInfoVO agileProjectInfoVO) {
         throw new CommonException("error.agile.updateProjectInfo");
     }
 
     @Override
-    public ResponseEntity<AgileProjectInfoVO> queryProjectInfoByProjectId(Long projectId) {
+    public ResponseEntity<String> queryProjectInfoByProjectId(Long projectId) {
         throw new CommonException("error.agile.queryProjectInfoByProjectId");
     }
 }

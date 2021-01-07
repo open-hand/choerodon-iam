@@ -14,7 +14,7 @@ import io.choerodon.iam.infra.feign.TestManagerFeignClient;
 @Component
 public class TestManagerFeignClientFallback implements TestManagerFeignClient {
     @Override
-    public ResponseEntity<AgileProjectInfoVO> updateProjectInfo(Long projectId, AgileProjectInfoVO projectInfoVO) {
+    public ResponseEntity<String> updateProjectInfo(Long projectId, AgileProjectInfoVO projectInfoVO) {
         throw new CommonException("error.test.manager.updateProjectInfo");
     }
 }

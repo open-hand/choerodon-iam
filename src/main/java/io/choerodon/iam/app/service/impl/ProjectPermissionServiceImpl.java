@@ -1,5 +1,29 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.MemberRoleRepository;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.infra.mapper.RoleMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -23,8 +47,8 @@ import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.feign.MessageFeignClient;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -33,30 +57,6 @@ import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.domain.repository.MemberRoleRepository;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.infra.mapper.RoleMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 /**
  * @author zmf
@@ -67,7 +67,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     private static final String ERROR_SAVE_PROJECTUSER_FAILED = "error.save.projectUser.failed";
     private ProjectPermissionMapper projectPermissionMapper;
-    private DevopsFeignClient devopsFeignClient;
+    private DevopsFeignClientOperator devopsFeignClientOperator;
     private ProjectC7nService projectC7nService;
     private ProjectAssertHelper projectAssertHelper;
     private MemberRoleRepository memberRoleRepository;
@@ -82,7 +82,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     private MessageFeignClient messageFeignClient;
 
     public ProjectPermissionServiceImpl(ProjectPermissionMapper projectPermissionMapper,
-                                        DevopsFeignClient devopsFeignClient,
+                                        DevopsFeignClientOperator devopsFeignClientOperator,
                                         RoleC7nMapper roleC7nMapper,
                                         MemberRoleRepository memberRoleRepository,
                                         ProjectAssertHelper projectAssertHelper,
@@ -96,7 +96,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                                         MessageFeignClient messageFeignClient,
                                         UserMapper userMapper) {
         this.projectPermissionMapper = projectPermissionMapper;
-        this.devopsFeignClient = devopsFeignClient;
+        this.devopsFeignClientOperator = devopsFeignClientOperator;
         this.projectC7nService = projectC7nService;
         this.roleC7nMapper = roleC7nMapper;
         this.projectAssertHelper = projectAssertHelper;
@@ -176,7 +176,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             return Collections.emptyList();
         }
         List<UserDTO> userDTOS = projectPermissionMapper.listUserWithRolesOnProjectLevelByIds(projectId, userIds);
-        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        List<UserAttrVO> userAttrVOS = devopsFeignClientOperator.listByUserIds(userIds);
         if (userAttrVOS == null) {
             userAttrVOS = new ArrayList<>();
         }

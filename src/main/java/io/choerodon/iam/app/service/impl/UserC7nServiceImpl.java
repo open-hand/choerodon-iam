@@ -71,8 +71,8 @@ import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
@@ -141,7 +141,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private UserAssertHelper userAssertHelper;
     @Autowired
-    private DevopsFeignClient devopsFeignClient;
+    private DevopsFeignClientOperator devopsFeignClientOperator;
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
@@ -273,7 +273,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             return new ArrayList<>();
         } else {
             List<User> users = userC7nMapper.listUsersByIds(ids.toArray(new Long[0]), onlyEnabled);
-            List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(ids).getBody();
+            List<UserAttrVO> userAttrVOS = devopsFeignClientOperator.listByUserIds(ids);
             if (userAttrVOS == null) {
                 userAttrVOS = new ArrayList<>();
             }
@@ -579,7 +579,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             return Collections.emptyList();
         }
         List<User> userDTOS = userC7nMapper.listUserWithRolesOnOrganizationLevelByIds(organizationId, userIds);
-        List<UserAttrVO> userAttrVOS = devopsFeignClient.listByUserIds(userIds).getBody();
+        List<UserAttrVO> userAttrVOS = devopsFeignClientOperator.listByUserIds(userIds);
         if (userAttrVOS == null) {
             userAttrVOS = new ArrayList<>();
         }
@@ -1175,7 +1175,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         userDetailsService.storeUserTenant(TenantConstants.DEFAULT_TENANT_TD);
         UserVO userVO = userRepository.selectSelf();
         LOGGER.info("==========================switch site user {}", userVO.toString());
-        if (userVO.getCurrentRoleLevel().equals(ResourceLevel.SITE.value())) return;
+        if (userVO.getCurrentRoleLevel().equals(ResourceLevel.SITE.value())) {
+            return;
+        }
         List<org.hzero.iam.domain.vo.RoleVO> roles = roleRepository.selectSelfCurrentTenantRoles(true);
         LOGGER.info("==========================switch site roles {}", roles.toString());
         List<String> rolesStr = roles.stream().map(RoleVO::getLevel).collect(Collectors.toList());

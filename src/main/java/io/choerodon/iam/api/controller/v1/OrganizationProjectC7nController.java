@@ -78,7 +78,6 @@ public class OrganizationProjectC7nController extends BaseController {
                                              @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         projectDTO.setId(projectId);
-
         return new ResponseEntity<>(organizationProjectC7nService.update(organizationId, projectDTO), HttpStatus.OK);
 
     }

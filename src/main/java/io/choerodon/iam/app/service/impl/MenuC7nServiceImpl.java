@@ -174,6 +174,9 @@ public class MenuC7nServiceImpl implements MenuC7nService {
 
             // 查询角色的菜单
             Set<String> finalLabels1 = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
+            // 添加所有项目类型都能看到的菜单标签
+            finalLabels1.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+
             List<Long> finalRoleIds = roleIds;
             CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
                 SecurityTokenHelper.close();

@@ -661,17 +661,22 @@ public class UserC7nServiceImpl implements UserC7nService {
                     SagaInstanceDetails sagaInstanceDetails = null;
                     if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.CREATE.value())) {
                         sagaInstanceDetails = instanceDetailsMapCreate.get(String.valueOf(p.getId()));
-                        //修改项目  状态只有失败和修改中
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-                            p.setProjectStatus(ProjectStatusEnum.UPDATING.value());
+                        if (!Objects.isNull(sagaInstanceDetails)) {
+                            //修改项目  状态只有失败和修改中
+                            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
+                                p.setProjectStatus(ProjectStatusEnum.UPDATING.value());
+                            }
                         }
                     }
                     if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value())) {
                         sagaInstanceDetails = instanceDetailsMapUpdate.get(String.valueOf(p.getId()));
-                        //创建项目  状态只有失败和创建中
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-                            p.setProjectStatus(ProjectStatusEnum.CREATING.value());
+                        if (!Objects.isNull(sagaInstanceDetails)) {
+                            //创建项目  状态只有失败和创建中
+                            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
+                                p.setProjectStatus(ProjectStatusEnum.CREATING.value());
+                            }
                         }
+
                     }
                     if (!Objects.isNull(sagaInstanceDetails)) {
                         if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {

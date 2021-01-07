@@ -546,7 +546,7 @@
         order by fpmc.id asc
     </select>
 
-    <select id="checkPermissionByProjectId" resultType="java.lang.Boolean">
+    <select id="checkPermissionByProjectId" resultType="java.lang.Integer">
         SELECT
             COUNT(*)
         FROM

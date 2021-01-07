@@ -352,7 +352,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         if (isAdmin || isOrgAdmin) {
             return true;
         } else {
-            return projectMapper.checkPermissionByProjectId(projectDTO.getOrganizationId(), projectId, userDetails.getUserId());
+            return projectMapper.checkPermissionByProjectId(projectDTO.getOrganizationId(), projectId, userDetails.getUserId()) > 0;
         }
     }
 }

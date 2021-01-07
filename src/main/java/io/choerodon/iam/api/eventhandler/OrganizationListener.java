@@ -2,6 +2,7 @@ package io.choerodon.iam.api.eventhandler;
 
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
 import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 import java.io.IOException;
@@ -10,15 +11,20 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.iam.api.eventhandler.payload.ClientPayload;
+import io.choerodon.iam.api.vo.ProjectCategoryVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
+import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 
 
 /**
@@ -32,6 +38,9 @@ public class OrganizationListener {
     private LdapC7nService ldapC7nService;
     private ProjectPermissionService projectPermissionService;
     private ClientC7nService clientC7nService;
+
+    @Autowired
+    private ProjectC7nService projectC7nService;
 
     public OrganizationListener(LdapC7nService ldapC7nService, ProjectPermissionService projectPermissionService, ClientC7nService clientC7nService) {
         this.ldapC7nService = ldapC7nService;
@@ -58,5 +67,17 @@ public class OrganizationListener {
     public void deleteClientRole(String message) throws IOException {
         ClientPayload clientPayload = mapper.readValue(message, ClientPayload.class);
         clientC7nService.deleteClientRole(clientPayload.getClientId(), clientPayload.getTenantId());
+    }
+
+    /**
+     * 修改项目类型  更改项目的标签放到最后一个步骤
+     *
+     * @param message
+     * @throws IOException
+     */
+    @SagaTask(code = ADD_PROJECT_CATEGORY, sagaCode = PROJECT_UPDATE, seq = 3, description = "修改项目类型")
+    public void addProjectCategory(String message) throws IOException {
+        ProjectEventPayload projectEventPayload = mapper.readValue(message, ProjectEventPayload.class);
+        projectC7nService.addProjectCategory(projectEventPayload.getProjectId(), projectEventPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getId).collect(Collectors.toList()));
     }
 }

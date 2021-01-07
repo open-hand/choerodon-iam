@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -43,10 +44,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
-import io.choerodon.iam.api.vo.BarLabelRotationItemVO;
-import io.choerodon.iam.api.vo.BarLabelRotationVO;
-import io.choerodon.iam.api.vo.ProjectCategoryVO;
-import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -62,10 +60,10 @@ import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
+import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.iam.infra.utils.DateUtil;
-import io.choerodon.iam.infra.utils.JsonHelper;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -83,6 +81,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
     public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
+    //saga的状态
+    private static final String FAILED = "FAILED";
+    private static final String RUNNING = "RUNNING";
 
     @Value("${spring.application.name:default}")
     private String serviceName;
@@ -135,6 +136,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Autowired
     @Lazy
     private ProjectC7nService projectC7nService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
@@ -212,7 +215,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Long organizationId = projectDTO.getOrganizationId();
         organizationAssertHelper.notExisted(organizationId);
         projectAssertHelper.codeExisted(projectDTO.getCode(), organizationId);
-
+        projectDTO.setEnabled(Boolean.TRUE);
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
         }
@@ -333,7 +336,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
         List<Long> categoryIds = projectDTO.getCategoryIds();
-        if (CollectionUtils.isEmpty(categoryIds)){
+        if (CollectionUtils.isEmpty(categoryIds)) {
             throw new CommonException("error.choose.least.one.category");
         }
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
@@ -342,8 +345,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
-        projectC7nService.addProjectCategory(projectDTO.getId(),addProjectCategoryIds);
-        projectC7nService.deleteProjectCategory(projectDTO.getId(),deleteProjectCategoryIds);
+        //真正插入项目了类型放到saga里面做
+//        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
+        projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
         // 发送修改项目启停用状态消息
         if (updateStatus) {
@@ -361,11 +365,34 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setProjectName(newProjectDTO.getName());
         projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
         BeanUtils.copyProperties(newProjectDTO, dto);
+        //增加项目类型的数据
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(categoryIds, ","));
+        if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
+            projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+        }
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
             sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.updateProject.event", e);
+        }
+        //发送saga之后，需要查询项目的saga进度
+        List<String> refIds = Arrays.asList(String.valueOf(projectDTO.getId()));
+        Map<String, SagaInstanceDetails> instanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
+        if (MapUtils.isEmpty(instanceDetailsMap)) {
+            return dto;
+        }
+        SagaInstanceDetails sagaInstanceDetails = instanceDetailsMap.get(String.valueOf(projectDTO.getId()));
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>Fill saga {}", sagaInstanceDetails.toString());
+        if (!Objects.isNull(sagaInstanceDetails)) {
+            dto.setSagaInstanceId(sagaInstanceDetails.getId());
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
+                //修改项目  状态只有失败和修改中
+                dto.setProjectStatus(ProjectStatusEnum.FAILED.value());
+            }
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
+                dto.setProjectStatus(ProjectStatusEnum.UPDATING.value());
+            }
         }
         return dto;
     }

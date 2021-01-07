@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -30,7 +31,9 @@ public class FixServiceImpl implements FixService {
     private ProjectCategoryMapper projectCategoryMapper;
 
     @Override
+    @Async
     public void fixProjectCateGory() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>> start fix project category <<<<<<<<<<<<<<<<<<<<<<");
         projectMapper.selectAll().forEach(t -> {
             List<String> oldListCategory = projectMapper.listCategoryByProjectId(t.getId());
             if (!CollectionUtils.isEmpty(oldListCategory)) {
@@ -68,5 +71,6 @@ public class FixServiceImpl implements FixService {
                 }
             }
         });
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>> end fix project category <<<<<<<<<<<<<<<<<<<<<<");
     }
 }

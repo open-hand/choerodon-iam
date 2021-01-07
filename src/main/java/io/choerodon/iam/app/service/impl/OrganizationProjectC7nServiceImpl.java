@@ -399,9 +399,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     @Override
     public ProjectDTO updateSelective(ProjectDTO projectDTO) {
-        if (projectMapper.updateByPrimaryKeySelective(projectDTO) != 1) {
-            throw new UpdateException("error.project.update");
-        }
+        //可能只修改项目类型
+        projectMapper.updateByPrimaryKeySelective(projectDTO);
         return projectMapper.selectByPrimaryKey(projectDTO.getId());
     }
 

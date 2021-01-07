@@ -1,5 +1,8 @@
 package io.choerodon.iam.infra.enums;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -44,7 +47,16 @@ public enum MenuLabelEnum {
     /**
      * 项目层全流程项目标签
      */
-    AGILE_MENU("AGILE_MENU");
+    AGILE_MENU("AGILE_MENU"),
+
+    /*-----------------------------新标签--------------------------------*/
+
+    /**
+     * 标记所有项目都有的菜单
+     */
+    N_GENERAL_PROJECT_MENU("N_GENERAL_PROJECT_MENU")
+
+    ;
     private final String value;
 
     MenuLabelEnum(String value) {
@@ -54,4 +66,5 @@ public enum MenuLabelEnum {
     public String value() {
         return value;
     }
+
 }

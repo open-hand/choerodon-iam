@@ -2,18 +2,14 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.hzero.boot.message.MessageClient;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -51,8 +47,8 @@ import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
@@ -94,7 +90,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
-    private DevopsFeignClient devopsFeignClient;
+    private DevopsFeignClientOperator devopsFeignClientOperator;
     // 注入messageClient
     @Autowired
     protected MessageClient messageClient;
@@ -338,7 +334,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         }
         List<ProjectOverViewVO> projectOverViewVOS = new ArrayList<>();
         List<Long> longList = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
-        Map<Long, Integer> map = devopsFeignClient.countAppServerByProjectId(longList.get(0), longList).getBody();
+        Map<Long, Integer> map = devopsFeignClientOperator.countAppServerByProjectId(longList.get(0), longList);
         projectDTOS.stream().distinct().forEach(v -> {
             ProjectOverViewVO projectOverViewVO = new ProjectOverViewVO();
             projectOverViewVO.setId(v.getId());

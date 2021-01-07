@@ -19,7 +19,7 @@ import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 public interface TestManagerFeignClient {
     @ApiOperation("更新projectInfo")
     @PutMapping("/v1/projects/{project_id}/project_info")
-    ResponseEntity<AgileProjectInfoVO> updateProjectInfo(@ApiParam(value = "项目id", required = true)
+    ResponseEntity<String> updateProjectInfo(@ApiParam(value = "项目id", required = true)
                                                          @PathVariable(name = "project_id") Long projectId,
                                                          @ApiParam(value = "projectInfo对象", required = true)
                                                          @RequestBody AgileProjectInfoVO projectInfoVO);

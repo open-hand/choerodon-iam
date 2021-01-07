@@ -61,7 +61,7 @@ import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.DateUtil;
@@ -96,7 +96,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private AsgardFeignClient asgardFeignClient;
 
-    private DevopsFeignClient devopsFeignClient;
+    private DevopsFeignClientOperator devopsFeignClientOperator;
 
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
@@ -146,7 +146,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                              UserAssertHelper userAssertHelper,
                                              ProjectValidator projectValidator,
                                              TransactionalProducer producer,
-                                             DevopsFeignClient devopsFeignClient,
+                                             DevopsFeignClientOperator devopsFeignClientOperator,
                                              @Lazy
                                                      UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
@@ -172,7 +172,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.userAssertHelper = userAssertHelper;
         this.projectValidator = projectValidator;
         this.producer = producer;
-        this.devopsFeignClient = devopsFeignClient;
+        this.devopsFeignClientOperator = devopsFeignClientOperator;
         this.organizationResourceLimitService = organizationResourceLimitService;
         this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
@@ -598,7 +598,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
         projectIds.forEach(id -> {
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(id);
-            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClient.countByDate(id, simpleDateFormat.format(startTime), simpleDateFormat.format(endTime)).getBody();
+            BarLabelRotationItemVO labelRotationItemVO = devopsFeignClientOperator.countByDate(id, simpleDateFormat.format(startTime), simpleDateFormat.format(endTime));
             if (labelRotationItemVO != null) {
                 labelRotationItemVO.setName(projectDTO.getName());
                 labelRotationItemVO.setId(id);

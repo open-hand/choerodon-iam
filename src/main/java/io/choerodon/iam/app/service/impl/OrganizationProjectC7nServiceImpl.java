@@ -335,7 +335,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         ProjectDTO newProjectDTO = updateSelective(projectDTO);
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
-        List<Long> categoryIds = projectDTO.getCategoryIds();
+        List<Long> categoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(categoryIds)) {
             throw new CommonException("error.choose.least.one.category");
         }

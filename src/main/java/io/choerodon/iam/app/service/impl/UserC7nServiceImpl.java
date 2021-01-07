@@ -97,6 +97,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     //saga的状态
     private static final String FAILED = "FAILED";
     private static final String RUNNING = "RUNNING";
+    private static final String COMPLETED = "COMPLETED";
 
     @Autowired
     private UserMapper userMapper;
@@ -683,6 +684,10 @@ public class UserC7nServiceImpl implements UserC7nService {
                             p.setProjectStatus(ProjectStatusEnum.FAILED.value());
                         }
                         p.setSagaInstanceId(sagaInstanceDetails.getId());
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
+                            p.setSagaInstanceId(null);
+                        }
+
                     }
                 }
 

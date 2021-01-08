@@ -100,4 +100,10 @@
         </foreach>
     </select>
 
+    <select id="listByProjectId" resultType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
+        select *
+        from fd_project_map_category fpmc
+        inner join fd_project_category fpc on fpmc.CATEGORY_ID = fpc.ID
+        where fpmc.PROJECT_ID = #{projectId}
+    </select>
 </mapper>

@@ -37,4 +37,11 @@ public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
                                         @Param("param") String param);
 
     List<Long> ListIdByCodes(@Param("codes") Set<String> codes);
+
+    /**
+     * 查询项目拥有的项目类型
+     * @param projectId 项目id
+     * @return
+     */
+    List<ProjectCategoryDTO> listByProjectId(@Param("projectId") Long projectId);
 }

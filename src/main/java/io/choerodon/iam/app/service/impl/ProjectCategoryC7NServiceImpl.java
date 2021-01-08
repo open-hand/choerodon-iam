@@ -94,7 +94,7 @@ public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService 
 
                 List<ProjectCategoryDTO> categories = projectDTO.getCategories();
                 if (!CollectionUtils.isEmpty(categories)) {
-                    List<ProjectCategoryDTO> filteredCategory = categories.stream().filter(c -> ProjectCategoryEnum.listNewCategories().contains(c)).collect(Collectors.toList());
+                    List<ProjectCategoryDTO> filteredCategory = categories.stream().filter(c -> ProjectCategoryEnum.listNewCategories().contains(c.getCode())).collect(Collectors.toList());
                     projectDTO.setCategories(filteredCategory);
                 }
             });

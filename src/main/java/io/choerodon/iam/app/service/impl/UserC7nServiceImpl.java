@@ -58,10 +58,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
@@ -164,7 +161,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     private MessageSendService messageSendService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
-
+    @Autowired
+    @Lazy
+    private ProjectCategoryC7nService projectCategoryC7nService;
 
     @Autowired
     private StarProjectMapper starProjectMapper;
@@ -1329,7 +1328,9 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
         }
         page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
+        projectCategoryC7nService.filterCategory(projects);
         if (CollectionUtils.isEmpty(projects)) {
             return page;
         }

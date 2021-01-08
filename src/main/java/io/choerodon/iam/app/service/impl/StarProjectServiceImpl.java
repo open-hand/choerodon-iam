@@ -17,6 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ProjectC7nService;
+import io.choerodon.iam.app.service.ProjectCategoryC7nService;
 import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.MisConstants;
@@ -53,6 +54,9 @@ public class StarProjectServiceImpl implements StarProjectService {
     private ProjectMapper projectMapper;
     @Autowired
     private RedisHelper redisHelper;
+    @Autowired
+    @Lazy
+    private ProjectCategoryC7nService projectCategoryC7nService;
 
     @Override
     @Transactional
@@ -133,7 +137,7 @@ public class StarProjectServiceImpl implements StarProjectService {
         }
 
         Set<Long> pids = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
-        return starProjectMapper.query(pids, userId);
+        return projectCategoryC7nService.filterCategory(starProjectMapper.query(pids, userId));
 
     }
 

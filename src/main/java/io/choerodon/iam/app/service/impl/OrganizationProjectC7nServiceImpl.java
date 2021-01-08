@@ -138,7 +138,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private ProjectC7nService projectC7nService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
-
+    @Autowired
+    @Lazy
+    private ProjectCategoryC7nService projectCategoryC7nService;
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -569,11 +571,13 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Override
     public List<ProjectDTO> getAgileProjects(Long organizationId, String param) {
         List<ProjectDTO> projectDTOS;
-        if (categoryEnable) {
-            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, ProjectCategory.GENERAL.value(), param);
-        } else {
-            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
-        }
+        // todo 不清楚新逻辑，暂时返回组织下所有项目
+//        if (categoryEnable) {
+//            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, ProjectCategory.GENERAL.value(), param);
+//        } else {
+//            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
+//        }
+        projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
         return projectDTOS;
     }
 
@@ -693,6 +697,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             return result;
         }
         List<ProjectDTO> projectDTOS = projectMapper.selectProjectWithCategoryByPrimaryKey(projectIds);
+        //过滤项目类型
+        projectCategoryC7nService.filterCategory(projectDTOS);
         List<Long> starProjectIds = starProjectService.listStarProjectIds(projectIds);
         projectDTOS.forEach(p -> {
             if (starProjectIds.contains(p.getId())) {

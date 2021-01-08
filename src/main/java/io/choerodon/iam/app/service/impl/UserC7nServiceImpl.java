@@ -67,10 +67,7 @@ import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
-import io.choerodon.iam.infra.enums.MemberType;
-import io.choerodon.iam.infra.enums.ProjectOperatorTypeEnum;
-import io.choerodon.iam.infra.enums.ProjectStatusEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
@@ -692,7 +689,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
                 // 添加项目类型
                 if (projectMapCategoryMap.get(p.getId()) != null) {
-                    p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList()));
+                    p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).filter(v -> ProjectCategoryEnum.listNewCategories().contains(v.getCode())).collect(Collectors.toList()));
                 }
 
                 // 计算用户是否有编辑权限
@@ -1330,7 +1327,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
-        projectCategoryC7nService.filterCategory(projects);
         if (CollectionUtils.isEmpty(projects)) {
             return page;
         }

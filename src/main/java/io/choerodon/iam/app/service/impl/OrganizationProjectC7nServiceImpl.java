@@ -244,6 +244,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .withSourceId(project.getOrganizationId()),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
+                    projectDTO.setCategories(project.getCategories());
                     Set<String> roleLabels = initMemberRole(projectDTO);
                     ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
                     builder

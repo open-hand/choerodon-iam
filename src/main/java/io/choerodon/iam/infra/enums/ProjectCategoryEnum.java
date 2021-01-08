@@ -1,6 +1,8 @@
 package io.choerodon.iam.infra.enums;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Eugen
@@ -32,6 +34,16 @@ public enum ProjectCategoryEnum {
             }
         }
         return false;
+    }
+
+    public static Set<String> listNewCategories() {
+        Set<String> newCategories = new HashSet<>();
+        newCategories.add(N_AGILE.value);
+        newCategories.add(N_REQUIREMENT.value);
+        newCategories.add(N_DEVOPS.value);
+        newCategories.add(N_OPERATIONS.value);
+        newCategories.add(N_TEST.value);
+        return newCategories;
     }
 
     ProjectCategoryEnum(String value) {

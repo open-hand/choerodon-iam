@@ -5,12 +5,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.ProjectCategoryC7nService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -83,5 +85,20 @@ public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService 
                 throw new CommonException("error.projectType.code.existed");
             }
         }
+    }
+
+    @Override
+    public List<ProjectDTO> filterCategory(List<ProjectDTO> projectDTOS) {
+        if (!CollectionUtils.isEmpty(projectDTOS)) {
+            projectDTOS.forEach(projectDTO -> {
+
+                List<ProjectCategoryDTO> categories = projectDTO.getCategories();
+                if (!CollectionUtils.isEmpty(categories)) {
+                    List<ProjectCategoryDTO> filteredCategory = categories.stream().filter(c -> ProjectCategoryEnum.listNewCategories().contains(c)).collect(Collectors.toList());
+                    projectDTO.setCategories(filteredCategory);
+                }
+            });
+        }
+        return projectDTOS;
     }
 }

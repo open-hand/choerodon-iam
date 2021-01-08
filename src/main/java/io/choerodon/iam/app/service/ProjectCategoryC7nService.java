@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface ProjectCategoryC7nService {
@@ -19,4 +20,10 @@ public interface ProjectCategoryC7nService {
 
     void check(ProjectCategoryDTO projectCategoryDTO);
 
+    /**
+     * 过滤项目类型，
+     * @param projectDTOS
+     * @return
+     */
+    List<ProjectDTO> filterCategory(List<ProjectDTO> projectDTOS);
 }

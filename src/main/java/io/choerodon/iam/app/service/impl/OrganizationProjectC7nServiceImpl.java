@@ -246,9 +246,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                         .withSourceId(project.getOrganizationId()),
                 builder -> {
                     ProjectDTO projectDTO = create(project);
-                    projectDTO.setCategories(project.getCategories());
+                    List<ProjectCategoryDTO> categories = project.getCategories();
                     Set<String> roleLabels = initMemberRole(projectDTO);
-                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels);
+                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels, categories);
                     builder
                             .withPayloadAndSerialize(projectEventPayload)
                             .withRefId(String.valueOf(projectDTO.getId()))
@@ -257,7 +257,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 });
     }
 
-    private ProjectEventPayload generateProjectEventMsg(ProjectDTO projectDTO, Set<String> roleLabels) {
+    private ProjectEventPayload generateProjectEventMsg(ProjectDTO projectDTO, Set<String> roleLabels, List<ProjectCategoryDTO> projectCategoryDTOS) {
         ProjectEventPayload projectEventMsg = new ProjectEventPayload();
         CustomUserDetails details = DetailsHelper.getUserDetails();
         Tenant tenant = organizationAssertHelper.notExisted(projectDTO.getOrganizationId());
@@ -273,7 +273,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setRoleLabels(roleLabels);
         projectEventMsg.setProjectId(projectDTO.getId());
         projectEventMsg.setProjectCode(projectDTO.getCode());
-        projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectDTO.getCategories(), ProjectCategoryVO.class));
+        projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(projectDTO.getImageUrl());
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());

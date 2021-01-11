@@ -238,6 +238,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         }
                     }
                     //如果是注册组织，并且已经过期，则显示延期的按钮
+                    if (Objects.isNull(tenantConfigVO)) {
+                        return;
+                    }
                     if (tenantConfigVO.getRegister() && LocalDateTime.now().minusDays(PROBATION_TIME).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
                         tenantVO.setDelay(true);
                     }

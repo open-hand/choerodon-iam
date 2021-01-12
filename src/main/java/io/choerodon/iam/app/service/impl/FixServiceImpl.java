@@ -68,6 +68,9 @@ public class FixServiceImpl implements FixService {
                         }).collect(Collectors.toList());
                         projectMapCategoryMapper.batchInsert(mapCategoryDTOS);
                     }
+                    //存放就项目曾经存在过的类型
+                    t.setBeforeCategory(newListCateGory.stream().collect(Collectors.joining(",")));
+                    projectMapper.updateByPrimaryKeySelective(t);
                 }
             }
         });

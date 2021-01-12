@@ -445,7 +445,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         List<TenantVO> ownedOrganizations = getOwnedOrganizations(user.getId(), Boolean.TRUE.equals(user.getAdmin()), tenantDTOS);
         // 如果是admin用户，没有任何组织权限，默认返回运营组织
         if (CollectionUtils.isEmpty(ownedOrganizations) && Boolean.TRUE.equals(user.getAdmin())) {
-            return Collections.singletonList(ConvertUtils.convertObject(tenantMapper.selectByPrimaryKey(OPERATION_ORG_ID), TenantVO.class));
+            TenantVO tenantVO = ConvertUtils.convertObject(tenantMapper.selectByPrimaryKey(OPERATION_ORG_ID), TenantVO.class);
+            tenantVO.setInto(true);
+            return Collections.singletonList(tenantVO);
         }
         return ownedOrganizations;
     }

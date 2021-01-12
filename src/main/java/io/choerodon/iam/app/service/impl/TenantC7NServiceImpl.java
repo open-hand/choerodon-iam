@@ -418,6 +418,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public void createDefaultTenant(String tenantName, String tenantNum) {
         Tenant defaultTenant = new Tenant();
         defaultTenant.setTenantName(tenantName);
+        defaultTenant.setTenantId(TenantConstants.DEFAULT_C7N_TENANT_TD);
         defaultTenant.setTenantNum(tenantNum);
         defaultTenant.setEnabledFlag(1);
         initConfig(defaultTenant);

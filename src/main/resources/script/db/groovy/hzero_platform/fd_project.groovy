@@ -71,7 +71,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             constraints(nullable: false)
         }
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'BEFORE_CATEGORY', type: 'VARCHAR(300)', remarks: '项目曾经存在过的项目类型', defaultValue: 'create'){
+            column(name: 'BEFORE_CATEGORY', type: 'VARCHAR(300)', remarks: '项目曾经存在过的项目类型',afterColumn: 'TYPE'){
                 constraints(nullable: true)
             }
         }

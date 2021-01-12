@@ -66,6 +66,9 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("项目当前的操作类型")
     private String operateType;
 
+    @ApiModelProperty("之前存在的类型")
+    private String beforeCategory;
+
     @ApiModelProperty(value = "项目类型")
     @Transient
     private List<Long> categoryIds;
@@ -137,6 +140,14 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("项目的状态")
     private String projectStatus;
+
+    public String getBeforeCategory() {
+        return beforeCategory;
+    }
+
+    public void setBeforeCategory(String beforeCategory) {
+        this.beforeCategory = beforeCategory;
+    }
 
     public String getOperateType() {
         return operateType;

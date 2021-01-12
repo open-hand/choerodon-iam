@@ -67,8 +67,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
 
     changeSet(author: 'wx', id: '2021-01-07-fd-project-add-column') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'OPERATE_TYPE', type: 'VARCHAR(32)', remarks: '该项目当前的操作类型 create:创建，update:修改', afterColumn: 'TYPE', defaultValue: 'create')
-            constraints(nullable: false)
+            column(name: 'OPERATE_TYPE', type: 'VARCHAR(32)', remarks: '该项目当前的操作类型 create:创建，update:修改', afterColumn: 'TYPE', defaultValue: 'create'){
+                constraints(nullable: false)
+            }
         }
         addColumn(tableName: 'FD_PROJECT') {
             column(name: 'BEFORE_CATEGORY', type: 'VARCHAR(300)', remarks: '项目曾经存在过的项目类型',afterColumn: 'TYPE'){

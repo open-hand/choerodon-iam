@@ -680,7 +680,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                             p.setProjectStatus(ProjectStatusEnum.FAILED.value());
                         }
                         p.setSagaInstanceId(sagaInstanceDetails.getId());
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), COMPLETED)) {
                             p.setSagaInstanceId(null);
                         }
 

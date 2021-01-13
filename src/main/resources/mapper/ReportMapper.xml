@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ReportMapper">
 
-    <select id="selectByProjectId" resultMap="io.choerodon.iam.infra.dto.ReportDTO">
+    <select id="selectByProjectId" resultType="io.choerodon.iam.infra.dto.ReportDTO">
         SELECT
             fr.*
         FROM

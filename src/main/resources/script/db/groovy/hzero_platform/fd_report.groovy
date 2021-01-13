@@ -21,4 +21,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'scp', id: '2021-01-13-fd_report_add_index') {
+        createIndex(indexName: 'uk_TITLE', tableName: 'FD_REPORT', unique: true) {
+            column(name: 'REPORT_TYPE')
+            column(name: 'TITLE')
+        }
+    }
 }

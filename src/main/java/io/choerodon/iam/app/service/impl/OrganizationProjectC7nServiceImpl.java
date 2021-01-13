@@ -369,7 +369,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
         BeanUtils.copyProperties(newProjectDTO, dto);
         //增加项目类型的数据
-        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(categoryIds, ","));
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
         if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
             projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
         }
@@ -415,6 +415,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
         if (name.length() < 1 || name.length() > 32) {
             throw new IllegalArgumentException("error.project.name.size");
+        }
+        List<ProjectCategoryDTO> categories = projectDTO.getCategories();
+        if (CollectionUtils.isEmpty(categories)) {
+            throw new CommonException("error.choose.least.one.category");
         }
     }
 

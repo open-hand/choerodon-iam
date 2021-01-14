@@ -218,6 +218,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         organizationAssertHelper.notExisted(organizationId);
         projectAssertHelper.codeExisted(projectDTO.getCode(), organizationId);
         projectDTO.setEnabled(Boolean.TRUE);
+        projectDTO.setBeforeCategory(projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.joining(",")));
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
         }
@@ -335,13 +336,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setUserId(user.getId());
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
-        ProjectDTO newProjectDTO = updateSelective(projectDTO);
+
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
-        List<Long> categoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(categoryIds)) {
-            throw new CommonException("error.choose.least.one.category");
-        }
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
         projectMapCategoryDTO.setProjectId(projectDTO.getId());
         List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
@@ -351,6 +348,28 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         //真正插入项目了类型放到saga里面做
 //        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+
+        //增加项目类型的数据
+        Set<String> beforeCode = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
+            List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
+            if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
+                projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+                Set<String> addCode = projectCategoryDTOS.stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toSet());
+                beforeCode.addAll(addCode);
+            }
+        }
+
+        projectDTO.setBeforeCategory(beforeCode.stream().collect(Collectors.joining(",")));
+        ProjectDTO newProjectDTO = updateSelective(projectDTO);
+
+
+        projectEventMsg.setProjectId(newProjectDTO.getId());
+        projectEventMsg.setProjectCode(newProjectDTO.getCode());
+        projectEventMsg.setProjectName(newProjectDTO.getName());
+        projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
+        BeanUtils.copyProperties(newProjectDTO, dto);
+
 
         // 发送修改项目启停用状态消息
         if (updateStatus) {
@@ -362,19 +381,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
         }
 
-
-        projectEventMsg.setProjectId(newProjectDTO.getId());
-        projectEventMsg.setProjectCode(newProjectDTO.getCode());
-        projectEventMsg.setProjectName(newProjectDTO.getName());
-        projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
-        BeanUtils.copyProperties(newProjectDTO, dto);
-        //增加项目类型的数据
-        if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
-            List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
-            if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
-                projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
-            }
-        }
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
             sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));

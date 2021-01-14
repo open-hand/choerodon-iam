@@ -93,7 +93,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             // 默认组织已经创建则只更新组织名
             Tenant newTenant = new Tenant();
             newTenant.setTenantId(tenant.getTenantId());
-            newTenant.setTenantName(tenant.getTenantName());
+            newTenant.setTenantName(enterpriseInfoVO.getOrganizationName());
             if (tenantMapper.updateByPrimaryKeySelective(tenant) != 1) {
                 throw new CommonException("error.update.org.name");
             }

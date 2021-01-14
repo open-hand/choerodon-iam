@@ -369,9 +369,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
         BeanUtils.copyProperties(newProjectDTO, dto);
         //增加项目类型的数据
-        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
-        if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
-            projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+        if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
+            List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
+            if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
+                projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+            }
         }
         try {
             String input = mapper.writeValueAsString(projectEventMsg);

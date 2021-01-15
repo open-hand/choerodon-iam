@@ -3,6 +3,10 @@ package io.choerodon.iam.api.vo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -16,6 +20,14 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
  */
 @JsonInclude(JsonInclude.Include.ALWAYS)
 public class TenantVO extends Tenant {
+
+    private static final String NAME_REGULAR_EXPRESSION = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
+
+    @ApiModelProperty(value = "组织名/必填")
+    @NotEmpty(message = "error.organization.name.empty")
+    @Size(min = 1, max = 32, message = "error.organization.name.size")
+    @Pattern(regexp = NAME_REGULAR_EXPRESSION, message = "error.organization.name.illegal")
+    private String tenantName;
 
     @ApiModelProperty(value = "组织信息")
     private TenantConfigVO tenantConfigVO;
@@ -140,5 +152,16 @@ public class TenantVO extends Tenant {
 
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
+    }
+
+    @Override
+    public String getTenantName() {
+        return tenantName;
+    }
+
+    @Override
+    public Tenant setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+        return this;
     }
 }

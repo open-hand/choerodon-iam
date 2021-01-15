@@ -29,7 +29,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
     }
     changeSet(author: 'scp', id: '2021-01-15-fd-fd_report-add-column') {
         addColumn(tableName: 'fd_report') {
-            column(name: 'type_sequence', type: "BIT UNSIGNED", remarks: '图表类型顺序', afterColumn: 'SORT')
+            column(name: 'type_sequence', type: "BIT UNSIGNED", remarks: '图表类型顺序', defaultValue: '10', afterColumn: 'SORT')
         }
     }
 }

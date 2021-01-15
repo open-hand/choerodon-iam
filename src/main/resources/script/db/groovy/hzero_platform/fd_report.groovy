@@ -11,7 +11,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
             column(name: 'TITLE', type: 'VARCHAR(64)', remarks: '标题')
             column(name: 'DESCRIPTION', type: 'VARCHAR(128)', remarks: '描述')
             column(name: 'PATH', type: 'VARCHAR(128)', remarks: '路径')
-            column(name: 'SORT', type: 'BIGINT UNSIGNED', remarks: '排序')
+            column(name: 'SORT', type: 'BIGINT UNSIGNED', remarks: '图表类型里层排序')
 
 
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1")
@@ -25,6 +25,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
         createIndex(indexName: 'uk_TITLE', tableName: 'FD_REPORT', unique: true) {
             column(name: 'REPORT_TYPE')
             column(name: 'TITLE')
+        }
+    }
+    changeSet(author: 'scp', id: '2021-01-15-fd-fd_report-add-column') {
+        addColumn(tableName: 'fd_report') {
+            column(name: 'type_sequence', type: "BIT UNSIGNED", remarks: '图表类型顺序', afterColumn: 'SORT')
         }
     }
 }

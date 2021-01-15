@@ -26,6 +26,7 @@ public class ReportDTO extends AuditDomain {
     private String description;
     private String path;
     private Long sort;
+    private Long typeSequence;
 
     public Long getId() {
         return id;
@@ -81,5 +82,13 @@ public class ReportDTO extends AuditDomain {
 
     public void setSort(Long sort) {
         this.sort = sort;
+    }
+
+    public Long getTypeSequence() {
+        return typeSequence;
+    }
+
+    public void setTypeSequence(Long typeSequence) {
+        this.typeSequence = typeSequence;
     }
 }

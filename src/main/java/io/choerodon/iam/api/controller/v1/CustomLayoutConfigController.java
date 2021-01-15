@@ -51,7 +51,7 @@ public class CustomLayoutConfigController {
         return ResponseEntity.ok(customLayoutConfigService.saveOrUpdateCustomProjectOverview(projectId, customLayoutConfigDTO));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询项目概览")
     @GetMapping(value = "/projects/{project_id}/project_overview_config")
     public ResponseEntity<CustomLayoutConfigDTO> queryCustomProjectOverview(

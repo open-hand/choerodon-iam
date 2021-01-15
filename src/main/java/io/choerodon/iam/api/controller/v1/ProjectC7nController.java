@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -88,6 +89,9 @@ public class ProjectC7nController extends BaseController {
             @RequestBody ProjectDTO projectDTO) {
         if (StringUtils.isEmpty(projectDTO.getName())) {
             throw new CommonException("error.project.name.empty");
+        }
+        if (!Pattern.matches(ProjectDTO.PROJECT_NAME_REG, projectDTO.getName())) {
+            throw new CommonException("error.project.name.invalid");
         }
         if (projectDTO.getName().length() < 1 || projectDTO.getName().length() > 32) {
             throw new CommonException("error.project.name.size");

@@ -17,11 +17,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class IamApplication {
 
     public static void main(String[] args) {
-        try {
-            SpringApplication.run(IamApplication.class, args);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        SpringApplication.run(IamApplication.class, args);
     }
 
     @Bean

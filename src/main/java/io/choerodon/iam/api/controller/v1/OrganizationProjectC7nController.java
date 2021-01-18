@@ -202,4 +202,12 @@ public class OrganizationProjectC7nController extends BaseController {
             @PathVariable(name = "organization_id") Long organizationId) {
         return ResponseEntity.ok(organizationProjectC7nService.queryLatestVisitProjectInfo(organizationId));
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询组织下所有已启用的项目带上类别（敏捷使用）")
+    @GetMapping(value = "/all_with_category")
+    public ResponseEntity<List<ProjectDTO>> listProjectsWithCategoryByOrgId(@PathVariable(name = "organization_id") Long organizationId,
+                                                                            @RequestParam(name = "enable", required = false, defaultValue = "false") Boolean enable) {
+        return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, enable), HttpStatus.OK);
+    }
 }

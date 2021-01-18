@@ -72,4 +72,7 @@ public interface OrganizationProjectC7nService {
      * @return ProjectVisitInfoVO列表
      */
     List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId);
+
+
+    List<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable);
 }

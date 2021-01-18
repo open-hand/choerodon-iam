@@ -724,4 +724,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         result = result.stream().sorted(Comparator.comparing(ProjectVisitInfoVO::getLastVisitTime).reversed()).collect(Collectors.toList());
         return result;
     }
+
+    @Override
+    public List<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable) {
+        return projectMapper.selectWithCategory(organizationId, enable);
+    }
 }

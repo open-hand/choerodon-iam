@@ -571,4 +571,18 @@
         WHERE
             fpmc.PROJECT_ID = #{projectId}
     </select>
+    <select id="selectWithCategory" resultMap="projectWithCategoryMap">
+        SELECT
+	       fp.*,
+	       fpc.ID AS category_id,
+	       fpc.`NAME` AS category_name,
+	       fpc.`NAME` AS category_code
+        FROM
+	       fd_project fp
+	    JOIN fd_project_map_category fpmc ON fp.ID = fpmc.PROJECT_ID
+	    JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        WHERE
+	     fp.ORGANIZATION_ID = #{organizationId}
+	    AND fp.IS_ENABLED = #{enable}
+    </select>
 </mapper>

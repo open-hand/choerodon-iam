@@ -572,11 +572,12 @@
             fpmc.PROJECT_ID = #{projectId}
     </select>
     <select id="selectWithCategory" resultMap="projectWithCategoryMap">
-        SELECT
-	       fp.*,
-	       fpc.ID AS category_id,
-	       fpc.`NAME` AS category_name,
-	       fpc.`NAME` AS category_code
+        select fp.*,
+          fpc.id as category_id,
+          fpc.name as category_name,
+          fpc.code as category_code,
+          fpc.object_version_number as category_version_number,
+          fpc.organization_id as category_org_id
         FROM
 	       fd_project fp
 	    JOIN fd_project_map_category fpmc ON fp.ID = fpmc.PROJECT_ID

@@ -94,10 +94,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             Tenant newTenant = new Tenant();
             newTenant.setTenantId(tenant.getTenantId());
             newTenant.setTenantName(enterpriseInfoVO.getOrganizationName());
+            newTenant.setObjectVersionNumber(tenant.getObjectVersionNumber());
             if (checkEnableUpdateTenantNum()) {
                 newTenant.setTenantNum(enterpriseInfoVO.getTenantNum());
             }
-            if (tenantMapper.updateByPrimaryKeySelective(tenant) != 1) {
+            if (tenantMapper.updateByPrimaryKeySelective(newTenant) != 1) {
                 throw new CommonException("error.update.org.name");
             }
         }

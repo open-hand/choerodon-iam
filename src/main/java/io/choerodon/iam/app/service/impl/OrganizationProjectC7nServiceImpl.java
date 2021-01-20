@@ -729,7 +729,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
     @Override
-    public List<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable) {
-        return projectMapper.selectWithCategory(organizationId, enable);
+    public Page<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable, PageRequest pageRequest) {
+        Page<ProjectDTO> pageAndSort = PageHelper.doPageAndSort(pageRequest, () -> projectMapper.selectWithCategory(organizationId, enable));
+        return pageAndSort;
     }
 }

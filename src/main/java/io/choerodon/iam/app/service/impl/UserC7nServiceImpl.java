@@ -641,18 +641,26 @@ public class UserC7nServiceImpl implements UserC7nService {
                     .filter(projectDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value()))
                     .map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
             //创建项目的saga
-            Map<String, SagaInstanceDetails> instanceDetailsMapRepoCreate;
-            Map<String, SagaInstanceDetails> instanceDetailsMapIamCreate;
-            instanceDetailsMapIamCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.PROJECT_CREATE));
-            instanceDetailsMapRepoCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.REPO_CREATE));
+            Map<String, SagaInstanceDetails> instanceDetailsMapRepoCreate = new HashMap<>();
+            Map<String, SagaInstanceDetails> instanceDetailsMapIamCreate = new HashMap<>();
+            if (!CollectionUtils.isEmpty(createIds)) {
+                instanceDetailsMapIamCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.PROJECT_CREATE));
+                instanceDetailsMapRepoCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.REPO_CREATE));
 
+            }
             //修改项目的saga
-            Map<String, SagaInstanceDetails> instanceDetailsMapIamUpdate;
-            Map<String, SagaInstanceDetails> instanceDetailsMapRepoUpdate;
-            instanceDetailsMapIamUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.PROJECT_UPDATE));
-            instanceDetailsMapRepoUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.REPO_CREATE));
+            Map<String, SagaInstanceDetails> instanceDetailsMapIamUpdate = new HashMap<>();
+            Map<String, SagaInstanceDetails> instanceDetailsMapRepoUpdate = new HashMap<>();
+            if (!CollectionUtils.isEmpty(updateIds)) {
+                instanceDetailsMapIamUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.PROJECT_UPDATE));
+                instanceDetailsMapRepoUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.REPO_CREATE));
+            }
 
             //只需要判断项目需要重试，拿到重试的任务id集合即可
+            Map<String, SagaInstanceDetails> finalInstanceDetailsMapIamCreate = instanceDetailsMapIamCreate;
+            Map<String, SagaInstanceDetails> finalInstanceDetailsMapRepoCreate = instanceDetailsMapRepoCreate;
+            Map<String, SagaInstanceDetails> finalInstanceDetailsMapIamUpdate = instanceDetailsMapIamUpdate;
+            Map<String, SagaInstanceDetails> finalInstanceDetailsMapRepoUpdate = instanceDetailsMapRepoUpdate;
             projects.forEach(p -> {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
@@ -668,8 +676,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
                     //如果是创建
                     if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.CREATE.value())) {
-                        SagaInstanceDetails instanceDetailsIam = instanceDetailsMapIamCreate.get(String.valueOf(p.getId()));
-                        SagaInstanceDetails instanceDetailsRepo = instanceDetailsMapRepoCreate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsIam = finalInstanceDetailsMapIamCreate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsRepo = finalInstanceDetailsMapRepoCreate.get(String.valueOf(p.getId()));
                         if (!Objects.isNull(instanceDetailsIam)) {
                             sagaInstanceDetails.add(instanceDetailsIam);
                         }
@@ -692,8 +700,8 @@ public class UserC7nServiceImpl implements UserC7nService {
                     }
                     //如果是修改
                     if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value())) {
-                        SagaInstanceDetails instanceDetailsIam = instanceDetailsMapIamUpdate.get(String.valueOf(p.getId()));
-                        SagaInstanceDetails instanceDetailsRepo = instanceDetailsMapRepoUpdate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsIam = finalInstanceDetailsMapIamUpdate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsRepo = finalInstanceDetailsMapRepoUpdate.get(String.valueOf(p.getId()));
                         if (!Objects.isNull(instanceDetailsIam)) {
                             sagaInstanceDetails.add(instanceDetailsIam);
                         }

@@ -95,7 +95,14 @@ public class SagaInstanceUtils {
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             return new ArrayList<>();
         }
-        sagaInstanceDetails.forEach(instanceDetails -> sagaTaskInstanceDTOS.addAll(instanceDetails.getSagaTaskInstanceDTOS()));
+        sagaInstanceDetails.forEach(instanceDetails -> {
+            if (!CollectionUtils.isEmpty(instanceDetails.getSagaTaskInstanceDTOS())) {
+                sagaTaskInstanceDTOS.addAll(instanceDetails.getSagaTaskInstanceDTOS());
+            }
+        });
+        if (CollectionUtils.isEmpty(sagaTaskInstanceDTOS)) {
+            return new ArrayList<>();
+        }
         return sagaTaskInstanceDTOS.stream().map(SagaTaskInstanceDTO::getId).collect(Collectors.toList());
 
     }

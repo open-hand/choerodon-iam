@@ -4,7 +4,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
@@ -18,6 +19,7 @@ import io.choerodon.iam.infra.enums.ProjectStatusEnum;
 public class SagaInstanceUtils {
 
     private static final String FAILED = "FAILED";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SagaInstanceUtils.class);
 
     public static Long fillFailedInstanceId(Map<String, SagaInstanceDetails> map, String refId) {
         if (!MapUtils.isEmpty(map) && !Objects.isNull(map.get(refId)) && FAILED.equalsIgnoreCase(map.get(refId).getStatus().trim())) {
@@ -64,7 +66,7 @@ public class SagaInstanceUtils {
 
     public static Integer getCompletedCount(List<SagaInstanceDetails> sagaInstanceDetails) {
 
-        return sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> new Integer(0));
+        return sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
     }
 
     public static Integer getAllTaskCount(List<SagaInstanceDetails> sagaInstanceDetails) {
@@ -72,15 +74,12 @@ public class SagaInstanceUtils {
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             return allTask;
         }
-
-        allTask = sagaInstanceDetails.stream().map(instanceDetails -> {
-            return instanceDetails.getCompletedCount() +
-                    instanceDetails.getFailedCount() +
-                    instanceDetails.getQueueCount() +
-                    instanceDetails.getRollbackCount() +
-                    instanceDetails.getRunningCount() +
-                    instanceDetails.getWaitToBePulledCount();
-        }).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> new Integer(0));
+        allTask = sagaInstanceDetails.stream().map(instanceDetails -> OptionalBean.ofNullable(instanceDetails.getCompletedCount()).orElseGet(() -> 0) +
+                OptionalBean.ofNullable(instanceDetails.getFailedCount()).orElseGet(() -> 0) +
+                OptionalBean.ofNullable(instanceDetails.getQueueCount()).orElseGet(() -> 0) +
+                OptionalBean.ofNullable(instanceDetails.getRollbackCount()).orElseGet(() -> 0) +
+                OptionalBean.ofNullable(instanceDetails.getRunningCount()).orElseGet(() -> 0) +
+                OptionalBean.ofNullable(instanceDetails.getWaitToBePulledCount()).orElseGet(() -> 0)).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
         return allTask;
     }
 

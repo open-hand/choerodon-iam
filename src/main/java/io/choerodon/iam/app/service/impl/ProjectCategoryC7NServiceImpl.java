@@ -17,11 +17,11 @@ import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * @author scp
  * @since 2020/4/15
- *
  */
 @Service
 public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService {
@@ -36,7 +36,8 @@ public class ProjectCategoryC7NServiceImpl implements ProjectCategoryC7nService 
     public List<ProjectCategoryDTO> list() {
         ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
         projectCategoryDTO.setDisplayFlag(true);
-        return projectCategoryMapper.select(projectCategoryDTO)
+        List<ProjectCategoryDTO> list = PageHelper.doSort(new Sort(Sort.Direction.ASC, ProjectCategoryDTO.FIELD_SEQUENCE), () -> projectCategoryMapper.select(projectCategoryDTO));
+        return list
                 .stream()
                 .filter(category -> ProjectCategoryEnum.contains(category.getCode()))
                 .collect(Collectors.toList());

@@ -31,4 +31,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_category.groovy') {
         addUniqueConstraint(tableName: 'FD_PROJECT_CATEGORY', columnNames: 'CODE', constraintName: 'UK_IAM_PROJECT_CATEGORY_U1')
 
     }
+
+    changeSet(author: 'scp', id: '2021-01-20-fd_project_category-add-column') {
+        addColumn(tableName: 'fd_project_category') {
+            column(name: 'sequence', type: "BIGINT UNSIGNED", remarks: '项目类型顺序', defaultValue: '60', afterColumn: 'ORGANIZATION_ID')
+        }
+    }
 }

@@ -504,10 +504,10 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         ProjectSagaVO projectSagaVO = new ProjectSagaVO();
         //合并两个saga
         List<SagaInstanceDetails> sagaInstanceDetails = new ArrayList<>();
-        if (!MapUtils.isEmpty(instanceDetailsIamMap)) {
+        if (!MapUtils.isEmpty(instanceDetailsIamMap) && !Objects.isNull(instanceDetailsIamMap.get(String.valueOf(projectId)))) {
             sagaInstanceDetails.add(instanceDetailsIamMap.get(String.valueOf(projectId)));
         }
-        if (!MapUtils.isEmpty(instanceDetailsRepoMap)) {
+        if (!MapUtils.isEmpty(instanceDetailsRepoMap) && !Objects.isNull(instanceDetailsRepoMap.get(String.valueOf(projectId)))) {
             sagaInstanceDetails.add(instanceDetailsRepoMap.get(String.valueOf(projectId)));
         }
         //根据事务实例获取当前项目状态 修改中，成功，失败

@@ -63,11 +63,16 @@ public class SagaInstanceUtils {
     }
 
     public static Integer getCompletedCount(List<SagaInstanceDetails> sagaInstanceDetails) {
+
         return sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> new Integer(0));
     }
 
     public static Integer getAllTaskCount(List<SagaInstanceDetails> sagaInstanceDetails) {
-        Integer allTask;
+        Integer allTask = 0;
+        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
+            return allTask;
+        }
+
         allTask = sagaInstanceDetails.stream().map(instanceDetails -> {
             return instanceDetails.getCompletedCount() +
                     instanceDetails.getFailedCount() +

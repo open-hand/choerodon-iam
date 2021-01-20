@@ -9,8 +9,6 @@ import javax.validation.Valid;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +26,9 @@ import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -206,9 +206,12 @@ public class OrganizationProjectC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/all_with_category")
-    public ResponseEntity<List<ProjectDTO>> listProjectsWithCategoryByOrgId(@PathVariable(name = "organization_id") Long organizationId,
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> listProjectsWithCategoryByOrgId(@SortDefault(value = "id", direction = io.choerodon.mybatis.pagehelper.domain.Sort.Direction.DESC)
+                                                                                    PageRequest pageRequest,
+                                                                            @PathVariable(name = "organization_id") Long organizationId,
                                                                             @RequestParam(required = true) Boolean enabled) {
-        return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, enabled), HttpStatus.OK);
+        return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, enabled, pageRequest), HttpStatus.OK);
     }
 
 }

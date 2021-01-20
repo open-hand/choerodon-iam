@@ -9,6 +9,7 @@ import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.iam.api.dto.RoleDTO;
 
 import java.util.List;
@@ -67,7 +68,7 @@ public interface ProjectPermissionService {
      * @param projectId 项目id
      * @return 项目所有者列表
      */
-    List<UserDTO> listProjectOwnerById(Long projectId);
+    List<UserDTO> listProjectOwnerById(Long projectId, String param);
 
     /**
      * 查询项目下的用户列表，根据真实名称或登录名搜索(限制20个)
@@ -122,6 +123,7 @@ public interface ProjectPermissionService {
 
     /**
      * 校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户
+     *
      * @param projectId
      * @return
      */

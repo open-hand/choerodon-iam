@@ -1,5 +1,13 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.MemberRole;
+
 import io.choerodon.iam.api.vo.ProjectUserVO;
 import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
@@ -8,14 +16,6 @@ import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.common.BaseMapper;
-
-import java.util.Date;
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.MemberRole;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author zmf
@@ -76,7 +76,7 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * @param roleLabel 角色标签
      * @return 含有（含有指定角色标签的）角色的用户
      */
-    List<UserDTO> listProjectUsersByProjectIdAndRoleLabel(@Param("projectId") Long projectId, @Param("roleLabel") String roleLabel);
+    List<UserDTO> listProjectUsersByProjectIdAndRoleLabel(@Param("projectId") Long projectId, @Param("roleLabel") String roleLabel, @Param("param") String param);
 
 
     /**
@@ -207,8 +207,8 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * @return MemberRole列表
      */
     List<MemberRole> listMemberRoleByProjectIdAndClientId(@Param("projectId") Long projectId,
-                                                        @Param("clientId") Long clientId,
-                                                        @Param("roleIds") List<Long> roleIds);
+                                                          @Param("clientId") Long clientId,
+                                                          @Param("roleIds") List<Long> roleIds);
 
     /**
      * 查询用户在当前组织 其他项目下 拥有MemberRole
@@ -226,7 +226,7 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
                      @Param("memberRoleIds") Set<Long> memberRoleIds);
 
     void deleteByClientId(@Param("projectId") Long projectId,
-                          @Param("clientId") Long  clientId);
+                          @Param("clientId") Long clientId);
 
 
     List<UserDTO> listProjectUser(@Param("projectId") Long projectId,

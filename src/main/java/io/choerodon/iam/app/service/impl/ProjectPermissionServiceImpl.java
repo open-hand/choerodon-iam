@@ -197,7 +197,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     public List<UserDTO> listProjectUsersByProjectIdAndRoleLabel(Long projectId, String roleLabel) {
-        return projectPermissionMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLabel);
+        return projectPermissionMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLabel, null);
     }
 
     @Override
@@ -206,8 +206,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
-    public List<UserDTO> listProjectOwnerById(Long projectId) {
-        return projectPermissionMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, RoleLabelEnum.PROJECT_ADMIN.value());
+    public List<UserDTO> listProjectOwnerById(Long projectId, String param) {
+        return projectPermissionMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, RoleLabelEnum.PROJECT_ADMIN.value(), param);
     }
 
     @Override

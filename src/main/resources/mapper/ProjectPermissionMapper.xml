@@ -245,6 +245,11 @@
                  INNER JOIN iam_label il ON il.id = hlr.label_id
         WHERE il.name = #{roleLabel}
           and fpu.project_id = #{projectId}
+        <if test="param != null">
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
+            #{param}),'%') OR iu.email LIKE concat(concat('%',
+            #{param}),'%'))
+        </if>
     </select>
 
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->

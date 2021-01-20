@@ -18,6 +18,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -143,8 +144,9 @@ public class ProjectUserC7nController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("根据项目id查询项目下的项目所有者")
     @GetMapping("/{project_id}/owner/list")
-    public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId) {
-        return ResponseEntity.ok(projectPermissionService.listProjectOwnerById(projectId));
+    public ResponseEntity<List<UserDTO>> listProjectOwnerById(@PathVariable(name = "project_id") Long projectId,
+                                                              @RequestParam(name = "param", required = false) String param) {
+        return ResponseEntity.ok(projectPermissionService.listProjectOwnerById(projectId, param));
     }
 
 

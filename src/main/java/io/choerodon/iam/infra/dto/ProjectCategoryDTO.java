@@ -18,6 +18,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 @ModifyAudit
 @Table(name = "fd_project_category")
 public class ProjectCategoryDTO extends AuditDomain {
+    public static final String FIELD_SEQUENCE = "sequence";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,6 +35,8 @@ public class ProjectCategoryDTO extends AuditDomain {
     private Boolean builtInFlag;
 
     private String labelCode;
+
+    private Long sequence;
 
     public String getLabelCode() {
         return labelCode;
@@ -98,5 +101,13 @@ public class ProjectCategoryDTO extends AuditDomain {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
     }
 }

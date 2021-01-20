@@ -46,6 +46,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.api.vo.ProjectSagaVO;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -64,10 +65,7 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.CustomContextUtil;
-import io.choerodon.iam.infra.utils.ExceptionUtil;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
-import io.choerodon.iam.infra.utils.SagaInstanceUtils;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -163,8 +161,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
         List<UserDTO> userList = userDTOSPage.getContent();
         List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());
-        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap =new HashMap<>();
-        if (!CollectionUtils.isEmpty(refIds)){
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(refIds)) {
             stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(USER, refIds, ORG_USER_CREAT));
         }
         // 添加用户角色

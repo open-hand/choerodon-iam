@@ -185,4 +185,13 @@ public class ProjectC7nController extends BaseController {
     public ResponseEntity<ProjectCategoryWarpVO> queryProjectCategory(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(projectService.queryProjectCategory(projectId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping(value = "/{project_id}")
+    @ApiOperation(value = "删除第一次创建失败的项目")
+    public ResponseEntity<Void> deleteProject(@PathVariable(name = "project_id") Long projectId) {
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

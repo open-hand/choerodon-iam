@@ -88,10 +88,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private static final String PROJECT = "project";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserC7nServiceImpl.class);
-    //saga的状态
-    private static final String FAILED = "FAILED";
-    private static final String RUNNING = "RUNNING";
-    private static final String COMPLETED = "COMPLETED";
 
     @Autowired
     private UserMapper userMapper;
@@ -637,12 +633,26 @@ public class UserC7nServiceImpl implements UserC7nService {
 
             // 遍历项目,计算信息
             Set<Long> finalStarIds = starIds;
-            //获取创建项目的事务实例id PROJECT = "project";
-            List<String> refIds = projects.stream().map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
+            //区分创建项目和修改的项目
+            List<String> createIds = projects.stream()
+                    .filter(projectDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO.getOperateType(), ProjectOperatorTypeEnum.CREATE.value()))
+                    .map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
+            List<String> updateIds = projects.stream()
+                    .filter(projectDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value()))
+                    .map(projectDTO -> String.valueOf(projectDTO.getId())).collect(Collectors.toList());
             //创建项目的saga
-            Map<String, SagaInstanceDetails> instanceDetailsMapCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_CREATE));
+            Map<String, SagaInstanceDetails> instanceDetailsMapRepoCreate;
+            Map<String, SagaInstanceDetails> instanceDetailsMapIamCreate;
+            instanceDetailsMapIamCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.PROJECT_CREATE));
+            instanceDetailsMapRepoCreate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, createIds, SagaTopic.Project.REPO_CREATE));
+
             //修改项目的saga
-            Map<String, SagaInstanceDetails> instanceDetailsMapUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
+            Map<String, SagaInstanceDetails> instanceDetailsMapIamUpdate;
+            Map<String, SagaInstanceDetails> instanceDetailsMapRepoUpdate;
+            instanceDetailsMapIamUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.PROJECT_UPDATE));
+            instanceDetailsMapRepoUpdate = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, updateIds, SagaTopic.Project.REPO_CREATE));
+
+            //只需要判断项目需要重试，拿到重试的任务id集合即可
             projects.forEach(p -> {
                 // 如果项目为禁用 不可进入
                 if (p.getEnabled() == null || !p.getEnabled()) {
@@ -652,38 +662,57 @@ public class UserC7nServiceImpl implements UserC7nService {
                     if (!isAdmin && !isOrgAdmin && CollectionUtils.isEmpty(p.getRoles())) {
                         p.setInto(false);
                     }
-                    //填充失败的实例id
-//                    p.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(instanceDetailsMap, String.valueOf(p.getId())));
+
                     //判断该项目当前的操作是创建还是修改
-                    SagaInstanceDetails sagaInstanceDetails = null;
+                    List<SagaInstanceDetails> sagaInstanceDetails = new ArrayList<>();
+
+                    //如果是创建
                     if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.CREATE.value())) {
-                        sagaInstanceDetails = instanceDetailsMapCreate.get(String.valueOf(p.getId()));
-                        if (!Objects.isNull(sagaInstanceDetails)) {
-                            //修改项目  状态只有失败和修改中
-                            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-                                p.setProjectStatus(ProjectStatusEnum.UPDATING.value());
-                            }
+                        SagaInstanceDetails instanceDetailsIam = instanceDetailsMapIamCreate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsRepo = instanceDetailsMapRepoCreate.get(String.valueOf(p.getId()));
+                        if (!Objects.isNull(instanceDetailsIam)) {
+                            sagaInstanceDetails.add(instanceDetailsIam);
                         }
-                    }
-                    if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value())) {
-                        sagaInstanceDetails = instanceDetailsMapUpdate.get(String.valueOf(p.getId()));
-                        if (!Objects.isNull(sagaInstanceDetails)) {
-                            //创建项目  状态只有失败和创建中
-                            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-                                p.setProjectStatus(ProjectStatusEnum.CREATING.value());
-                            }
+                        if (!Objects.isNull(instanceDetailsRepo)) {
+                            sagaInstanceDetails.add(instanceDetailsRepo);
                         }
-
-                    }
-                    if (!Objects.isNull(sagaInstanceDetails)) {
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
+                        //根据事务实例获取当前项目状态 修改中，成功，失败
+                        String sagaStatus = SagaInstanceUtils.getSagaStatus(sagaInstanceDetails);
+                        //获取需要重试的任务id集合
+                        List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.RUNNING.getValue())) {
+                            p.setProjectStatus(ProjectStatusEnum.CREATING.value());
+                        }
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
                             p.setProjectStatus(ProjectStatusEnum.FAILED.value());
+                            p.setSagaInstanceIds(sagaIds);
+                        } else {
+                            p.setProjectStatus(ProjectStatusEnum.SUCCESS.value());
                         }
-                        p.setSagaInstanceId(sagaInstanceDetails.getId());
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), COMPLETED)) {
-                            p.setSagaInstanceId(null);
+                    }
+                    //如果是修改
+                    if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(p.getOperateType(), ProjectOperatorTypeEnum.UPDATE.value())) {
+                        SagaInstanceDetails instanceDetailsIam = instanceDetailsMapIamUpdate.get(String.valueOf(p.getId()));
+                        SagaInstanceDetails instanceDetailsRepo = instanceDetailsMapRepoUpdate.get(String.valueOf(p.getId()));
+                        if (!Objects.isNull(instanceDetailsIam)) {
+                            sagaInstanceDetails.add(instanceDetailsIam);
                         }
-
+                        if (!Objects.isNull(instanceDetailsRepo)) {
+                            sagaInstanceDetails.add(instanceDetailsRepo);
+                        }
+                        //根据事务实例获取当前项目状态 修改中，成功，失败
+                        String sagaStatus = SagaInstanceUtils.getSagaStatus(sagaInstanceDetails);
+                        //获取需要重试的任务id集合
+                        List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.RUNNING.getValue())) {
+                            p.setProjectStatus(ProjectStatusEnum.UPDATING.value());
+                        }
+                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
+                            p.setProjectStatus(ProjectStatusEnum.FAILED.value());
+                            p.setSagaInstanceIds(sagaIds);
+                        } else {
+                            p.setProjectStatus(ProjectStatusEnum.SUCCESS.value());
+                        }
                     }
                 }
 
@@ -705,6 +734,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
 
     }
+
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {

@@ -74,6 +74,8 @@ public final class SagaTopic {
         public static final String PROJECT_ENABLE = "iam-enable-project";
         //项目添加项目类型
         public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
+        //制品
+        public static final String REPO_CREATE = "rdupm-docker-repo-create";
 
     }
 

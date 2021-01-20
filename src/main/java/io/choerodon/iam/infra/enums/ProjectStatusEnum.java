@@ -15,7 +15,11 @@ public enum ProjectStatusEnum {
     /**
      * 项目正在修改
      */
-    UPDATING("updating");
+    UPDATING("updating"),
+    /**
+     * 成功
+     */
+    SUCCESS("success");
 
     private String value;
 

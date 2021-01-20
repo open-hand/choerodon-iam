@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
+import io.choerodon.iam.api.vo.ProjectSagaVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 
 import org.hzero.iam.domain.entity.Tenant;
@@ -118,4 +119,8 @@ public interface ProjectC7nService {
     void addProjectCategory(Long projectId, List<Long> categoryIds);
 
     ProjectCategoryWarpVO queryProjectCategory(Long projectId);
+
+    ProjectSagaVO queryProjectSaga(Long organizationId, Long projectId, String operateType);
+
+    void deleteProject(Long projectId);
 }

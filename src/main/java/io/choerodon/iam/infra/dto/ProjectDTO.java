@@ -133,7 +133,7 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("事务实例id")
     @Encrypt
-    private Long sagaInstanceId;
+    private List<Long> sagaInstanceIds;
     /**
      * {@link io.choerodon.iam.infra.enums.ProjectStatusEnum}
      */
@@ -165,12 +165,12 @@ public class ProjectDTO extends AuditDomain {
         this.projectStatus = projectStatus;
     }
 
-    public Long getSagaInstanceId() {
-        return sagaInstanceId;
+    public List<Long> getSagaInstanceIds() {
+        return sagaInstanceIds;
     }
 
-    public void setSagaInstanceId(Long sagaInstanceId) {
-        this.sagaInstanceId = sagaInstanceId;
+    public void setSagaInstanceIds(List<Long> sagaInstanceIds) {
+        this.sagaInstanceIds = sagaInstanceIds;
     }
 
     public Long getId() {

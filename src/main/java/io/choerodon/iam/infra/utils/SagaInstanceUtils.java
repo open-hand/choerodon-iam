@@ -1,15 +1,16 @@
 package io.choerodon.iam.infra.utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
+import io.choerodon.iam.infra.dto.asgard.SagaTaskInstanceDTO;
+import io.choerodon.iam.infra.enums.InstanceStatusEnum;
+import io.choerodon.iam.infra.enums.ProjectStatusEnum;
 
 /**
  * Created by wangxiang on 2020/9/24
@@ -33,4 +34,66 @@ public class SagaInstanceUtils {
         }
         return sagaInstanceDetailsMap;
     }
+
+    /**
+     * 获取事务的状态
+     *
+     * @param sagaInstanceDetails 事务实例
+     * @return
+     */
+    public static String getSagaStatus(List<SagaInstanceDetails> sagaInstanceDetails) {
+        //事务实例可能被清除了 清除了之后默认状态为成功
+        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
+            return ProjectStatusEnum.SUCCESS.value();
+        }
+        Integer allTask = 0;
+        Integer completedTask = getCompletedCount(sagaInstanceDetails);
+        allTask = getAllTaskCount(sagaInstanceDetails);
+        //所有任务都成功,事务的状态就是完成
+        if (completedTask.intValue() == allTask.intValue()) {
+            return InstanceStatusEnum.COMPLETED.getValue();
+        }
+        //要是包含一个失败的任务 ，整个状态失败
+        if (sagaInstanceDetails.stream().map(SagaInstanceDetails::getStatus).collect(Collectors.toSet()).contains(FAILED)) {
+            return InstanceStatusEnum.FAILED.getValue();
+        } else {
+            // 其他情况都是运行中 包括等待被拉取排队之类的。
+            return InstanceStatusEnum.RUNNING.getValue();
+        }
+    }
+
+    public static Integer getCompletedCount(List<SagaInstanceDetails> sagaInstanceDetails) {
+        return sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> new Integer(0));
+    }
+
+    public static Integer getAllTaskCount(List<SagaInstanceDetails> sagaInstanceDetails) {
+        Integer allTask;
+        allTask = sagaInstanceDetails.stream().map(instanceDetails -> {
+            return instanceDetails.getCompletedCount() +
+                    instanceDetails.getFailedCount() +
+                    instanceDetails.getQueueCount() +
+                    instanceDetails.getRollbackCount() +
+                    instanceDetails.getRunningCount() +
+                    instanceDetails.getWaitToBePulledCount();
+        }).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> new Integer(0));
+        return allTask;
+    }
+
+
+    /**
+     * 获取失败的实例id
+     *
+     * @param sagaInstanceDetails 事务实例
+     * @return 集合
+     */
+    public static List<Long> getSagaIds(List<SagaInstanceDetails> sagaInstanceDetails) {
+        List<SagaTaskInstanceDTO> sagaTaskInstanceDTOS = new ArrayList<>();
+        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
+            return new ArrayList<>();
+        }
+        sagaInstanceDetails.forEach(instanceDetails -> sagaTaskInstanceDTOS.addAll(instanceDetails.getSagaTaskInstanceDTOS()));
+        return sagaTaskInstanceDTOS.stream().map(SagaTaskInstanceDTO::getId).collect(Collectors.toList());
+
+    }
+
 }

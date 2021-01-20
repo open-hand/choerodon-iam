@@ -3,7 +3,10 @@ package io.choerodon.iam.api.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
+import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.iam.infra.dto.asgard.SagaTaskInstanceDTO;
 
 public class SagaInstanceDetails {
     @Encrypt
@@ -49,8 +52,13 @@ public class SagaInstanceDetails {
     private Integer failedCount;
     @ApiModelProperty(value = "实例下等待被拉取里的任务个数")
     private Integer waitToBePulledCount;
+    @ApiModelProperty(value = "实例下排队任务个数")
+    private Integer queueCount;
     @ApiModelProperty("显示编码")
     private String viewId;
+
+    @ApiModelProperty(value = "实例下的任务")
+    private List<SagaTaskInstanceDTO> sagaTaskInstanceDTOS;
 
     public String getViewId() {
         return viewId;
@@ -180,6 +188,22 @@ public class SagaInstanceDetails {
         this.status = status;
     }
 
+    public Integer getQueueCount() {
+        return queueCount;
+    }
+
+    public void setQueueCount(Integer queueCount) {
+        this.queueCount = queueCount;
+    }
+
+    public List<SagaTaskInstanceDTO> getSagaTaskInstanceDTOS() {
+        return sagaTaskInstanceDTOS;
+    }
+
+    public void setSagaTaskInstanceDTOS(List<SagaTaskInstanceDTO> sagaTaskInstanceDTOS) {
+        this.sagaTaskInstanceDTOS = sagaTaskInstanceDTOS;
+    }
+
     @Override
     public String toString() {
         return "SagaInstanceDetails{" +
@@ -198,6 +222,7 @@ public class SagaInstanceDetails {
                 ", rollbackCount=" + rollbackCount +
                 ", failedCount=" + failedCount +
                 ", waitToBePulledCount=" + waitToBePulledCount +
+                ", queueCount=" + queueCount +
                 ", viewId='" + viewId + '\'' +
                 '}';
     }

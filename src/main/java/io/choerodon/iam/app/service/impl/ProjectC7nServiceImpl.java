@@ -538,12 +538,17 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteProject(Long projectId) {
         //删除项目 删除项目类型
-        ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
-        mapCategoryDTO.setProjectId(projectId);
-        projectMapCategoryMapper.delete(mapCategoryDTO);
-        projectMapper.deleteByPrimaryKey(projectId);
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        ProjectSagaVO projectSagaVO = queryProjectSaga(projectId, projectDTO.getOrganizationId(), ProjectOperatorTypeEnum.CREATE.value());
+        if (StringUtils.equalsIgnoreCase(projectSagaVO.getStatus(), ProjectStatusEnum.FAILED.value())) {
+            ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
+            mapCategoryDTO.setProjectId(projectId);
+            projectMapCategoryMapper.delete(mapCategoryDTO);
+            projectMapper.deleteByPrimaryKey(projectId);
+        }
     }
 
     private List<Long> validateAndGetDbCategoryIds(ProjectDTO projectDTO, List<Long> categoryIds) {

@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
+import io.choerodon.iam.api.vo.ProjectSearchVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -125,5 +126,5 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     List<String> listCategoryByProjectId(@Param("projectId") Long projectId);
 
-    List<ProjectDTO> selectWithCategory(@Param("organizationId") Long organizationId, @Param("enable") Boolean enable);
+    List<ProjectDTO> selectWithCategory(@Param("organizationId") Long organizationId, @Param("projectSearchVO") ProjectSearchVO projectSearchVO);
 }

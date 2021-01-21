@@ -584,6 +584,26 @@
 	    JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
         WHERE
 	     fp.ORGANIZATION_ID = #{organizationId}
-	    AND fp.IS_ENABLED = #{enable}
+        <if test="projectSearchVO != null">
+
+            <if test="projectSearchVO.categoryIds !=null and projectSearchVO.categoryIds.size>0" >
+                AND fpc.id IN
+                <foreach collection="projectSearchVO.categoryIds" item="id" open="(" separator="," close=")" >
+                    #{id}
+                </foreach>
+            </if>
+            <if test="projectSearchVO.categoryCodes !=null and projectSearchVO.categoryCodes.size>0" >
+                AND fpc.code IN
+                <foreach collection="projectSearchVO.categoryCodes" item="code" open="(" separator="," close=")" >
+                    #{code}
+                </foreach>
+            </if>
+
+            <if test="projectSearchVO.enable !=null" >
+                AND fp.is_enabled = #{projectSearchVO.enable}
+            </if>
+        </if>
+
+
     </select>
 </mapper>

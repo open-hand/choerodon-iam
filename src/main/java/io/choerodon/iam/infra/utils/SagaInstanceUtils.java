@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -97,7 +98,11 @@ public class SagaInstanceUtils {
         }
         sagaInstanceDetails.forEach(instanceDetails -> {
             if (!CollectionUtils.isEmpty(instanceDetails.getSagaTaskInstanceDTOS())) {
-                sagaTaskInstanceDTOS.addAll(instanceDetails.getSagaTaskInstanceDTOS());
+                instanceDetails.getSagaTaskInstanceDTOS().stream()
+                        .filter(sagaTaskInstanceDTO -> StringUtils.equalsIgnoreCase(sagaTaskInstanceDTO.getStatus(), InstanceStatusEnum.FAILED.getValue()))
+                        .forEach(sagaTaskInstanceDTO -> {
+                            sagaTaskInstanceDTOS.add(sagaTaskInstanceDTO);
+                        });
             }
         });
         if (CollectionUtils.isEmpty(sagaTaskInstanceDTOS)) {

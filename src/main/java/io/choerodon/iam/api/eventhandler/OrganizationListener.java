@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.iam.api.eventhandler.payload.ClientPayload;
@@ -78,6 +79,9 @@ public class OrganizationListener {
     @SagaTask(code = ADD_PROJECT_CATEGORY, sagaCode = PROJECT_UPDATE, seq = 3, description = "修改项目类型")
     public void addProjectCategory(String message) throws IOException {
         ProjectEventPayload projectEventPayload = mapper.readValue(message, ProjectEventPayload.class);
+        if (CollectionUtils.isEmpty(projectEventPayload.getProjectCategoryVOS())){
+            return;
+        }
         projectC7nService.addProjectCategory(projectEventPayload.getProjectId(), projectEventPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getId).collect(Collectors.toList()));
     }
 }

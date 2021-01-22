@@ -16,8 +16,6 @@ import io.choerodon.iam.api.vo.AgileProjectInfoVO;
  */
 @FeignClient(value = "agile-service", fallback = AgileFeignClientFallback.class)
 public interface AgileFeignClient {
-    @PutMapping("/v1/projects/{project_id}/project_info")
-    ResponseEntity<String> updateProjectInfo(@PathVariable(name = "project_id") Long projectId, @RequestBody AgileProjectInfoVO agileProjectInfoVO);
 
     @GetMapping("/v1/projects/{project_id}/project_info")
     ResponseEntity<String> queryProjectInfoByProjectId(@PathVariable(name = "project_id") Long projectId);

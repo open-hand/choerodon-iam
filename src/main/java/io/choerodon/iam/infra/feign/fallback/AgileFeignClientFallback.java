@@ -14,31 +14,6 @@ import io.choerodon.iam.infra.feign.AgileFeignClient;
 @Component
 public class AgileFeignClientFallback implements AgileFeignClient {
 
-//    @Override
-//    public ResponseEntity<List<TimeZoneWorkCalendarDTO>> queryTimeZoneWorkCalendarList(Long organizationId) {
-//        throw new CommonException("error.agile.queryTimeZoneWorkCalendarList");
-//    }
-//
-//    @Override
-//    public ResponseEntity<List<TimeZoneWorkCalendarRefDTO>> queryTimeZoneWorkCalendarRefList(Long organizationId) {
-//        throw new CommonException("error.agile.queryTimeZoneWorkCalendarRefList");
-//    }
-//
-//    @Override
-//    public ResponseEntity<List<WorkCalendarHolidayRefDTO>> queryWorkCalendarHolidayRelList(Long organizationId) {
-//        throw new CommonException("error.agile.queryTimeZoneWorkCalendarHolidayRefList");
-//    }
-//
-//    @Override
-//    public ResponseEntity<List<ProductVersionVO>> listByProjectId(Long projectId) {
-//        throw new CommonException("error.agile.listByProjectId");
-//    }
-
-    @Override
-    public ResponseEntity<String> updateProjectInfo(Long projectId, AgileProjectInfoVO agileProjectInfoVO) {
-        throw new CommonException("error.agile.updateProjectInfo");
-    }
-
     @Override
     public ResponseEntity<String> queryProjectInfoByProjectId(Long projectId) {
         throw new CommonException("error.agile.queryProjectInfoByProjectId");

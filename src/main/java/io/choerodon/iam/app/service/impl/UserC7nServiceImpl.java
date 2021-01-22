@@ -690,8 +690,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                         List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
                         if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.RUNNING.getValue())) {
                             p.setProjectStatus(ProjectStatusEnum.CREATING.value());
-                        }
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
+                        } else if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
                             p.setProjectStatus(ProjectStatusEnum.FAILED.value());
                             p.setSagaInstanceIds(sagaIds);
                         } else {
@@ -714,8 +713,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                         List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
                         if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.RUNNING.getValue())) {
                             p.setProjectStatus(ProjectStatusEnum.UPDATING.value());
-                        }
-                        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
+                        } else if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
                             p.setProjectStatus(ProjectStatusEnum.FAILED.value());
                             p.setSagaInstanceIds(sagaIds);
                         } else {

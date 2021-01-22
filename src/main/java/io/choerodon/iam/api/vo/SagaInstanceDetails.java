@@ -10,7 +10,7 @@ import io.choerodon.iam.infra.dto.asgard.SagaTaskInstanceDTO;
 
 public class SagaInstanceDetails {
     @Encrypt
-    @ApiModelProperty(value = "主键ID")
+    @ApiModelProperty(value = "主键ID asgard_saga_instance的id")
     private Long id;
 
     @ApiModelProperty(value = "对应Saga编码")
@@ -59,6 +59,17 @@ public class SagaInstanceDetails {
 
     @ApiModelProperty(value = "实例下的任务")
     private List<SagaTaskInstanceDTO> sagaTaskInstanceDTOS;
+
+    @ApiModelProperty(value = "saga事务定义的任务数量")
+    private Integer allTask;
+
+    public Integer getAllTask() {
+        return allTask;
+    }
+
+    public void setAllTask(Integer allTask) {
+        this.allTask = allTask;
+    }
 
     public String getViewId() {
         return viewId;

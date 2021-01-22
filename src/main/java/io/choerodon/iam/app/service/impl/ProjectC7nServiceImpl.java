@@ -510,8 +510,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         if (!MapUtils.isEmpty(instanceDetailsRepoMap) && !Objects.isNull(instanceDetailsRepoMap.get(String.valueOf(projectId)))) {
             sagaInstanceDetails.add(instanceDetailsRepoMap.get(String.valueOf(projectId)));
         }
-        //根据事务实例获取当前项目状态 修改中，成功，失败
+        //根据事务实例获取当前项目状态 运行中，成功，失败
         String sagaStatus = SagaInstanceUtils.getSagaStatus(sagaInstanceDetails);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>当前事务的状态{}", sagaStatus);
         //获取需要重试的任务id集合
         List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
         //根据总的任务数和已完成的任务数来判断状态

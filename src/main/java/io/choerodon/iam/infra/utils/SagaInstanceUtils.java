@@ -79,12 +79,7 @@ public class SagaInstanceUtils {
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             return allTask;
         }
-        allTask = sagaInstanceDetails.stream().map(instanceDetails -> OptionalBean.ofNullable(instanceDetails.getCompletedCount()).orElseGet(() -> 0) +
-                OptionalBean.ofNullable(instanceDetails.getFailedCount()).orElseGet(() -> 0) +
-                OptionalBean.ofNullable(instanceDetails.getQueueCount()).orElseGet(() -> 0) +
-                OptionalBean.ofNullable(instanceDetails.getRollbackCount()).orElseGet(() -> 0) +
-                OptionalBean.ofNullable(instanceDetails.getRunningCount()).orElseGet(() -> 0) +
-                OptionalBean.ofNullable(instanceDetails.getWaitToBePulledCount()).orElseGet(() -> 0)).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
+        allTask = sagaInstanceDetails.stream().map(instanceDetails -> instanceDetails.getAllTask()).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
         return allTask;
     }
 

@@ -45,9 +45,9 @@ public class SagaInstanceUtils {
      * @return
      */
     public static String getSagaStatus(List<SagaInstanceDetails> sagaInstanceDetails) {
-        //事务实例可能被清除了 清除了之后默认状态为成功
+        //事务实例可能被清除了 清除了之后默认状态为完成
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
-            return ProjectStatusEnum.SUCCESS.value();
+            return InstanceStatusEnum.COMPLETED.getValue();
         }
         Integer allTask = 0;
         Integer completedTask = getCompletedCount(sagaInstanceDetails);
@@ -66,8 +66,12 @@ public class SagaInstanceUtils {
     }
 
     public static Integer getCompletedCount(List<SagaInstanceDetails> sagaInstanceDetails) {
-
-        return sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
+        Integer completeCount = sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
+        if (Objects.isNull(completeCount)) {
+            return 0;
+        } else {
+            return completeCount;
+        }
     }
 
     public static Integer getAllTaskCount(List<SagaInstanceDetails> sagaInstanceDetails) {

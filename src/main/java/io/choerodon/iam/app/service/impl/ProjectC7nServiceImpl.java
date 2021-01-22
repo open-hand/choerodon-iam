@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -49,7 +48,6 @@ import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.dto.asgard.SagaTaskInstanceDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.InstanceStatusEnum;
 import io.choerodon.iam.infra.enums.ProjectOperatorTypeEnum;
@@ -57,7 +55,6 @@ import io.choerodon.iam.infra.enums.ProjectStatusEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.operator.AgileFeignClientOperator;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
-import io.choerodon.iam.infra.feign.operator.TestManagerFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.iam.infra.utils.SagaTopic;
@@ -99,7 +96,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected OrganizationAssertHelper organizationAssertHelper;
     protected TenantMapper organizationMapper;
     protected AgileFeignClientOperator agileFeignClientOperator;
-    protected TestManagerFeignClientOperator testManagerFeignClientOperator;
     protected ProjectPermissionMapper projectPermissionMapper;
     protected TransactionalProducer transactionalProducer;
 
@@ -119,7 +115,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  ProjectMapCategoryMapper projectMapCategoryMapper,
                                  UserAssertHelper userAssertHelper,
                                  TenantMapper organizationMapper,
-                                 TestManagerFeignClientOperator testManagerFeignClientOperator,
                                  AgileFeignClientOperator agileFeignClientOperator,
                                  TransactionalProducer transactionalProducer,
                                  ProjectPermissionMapper projectPermissionMapper,
@@ -136,7 +131,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.userAssertHelper = userAssertHelper;
         this.organizationMapper = organizationMapper;
         this.agileFeignClientOperator = agileFeignClientOperator;
-        this.testManagerFeignClientOperator = testManagerFeignClientOperator;
         this.projectPermissionMapper = projectPermissionMapper;
         this.transactionalProducer = transactionalProducer;
         this.roleC7nMapper = roleC7nMapper;
@@ -177,24 +171,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
-        AgileProjectInfoVO projectInfoVO = null;
-        try {
-            projectInfoVO = agileFeignClientOperator.queryProjectInfoByProjectId(projectDTO.getAgileProjectId());
-        } catch (Exception e) {
-            LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
-        }
-        if (projectDTO.getAgileProjectId() != null) {
-            AgileProjectInfoVO agileProject = new AgileProjectInfoVO();
-            agileProject.setInfoId(projectDTO.getAgileProjectId());
-            agileProject.setProjectCode(projectDTO.getAgileProjectCode());
-            agileProject.setObjectVersionNumber(projectDTO.getAgileProjectObjectVersionNumber());
-            try {
-                agileFeignClientOperator.updateProjectInfo(projectDTO.getId(), agileProject);
-                testManagerFeignClientOperator.updateProjectInfo(projectDTO.getId(), agileProject);
-            } catch (Exception e) {
-                LOGGER.warn("agile feign invoke exception: {}", e.getMessage());
-            }
-        }
         ProjectDTO dto = new ProjectDTO();
         CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
         User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
@@ -213,7 +189,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(newProject.getImageUrl());
         projectEventMsg.setAgileProjectCode(projectDTO.getAgileProjectCode());
-        projectEventMsg.setOldAgileProjectCode(Objects.isNull(projectInfoVO) ? null : projectInfoVO.getProjectCode());
 
         try {
             String input = mapper.writeValueAsString(projectEventMsg);

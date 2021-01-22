@@ -514,7 +514,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         String sagaStatus = SagaInstanceUtils.getSagaStatus(sagaInstanceDetails);
         //获取需要重试的任务id集合
         List<Long> sagaIds = SagaInstanceUtils.getSagaIds(sagaInstanceDetails);
-        SagaInstanceUtils.getAllTaskCount(sagaInstanceDetails);
+        //根据总的任务数和已完成的任务数来判断状态
+        projectSagaVO.setCompletedCount(SagaInstanceUtils.getCompletedCount(sagaInstanceDetails));
+        projectSagaVO.setAllTask(SagaInstanceUtils.getAllTaskCount(sagaInstanceDetails));
         if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.RUNNING.getValue())) {
             if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.CREATE.value(), operateType)) {
                 projectSagaVO.setStatus(ProjectStatusEnum.CREATING.value());
@@ -532,8 +534,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
         projectSagaVO.setProjectId(projectId);
         projectSagaVO.setOperateType(operateType);
-        projectSagaVO.setCompletedCount(SagaInstanceUtils.getCompletedCount(sagaInstanceDetails));
-        projectSagaVO.setAllTask(SagaInstanceUtils.getAllTaskCount(sagaInstanceDetails));
+
         return projectSagaVO;
     }
 

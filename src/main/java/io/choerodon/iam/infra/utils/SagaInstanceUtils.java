@@ -12,7 +12,6 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.infra.dto.asgard.SagaTaskInstanceDTO;
 import io.choerodon.iam.infra.enums.InstanceStatusEnum;
-import io.choerodon.iam.infra.enums.ProjectStatusEnum;
 
 /**
  * Created by wangxiang on 2020/9/24
@@ -46,6 +45,7 @@ public class SagaInstanceUtils {
      */
     public static String getSagaStatus(List<SagaInstanceDetails> sagaInstanceDetails) {
         //事务实例可能被清除了 清除了之后默认状态为完成
+        LOGGER.info("》》》》》》》》》》》事务实例集合的大小{}", sagaInstanceDetails.size());
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             return InstanceStatusEnum.COMPLETED.getValue();
         }

@@ -526,7 +526,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                 projectSagaVO.setStatus(ProjectStatusEnum.UPDATING.value());
             }
         }
-        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
+        else if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
             projectSagaVO.setStatus(ProjectStatusEnum.FAILED.value());
             projectSagaVO.setSagaInstanceIds(sagaIds);
         } else {
@@ -544,7 +544,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     public void deleteProject(Long projectId) {
         //删除项目 删除项目类型
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
-        ProjectSagaVO projectSagaVO = queryProjectSaga(projectId, projectDTO.getOrganizationId(), ProjectOperatorTypeEnum.CREATE.value());
+        ProjectSagaVO projectSagaVO = queryProjectSaga(projectId, projectDTO.getId(), ProjectOperatorTypeEnum.CREATE.value());
         if (StringUtils.equalsIgnoreCase(projectSagaVO.getStatus(), ProjectStatusEnum.FAILED.value())) {
             ProjectMapCategoryDTO mapCategoryDTO = new ProjectMapCategoryDTO();
             mapCategoryDTO.setProjectId(projectId);

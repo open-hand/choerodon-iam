@@ -72,6 +72,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     protected static final String CATEGORY_REF_TYPE = "projectCategory";
     private static final String PROJECT = "project";
+    private static final String DOCKER_REPO = "dockerRepo";
     //saga的状态
     private static final String FAILED = "FAILED";
     private static final String RUNNING = "RUNNING";
@@ -391,16 +392,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-//    @Saga(code = ADD_PROJECT_CATEGORY, description = "iam添加项目类型", inputSchemaClass = ProjectEventPayload.class)
     public void addProjectCategory(Long projectId, List<Long> categoryIds) {
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
-//        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
-//        if (dbProjectCategoryIds == null) return;
-//        //要添加的集合
-//        List<Long> ids = categoryIds.stream().filter(aLong -> !dbProjectCategoryIds.contains(aLong)).collect(Collectors.toList());
-//        if (CollectionUtils.isEmpty(ids)) {
-//            return;
-//        }
+
         //批量插入
         List<ProjectMapCategoryDTO> projectMapCategoryDTOS = new ArrayList<>();
         for (Long categoryId : categoryIds) {
@@ -410,37 +403,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             projectMapCategoryDTOS.add(mapCategoryDTO);
         }
         projectMapCategoryMapper.batchInsert(projectMapCategoryDTOS);
-
-        //发送saga做添加项目类型的后续处理
-//        ProjectEventPayload projectEventPayload = new ProjectEventPayload();
-//        projectEventPayload.setProjectId(projectId);
-//        projectEventPayload.setProjectCode(projectDTO.getCode());
-//        projectEventPayload.setProjectName(projectDTO.getName());
-//        Tenant organization = getOrganizationByProjectId(projectId);
-//        projectEventPayload.setOrganizationCode(organization.getTenantNum());
-//        projectEventPayload.setOrganizationName(organization.getTenantName());
-//        projectEventPayload.setOrganizationId(organization.getTenantId());
-//        projectEventPayload.setUserId(DetailsHelper.getUserDetails().getUserId());
-//        projectEventPayload.setUserName(DetailsHelper.getUserDetails().getUsername());
-//        //加添项目类型的数据
-//        List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(StringUtils.join(categoryIds, ","));
-//        if (!CollectionUtils.isEmpty(projectCategoryDTOS)) {
-//            projectEventPayload.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
-//        }
-//        try {
-//            String input = mapper.writeValueAsString(projectEventPayload);
-//            transactionalProducer.apply(StartSagaBuilder.newBuilder()
-//                            .withRefId(String.valueOf(projectId))
-//                            .withRefType(CATEGORY_REF_TYPE)
-//                            .withSagaCode(ADD_PROJECT_CATEGORY)
-//                            .withLevel(ResourceLevel.PROJECT)
-//                            .withSourceId(projectId)
-//                            .withJson(input),
-//                    builder -> {
-//                    });
-//        } catch (Exception e) {
-//            throw new CommonException("error.projectCategory.update.event", e);
-//        }
     }
 
     @Override
@@ -469,11 +431,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         Map<String, SagaInstanceDetails> instanceDetailsRepoMap = null;
         if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.CREATE.value(), operateType)) {
             instanceDetailsIamMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_CREATE));
-            instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.REPO_CREATE));
+            instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(DOCKER_REPO, refIds, SagaTopic.Project.REPO_CREATE));
         }
         if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.UPDATE.value(), operateType)) {
             instanceDetailsIamMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
-            instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.REPO_CREATE));
+            instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(DOCKER_REPO, refIds, SagaTopic.Project.REPO_CREATE));
         }
 
         ProjectSagaVO projectSagaVO = new ProjectSagaVO();
@@ -500,8 +462,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.UPDATE.value(), operateType)) {
                 projectSagaVO.setStatus(ProjectStatusEnum.UPDATING.value());
             }
-        }
-        else if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
+        } else if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaStatus, InstanceStatusEnum.FAILED.getValue())) {
             projectSagaVO.setStatus(ProjectStatusEnum.FAILED.value());
             projectSagaVO.setSagaInstanceIds(sagaIds);
         } else {

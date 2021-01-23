@@ -49,23 +49,25 @@ public class SagaInstanceUtils {
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             return InstanceStatusEnum.COMPLETED.getValue();
         }
-        Integer allTask = 0;
-        Integer completedTask = getCompletedCount(sagaInstanceDetails);
-        allTask = getAllTaskCount(sagaInstanceDetails);
-        //所有任务都成功,事务的状态就是完成
-        if (completedTask.intValue() == allTask.intValue()) {
-            return InstanceStatusEnum.COMPLETED.getValue();
-        }
-        //要是包含一个失败的任务 ，整个状态失败
-        if (sagaInstanceDetails.stream().map(SagaInstanceDetails::getStatus).collect(Collectors.toSet()).contains(FAILED)) {
+        //所有任务都成功,事务的状态就是完成 这里不能通过完成的实例任务数量来判断是否整个事务的状态，因为事务的定义可以更改
+        //事务实例的状态有失败就是失败
+        List<String> instanceStatus = sagaInstanceDetails.stream().map(SagaInstanceDetails::getStatus).collect(Collectors.toList());
+        if (instanceStatus.contains(InstanceStatusEnum.FAILED.getValue())) {
             return InstanceStatusEnum.FAILED.getValue();
-        } else {
-            // 其他情况都是运行中 包括等待被拉取排队之类的。
+        }
+        //除开失败的实例不包含成功的集合
+        List<String> runningCodes = instanceStatus.stream().filter(s -> !StringUtils.equalsIgnoreCase(s, InstanceStatusEnum.COMPLETED.getValue())).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(runningCodes)) {
             return InstanceStatusEnum.RUNNING.getValue();
         }
+        return InstanceStatusEnum.COMPLETED.getValue();
     }
 
     public static Integer getCompletedCount(List<SagaInstanceDetails> sagaInstanceDetails) {
+
+        sagaInstanceDetails.forEach(instanceDetails -> {
+            int size = instanceDetails.getSagaTaskInstanceDTOS().stream().filter(sagaTaskInstanceDTO -> StringUtils.equalsIgnoreCase(sagaTaskInstanceDTO.getStatus(), InstanceStatusEnum.COMPLETED.getValue())).collect(Collectors.toList()).size();
+        });
         Integer completeCount = sagaInstanceDetails.stream().map(SagaInstanceDetails::getCompletedCount).reduce((integer, integer2) -> integer + integer2).orElseGet(() -> 0);
         if (Objects.isNull(completeCount)) {
             return 0;

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -349,8 +350,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 //        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
-        //增加项目类型的数据
-        Set<String> beforeCode = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toSet());
+        //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
+        Set<String> beforeCode = Arrays.asList(projectRecord.getBeforeCategory().split(BaseConstants.Symbol.COMMA)).stream().collect(Collectors.toSet());
         if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
             List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
             if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {

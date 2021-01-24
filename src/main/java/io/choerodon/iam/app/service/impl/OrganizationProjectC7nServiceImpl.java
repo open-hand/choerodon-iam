@@ -351,7 +351,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
         //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
-        Set<String> beforeCode = Arrays.asList(projectRecord.getBeforeCategory().split(BaseConstants.Symbol.COMMA)).stream().collect(Collectors.toSet());
+        Set<String> beforeCode = new HashSet<>();
+        if (!StringUtils.isEmpty(projectRecord.getBeforeCategory())) {
+            beforeCode = Arrays.asList(projectRecord.getBeforeCategory().split(BaseConstants.Symbol.COMMA)).stream().collect(Collectors.toSet());
+        }
         if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
             List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
             if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {

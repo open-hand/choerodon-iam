@@ -388,27 +388,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.updateProject.event", e);
         }
-//        //发送saga之后，需要查询项目的saga进度
-//        List<String> refIds = Arrays.asList(String.valueOf(projectDTO.getId()));
-//        Map<String, SagaInstanceDetails> instanceDetailsMapIam = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
-//        Map<String, SagaInstanceDetails> instanceDetailsMapRepo = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.REPO_CREATE));
-//        //
-//
-//        if (MapUtils.isEmpty(instanceDetailsMap)) {
-//            return dto;
-//        }
-//        SagaInstanceDetails sagaInstanceDetails = instanceDetailsMap.get(String.valueOf(projectDTO.getId()));
-//        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>Fill saga {}", sagaInstanceDetails.toString());
-//        if (!Objects.isNull(sagaInstanceDetails)) {
-//            dto.setSagaInstanceId(sagaInstanceDetails.getId());
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
-//                //修改项目  状态只有失败和修改中
-//                dto.setProjectStatus(ProjectStatusEnum.FAILED.value());
-//            }
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-//                dto.setProjectStatus(ProjectStatusEnum.UPDATING.value());
-//            }
-//        }
         return dto;
     }
 

@@ -373,20 +373,12 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProjectCategory(Long projectId, List<Long> categoryIds) {
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
-        List<Long> dbProjectCategoryIds = validateAndGetDbCategoryIds(projectDTO, categoryIds);
-        if (dbProjectCategoryIds == null) {
-            return;
-        }
-        //要删除的集合
-        List<Long> ids = dbProjectCategoryIds.stream().filter(aLong -> categoryIds.contains(aLong)).collect(Collectors.toList());
-        //至少需要保留一个项目类型
-        if (dbProjectCategoryIds.size() == ids.size() || ids.size() == 0) {
+    public void deleteProjectCategory(Long projectId, List<Long> deleteProjectCategoryIds) {
+        if (deleteProjectCategoryIds == null) {
             return;
         }
         //批量删除
-        projectMapCategoryMapper.batchDelete(projectId, categoryIds);
+        projectMapCategoryMapper.batchDelete(projectId, deleteProjectCategoryIds);
 
     }
 

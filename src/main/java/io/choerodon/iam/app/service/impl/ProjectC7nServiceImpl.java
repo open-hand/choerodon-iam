@@ -374,7 +374,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteProjectCategory(Long projectId, List<Long> deleteProjectCategoryIds) {
-        if (deleteProjectCategoryIds == null) {
+        if (CollectionUtils.isEmpty(deleteProjectCategoryIds)) {
             return;
         }
         //批量删除

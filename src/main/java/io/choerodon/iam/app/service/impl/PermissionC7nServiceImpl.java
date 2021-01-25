@@ -34,7 +34,6 @@ import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 /**
  * @author scp
  * @since 2020/4/1
- *
  */
 @Service
 public class PermissionC7nServiceImpl implements PermissionC7nService {
@@ -206,7 +205,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
                                 Thread.sleep(sleepTime);
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
-                                e.printStackTrace();
+                                LOGGER.error(e.getMessage(), e);
                             }
                         }
                     } else {

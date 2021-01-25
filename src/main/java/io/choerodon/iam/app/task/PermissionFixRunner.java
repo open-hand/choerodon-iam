@@ -153,6 +153,7 @@ public class PermissionFixRunner implements CommandLineRunner {
                             try {
                                 Thread.sleep(sleepTime);
                             } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
                                 e.printStackTrace();
                             }
                         }

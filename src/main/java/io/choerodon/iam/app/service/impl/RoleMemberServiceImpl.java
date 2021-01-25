@@ -289,6 +289,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public List<MemberRole> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRole> memberRoles, String sourceType) {
         return insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, memberId, memberRoles, sourceType, false);
     }

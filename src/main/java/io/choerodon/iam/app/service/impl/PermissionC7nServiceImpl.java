@@ -205,6 +205,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
                             try {
                                 Thread.sleep(sleepTime);
                             } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
                                 e.printStackTrace();
                             }
                         }

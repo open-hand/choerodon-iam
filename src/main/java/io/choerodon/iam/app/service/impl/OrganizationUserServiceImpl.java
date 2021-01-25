@@ -46,7 +46,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
-import io.choerodon.iam.api.vo.ProjectSagaVO;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -74,7 +73,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     private static final String BUSINESS_TYPE_CODE = "addMember";
-    private static final String DEFAULT_PASSWORD = "password";
+    private static final String PASSWORD_KEY = "password";
     private static final String USER = "user";
     private static final String ERROR_ORGANIZATION_USER_NUM_MAX = "error.organization.user.num.max";
     @Value("${spring.application.name:default}")
@@ -389,7 +388,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
-            argsMap.put(DEFAULT_PASSWORD, userPasswordService.getTenantDefaultPassword(organizationId));
+            argsMap.put(PASSWORD_KEY, userPasswordService.getTenantDefaultPassword(organizationId));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

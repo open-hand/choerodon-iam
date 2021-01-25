@@ -29,7 +29,7 @@ public enum SendSettingBaseEnum {
         return this.sendSettingCode;
     }
 
-    public static Map<String, String> map = new HashMap<>();
+    public static final Map<String, String> map = new HashMap<>(9);
 
     static {
         map.put(SendSettingBaseEnum.DISABLE_ORGANIZATION.value(), "停用组织");

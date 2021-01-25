@@ -424,10 +424,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.CREATE.value(), operateType)) {
             instanceDetailsIamMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_CREATE));
             instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(DOCKER_REPO, refIds, SagaTopic.Project.REPO_CREATE));
-        }
-        if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.UPDATE.value(), operateType)) {
+        } else if (StringUtils.equalsIgnoreCase(ProjectOperatorTypeEnum.UPDATE.value(), operateType)) {
             instanceDetailsIamMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
             instanceDetailsRepoMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(DOCKER_REPO, refIds, SagaTopic.Project.REPO_CREATE));
+        } else {
+            return null;
         }
 
         ProjectSagaVO projectSagaVO = new ProjectSagaVO();

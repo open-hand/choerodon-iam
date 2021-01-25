@@ -7,6 +7,7 @@ import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.ProjectSearchVO;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -74,5 +75,5 @@ public interface OrganizationProjectC7nService {
     List<ProjectVisitInfoVO> queryLatestVisitProjectInfo(Long organizationId);
 
 
-    List<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable);
+    Page<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, ProjectSearchVO projectSearchVO, PageRequest pageRequest);
 }

@@ -9,8 +9,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
+import org.hzero.iam.api.dto.MenuSearchDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +21,16 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.BarLabelRotationVO;
+import io.choerodon.iam.api.vo.ProjectSearchVO;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -205,10 +207,13 @@ public class OrganizationProjectC7nController extends BaseController {
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询组织下所有项目")
-    @GetMapping(value = "/all_with_category")
-    public ResponseEntity<List<ProjectDTO>> listProjectsWithCategoryByOrgId(@PathVariable(name = "organization_id") Long organizationId,
-                                                                            @RequestParam(required = true) Boolean enabled) {
-        return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, enabled), HttpStatus.OK);
+    @PostMapping(value = "/all_with_category")
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> listProjectsWithCategoryByOrgId(@SortDefault(value = "id", direction = io.choerodon.mybatis.pagehelper.domain.Sort.Direction.DESC)
+                                                                                    PageRequest pageRequest,
+                                                                            @PathVariable(name = "organization_id") Long organizationId,
+                                                                            @RequestBody ProjectSearchVO projectSearchVO) {
+        return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, projectSearchVO, pageRequest), HttpStatus.OK);
     }
 
 }

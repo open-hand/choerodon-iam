@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -349,8 +350,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 //        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
-        //增加项目类型的数据
-        Set<String> beforeCode = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toSet());
+        //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
+        Set<String> beforeCode = new HashSet<>();
+        if (!StringUtils.isEmpty(projectRecord.getBeforeCategory())) {
+            beforeCode = Arrays.asList(projectRecord.getBeforeCategory().split(BaseConstants.Symbol.COMMA)).stream().collect(Collectors.toSet());
+        }
         if (!CollectionUtils.isEmpty(addProjectCategoryIds)) {
             List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
             if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
@@ -387,27 +391,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.updateProject.event", e);
         }
-//        //发送saga之后，需要查询项目的saga进度
-//        List<String> refIds = Arrays.asList(String.valueOf(projectDTO.getId()));
-//        Map<String, SagaInstanceDetails> instanceDetailsMapIam = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.PROJECT_UPDATE));
-//        Map<String, SagaInstanceDetails> instanceDetailsMapRepo = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopic.Project.REPO_CREATE));
-//        //
-//
-//        if (MapUtils.isEmpty(instanceDetailsMap)) {
-//            return dto;
-//        }
-//        SagaInstanceDetails sagaInstanceDetails = instanceDetailsMap.get(String.valueOf(projectDTO.getId()));
-//        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>Fill saga {}", sagaInstanceDetails.toString());
-//        if (!Objects.isNull(sagaInstanceDetails)) {
-//            dto.setSagaInstanceId(sagaInstanceDetails.getId());
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), FAILED)) {
-//                //修改项目  状态只有失败和修改中
-//                dto.setProjectStatus(ProjectStatusEnum.FAILED.value());
-//            }
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sagaInstanceDetails.getStatus(), RUNNING)) {
-//                dto.setProjectStatus(ProjectStatusEnum.UPDATING.value());
-//            }
-//        }
         return dto;
     }
 
@@ -729,7 +712,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
     @Override
-    public List<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, Boolean enable) {
-        return projectMapper.selectWithCategory(organizationId, enable);
+    public Page<ProjectDTO> listProjectsWithCategoryByOrgId(Long organizationId, ProjectSearchVO projectSearchVO, PageRequest pageRequest) {
+        Page<ProjectDTO> pageAndSort = PageHelper.doPageAndSort(pageRequest, () -> projectMapper.selectWithCategory(organizationId, projectSearchVO));
+        return pageAndSort;
     }
 }

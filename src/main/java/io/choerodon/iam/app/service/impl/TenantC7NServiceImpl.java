@@ -6,6 +6,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,10 +51,7 @@ import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.SagaInstanceUtils;
-import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -69,6 +67,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private static final Integer PROBATION_TIME = 14;
     private static final String REF_TYPE = "createOrg";
     private static final String ORG_CREATE = "org-create-organization";
+    private static final String NAME_REGULAR_EXPRESSION = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
 
 
     @Autowired
@@ -124,6 +123,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateTenant(Long tenantId, TenantVO tenantVO) {
+        validateTenant(tenantVO);
         List<TenantConfig> tenantConfigs = TenantConfigConvertUtils.tenantConfigVOToTenantConfigList(tenantId, tenantVO.getTenantConfigVO());
         Tenant tenant = getTenant(tenantVO);
         tenant.setTenantId(tenantId);
@@ -146,6 +146,18 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 selectOne.setConfigValue(tenantConfig.getConfigValue());
                 tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
             }
+        }
+    }
+
+    private void validateTenant(TenantVO tenantVO) {
+        if (StringUtils.isEmpty(tenantVO.getTenantName())) {
+            throw new CommonException("error.organization.name.empty");
+        }
+        if (!(tenantVO.getTenantName().length() >= 1 && tenantVO.getTenantName().length() <= 32)) {
+            throw new CommonException("error.organization.name.size");
+        }
+        if (Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())){
+            throw new CommonException("error.organization.name.illegal");
         }
     }
 

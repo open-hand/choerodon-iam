@@ -156,7 +156,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         if (!(tenantVO.getTenantName().length() >= 1 && tenantVO.getTenantName().length() <= 32)) {
             throw new CommonException("error.organization.name.size");
         }
-        if (Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())){
+        if (!Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())){
             throw new CommonException("error.organization.name.illegal");
         }
     }

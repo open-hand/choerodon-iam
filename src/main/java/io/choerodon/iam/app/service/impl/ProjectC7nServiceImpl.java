@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -185,6 +186,31 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             projectEventMsg.setOrganizationCode(tenant.getTenantNum());
             projectEventMsg.setOrganizationName(tenant.getTenantName());
         }
+
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectDTO.getId());
+        List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
+        List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
+        List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
+        List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
+        deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+
+        //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
+        Set<String> beforeCode = new HashSet<>();
+        if (!org.springframework.util.StringUtils.isEmpty(newProject.getBeforeCategory())) {
+            beforeCode = Arrays.asList(newProject.getBeforeCategory().split(BaseConstants.Symbol.COMMA)).stream().collect(Collectors.toSet());
+        }
+        if (!org.apache.commons.collections.CollectionUtils.isEmpty(addProjectCategoryIds)) {
+            List<ProjectCategoryDTO> projectCategoryDTOS = projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(addProjectCategoryIds, ","));
+            if (!org.springframework.util.CollectionUtils.isEmpty(projectCategoryDTOS)) {
+                projectEventMsg.setProjectCategoryVOS(ConvertUtils.convertList(projectCategoryDTOS, ProjectCategoryVO.class));
+                Set<String> addCode = projectCategoryDTOS.stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toSet());
+                beforeCode.addAll(addCode);
+            }
+        }
+
+        projectDTO.setBeforeCategory(beforeCode.stream().collect(Collectors.joining(",")));
+
         projectEventMsg.setProjectId(newProject.getId());
         projectEventMsg.setProjectCode(newProject.getCode());
         projectEventMsg.setProjectName(projectDTO.getName());

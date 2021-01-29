@@ -47,12 +47,7 @@ public enum RoleLabelEnum {
     /**
      * 组织层 管理员标签
      */
-    TENANT_ADMIN("TENANT_ADMIN"),
-
-    /**
-     * 平台层角色标签
-     */
-    SITE_MGR("SITE_MGR");
+    TENANT_ADMIN("TENANT_ADMIN");
 
     private final String value;
 

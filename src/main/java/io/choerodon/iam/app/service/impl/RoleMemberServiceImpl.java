@@ -520,9 +520,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 messageSendService.sendSiteAddUserMsg(user, roleDTO.getName());
             }
         }
+        User user = userC7nService.queryInfo(fromUserId);
+        params.put("loginName", user.getLoginName());
+        params.put("userName", user.getRealName());
         if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
             Tenant tenant = tenantMapper.selectTenantDetails(sourceId);
-            List<WebHookUser> webHookUsers = new ArrayList<>();
             params.put("organizationName", tenant.getTenantName());
             params.put("roleName", roleDTO.getName());
             params.put("organizationId", String.valueOf(tenant.getTenantId()));
@@ -709,6 +711,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
         // 要删除的角色
         Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
+        Long operatorId = DetailsHelper.getUserDetails().getUserId();
 
         List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
             MemberRole memberRole = new MemberRole();
@@ -773,13 +776,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             Role role = roleMapper.selectByPrimaryKey(roleId);
             List<User> userList = new ArrayList<>();
             userList.add(user);
-            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList);
+            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList, operatorId);
         });
     }
 
     @Override
     @Transactional
-    public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds) {
+    public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds, Long operatorId) {
         Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
         User user = userMapper.selectByPrimaryKey(userId);
 
@@ -823,7 +826,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             Role role = roleMapper.selectByPrimaryKey(roleId);
             List<User> userList = new ArrayList<>();
             userList.add(user);
-            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList);
+            messageSendService.sendAddMemberMsg(tenant, role.getName(), userList, operatorId);
         });
     }
 

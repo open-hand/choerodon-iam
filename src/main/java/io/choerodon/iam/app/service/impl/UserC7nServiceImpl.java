@@ -1045,7 +1045,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 builder -> {
                 });
 
-        messageSendService.sendAddMemberMsg(tenant, "组织管理员", notifyUserList);
+        messageSendService.sendAddMemberMsg(tenant, "组织管理员", notifyUserList, DetailsHelper.getUserDetails().getUserId());
     }
 
     @Override
@@ -1157,9 +1157,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         });
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.ORGANIZATION, organizationId);
-
+        Long operatorId = DetailsHelper.getUserDetails().getUserId();
         // 发送消息
-        roleUsersMap.forEach((k, v) -> messageSendService.sendAddMemberMsg(tenant, roleNameMap.get(k), v));
+        roleUsersMap.forEach((k, v) -> messageSendService.sendAddMemberMsg(tenant, roleNameMap.get(k), v, operatorId));
 
     }
 

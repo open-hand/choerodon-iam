@@ -9,6 +9,7 @@ import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.hzero.iam.api.dto.RoleDTO;
 
 import java.util.List;
@@ -105,7 +106,7 @@ public interface ProjectPermissionService {
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectPermissionDTO> projectUsers);
 
-    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds);
+    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId);
 
     void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
 
@@ -122,6 +123,7 @@ public interface ProjectPermissionService {
 
     /**
      * 校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户
+     *
      * @param projectId
      * @return
      */

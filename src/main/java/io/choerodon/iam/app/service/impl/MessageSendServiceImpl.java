@@ -114,7 +114,7 @@ public class MessageSendServiceImpl implements MessageSendService {
 
     @Override
     @Async
-    public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList,Long operatorId) {
+    public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList, Long operatorId) {
         try {
             // 构建消息对象
             MessageSender messageSender = new MessageSender();
@@ -267,6 +267,8 @@ public class MessageSendServiceImpl implements MessageSendService {
             argsMap.put("projectName", projectDTO.getName());
             argsMap.put("loginName", user.getLoginName());
             argsMap.put("userName", user.getRealName());
+            argsMap.put("projectId", String.valueOf(projectDTO.getId()));
+            argsMap.put("enabled", String.valueOf(enabled));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

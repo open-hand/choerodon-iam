@@ -9,6 +9,7 @@ import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.saas.domain.service.TenantObserver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
@@ -19,6 +20,7 @@ import io.choerodon.iam.infra.mapper.RoleC7nMapper;
  * @author wanghao
  * @since 2020/12/28 17:37
  */
+@Component
 public class C7nTenantRoleObserver implements TenantObserver<List<Role>> {
 
     @Autowired

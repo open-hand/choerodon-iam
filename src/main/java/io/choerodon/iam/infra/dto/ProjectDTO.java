@@ -106,6 +106,9 @@ public class ProjectDTO extends AuditDomain {
 
     private Date creationDate;
 
+    @ApiModelProperty("项目描述")
+    private String description;
+
     @Transient
     @ApiModelProperty("敏捷项目问题前缀")
     private String agileProjectCode;
@@ -141,7 +144,13 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("项目的状态")
     private String projectStatus;
 
-//    @ApiModelProperty("项目")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getBeforeCategory() {
         return beforeCategory;

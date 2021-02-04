@@ -20,6 +20,19 @@
             <result property="organizationId" column="project_organization_id"/>
             <result property="category" column="project_category"/>
         </collection>
+    </resultMap>
+
+    <resultMap id="projectDTOWithCategory" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO">
+            <id property="id" column="project_id"/>
+            <result property="name" column="project_name"/>
+            <result property="code" column="project_code"/>
+            <result property="enabled" column="project_enabled"/>
+            <result property="organizationId" column="project_organization_id"/>
+            <result property="category" column="project_category"/>
+        </collection>
         <collection property="categories" ofType="io.choerodon.iam.infra.dto.ProjectCategoryDTO"
                     autoMapping="true" notNullColumn="category_id">
             <id property="id" column="category_id"/>
@@ -175,7 +188,7 @@
         SELECT is_enabled FROM fd_project WHERE id = #{sourceId}
     </select>
 
-    <select id="selectByProjectIds" resultMap="projectDTO">
+    <select id="selectByProjectIds" resultMap="projectDTOWithCategory">
         select fp.*,
         fpc.id as category_id,
         fpc.code as category_code,

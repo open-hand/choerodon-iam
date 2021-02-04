@@ -415,5 +415,12 @@ public interface UserC7nMapper {
      * @return 用户id
      */
     Set<Long> listAllUserIds();
+
+    /**
+     * attribute15 作为存放拼音字段
+     * @param userId
+     * @param pinyin
+     */
+    void updatePinyinById(@Param("userId") Long userId, @Param("pinyin") String pinyin);
 }
 

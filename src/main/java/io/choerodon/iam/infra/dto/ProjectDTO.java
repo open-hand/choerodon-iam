@@ -141,6 +141,8 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("项目的状态")
     private String projectStatus;
 
+//    @ApiModelProperty("项目")
+
     public String getBeforeCategory() {
         return beforeCategory;
     }

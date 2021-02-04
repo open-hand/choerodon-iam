@@ -78,4 +78,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
         }
     }
 
+    changeSet(author: 'scp', id: '2021-02-04-fd-project-add-description') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'DESCRIPTION', type: 'VARCHAR(120)', remarks: '项目描述',afterColumn: 'BEFORE_CATEGORY')
+        }
+    }
 }

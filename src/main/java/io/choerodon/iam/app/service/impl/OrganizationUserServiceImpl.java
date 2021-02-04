@@ -155,7 +155,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
                                                                       String roleName, Boolean enabled, Boolean locked, String params) {
-        // todo 列表排序？？？
         Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
         Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
         List<UserDTO> userList = userDTOSPage.getContent();

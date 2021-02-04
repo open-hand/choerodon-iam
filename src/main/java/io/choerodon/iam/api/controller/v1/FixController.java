@@ -26,4 +26,12 @@ public class FixController {
         return Results.success();
     }
 
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "创建ldap自动同步")
+    @GetMapping("/pinyin")
+    public ResponseEntity<Void> fixRealNameToPinyin() {
+        fixService.fixRealNameToPinyin();
+        return Results.success();
+    }
+
 }

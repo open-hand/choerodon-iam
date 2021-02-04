@@ -2,6 +2,12 @@ package io.choerodon.iam.infra.utils;
 
 import java.lang.reflect.Field;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+
 import io.choerodon.core.exception.CommonException;
 
 /**
@@ -67,6 +73,31 @@ public class StringUtil {
             str = str.replaceAll(String.valueOf("\""), "\\\\\"");
         }
         return str;
+    }
+
+    /**
+     * 汉字转为拼音
+     * @param chinese
+     * @return
+     */
+    public static String toPinyin(String chinese){
+        StringBuilder pinyinStr = new StringBuilder();
+        char[] newChar = chinese.toCharArray();
+        HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
+        defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+        defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+        for (char c : newChar) {
+            if (c > 128) {
+                try {
+                    pinyinStr.append(PinyinHelper.toHanyuPinyinStringArray(c, defaultFormat)[0]);
+                } catch (BadHanyuPinyinOutputFormatCombination e) {
+                    throw new CommonException("error.str.to.pinyin");
+                }
+            } else {
+                pinyinStr.append(c);
+            }
+        }
+        return pinyinStr.toString();
     }
 
 }

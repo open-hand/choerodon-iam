@@ -106,6 +106,7 @@ public class ProjectDTO extends AuditDomain {
 
     private Date creationDate;
 
+    @Size(max = 100, message = "error.project.description.size")
     @ApiModelProperty("项目描述")
     private String description;
 

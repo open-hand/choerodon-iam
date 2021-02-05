@@ -460,7 +460,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         String[] skipSheetNames = {"readme"};
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("登录名*", "loginName");
-        propertyMap.put("角色标签*", "roleCode");
+        propertyMap.put("角色编码*", "roleCode");
         excelReadConfig.setSkipSheetNames(skipSheetNames);
         excelReadConfig.setPropertyMap(propertyMap);
         return excelReadConfig;

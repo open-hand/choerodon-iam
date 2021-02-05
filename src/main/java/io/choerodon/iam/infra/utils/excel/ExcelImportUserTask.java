@@ -594,18 +594,18 @@ public class ExcelImportUserTask {
     private boolean validateUsers(UserDTO user, List<ErrorUserVO> errorUsers, List<UserDTO> insertUsers, Long orgId) {
         String realName = user.getRealName();
         String email = user.getEmail();
-        String roleLabels = user.getRoleLabels();
+        String roleCodes = user.getRoleCodes();
         String phone = user.getPhone();
         String password = user.getPassword();
         trimUserField(user);
         boolean ok = false;
-        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleLabels)) {
+        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleCodes)) {
             errorUsers.add(getErrorUserDTO(user, "用户名为空、邮箱为空或角色标签为空"));
         } else if (realName.length() > 32) {
             errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
-        } else if (validateRoles(user, roleLabels, orgId)) {
+        } else if (validateRoles(user, roleCodes, orgId)) {
             errorUsers.add(getErrorUserDTO(user, "角色不存在、未启用或层级不合法"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
@@ -630,15 +630,15 @@ public class ExcelImportUserTask {
         return ok;
     }
 
-    private boolean validateRoles(UserDTO user, String roleLabels, Long orgId) {
-        String[] roleLabelList = roleLabels.split(",");
+    private boolean validateRoles(UserDTO user, String roleCodes, Long orgId) {
+        String[] roleCodeList = roleCodes.split(",");
         boolean rolesError = false;
         user.setRoles(new ArrayList<>());
-        for (String roleLabel : roleLabelList) {
+        for (String roleCode : roleCodeList) {
             try {
-                List<Role> roles = roleAssertHelper.roleExistedWithLabel(orgId, roleLabel);
-                roles.forEach(role -> RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false));
-                user.getRoles().addAll(roles);
+                Role role = roleAssertHelper.roleExistedWithCode(orgId, roleCode);
+                RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false);
+                user.getRoles().add(role);
             } catch (CommonException e) {
                 user.setRoles(null);
                 rolesError = true;

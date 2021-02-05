@@ -7,6 +7,8 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.choerodon.core.exception.CommonException;
 
@@ -16,6 +18,7 @@ import io.choerodon.core.exception.CommonException;
  * @author inghuang123@gmail.com
  */
 public class StringUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringUtil.class);
 
     private StringUtil() {
 
@@ -80,7 +83,7 @@ public class StringUtil {
      * @param chinese
      * @return
      */
-    public static String toPinyin(String chinese){
+    public static String toPinyin(String chinese) {
         StringBuilder pinyinStr = new StringBuilder();
         char[] newChar = chinese.toCharArray();
         HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
@@ -90,8 +93,8 @@ public class StringUtil {
             if (c > 128) {
                 try {
                     pinyinStr.append(PinyinHelper.toHanyuPinyinStringArray(c, defaultFormat)[0]);
-                } catch (BadHanyuPinyinOutputFormatCombination e) {
-                    throw new CommonException("error.str.to.pinyin");
+                } catch (Exception e) {
+                    LOGGER.error("error.str.to.pinyin:{}", c);
                 }
             } else {
                 pinyinStr.append(c);

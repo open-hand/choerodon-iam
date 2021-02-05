@@ -89,7 +89,7 @@ public class ExcelServiceImpl implements ExcelService {
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("用户名*", "realName");
         propertyMap.put("邮箱*", "email");
-        propertyMap.put("角色标签*", "roleLabels");
+        propertyMap.put("角色编码*", "roleCodes");
         propertyMap.put("密码", "password");
         propertyMap.put("手机号", "phone");
         excelReadConfig.setSkipSheetNames(skipSheetNames);

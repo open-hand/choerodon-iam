@@ -45,4 +45,14 @@
             #{categoryId}
         </foreach>
     </delete>
+
+    <select id="listProjectCategoryById" resultType="java.lang.String">
+        SELECT
+            fpc.`CODE`
+        FROM
+            fd_project_map_category fpmc
+                JOIN fd_project_category fpc on fpc.id=fpmc.CATEGORY_ID
+        WHERE
+            fpmc.PROJECT_ID = #{projectId}
+    </select>
 </mapper>

@@ -280,8 +280,9 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList) {
+        Long operatorId = DetailsHelper.getUserDetails().getUserId();
         Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
-        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet())));
+        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()), operatorId));
 
     }
 
@@ -316,7 +317,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
-    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds) {
+    public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId) {
         Assert.notNull(projectId, "error.projectId.is.null");
         Assert.notNull(userId, "error.userId.is.null");
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
@@ -341,7 +342,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             // 发送通知
             List<User> userList = new ArrayList<>();
             userList.add(user);
-            messageSendService.sendProjectAddUserMsg(projectDTO, role.getName(), userList);
+            messageSendService.sendProjectAddUserMsg(projectDTO, role.getName(), userList, operatorId);
         });
 
 

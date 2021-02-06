@@ -5,10 +5,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_ENABLE;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.alibaba.fastjson.JSON;
 import java.util.stream.Collectors;
@@ -117,7 +114,7 @@ public class MessageSendServiceImpl implements MessageSendService {
 
     @Override
     @Async
-    public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList) {
+    public void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList, Long operatorId) {
         try {
             // 构建消息对象
             MessageSender messageSender = new MessageSender();
@@ -148,7 +145,10 @@ public class MessageSendServiceImpl implements MessageSendService {
             });
 
             // 消息参数 消息模板中${projectName}
+            User user = userC7nService.queryInfo(operatorId);
             Map<String, String> argsMap = new HashMap<>();
+            argsMap.put("loginName", user.getLoginName());
+            argsMap.put("userName", user.getRealName());
             argsMap.put("projectName", projectDTO.getName());
             argsMap.put("roleName", roleName);
             argsMap.put("organizationId", projectDTO.getOrganizationId().toString());
@@ -172,7 +172,7 @@ public class MessageSendServiceImpl implements MessageSendService {
 
     @Override
     @Async
-    public void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList) {
+    public void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList, Long operatorId) {
         try {
             // 构建消息对象
             MessageSender messageSender = new MessageSender();
@@ -202,7 +202,7 @@ public class MessageSendServiceImpl implements MessageSendService {
                 receiverList.add(receiver);
             });
             messageSender.setReceiverAddressList(receiverList);
-
+            User user = userC7nService.queryInfo(operatorId);
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
             argsMap.put("organizationName", tenant.getTenantName());
@@ -210,6 +210,8 @@ public class MessageSendServiceImpl implements MessageSendService {
             argsMap.put("organizationId", tenant.getTenantId().toString());
             argsMap.put("addCount", String.valueOf(userList.size()));
             argsMap.put("userList", JSON.toJSONString(webHookUserList));
+            argsMap.put("loginName", user.getLoginName());
+            argsMap.put("userName", user.getRealName());
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
@@ -242,7 +244,6 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageSender.setTenantId(0L);
             // 接收者为所有的项目成员
             List<Receiver> receiverList = new ArrayList<>();
-            List<WebHookUser> webHookUserList = new ArrayList<>();
             List<Long> userIds = projectMapper.listUserIds(projectDTO.getId());
             if (!CollectionUtils.isEmpty(userIds)) {
                 Long[] ids = userIds.toArray(new Long[]{});
@@ -261,8 +262,13 @@ public class MessageSendServiceImpl implements MessageSendService {
             }
             messageSender.setReceiverAddressList(receiverList);
             // 消息参数 消息模板中${projectName}
+            User user = userC7nService.queryInfo(userId);
             Map<String, String> argsMap = new HashMap<>();
             argsMap.put("projectName", projectDTO.getName());
+            argsMap.put("loginName", user.getLoginName());
+            argsMap.put("userName", user.getRealName());
+            argsMap.put("projectId", String.valueOf(projectDTO.getId()));
+            argsMap.put("enabled", String.valueOf(enabled));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
@@ -313,12 +319,15 @@ public class MessageSendServiceImpl implements MessageSendService {
                 });
                 messageSender.setReceiverAddressList(receiverList);
             }
+            User user = userC7nService.queryInfo(userId);
             Map<String, String> argsMap = new HashMap<>();
             argsMap.put("organizationName", tenant.getTenantName());
             argsMap.put("organizationId", String.valueOf(tenant.getTenantId()));
             argsMap.put("code", tenant.getTenantNum());
             argsMap.put("name", tenant.getTenantNum());
             argsMap.put("enabled", ORG_ENABLE.equals(consumerType) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+            argsMap.put("loginName", user.getLoginName());
+            argsMap.put("userName", user.getRealName());
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

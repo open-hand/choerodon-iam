@@ -106,7 +106,7 @@ public interface ProjectPermissionService {
      */
     void assignProjectUserRolesInternal(Long projectId, List<ProjectPermissionDTO> projectUsers);
 
-    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds);
+    void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId);
 
     void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
 

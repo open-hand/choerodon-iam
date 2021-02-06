@@ -33,7 +33,7 @@ public interface MessageSendService {
      * @param roleName
      * @param userList
      */
-    void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList);
+    void sendProjectAddUserMsg(ProjectDTO projectDTO, String roleName, List<User> userList, Long operatorId);
 
 
     /**
@@ -43,7 +43,7 @@ public interface MessageSendService {
      * @param userList
      * @param roleName
      */
-    void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList);
+    void sendAddMemberMsg(Tenant tenant, String roleName, List<User> userList, Long operatorId);
 
     /**
      * 启用或通用项目时发送通知
@@ -57,6 +57,7 @@ public interface MessageSendService {
 
     /**
      * 启用或停用组织
+     *
      * @param tenant
      * @param consumerType
      * @param userId
@@ -65,6 +66,7 @@ public interface MessageSendService {
 
     /**
      * 平台添加root用户
+     *
      * @param rootBusinessTypeCode
      * @param userId
      */
@@ -72,14 +74,16 @@ public interface MessageSendService {
 
     /**
      * 组织层添加用户
+     *
      * @param tenant
      * @param params
      * @param businessTypeCode
      */
-    void sendAddMemberMsg(Tenant tenant, Map<String, String> params, String businessTypeCode,Long userId);
+    void sendAddMemberMsg(Tenant tenant, Map<String, String> params, String businessTypeCode, Long userId);
 
     /**
      * 项目层添加用户
+     *
      * @param projectDTO
      * @param params
      * @param projectAddUser

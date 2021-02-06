@@ -295,7 +295,7 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds);
+                    projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());
@@ -311,7 +311,7 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), userId, roleIds);
+                    roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());

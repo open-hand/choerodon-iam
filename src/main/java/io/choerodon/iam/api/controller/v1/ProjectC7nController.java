@@ -194,4 +194,11 @@ public class ProjectC7nController extends BaseController {
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping(value = "/{project_id}/list_project_category")
+    @ApiOperation(value = "根据项目Id查询所有已经选择的项目类型")
+    public ResponseEntity<List<String>> listProjectCategoryById(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(projectService.listProjectCategoryById(projectId));
+    }
+
 }

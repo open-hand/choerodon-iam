@@ -123,4 +123,6 @@ public interface ProjectC7nService {
     ProjectSagaVO queryProjectSaga(Long organizationId, Long projectId, String operateType);
 
     void deleteProject(Long projectId);
+
+    List<String> listProjectCategoryById(Long projectId);
 }

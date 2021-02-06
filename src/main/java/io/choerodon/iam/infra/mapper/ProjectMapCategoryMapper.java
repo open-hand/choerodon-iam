@@ -31,4 +31,6 @@ public interface ProjectMapCategoryMapper extends BaseMapper<ProjectMapCategoryD
 
     int batchDelete(@Param("projectId") Long projectId, @Param("ids") List<Long> ids);
 
+    List<String> listProjectCategoryById(@Param("projectId") Long projectId);
+
 }

@@ -12,6 +12,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
@@ -31,6 +32,8 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ext.AlreadyExistedException;
+import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
@@ -44,6 +47,7 @@ import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -264,6 +268,22 @@ public class ExcelImportUserTask {
                 errorMemberRoles.add(emr);
                 return;
             }
+            List<String> roleLabels = roleC7nMapper.listRoleLabels(role.getId()).stream().map(Label::getName).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(roleLabels)) {
+                emr.setCause("导入角色不存在角色标签");
+                errorMemberRoles.add(emr);
+                return;
+            }
+            if (ResourceLevel.PROJECT.value().equals(uploadHistory.getSourceType()) && !roleLabels.contains(RoleLabelEnum.PROJECT_ROLE.value())) {
+                emr.setCause("导入角色不属于项目层角色");
+                errorMemberRoles.add(emr);
+                return;
+            }
+            if (ResourceLevel.ORGANIZATION.value().equals(uploadHistory.getSourceType()) && !roleLabels.contains(RoleLabelEnum.TENANT_ROLE.value())) {
+                emr.setCause("导入角色不属于组织层角色");
+                errorMemberRoles.add(emr);
+                return;
+            }
             Long roleId = role.getId();
             //检查memberRole是否存在 导入组织成员重复，不在处理
             MemberRole memberRole;
@@ -325,9 +345,9 @@ public class ExcelImportUserTask {
     }
 
 
-
     /**
      * 项目下导入用户 发送消息
+     *
      * @param projectId
      * @param count
      */
@@ -342,13 +362,13 @@ public class ExcelImportUserTask {
         map.put("objectKind", SendSettingBaseEnum.PROJECT_ADD_USER.value());
         map.put("projectId", projectId);
         map.put("addCount", count);
-        ProjectDTO projectDTO=projectAssertHelper.projectNotExisted(projectId);
+        ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
         map.put("organizationId", projectDTO.getOrganizationId());
         messageSender.setObjectArgs(map);
 
-        Map<String,Object> objectMap=new HashMap<>();
-        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(),projectId);
-        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(),projectDTO.getOrganizationId());
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectId);
+        objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), projectDTO.getOrganizationId());
         messageSender.setAdditionalInformation(objectMap);
         messageClient.async().sendMessage(messageSender);
     }
@@ -385,14 +405,24 @@ public class ExcelImportUserTask {
     }
 
     private Role getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code, Long tenantId) {
-        List<Role> roles = roleC7nMapper.getByTenantIdAndLabel(tenantId, code);
-        if (org.springframework.util.CollectionUtils.isEmpty(roles)) {
+        Role dto = new Role();
+        dto.setCode(code);
+        dto.setTenantId(tenantId);
+        List<Role> roleList = roleRepository.select(dto);
+        if (CollectionUtils.isEmpty(roleList)) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
             return null;
         }
-        return roles.get(0);
+        if (roleList.size() == 1) {
+            return roleList.get(0);
+        } else {
+            emr.setCause("角色编码组织下不唯一");
+            errorMemberRoles.add(emr);
+            return null;
+        }
     }
+
 
     private User getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
         UserDTO user = new UserDTO();
@@ -519,7 +549,7 @@ public class ExcelImportUserTask {
         Map<String, String> propertyMap = new LinkedHashMap<>();
         propertyMap.put("realName", "用户名*");
         propertyMap.put("email", "邮箱*");
-        propertyMap.put("roleLabels", "角色标签*");
+        propertyMap.put("roleCodes", "角色编码*");
         propertyMap.put("password", "密码");
         propertyMap.put("phone", "手机号");
         propertyMap.put("cause", "原因");
@@ -594,18 +624,18 @@ public class ExcelImportUserTask {
     private boolean validateUsers(UserDTO user, List<ErrorUserVO> errorUsers, List<UserDTO> insertUsers, Long orgId) {
         String realName = user.getRealName();
         String email = user.getEmail();
-        String roleLabels = user.getRoleLabels();
+        String roleCodes = user.getRoleCodes();
         String phone = user.getPhone();
         String password = user.getPassword();
         trimUserField(user);
         boolean ok = false;
-        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleLabels)) {
+        if (StringUtils.isEmpty(realName) || StringUtils.isEmpty(email) || StringUtils.isEmpty(roleCodes)) {
             errorUsers.add(getErrorUserDTO(user, "用户名为空、邮箱为空或角色标签为空"));
         } else if (realName.length() > 32) {
             errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
-        } else if (validateRoles(user, roleLabels, orgId)) {
+        } else if (validateRoles(user, roleCodes, orgId)) {
             errorUsers.add(getErrorUserDTO(user, "角色不存在、未启用或层级不合法"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
@@ -630,15 +660,15 @@ public class ExcelImportUserTask {
         return ok;
     }
 
-    private boolean validateRoles(UserDTO user, String roleLabels, Long orgId) {
-        String[] roleLabelList = roleLabels.split(",");
+    private boolean validateRoles(UserDTO user, String roleCodes, Long orgId) {
+        String[] roleCodeList = roleCodes.split(",");
         boolean rolesError = false;
         user.setRoles(new ArrayList<>());
-        for (String roleLabel : roleLabelList) {
+        for (String roleCode : roleCodeList) {
             try {
-                List<Role> roles = roleAssertHelper.roleExistedWithLabel(orgId, roleLabel);
-                roles.forEach(role -> RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false));
-                user.getRoles().addAll(roles);
+                Role role = roleAssertHelper.roleExistedWithCode(orgId, roleCode);
+                RoleValidator.validateRole(ResourceLevel.ORGANIZATION.value(), orgId, role, false);
+                user.getRoles().add(role);
             } catch (CommonException e) {
                 user.setRoles(null);
                 rolesError = true;

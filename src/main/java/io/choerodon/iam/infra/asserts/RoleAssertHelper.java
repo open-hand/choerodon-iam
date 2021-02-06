@@ -81,4 +81,20 @@ public class RoleAssertHelper extends AssertHelper {
         }
         return results;
     }
+
+    public Role roleExistedWithCode(Long tenantId, String code) {
+        Role dto = new Role();
+        dto.setCode(code);
+        dto.setTenantId(tenantId);
+        List<Role> roleList = roleMapper.select(dto);
+        if (CollectionUtils.isEmpty(roleList)) {
+            throw new NotExistedException("error.role.code.not.exist");
+        }
+        if (roleList.size() == 1) {
+            return roleList.get(0);
+        } else {
+            throw new AlreadyExistedException("error.role.code.more.than.one");
+        }
+    }
+
 }

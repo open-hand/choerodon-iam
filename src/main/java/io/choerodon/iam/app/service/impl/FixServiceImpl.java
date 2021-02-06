@@ -6,8 +6,11 @@ import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.StringUtil;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,10 @@ public class FixServiceImpl implements FixService {
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     @Autowired
     private ProjectCategoryMapper projectCategoryMapper;
+    @Autowired
+    private UserC7nMapper userC7nMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     @Async
@@ -75,5 +82,12 @@ public class FixServiceImpl implements FixService {
             }
         });
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>> end fix project category <<<<<<<<<<<<<<<<<<<<<<");
+    }
+
+    @Override
+    public void fixRealNameToPinyin() {
+        userMapper.selectAll().forEach(t -> {
+            userC7nMapper.updatePinyinById(t.getId(), StringUtil.toPinyin(t.getRealName()));
+        });
     }
 }

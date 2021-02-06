@@ -590,4 +590,50 @@
         WHERE
             fpp.PROJECT_ID = #{projectId}
     </select>
+
+
+    <select id="listCategoryByProjectId" resultType="java.lang.String">
+        SELECT
+            fdc.`CODE`
+        FROM
+            fd_project_map_category fpmc
+                LEFT JOIN fd_project_category fdc ON fdc.id = fpmc.CATEGORY_ID
+        WHERE
+            fpmc.PROJECT_ID = #{projectId}
+    </select>
+    <select id="selectWithCategory" resultMap="projectWithCategoryMap">
+        select fp.*,
+        fpc.id as category_id,
+        fpc.name as category_name,
+        fpc.code as category_code,
+        fpc.object_version_number as category_version_number,
+        fpc.organization_id as category_org_id
+        FROM
+        fd_project fp
+        JOIN fd_project_map_category fpmc ON fp.ID = fpmc.PROJECT_ID
+        JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        WHERE
+        fp.ORGANIZATION_ID = #{organizationId}
+        <if test="projectSearchVO != null">
+
+            <if test="projectSearchVO.categoryIds !=null and projectSearchVO.categoryIds.size>0" >
+                AND fpc.id IN
+                <foreach collection="projectSearchVO.categoryIds" item="id" open="(" separator="," close=")" >
+                    #{id}
+                </foreach>
+            </if>
+            <if test="projectSearchVO.categoryCodes !=null and projectSearchVO.categoryCodes.size>0" >
+                AND fpc.code IN
+                <foreach collection="projectSearchVO.categoryCodes" item="code" open="(" separator="," close=")" >
+                    #{code}
+                </foreach>
+            </if>
+
+            <if test="projectSearchVO.enable !=null" >
+                AND fp.is_enabled = #{projectSearchVO.enable}
+            </if>
+        </if>
+
+
+    </select>
 </mapper>

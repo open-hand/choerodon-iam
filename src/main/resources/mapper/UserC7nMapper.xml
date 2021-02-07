@@ -993,11 +993,12 @@
                     iu.real_name like concat('%', concat(#{userName}, '%'))
                     or iu.login_name like concat('%', concat(#{userName}, '%'))
                     or iu.email like concat('%', concat(#{userName}, '%'))
+                    or iu.attribute15 LIKE concat(concat('%',#{userName}),'%')
                     )
                 </if>
             </when>
             <otherwise>
-                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName})
+                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName})
             </otherwise>
         </choose>
         <if test="sourceType == 'organization' or sourceType == 'project'">
@@ -1006,13 +1007,14 @@
             from iam_user iu2
             where iu2.is_enabled = 1
             <if test="exactMatchFlag == true">
-                and (iu2.real_name = #{userName} or iu2.login_name = #{userName} or iu2.email = #{userName})
+                and (iu2.real_name = #{userName} or iu2.login_name = #{userName} or iu2.email = #{userName} or iu2.attribute15= #{userName})
             </if>
             <if test="exactMatchFlag == null or exactMatchFlag == false">
                 and (
                 iu2.real_name like concat('%', concat(#{userName}, '%'))
                 or iu2.login_name like concat('%', concat(#{userName}, '%'))
                 or iu2.email like concat('%', concat(#{userName}, '%'))
+                or iu2.attribute15 LIKE concat(concat('%',#{userName}),'%')
                 )
             </if>
 

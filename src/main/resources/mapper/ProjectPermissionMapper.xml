@@ -68,7 +68,8 @@
             <if test="params != null">
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
-                iut.real_name like concat(concat('%',#{params}),'%')
+                iut.real_name like concat(concat('%',#{params}),'%') OR
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -118,7 +119,8 @@
             <if test="params != null">
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
-                iut.real_name like concat(concat('%',#{params}),'%')
+                iut.real_name like concat(concat('%',#{params}),'%') OR
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -246,9 +248,11 @@
         WHERE il.name = #{roleLabel}
           and fpu.project_id = #{projectId}
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
-            #{param}),'%') OR iu.email LIKE concat(concat('%',
-            #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
+                 iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                 iu.email LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                )
         </if>
     </select>
 
@@ -266,8 +270,10 @@
         AND (il.name = 'PROJECT_ADMIN' OR il.name = 'GITLAB_OWNER' OR il.name = 'GITLAB_DEVELOPER')
         AND il.type='ROLE'
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
-            #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
+                 iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                )
         </if>
         GROUP BY iu.id
     </select>
@@ -294,8 +300,10 @@
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         WHERE fpu.PROJECT_ID = #{projectId}
         <if test="param != null">
-            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR iu.real_name LIKE concat(concat('%',
-            #{param}),'%'))
+            AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
+                 iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                )
         </if>
         GROUP BY iu.id
         limit 20
@@ -357,7 +365,8 @@
             <if test="param != null">
                 AND (
                 iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iu.real_name LIKE concat(concat('%',#{param}),'%')
+                iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.attribute15 LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
         </where>
@@ -420,7 +429,8 @@
                     <if test="param != null">
                         AND (
                         iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-                        iu.real_name LIKE concat(concat('%',#{param}),'%')
+                        iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                        iu.attribute15 LIKE concat(concat('%',#{param}),'%')
                         )
                     </if>
             ) t
@@ -452,7 +462,8 @@
             <if test="param != null">
                 AND (
                 iu.login_name LIKE concat(concat('%',#{param}),'%') OR
-                iu.real_name LIKE concat(concat('%',#{param}),'%')
+                iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.attribute15 LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
         </where>

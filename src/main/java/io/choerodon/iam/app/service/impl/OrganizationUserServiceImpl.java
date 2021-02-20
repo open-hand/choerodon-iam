@@ -1,7 +1,37 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.app.service.RoleService;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.repository.PasswordPolicyRepository;
+import org.hzero.iam.domain.repository.TenantRepository;
+import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.constant.HiamMemberType;
+import org.hzero.iam.saas.app.service.TenantService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -35,37 +65,6 @@ import io.choerodon.iam.infra.utils.ExceptionUtil;
 import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.boot.message.entity.Receiver;
-import org.hzero.boot.oauth.domain.service.UserPasswordService;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.iam.app.service.MemberRoleService;
-import org.hzero.iam.app.service.RoleService;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.domain.repository.PasswordPolicyRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
-import org.hzero.iam.domain.repository.UserRepository;
-import org.hzero.iam.infra.common.utils.UserUtils;
-import org.hzero.iam.infra.constant.HiamMemberType;
-import org.hzero.iam.saas.app.service.TenantService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.User.*;
 
 @Service
 @RefreshScope
@@ -361,11 +360,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userPasswordService.updateUserPassword(userId, newPassword, false);
 
         // 发送重置密码消息
-        sendResetOrganizationUserPassword(organizationId, user);
+        sendResetOrganizationUserPassword(organizationId, user, newPassword);
         return user;
     }
 
-    private void sendResetOrganizationUserPassword(Long organizationId, User user) {
+    private void sendResetOrganizationUserPassword(Long organizationId, User user, String newPassword) {
         try {
             // 构建消息对象
             MessageSender messageSender = new MessageSender();
@@ -376,7 +375,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
-            argsMap.put("defaultPassword", userPasswordService.getTenantDefaultPassword(organizationId));
+            argsMap.put("defaultPassword", newPassword);
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

@@ -64,7 +64,10 @@ import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
+import io.choerodon.iam.infra.utils.ExceptionUtil;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -372,11 +375,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userPasswordService.updateUserPassword(userId, newPassword, false);
 
         // 发送重置密码消息
-        sendResetOrganizationUserPassword(organizationId, user);
+        sendResetOrganizationUserPassword(organizationId, user, newPassword);
         return user;
     }
 
-    private void sendResetOrganizationUserPassword(Long organizationId, User user) {
+    private void sendResetOrganizationUserPassword(Long organizationId, User user, String newPassword) {
         try {
             // 构建消息对象
             MessageSender messageSender = new MessageSender();
@@ -387,7 +390,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
             // 消息参数 消息模板中${projectName}
             Map<String, String> argsMap = new HashMap<>();
-            argsMap.put(PASSWORD_KEY, userPasswordService.getTenantDefaultPassword(organizationId));
+            argsMap.put(PASSWORD_KEY, newPassword);
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

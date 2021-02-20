@@ -412,7 +412,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             receiver.setTargetUserTenantId(organizationId);
             receiverList.add(receiver);
             messageSender.setReceiverAddressList(receiverList);
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info("Send Reset Organization User Password failed. userId : {}, loginName : {}", user.getId(), user.getLoginName());
         }

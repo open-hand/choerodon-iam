@@ -218,7 +218,17 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long projectId, boolean doPage) {
-        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        String param;
+        Set<Long> roleIds = new HashSet<>();
+        if (roleAssignmentSearchDTO != null) {
+            param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
+            roleIds = roleAssignmentSearchDTO.getRoleIds();
+        } else {
+            param = null;
+        }
+        if (roleId == null && roleIds.isEmpty()) {
+            throw new CommonException("error.role.id.is.empty");
+        }
         if (Boolean.TRUE.equals(doPage)) {
             return PageHelper.doPageAndSort(pageRequest, () -> projectPermissionMapper.listProjectUsersByRoleIdAndOptions(projectId, roleId, roleAssignmentSearchDTO, param));
         } else {

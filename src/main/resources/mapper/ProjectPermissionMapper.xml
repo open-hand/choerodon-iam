@@ -447,7 +447,10 @@
         INNER join iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         INNER JOIN iam_user iu ON imr.member_id = iu.id
         <where>
-            imr.ROLE_ID = #{roleId} AND fpu.PROJECT_ID = #{projectId}
+            fpu.PROJECT_ID = #{projectId}
+            <if test="roleId != null">
+                AND imr.ROLE_ID = #{roleId}
+            </if>
             <if test="roleAssignmentSearchDTO != null">
                 <if test="roleAssignmentSearchDTO.loginName != null">
                     AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
@@ -457,6 +460,12 @@
                 </if>
                 <if test="roleAssignmentSearchDTO.enabled != null">
                     AND iu.is_enabled = #{roleAssignmentSearchDTO.enabled}
+                </if>
+                <if test="roleAssignmentSearchDTO.roleIds != null and roleAssignmentSearchDTO.roleIds.size() > 0">
+                    AND imr.role_id IN
+                    <foreach collection="roleAssignmentSearchDTO.roleIds" item="item" separator="," open="(" close=")">
+                        #{item}
+                    </foreach>
                 </if>
             </if>
             <if test="param != null">

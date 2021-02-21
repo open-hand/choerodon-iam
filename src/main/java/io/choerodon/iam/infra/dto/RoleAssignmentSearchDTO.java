@@ -2,6 +2,8 @@ package io.choerodon.iam.infra.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Set;
+
 /**
  * @author superlee
  */
@@ -21,6 +23,16 @@ public class RoleAssignmentSearchDTO {
 
     @ApiModelProperty(value = "参数")
     private String[] param;
+
+    private Set<Long> roleIds;
+
+    public Set<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(Set<Long> roleIds) {
+        this.roleIds = roleIds;
+    }
 
     public String getLoginName() {
         return loginName;

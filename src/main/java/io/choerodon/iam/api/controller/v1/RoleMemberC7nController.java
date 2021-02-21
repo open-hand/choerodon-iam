@@ -103,7 +103,7 @@ public class RoleMemberC7nController extends BaseController {
             @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @Encrypt @RequestParam(name = "role_id") Long roleId,
+            @Encrypt @RequestParam(name = "role_id", required = false) Long roleId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
         return ResponseEntity.ok(projectPermissionService.pagingQueryUsersByRoleIdOnProjectLevel(

@@ -25,7 +25,7 @@ public class SagaProjectController {
 
 
     @GetMapping("/saga/{project_id}")
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("创建或者修改项目之后，根据项目的id查询")
     public ResponseEntity<ProjectSagaVO> queryProjectSaga(@PathVariable(value = "organization_id") Long organizationId,
                                                           @PathVariable(value = "project_id") Long projectId,

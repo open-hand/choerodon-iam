@@ -2,6 +2,7 @@ package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.iam.infra.enums.ProjectStatusEnum;
 
@@ -24,6 +25,7 @@ public class ProjectSagaVO {
     /**
      * 需要重试的失败的实例id
      */
+    @Encrypt
     private List<Long> sagaInstanceIds;
 
     /**

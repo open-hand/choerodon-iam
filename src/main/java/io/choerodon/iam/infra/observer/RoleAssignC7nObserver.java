@@ -26,6 +26,7 @@ import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
@@ -107,7 +108,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 || ObjectUtils.isEmpty(objectMap.get(MemberRoleConstants.MEMBER_TYPE))
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
                 && (memberRoleList.get(0).getMemberType() == null || memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
-                && (StringUtils.isEmpty(memberRoleList.get(0).getSourceType()) || memberRoleList.get(0).getSourceType().contains(ResourceLevel.SITE.value()));
+                && (memberRoleList.get(0).getSourceType().contains(ResourceLevel.SITE.value()));
     }
 
     private Map<Long, Set<String>> getUserRoleLabelsMap(List<MemberRole> memberRoleList) {
@@ -136,8 +137,8 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         }
         Map<Long, Set<String>> userRoleLabelsMap = new HashMap<>();
         for (MemberRole memberRole : memberRoleList) {
-            if (!ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE))) {
-                userRoleLabelsMap.put(memberRole.getMemberId(), castList(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE), String.class));
+            if (!ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_LABEL))) {
+                userRoleLabelsMap.put(memberRole.getMemberId(), castSet(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_LABEL), String.class));
             }
         }
         return userRoleLabelsMap;
@@ -167,10 +168,20 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         try {
             Tenant tenant = tenantMapper.selectByPrimaryKey(sourceId);
             sourceMemberList.forEach(memberRole -> {
-                User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
-                ArrayList<User> list = new ArrayList<>();
-                list.add(user);
-                messageSendService.sendAddMemberMsg(tenant, memberRole.getRoleName(), list, operatorId);
+                if (!ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_ID))) {
+                    ArrayList<Long> oldRoleIds = castList(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_ID), Long.class);
+                    if (!oldRoleIds.contains(memberRole.getRole().getId())) {
+                        User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
+                        ArrayList<User> list = new ArrayList<>();
+                        list.add(user);
+                        messageSendService.sendAddMemberMsg(tenant, memberRole.getRoleName(), list, operatorId);
+                    }
+                } else {
+                    User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
+                    ArrayList<User> list = new ArrayList<>();
+                    list.add(user);
+                    messageSendService.sendAddMemberMsg(tenant, memberRole.getRoleName(), list, operatorId);
+                }
             });
         } catch (Exception e) {
             logger.error("Failed to send message while hzero tenant assign role : ", e);
@@ -179,17 +190,38 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
 
     private void sendSiteAssignMessage(List<MemberRole> memberRoleList) {
         try {
-            User user = userMapper.selectByPrimaryKey(memberRoleList.get(0).getMemberId());
-            messageSendService.sendSiteAddUserMsg(user, memberRoleList.get(0).getRoleName());
+            memberRoleList.forEach(memberRole -> {
+                if (!ObjectUtils.isEmpty(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_ID))) {
+                    List<Long> oldRoleIds = castList(memberRole.getAdditionalParams().get(MemberRoleConstants.MEMBER_OLD_ROLE_ID), Long.class);
+                    if (!oldRoleIds.contains(memberRole.getRole().getId())) {
+                        User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
+                        messageSendService.sendSiteAddUserMsg(user, memberRole.getRole().getName());
+                    }
+                } else {
+                    User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
+                    messageSendService.sendSiteAddUserMsg(user, memberRole.getRole().getName());
+                }
+            });
         } catch (Exception e) {
             logger.error("Failed to send message while hzero site assign role : ", e);
         }
     }
 
-    private <T> Set<T> castList(Object obj, Class<T> clazz) {
+    private <T> Set<T> castSet(Object obj, Class<T> clazz) {
         HashSet<T> result = new HashSet<T>();
         if (obj instanceof HashSet<?>) {
             for (Object o : (HashSet<?>) obj) {
+                result.add(clazz.cast(o));
+            }
+            return result;
+        }
+        return null;
+    }
+
+    private <T> ArrayList<T> castList(Object obj, Class<T> clazz) {
+        ArrayList<T> result = new ArrayList<T>();
+        if (obj instanceof ArrayList<?>) {
+            for (Object o : (ArrayList<?>) obj) {
                 result.add(clazz.cast(o));
             }
             return result;

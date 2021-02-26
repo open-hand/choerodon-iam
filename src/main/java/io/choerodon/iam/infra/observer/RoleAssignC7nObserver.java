@@ -174,13 +174,13 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                         User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
                         ArrayList<User> list = new ArrayList<>();
                         list.add(user);
-                        messageSendService.sendAddMemberMsg(tenant, memberRole.getRoleName(), list, operatorId);
+                        messageSendService.sendAddMemberMsg(tenant, memberRole.getRole().getName(), list, operatorId);
                     }
                 } else {
                     User user = userMapper.selectByPrimaryKey(memberRole.getMemberId());
                     ArrayList<User> list = new ArrayList<>();
                     list.add(user);
-                    messageSendService.sendAddMemberMsg(tenant, memberRole.getRoleName(), list, operatorId);
+                    messageSendService.sendAddMemberMsg(tenant, memberRole.getRole().getName(), list, operatorId);
                 }
             });
         } catch (Exception e) {

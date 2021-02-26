@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.swagger.annotation.Permission;
@@ -21,6 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @Date: Created in 2021/2/26
  * @Modified By:
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_PROD)
 @RestController
 @RequestMapping(value = "/v1/prod")
 public class ProdController {

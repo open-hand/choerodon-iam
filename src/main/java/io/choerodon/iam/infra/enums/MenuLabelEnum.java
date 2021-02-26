@@ -54,9 +54,14 @@ public enum MenuLabelEnum {
     /**
      * 标记所有项目都有的菜单
      */
-    N_GENERAL_PROJECT_MENU("N_GENERAL_PROJECT_MENU")
-
-    ;
+    N_GENERAL_PROJECT_MENU("N_GENERAL_PROJECT_MENU"),
+    N_AGILE_MENU("N_AGILE_MENU"),
+    N_REQUIREMENT_MENU("N_REQUIREMENT_MENU"),
+    N_PROGRAM_PROJECT_MENU("N_PROGRAM_PROJECT_MENU"),
+    N_PROGRAM_MENU("N_PROGRAM_MENU"),
+    N_TEST_MENU("N_TEST_MENU"),
+    N_DEVOPS_MENU("N_DEVOPS_MENU"),
+    N_OPERATIONS_MENU("N_OPERATIONS_MENU");
     private final String value;
 
     MenuLabelEnum(String value) {

@@ -116,10 +116,14 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labels.add(MenuLabelEnum.TENANT_GENERAL.value());
         }
         if (ResourceLevel.PROJECT.value().equals(menuLevel)) {
-            labels.add(MenuLabelEnum.GENERAL_MENU.value());
-            labels.add(MenuLabelEnum.AGILE_MENU.value());
-            labels.add(MenuLabelEnum.PROGRAM_MENU.value());
-            labels.add(MenuLabelEnum.OPERATIONS_MENU.value());
+            labels.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+            labels.add(MenuLabelEnum.N_AGILE_MENU.value());
+            labels.add(MenuLabelEnum.N_REQUIREMENT_MENU.value());
+            labels.add(MenuLabelEnum.N_PROGRAM_PROJECT_MENU.value());
+            labels.add(MenuLabelEnum.N_TEST_MENU.value());
+            labels.add(MenuLabelEnum.N_DEVOPS_MENU.value());
+            labels.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
+            labels.add(MenuLabelEnum.N_PROGRAM_MENU.value());
         }
         SecurityTokenHelper.close();
         Set<String> typeNames = new HashSet<>();

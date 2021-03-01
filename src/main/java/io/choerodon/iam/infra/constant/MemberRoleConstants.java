@@ -8,6 +8,7 @@ package io.choerodon.iam.infra.constant;
 public class MemberRoleConstants {
     public static final String MEMBER_TYPE = "MEMBER_TYPE";
     public static final String MEMBER_TYPE_CHOERODON = "CHOERODON";
-    public static final String MEMBER_OLD_ROLE="MEMBER_OLD_ROLE";
+    public static final String MEMBER_OLD_ROLE_LABEL ="MEMBER_OLD_ROLE_LABEL";
+    public static final String MEMBER_OLD_ROLE_ID="MEMBER_OLD_ROLE_ID";
 
 }

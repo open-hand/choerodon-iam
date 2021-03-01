@@ -19,7 +19,6 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
-import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -48,19 +47,25 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
         }
         if (isHzeroMemberRole(memberRoleList)) {
             Map<Long, List<MemberRole>> listMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
-            Map<String, Object> additionalParams = new HashMap<>();
             for (Long memberId : listMap.keySet()) {
                 for (MemberRole memberRole : listMap.get(memberId)) {
+                    Map<String, Object> additionalParams = new HashMap<>();
                     Role role = roleRepository.selectByPrimaryKey(memberRole.getRoleId());
                     Set<String> previousRoleLabels = roleC7nMapper.listLabelByTenantIdAndUserId(memberId, role.getTenantId());
-                    List<Long> oldTenantRoleIds = memberRoleC7nMapper.listRoleByUserIdAndTenantId(memberId, role.getTenantId()).stream().map(Role::getId).collect(Collectors.toList());
-                    additionalParams.put(MemberRoleConstants.MEMBER_OLD_ROLE, previousRoleLabels);
+                    List<Long> oldRoleIds;
+                    if (role.getLevel().equals(ResourceLevel.ORGANIZATION.value())) {
+                        oldRoleIds = memberRoleC7nMapper.listRoleByUserIdAndTenantId(memberId, role.getTenantId()).stream().map(Role::getId).collect(Collectors.toList());
+                    } else {
+                        oldRoleIds = memberRoleC7nMapper.listRoleByUserIdAndLevel(memberId, ResourceLevel.SITE.value()).stream().map(Role::getId).collect(Collectors.toList());
+                    }
+                    additionalParams.put(MemberRoleConstants.MEMBER_OLD_ROLE_LABEL, previousRoleLabels);
+                    additionalParams.put(MemberRoleConstants.MEMBER_OLD_ROLE_ID, oldRoleIds);
                     if (memberRole.getAdditionalParams() == null) {
                         memberRole.setAdditionalParams(additionalParams);
                     } else {
                         memberRole.getAdditionalParams().putAll(additionalParams);
                     }
-                    if (oldTenantRoleIds.contains(memberRole.getRoleId())) {
+                    if (oldRoleIds.contains(memberRole.getRoleId())) {
                         continue;
                     }
                     List<String> labelList = roleC7nMapper.listRoleLabels(memberRole.getRoleId()).stream().map(Label::getName).collect(Collectors.toList());

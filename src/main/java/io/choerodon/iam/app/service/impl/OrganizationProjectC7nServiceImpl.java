@@ -196,9 +196,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         projectValidator.validateProjectCategory(projectDTO.getCategories());
         Boolean enabled = projectDTO.getEnabled();
-        projectDTO.setEnabled(enabled == null ? true : enabled);
-        ProjectDTO res;
-        res = sendCreateProjectEvent(projectDTO);
+        projectDTO.setEnabled(enabled == null || enabled);
+        ProjectDTO res = create(projectDTO);
+        res.setCategories(projectDTO.getCategories());
         insertProjectMapCategory(projectDTO.getCategories(), res.getId());
         //创建项目成功发送webhook
         User user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
@@ -212,6 +212,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         params.put("loginName", user.getLoginName());
         params.put("userName", user.getRealName());
         userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
+        res = sendCreateProjectEvent(res);
         return res;
     }
 
@@ -241,19 +242,17 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         });
     }
 
-    private ProjectDTO sendCreateProjectEvent(ProjectDTO project) {
+    private ProjectDTO sendCreateProjectEvent(ProjectDTO projectDTO) {
         return producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.ORGANIZATION)
                         .withRefType(PROJECT)
                         .withSagaCode(PROJECT_CREATE)
-                        .withSourceId(project.getOrganizationId()),
+                        .withSourceId(projectDTO.getOrganizationId()),
                 builder -> {
-                    ProjectDTO projectDTO = create(project);
-                    List<ProjectCategoryDTO> categories = project.getCategories();
                     Set<String> roleLabels = initMemberRole(projectDTO);
-                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels, categories);
+                    ProjectEventPayload projectEventPayload = generateProjectEventMsg(projectDTO, roleLabels, projectDTO.getCategories());
                     builder
                             .withPayloadAndSerialize(projectEventPayload)
                             .withRefId(String.valueOf(projectDTO.getId()))

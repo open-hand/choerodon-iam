@@ -998,7 +998,12 @@
                 </if>
             </when>
             <otherwise>
-                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName})
+                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName}
+                    OR ( iu.real_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                    OR ( iu.login_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                    OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                    OR ( iu.attribute15 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                )
             </otherwise>
         </choose>
         <if test="sourceType == 'organization' or sourceType == 'project'">

@@ -948,13 +948,16 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
 
-    private void validateSourceNotExisted(String sourceType, Long sourceId) {
+    private Long validateSourceNotExisted(String sourceType, Long sourceId) {
+        Long tenantId = null;
         if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
             organizationAssertHelper.notExisted(sourceId);
+            tenantId = sourceId;
         }
         if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            projectAssertHelper.projectNotExisted(sourceId);
+            tenantId = projectAssertHelper.projectNotExisted(sourceId).getOrganizationId();
         }
+        return tenantId;
     }
 
     @Override
@@ -1066,8 +1069,8 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag) {
-        validateSourceNotExisted(sourceType, sourceId);
-        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag);
+        Long tenantId = validateSourceNotExisted(sourceType, sourceId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag, tenantId);
     }
 
     @Override

@@ -513,6 +513,13 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         return projectMapCategoryMapper.listProjectCategoryById(projectId);
     }
 
+    @Override
+    public List<ProjectDTO> listAll(Boolean enabled) {
+        ProjectDTO dto = new ProjectDTO();
+        dto.setEnabled(enabled);
+        return projectMapper.select(dto);
+    }
+
     private List<Long> validateAndGetDbCategoryIds(ProjectDTO projectDTO, List<Long> categoryIds) {
         Assert.notNull(projectDTO, ERROR_PROJECT_NOT_EXIST);
         if (CollectionUtils.isEmpty(categoryIds)) {

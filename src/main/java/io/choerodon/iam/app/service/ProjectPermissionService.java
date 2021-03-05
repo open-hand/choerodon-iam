@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.ProjectWithUserVO;
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
@@ -135,4 +136,6 @@ public interface ProjectPermissionService {
      * @return
      */
     List<UserDTO> getUserListByProjectId(Long projectId);
+
+    List<ProjectWithUserVO> listProjectOwnerByIds(Set<Long> projectIds);
 }

@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import io.choerodon.iam.api.vo.*;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
@@ -32,10 +33,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.OnlineUserStatistics;
-import io.choerodon.iam.api.vo.ProjectUserVO;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.api.vo.UserVO;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.ProjectC7nService;
@@ -208,6 +205,14 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     @Override
     public List<UserDTO> listProjectOwnerById(Long projectId, String param) {
         return projectPermissionMapper.listProjectUsersByProjectIdAndRoleLabel(projectId, RoleLabelEnum.PROJECT_ADMIN.value(), param);
+    }
+
+    @Override
+    public List<ProjectWithUserVO> listProjectOwnerByIds(Set<Long> projectIds) {
+        if (ObjectUtils.isEmpty(projectIds)) {
+            return new ArrayList<>();
+        }
+        return projectPermissionMapper.listUsersByRoleLabelAndProjectIds(projectIds, RoleLabelEnum.PROJECT_ADMIN.value());
     }
 
     @Override

@@ -198,20 +198,20 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null || enabled);
         ProjectDTO res = create(projectDTO);
-//        res.setCategories(projectDTO.getCategories());
-//        insertProjectMapCategory(projectDTO.getCategories(), res.getId());
-//        //创建项目成功发送webhook
-//        User user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
-//        Map<String, String> params = new HashMap<>();
-//        params.put("projectId", String.valueOf(res.getId()));
-//        params.put("name", res.getName());
-//        params.put("code", res.getCode());
-//        params.put("organizationId", String.valueOf(res.getOrganizationId()));
-//        params.put("enabled", String.valueOf(res.getEnabled()));
-//        params.put("category", res.getCategory());
-//        params.put("loginName", user.getLoginName());
-//        params.put("userName", user.getRealName());
-//        userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
+        res.setCategories(projectDTO.getCategories());
+        insertProjectMapCategory(projectDTO.getCategories(), res.getId());
+        //创建项目成功发送webhook
+        User user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
+        Map<String, String> params = new HashMap<>();
+        params.put("projectId", String.valueOf(res.getId()));
+        params.put("name", res.getName());
+        params.put("code", res.getCode());
+        params.put("organizationId", String.valueOf(res.getOrganizationId()));
+        params.put("enabled", String.valueOf(res.getEnabled()));
+        params.put("category", res.getCategory());
+        params.put("loginName", user.getLoginName());
+        params.put("userName", user.getRealName());
+        userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
         res = sendCreateProjectEvent(res);
         return res;
     }

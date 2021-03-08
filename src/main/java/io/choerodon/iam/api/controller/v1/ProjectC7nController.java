@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import io.choerodon.iam.api.vo.ProjectWithUserVO;
-import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -44,13 +42,8 @@ public class ProjectC7nController extends BaseController {
 
     private ProjectC7nService projectService;
 
-    private final ProjectPermissionService projectPermissionService;
-
-
-    public ProjectC7nController(ProjectC7nService projectService,
-                                ProjectPermissionService projectPermissionService) {
+    public ProjectC7nController(ProjectC7nService projectService) {
         this.projectService = projectService;
-        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -206,17 +199,4 @@ public class ProjectC7nController extends BaseController {
         return ResponseEntity.ok(projectService.listProjectCategoryById(projectId));
     }
 
-    @Permission(permissionWithin = true)
-    @GetMapping(value = "/all")
-    @ApiOperation(value = "查询所有项目")
-    public ResponseEntity<List<ProjectDTO>> listAll(@RequestParam Boolean enabled) {
-        return new ResponseEntity<>(projectService.listAll(enabled), HttpStatus.OK);
-    }
-
-    @Permission(permissionWithin = true)
-    @ApiOperation("根据项目id集合查询项目下的项目所有者")
-    @PostMapping("/list_owner")
-    public ResponseEntity<List<ProjectWithUserVO>> listProjectOwnerByIds(@RequestBody Set<Long> projectIds) {
-        return ResponseEntity.ok(projectPermissionService.listProjectOwnerByIds(projectIds));
-    }
 }

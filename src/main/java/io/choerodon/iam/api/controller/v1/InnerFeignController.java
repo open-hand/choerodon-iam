@@ -19,8 +19,8 @@ import java.util.Set;
  * @since 2021-03-08
  */
 @RestController
-@RequestMapping(value = "/choerodon/v1/agile")
-public class AgileFeignController {
+@RequestMapping(value = "/choerodon/v1/inner")
+public class InnerFeignController {
 
 
     @Autowired

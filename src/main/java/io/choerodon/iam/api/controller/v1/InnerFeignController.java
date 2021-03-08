@@ -42,4 +42,5 @@ public class InnerFeignController {
     public ResponseEntity<List<ProjectWithUserVO>> listProjectOwnerByIds(@RequestBody Set<Long> projectIds) {
         return ResponseEntity.ok(projectPermissionService.listProjectOwnerByIds(projectIds));
     }
+
 }

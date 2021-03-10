@@ -125,4 +125,12 @@ public interface ProjectC7nService {
     void deleteProject(Long projectId);
 
     List<String> listProjectCategoryById(Long projectId);
+
+    /**
+     * 查询所有项目
+     *
+     * @param enabled
+     * @return
+     */
+    List<ProjectDTO> listAll(Boolean enabled);
 }

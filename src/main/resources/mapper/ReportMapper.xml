@@ -12,6 +12,7 @@
             JOIN FD_PROJECT_CATEGORY fpc ON fpc.id = fpmc.CATEGORY_ID
             JOIN FD_REPORT_PROJECT_CATEGORY frpc ON frpc.REPORT_ID = fr.id
             AND frpc.PROJECT_CATEGORY = fpc.`CODE`
+        GROUP BY fr.ID
     </select>
 
 </mapper>

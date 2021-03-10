@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.MapUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -1406,5 +1405,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Set<Long> listAllUserIds() {
         return userC7nMapper.listAllUserIds();
+    }
+
+    @Override
+    public Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        boolean isAdmin = isRoot(userId);
+
+        CommonExAssertUtil.assertTrue(userId != null, "error.user.get");
+      return  PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName,userId,isAdmin));
     }
 }

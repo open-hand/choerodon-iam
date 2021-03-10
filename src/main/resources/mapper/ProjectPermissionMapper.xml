@@ -256,6 +256,29 @@
         </if>
     </select>
 
+    <resultMap id="projectWithUser" type="io.choerodon.iam.api.vo.ProjectWithUserVO">
+        <id column="project_id" property="projectId"/>
+        <collection property="userIds" ofType="java.lang.Long">
+            <id column="id"/>
+        </collection>
+    </resultMap>
+
+    <select id="listUsersByRoleLabelAndProjectIds" resultMap="projectWithUser">
+        select iu.id, fpu.project_id
+        from iam_member_role imr
+        join fd_project_permission fpu on fpu.member_role_id = imr.id
+        join iam_user iu on iu.id = imr.member_id
+        join iam_role ir on imr.role_id = ir.id
+        join hiam_label_rel hlr ON hlr.data_id = ir.id and hlr.data_type = 'ROLE'
+        join iam_label il on il.id = hlr.label_id
+        where il.name = #{roleLabel}
+        and fpu.project_id in
+        <foreach collection="projectIds" open="(" close=")" separator="," item="projectId">
+            #{projectId}
+        </foreach>
+    </select>
+
+
     <!--一个用户对应多个角色标签，使用GROUP BY去重-->
     <select id="listUsersByName" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
@@ -755,7 +778,6 @@
         INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
     </select>
-
 
 
 </mapper>

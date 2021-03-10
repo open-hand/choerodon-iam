@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
+import org.hzero.core.properties.ServiceProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
     private static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
     private static final String DEFAULT_CLEAN_NUM = "180";
+    private static final String CHOERODON_MESSAGE = "choerodon-message";
     /**
      * 清理消息类型 WEBHOOK/EMAIL
      */
@@ -62,6 +65,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private AsgardFeignClient asgardFeignClient;
 
     private AsgardServiceClientOperator asgardServiceClientOperator;
+
 
     public SystemSettingC7nServiceImpl(FileClient fileClient,
                                        AsgardFeignClient asgardFeignClient,
@@ -165,7 +169,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             mapParams.put(CLEAN_NUM, cleanNum);
             scheduleTaskDTO.setParams(mapParams);
 
-            scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTOSite("cleanMessageRecord", "hzero-message").getId());
+            scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTOSite("cleanMessageRecord", CHOERODON_MESSAGE).getId());
             asgardServiceClientOperator.createQuartzTaskSite(scheduleTaskDTO);
         }
     }

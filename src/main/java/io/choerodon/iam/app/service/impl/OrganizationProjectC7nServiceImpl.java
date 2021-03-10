@@ -348,6 +348,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setUserId(user.getId());
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
+        projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
 
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型

@@ -22,6 +22,12 @@ public class UserAssertHelper extends AssertHelper {
         this.userMapper = userMapper;
     }
 
+    public User queryAnonymousUser() {
+        User dto = new User();
+        dto.setLoginName("ANONYMOUS");
+        return userMapper.selectOne(dto);
+    }
+
     public User userNotExisted(Long id) {
         return userNotExisted(id, "error.user.not.exist");
     }

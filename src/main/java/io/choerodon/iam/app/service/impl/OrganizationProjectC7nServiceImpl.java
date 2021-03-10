@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.ibatis.javassist.bytecode.stackmap.BasicBlock;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -200,19 +201,28 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         ProjectDTO res = create(projectDTO);
         res.setCategories(projectDTO.getCategories());
         insertProjectMapCategory(projectDTO.getCategories(), res.getId());
-        //创建项目成功发送webhook
-        User user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
-        Map<String, String> params = new HashMap<>();
-        params.put("projectId", String.valueOf(res.getId()));
-        params.put("name", res.getName());
-        params.put("code", res.getCode());
-        params.put("organizationId", String.valueOf(res.getOrganizationId()));
-        params.put("enabled", String.valueOf(res.getEnabled()));
-        params.put("category", res.getCategory());
-        params.put("loginName", user.getLoginName());
-        params.put("userName", user.getRealName());
-        userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
         res = sendCreateProjectEvent(res);
+        try {
+            User user;
+            if (DetailsHelper.getUserDetails() != null && DetailsHelper.getUserDetails().getUserId() != 0) {
+                user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
+            } else {
+                user = userAssertHelper.queryAnonymousUser();
+            }
+            //创建项目成功发送webhook
+            Map<String, String> params = new HashMap<>();
+            params.put("projectId", String.valueOf(res.getId()));
+            params.put("name", res.getName());
+            params.put("code", res.getCode());
+            params.put("organizationId", String.valueOf(res.getOrganizationId()));
+            params.put("enabled", String.valueOf(res.getEnabled()));
+            params.put("category", res.getCategory());
+            params.put("loginName", user.getLoginName());
+            params.put("userName", user.getRealName());
+            userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
+        } catch (Exception e) {
+            LOGGER.error("error.send.message", e);
+        }
         return res;
     }
 
@@ -269,8 +279,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(details.getUserId());
         } else {
-            projectEventMsg.setUserId(0L);
-            projectEventMsg.setUserName("ANONYMOUS");
+            User user = userAssertHelper.queryAnonymousUser();
+            projectEventMsg.setUserId(user.getId());
+            projectEventMsg.setUserName(user.getRealName());
         }
         projectEventMsg.setRoleLabels(roleLabels);
         projectEventMsg.setProjectId(projectDTO.getId());
@@ -337,6 +348,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setUserId(user.getId());
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
+        projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
 
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型

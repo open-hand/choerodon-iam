@@ -216,6 +216,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectEventMsg.setProjectName(projectDTO.getName());
         projectEventMsg.setImageUrl(newProject.getImageUrl());
         projectEventMsg.setAgileProjectCode(projectDTO.getAgileProjectCode());
+        projectEventMsg.setOrganizationId(tenant.getTenantId());
 
         try {
             String input = mapper.writeValueAsString(projectEventMsg);

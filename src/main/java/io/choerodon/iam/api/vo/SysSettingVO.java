@@ -30,10 +30,10 @@ public class SysSettingVO extends AuditDomain {
     @Length(max = 20, message = "error.setting.name.too.long", groups = {SysSettingValidator.GeneralInfoGroup.class})
     private String systemName;
 
-    @ApiModelProperty(value = "平台默认密码，必填字段，至少6字符，至多15字符，数字或字母")
+    @ApiModelProperty(value = "平台默认密码，必填字段，至少6字符，至多15字符，数字或字母或其他特殊字符")
     @NotEmpty(message = "error.setting.default.password.null", groups = {SysSettingValidator.PasswordPolicyGroup.class})
     @Length(min = 6, max = 15, message = "error.setting.default.password.length.invalid", groups = {SysSettingValidator.PasswordPolicyGroup.class})
-    @Pattern(regexp = "[a-zA-Z0-9]+", message = "error.setting.default.password.format.invalid", groups = {SysSettingValidator.PasswordPolicyGroup.class})
+    @Pattern(regexp = "[a-zA-Z0-9~!@#$%^&*.:;|=+_]+", message = "error.setting.default.password.format.invalid", groups = {SysSettingValidator.PasswordPolicyGroup.class})
     private String defaultPassword;
 
     @ApiModelProperty(value = "平台默认语言，必填字段")

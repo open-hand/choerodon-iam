@@ -333,6 +333,35 @@
         order by fp.is_enabled desc,fp.creation_date desc
     </select>
 
+    <select id="selectProjectIdsByUserIdOrAdmin" resultType="long">
+        SELECT fp.id
+        FROM fd_project fp
+        left join iam_user iu on iu.id = fp.created_by
+        <choose>
+            <when test="!isAdmin and !isOrgAdmin">
+                INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+            </when>
+            <otherwise>
+                LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+            </otherwise>
+        </choose>
+        <where>
+            fp.organization_id = #{organizationId}
+            AND fp.is_enabled = 1
+            <if test="!isAdmin and !isOrgAdmin">
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_type = 'organization'
+                AND imr.source_id = #{organizationId}
+            </if>
+        </where>
+        GROUP BY fp.id
+    </select>
+
     <select id="selectAllProjectsByUserIdOrAdmin" resultMap="projectWithCategoryMap">
         SELECT DISTINCT fp.*,
         fpc.id as category_id,

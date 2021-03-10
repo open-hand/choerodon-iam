@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.MapUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -1372,6 +1371,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         // 添加额外信息
         addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
+    }
+
+    @Override
+    public List<Long> queryCanAccessProjectIdsByUserId(Long organizationId, Long userId) {
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        return projectMapper.selectProjectIdsByUserIdOrAdmin(organizationId, userId, isAdmin, isOrgAdmin);
     }
 
     @Override

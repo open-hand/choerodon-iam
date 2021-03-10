@@ -155,7 +155,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             }
             // 查询用户在项目下的角色
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-            saveVisitInfo(projectDTO);
+
             List<Long> roleIds = new ArrayList<>();
 
             if (Boolean.TRUE.equals(userDetails.getAdmin())
@@ -169,6 +169,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                 }
                 roleIds = roleDTOS.stream().map(RoleDTO::getId).collect(Collectors.toList());
             }
+            saveVisitInfo(projectDTO);
             // 添加项目类型
 
             List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);

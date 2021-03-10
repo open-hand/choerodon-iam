@@ -636,4 +636,29 @@
 
 
     </select>
+
+    <select id="listProjectOfDevopsOrOperations" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT DISTINCT fp.*,
+        ht.tenant_name as organizationName,
+        ht.tenant_id as organizationId,
+        FROM fd_project fp
+        inner join hpfm_tenant ht on fp.organization_id=ht.tenant_id
+        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'N_DEVOPS' or fpc.code = 'N_OPERATIONS'))
+        <if test="!isAdmin">
+            INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+            INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+            INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+        </if>
+        <where>
+            fp.is_enabled = 1
+            <if test="projectName!=null and projectName!=''">
+                AND fp.name like concat(concat('%', #{projectName}), '%')
+            </if>
+            <if test="!isAdmin">
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+            </if>
+        </where>
+    </select>
 </mapper>

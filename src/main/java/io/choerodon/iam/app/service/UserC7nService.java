@@ -332,4 +332,13 @@ public interface UserC7nService {
      * @return 用户id
      */
     Set<Long> listAllUserIds();
+
+    /**
+     * 查询出用户有角色的devops或运维项目
+     *
+     * @param projectName
+     * @param pageRequest
+     * @return
+     */
+    Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest);
 }

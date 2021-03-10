@@ -178,6 +178,16 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
+    @Permission(level=ResourceLevel.ORGANIZATION,permissionLogin = true)
+    @ApiOperation(value = "查询用户所在项目列表（只包含devops项目和运维项目）")
+    @GetMapping(value = "/projects/devops_and_operations")
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> queryProjectsOfDevopsOrOperations(
+            PageRequest pageRequest,
+            @RequestParam(value = "project_name",required = false)String projectName
+    ){
+        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName,pageRequest));
+    }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户信息校验")

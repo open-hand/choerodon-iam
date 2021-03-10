@@ -640,7 +640,7 @@
     <select id="listProjectOfDevopsOrOperations" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
         SELECT DISTINCT fp.*,
         ht.tenant_name as organizationName,
-        ht.tenant_id as organizationId,
+        ht.tenant_id as organizationId
         FROM fd_project fp
         inner join hpfm_tenant ht on fp.organization_id=ht.tenant_id
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id

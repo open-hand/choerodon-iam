@@ -175,10 +175,14 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 labelNames.add(MenuLabelEnum.TENANT_GENERAL.value());
             }
             if (RoleLabelEnum.PROJECT_ROLE.value().equals(label.getName())) {
-                labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
-                labelNames.add(MenuLabelEnum.AGILE_MENU.value());
-                labelNames.add(MenuLabelEnum.PROGRAM_MENU.value());
-                labelNames.add(MenuLabelEnum.OPERATIONS_MENU.value());
+                labelNames.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+                labelNames.add(MenuLabelEnum.N_AGILE_MENU.value());
+                labelNames.add(MenuLabelEnum.N_REQUIREMENT_MENU.value());
+                labelNames.add(MenuLabelEnum.N_PROGRAM_PROJECT_MENU.value());
+                labelNames.add(MenuLabelEnum.N_TEST_MENU.value());
+                labelNames.add(MenuLabelEnum.N_DEVOPS_MENU.value());
+                labelNames.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
+                labelNames.add(MenuLabelEnum.N_PROGRAM_MENU.value());
             }
             if (RoleLabelEnum.GITLAB_OWNER.value().equals(label.getName())
                     || RoleLabelEnum.GITLAB_DEVELOPER.value().equals(label.getName())) {

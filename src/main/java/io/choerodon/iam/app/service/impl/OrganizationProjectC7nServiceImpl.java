@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.ibatis.javassist.bytecode.stackmap.BasicBlock;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -41,7 +39,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.exception.ext.EmptyParamException;
 import io.choerodon.core.exception.ext.InsertException;
-import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -59,13 +56,16 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.infra.enums.*;
+import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
-import io.choerodon.iam.infra.feign.DevopsFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.DateUtil;
+import io.choerodon.iam.infra.utils.JsonHelper;
 import io.choerodon.iam.infra.valitador.ProjectValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -690,11 +690,15 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         });
         Date now = new Date();
         List<String> fieldToDelete = new ArrayList<>();
+
+        // 查出用户在该组织下可访问的项目(有项目权限并且项目处于启用状态)
+        List<Long> canAccessProjectIds = userC7nService.queryCanAccessProjectIdsByUserId(organizationId, userId);
+
         List<ProjectVisitInfoVO> result = projectVisitInfoVOList.stream().peek(p -> {
-            if (DateUtil.isExceedDay(p.getLastVisitTime(), now)) {
+            if (DateUtil.isExceedDay(p.getLastVisitTime(), now) || !canAccessProjectIds.contains(p.getProjectId())) {
                 fieldToDelete.add(String.format(PROJECT_VISIT_INFO_KEY_TEMPLATE, p.getProjectId()));
             }
-        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now)).collect(Collectors.toList());
+        }).filter(p -> !DateUtil.isExceedDay(p.getLastVisitTime(), now) && canAccessProjectIds.contains(p.getProjectId())).collect(Collectors.toList());
 
         // 将保存时间超过7天的记录删除
         if (!CollectionUtils.isEmpty(fieldToDelete)) {

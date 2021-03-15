@@ -311,6 +311,14 @@ public interface UserC7nService {
 
     Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
 
+    /**
+     * 查询用户在组织下可以访问的所有项目的id
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    List<Long> queryCanAccessProjectIdsByUserId(Long organizationId, Long userId);
+
     List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 
     void checkEmail(User user);

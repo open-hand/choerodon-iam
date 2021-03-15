@@ -1374,6 +1374,13 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    public List<Long> queryCanAccessProjectIdsByUserId(Long organizationId, Long userId) {
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        return projectMapper.selectProjectIdsByUserIdOrAdmin(organizationId, userId, isAdmin, isOrgAdmin);
+    }
+
+    @Override
     public List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId) {
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);

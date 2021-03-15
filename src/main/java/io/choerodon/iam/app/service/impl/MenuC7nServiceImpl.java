@@ -155,7 +155,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             }
             // 查询用户在项目下的角色
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-            saveVisitInfo(projectDTO);
+
             List<Long> roleIds = new ArrayList<>();
 
             if (Boolean.TRUE.equals(userDetails.getAdmin())
@@ -169,6 +169,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                 }
                 roleIds = roleDTOS.stream().map(RoleDTO::getId).collect(Collectors.toList());
             }
+            saveVisitInfo(projectDTO);
             // 添加项目类型
 
             List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);
@@ -250,11 +251,14 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labelNames.add(MenuLabelEnum.TENANT_MENU.value());
         }
         if (ResourceLevel.PROJECT.value().equals(code)) {
-            labelNames.add(MenuLabelEnum.GENERAL_MENU.value());
-            labelNames.add(MenuLabelEnum.AGILE_MENU.value());
-            labelNames.add(MenuLabelEnum.OPERATIONS_MENU.value());
-            labelNames.add(MenuLabelEnum.PROGRAM_MENU.value());
-
+            labelNames.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+            labelNames.add(MenuLabelEnum.N_AGILE_MENU.value());
+            labelNames.add(MenuLabelEnum.N_REQUIREMENT_MENU.value());
+            labelNames.add(MenuLabelEnum.N_PROGRAM_PROJECT_MENU.value());
+            labelNames.add(MenuLabelEnum.N_TEST_MENU.value());
+            labelNames.add(MenuLabelEnum.N_DEVOPS_MENU.value());
+            labelNames.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
+            labelNames.add(MenuLabelEnum.N_PROGRAM_MENU.value());
         }
         if (ResourceLevel.USER.value().equals(code)) {
             labelNames.add(MenuLabelEnum.USER_MENU.value());

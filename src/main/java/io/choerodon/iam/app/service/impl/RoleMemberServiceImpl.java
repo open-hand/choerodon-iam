@@ -22,6 +22,7 @@ import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -79,6 +80,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String USER_BUSINESS_TYPE_CODE = "SITEADDUSER";
     private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
     private static final String PROJECT_ADD_USER = "PROJECTADDUSER";
+
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
+    private static final String DETAILS_URL = "%s/projects?id=%s&name=%s&organizationId=%s&type=organization";
+
     private TenantMapper tenantMapper;
     private ProjectMapper projectMapper;
 
@@ -540,6 +546,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             params.put("organizationId", String.valueOf(projectDTO.getOrganizationId()));
             params.put("addCount", String.valueOf(1));
             params.put("userList", JSON.toJSONString(userC7nService.getWebHookUser(memberRoleDTO.getMemberId())));
+            params.put("resultDetailUrl", String.format(DETAILS_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
             messageSendService.sendProjectAddUserMsg(projectDTO, params, PROJECT_ADD_USER, DetailsHelper.getUserDetails().getUserId());
         }
     }

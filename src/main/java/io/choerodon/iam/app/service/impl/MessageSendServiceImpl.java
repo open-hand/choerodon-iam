@@ -17,12 +17,14 @@ import org.hzero.iam.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
@@ -34,6 +36,13 @@ import io.choerodon.iam.infra.mapper.TenantC7nMapper;
 @Service
 public class MessageSendServiceImpl implements MessageSendService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageSendServiceImpl.class);
+
+    public static final String RESULT_DETAIL_URL = "resultDetailUrl";
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
+
+    private static final String ADD_ORG_USER_URL = "%s/#/projects?id=%s&name=%s&organizationId=%s&type=organization";
+    private static final String ADD_PROJECT_USER_URL = "%s/#/agile/project-overview?type=project&id=%s&name=%s&organizationId=%s";
 
     @Autowired
     private MessageClient messageClient;
@@ -154,6 +163,7 @@ public class MessageSendServiceImpl implements MessageSendService {
             argsMap.put("organizationId", projectDTO.getOrganizationId().toString());
             argsMap.put("addCount", String.valueOf(userList.size()));
             argsMap.put("userList", JSON.toJSONString(webHookUsers));
+            argsMap.put(RESULT_DETAIL_URL, String.format(ADD_PROJECT_USER_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
             messageSender.setArgs(argsMap);
             messageSender.setReceiverAddressList(receiverList);
 
@@ -212,6 +222,8 @@ public class MessageSendServiceImpl implements MessageSendService {
             argsMap.put("userList", JSON.toJSONString(webHookUserList));
             argsMap.put("loginName", user.getLoginName());
             argsMap.put("userName", user.getRealName());
+            //这里是组织的参数
+            argsMap.put(RESULT_DETAIL_URL, String.format(ADD_ORG_USER_URL, frontUrl, tenant.getTenantId(), tenant.getTenantName(), tenant.getTenantId()));
             messageSender.setArgs(argsMap);
 
             //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件

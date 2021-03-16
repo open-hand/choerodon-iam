@@ -236,3 +236,6 @@ workh:
   cron: 59 59 23 15 12 *
 # application.yml
 
+services:
+  front:
+    url: http://app.example.com

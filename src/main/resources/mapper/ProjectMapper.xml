@@ -192,10 +192,12 @@
         select fp.*,
         fpc.id as category_id,
         fpc.code as category_code,
-        fpc.name as category_name
+        fpc.name as category_name,
+        ht.`tenant_name` AS tenant_name
         from fd_project fp
         left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
         left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
+        LEFT JOIN hpfm_tenant ht ON fp.ORGANIZATION_ID = ht.tenant_id
         where fp.id in
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">

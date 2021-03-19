@@ -145,6 +145,18 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("项目的状态")
     private String projectStatus;
 
+    @Transient
+    @ApiModelProperty(value = "项目所属组织的名称")
+    private String tenantName;
+
+    public String getTenantName() {
+        return tenantName;
+    }
+
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+
     public String getDescription() {
         return description;
     }

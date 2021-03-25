@@ -105,7 +105,7 @@ public class TestMenuRepositoryImpl extends BaseRepositoryImpl<Menu> implements 
         // 查询角色关联的菜单
         CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
             SecurityTokenHelper.close();
-            List<Menu> menus = menuMapper.selectRoleMenus(roleIds, tenantId, finalLang, labels, unionLabel);
+            List<Menu> menus = menuMapper.selectRoleMenus(roleIds, tenantId, finalLang, labels, unionLabel, self.getUserId());
             SecurityTokenHelper.clear();
             return menus;
         }, iamExecutor);
@@ -307,7 +307,7 @@ public class TestMenuRepositoryImpl extends BaseRepositoryImpl<Menu> implements 
         // 查询有权限的
         List<PermissionCheckDTO> results = null;
         if (checkSupplier == null) {
-            results = menuMapper.checkPermissionSets(self.roleMergeIds(), codes);
+            results = menuMapper.checkPermissionSets(self.roleMergeIds(), codes, self.getUserId());
         } else {
             results = checkSupplier.apply(codes);
         }
@@ -519,5 +519,20 @@ public class TestMenuRepositoryImpl extends BaseRepositoryImpl<Menu> implements 
         menuSearchDTO.setTenantId(Constants.SITE_TENANT_ID);
         menuSearchDTO.setupSiteQueryLevel();
         return menuMapper.selectExportSiteMenuData(menuSearchDTO);
+    }
+
+    @Override
+    public Long countRoleAssignablePermission(Long roleId, Set<Long> permissionIds) {
+        return null;
+    }
+
+    @Override
+    public List<Menu> selectMemberRoleEffectivePermission(MemberRolePermissionDTO query) {
+        return null;
+    }
+
+    @Override
+    public List<Menu> docAssignMenus(MenuSearchDTO menuParams) {
+        return null;
     }
 }

@@ -185,7 +185,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             List<Long> finalRoleIds = roleIds;
             CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
                 SecurityTokenHelper.close();
-                List<Menu> menus = this.menuMapper.selectRoleMenus(finalRoleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true);
+                List<Menu> menus = this.menuMapper.selectRoleMenus(finalRoleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true, userDetails.getUserId());
                 SecurityTokenHelper.clear();
                 return menus;
             }, SELECT_MENU_POOL);

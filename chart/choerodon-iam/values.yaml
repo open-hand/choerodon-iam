@@ -12,7 +12,6 @@ preJob:
       url: jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
       username: username
       password: password
-      driver: com.mysql.jdbc.Driver
 
 ## 实例运行数量
 replicaCount: 1
@@ -78,6 +77,8 @@ env:
     HZERO_PERMISSION_SKIP_PARSE_SERVICES: register,gateway,oauth,swagger
     # 是否自动刷新服务权限
     HZERO_PERMISSION_PARSE_PERMISSION: true
+    # 是否启用权限缓存
+    HZERO_PERMISSION_ENABLE_PERMISSION_CACHE: true
 
     # 本实例服务端口
     SERVER_PORT: 8030
@@ -87,7 +88,10 @@ env:
     # 注册服务地址
     EUREKA_DEFAULT_ZONE: http://register-server:8000/eureka/
     EUREKA_INSTANCE_PREFER_IP_ADDRESS: true
-
+    # 续约间隔时间，默认30秒
+    EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS: 30
+    # 实例故障摘除时间，默认90秒，实际是90*2=180秒，配置45就是90秒
+    EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS: 45
     # 网关地址
     CHOERODON_GATEWAY_URL: http://api.example.com
 
@@ -111,18 +115,27 @@ env:
     # 等待连接池分配连接的最大时长（毫秒）
     SPRING_DATASOURCE_CONNECTION_TIMEOUT: 30000
 
+    # 执行命令线程池的核心线程数，也是命令执行的最大并发量
+    HYSTRIX_THREADPOOL_DEFAULT_CORE_SIZE: 128
+    # hystrix最大执行线程数
+    HYSTRIX_THREADPOOL_DEFAULT_MAXIMUM_SIZE: 256
     # Hystrix 熔断超时时间
-    HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS: 40000
+    HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS: 12000
     # Ribbon 读取超时时间
-    RIBBON_READ_TIMEOUT: 30000
+    RIBBON_READ_TIMEOUT: 5000
     # Ribbon 连接超时时间
-    RIBBON_CONNECT_TIMEOUT: 3000
+    RIBBON_CONNECT_TIMEOUT: 2000
+    # Ribbon从DiscoveryClient同步Server的间隔时间
+    RIBBON_SERVER_LIST_REFRESH_INTERVAL: 10000
     # IO线程数, 它主要执行非阻塞的任务
     SERVER_UNDERTOW_IO_THREADS: 4
     # 阻塞任务线程池
     SERVER_UNDERTOW_WORKER_THREADS: 128
     # 每块buffer的空间大小，越小空间被利用越充分
     SERVER_UNDERTOW_BUFFER_SIZE: 1024
+    HZERO_ENABLE_CACHE: false
+    # 在使用URL激活注册的用户账户时，对ticket加密解密的Aes密钥
+    HZERO_REGISTER_URL_ACTIVATE_AES_KEY: RVz3QWIx66c6e-MDhftkIY4UTgqZBia9weaTBJvXt4s=
     # 日志级别
     LOG_LEVEL: info
     SERVICES_FRONT_URL: http://app.example.com

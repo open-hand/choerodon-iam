@@ -66,28 +66,31 @@ feign:
 hystrix:
   threadpool:
     default:
-      # 执行命令线程池的核心线程数，也是命令执行的最大并发量
-      # 默认10
-      coreSize: 1000
+      # 执行命令线程池的核心线程数，也是命令执行的最大并发量，默认10
+      coreSize: ${HYSTRIX_THREADPOOL_DEFAULT_CORE_SIZE:128}
       # 最大执行线程数
-      maximumSize: 1000
+      maximumSize: ${HYSTRIX_THREADPOOL_DEFAULT_MAXIMUM_SIZE:256}
   command:
     default:
       execution:
         isolation:
           thread:
-            # HystrixCommand 执行的超时时间，超时后进入降级处理逻辑。一个接口，理论的最佳响应速度应该在200ms以内，或者慢点的接口就几百毫秒。
-            # 默认 1000 毫秒，最高设置 2000足矣。如果超时，首先看能不能优化接口相关业务、SQL查询等，不要盲目加大超时时间，否则会导致线程堆积过多，hystrix 线程池卡死，最终服务不可用。
-            timeoutInMilliseconds: ${HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS:40000}
+            # hystrix熔断时间，默认1秒，需大于feign/ribbon的超时时间
+            timeoutInMilliseconds: ${HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS:12000}
 
 ribbon:
+  # Ribbon从DiscoveryClient同步Server的间隔时间，默认30秒
+  ServerListRefreshInterval: ${RIBBON_SERVER_LIST_REFRESH_INTERVAL:10000}
   # 客户端读取超时时间，超时时间要小于Hystrix的超时时间，否则重试机制就无意义了
-  ReadTimeout: ${RIBBON_READ_TIMEOUT:30000}
+  ReadTimeout: ${RIBBON_READ_TIMEOUT:5000}
   # 客户端连接超时时间
-  ConnectTimeout: ${RIBBON_CONNECT_TIMEOUT:3000}
-  # 访问实例失败(超时)，允许自动重试，设置重试次数，失败后会更换实例访问，请一定确保接口的幂等性，否则重试可能导致数据异常。
-  OkToRetryOnAllOperations: true
-  MaxAutoRetries: 1
+  ConnectTimeout: ${RIBBON_CONNECT_TIMEOUT:2000}
+  # 默认只重试 GET，设置为true时将重试所有类型，如 POST、PUT、DELETE
+  # 重试对Feign生效，对RestTemplate不生效，RestTemplate要重试需加入spring-retry依赖
+  OkToRetryOnAllOperations: false
+  # 同一个Server重试次数
+  MaxAutoRetries: 0
+  # 最多重试几个Server
   MaxAutoRetriesNextServer: 1
 
 mybatis:
@@ -128,6 +131,8 @@ hzero:
     permission:
       # 是否启用数据权限屏蔽
       enabled: ${HZERO_ENABLE_DATA_PERMISSION:true}
+    change:
+      enable: ${HZERO_ENABLE_CACHE:false}
   send-message:
     # 修改密码成功是否发送消息
     send-modify-password-success: ${HZERO_SEND_MESSAGE_SEND_MODIFY_PASSWORD_SUCCESS:true}
@@ -173,6 +178,8 @@ hzero:
       skip-services: ${HZERO_PERMISSION_SKIP_PARSE_SERVICES:register,gateway,swagger}
       # 刷新权限时是否清除旧的权限
       clean-permission: ${HZERO_PERMISSION_CLEAN_PERMISSION:false}
+      # 是否启用权限缓存
+      enable-permission-cache: ${HZERO_PERMISSION_ENABLE_PERMISSION_CACHE:true}
     init-cache:
       # 是否初始化三方登陆方式到缓存
       open-login-way: ${HZERO_START_INIT_OPEN_LOGIN_WAY:true}
@@ -186,6 +193,17 @@ hzero:
       client: ${HZERO_START_INIT_CLIENT:true}
       # 是否初始化字段权限
       field-permission: ${HZERO_START_INIT_FIELD_PERMISSION:true}
+      # 是否初始化单据权限缓存标识
+      doc-auth: ${HZERO_START_INIT_DOC_AUTH:true}
+      # 是否初始化小程序配置
+      mini-program-config: ${HZERO_START_INIT_MINI_PROGRAM_CONFIG:true}
+    register:
+      # 在使用URL激活注册的用户账户时，对ticket加密解密的Aes密钥
+      url-activate-aes-key: ${HZERO_REGISTER_URL_ACTIVATE_AES_KEY:RVz3QWIx66c6e-MDhftkIY4UTgqZBia9weaTBJvXt4s=}
+    # 角色版本，默认启用多级版；注意多级版和简化版不能兼容使用，且多级版切到简化版之后无法切回去，谨慎使用。
+    role-version: ${HZERO_IAM_ROLE_VERSION:multilevel}
+    # 用户邮箱可为空
+    user-email-nullable: ${HZERO_IAM_USER_EMAIL_NULLABLE:false}
   resource:
     # 匹配的资源才会解析JwtToken便于得到UserDetails
     pattern: ${HZERO_RESOURCE_PATTERN:/v1/*,/hzero/*,/iam/v1/*,/iam/hzero/*,/choerodon/v1/*}

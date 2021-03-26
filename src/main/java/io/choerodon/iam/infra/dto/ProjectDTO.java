@@ -149,6 +149,10 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目所属组织的名称")
     private String tenantName;
 
+    @Transient
+    @ApiModelProperty(value = "是否应用组织层状态机和看板模板")
+    private Boolean useTemplate;
+
     public String getTenantName() {
         return tenantName;
     }
@@ -408,5 +412,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setStarFlag(Boolean starFlag) {
         this.starFlag = starFlag;
+    }
+
+    public Boolean getUseTemplate() {
+        return useTemplate;
+    }
+
+    public void setUseTemplate(Boolean useTemplate) {
+        this.useTemplate = useTemplate;
     }
 }

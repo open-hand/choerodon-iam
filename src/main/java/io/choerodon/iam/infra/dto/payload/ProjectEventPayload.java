@@ -31,6 +31,8 @@ public class ProjectEventPayload {
      */
     private List<ProjectCategoryVO> projectCategoryVOS;
 
+    private Boolean useTemplate;
+
     public List<ProjectCategoryVO> getProjectCategoryVOS() {
         return projectCategoryVOS;
     }
@@ -149,5 +151,13 @@ public class ProjectEventPayload {
 
     public void setAgileProjectCode(String agileProjectCode) {
         this.agileProjectCode = agileProjectCode;
+    }
+
+    public Boolean getUseTemplate() {
+        return useTemplate;
+    }
+
+    public void setUseTemplate(Boolean useTemplate) {
+        this.useTemplate = useTemplate;
     }
 }

@@ -200,6 +200,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO.setEnabled(enabled == null || enabled);
         ProjectDTO res = create(projectDTO);
         res.setCategories(projectDTO.getCategories());
+        res.setUseTemplate(projectDTO.getUseTemplate());
         insertProjectMapCategory(projectDTO.getCategories(), res.getId());
         res = sendCreateProjectEvent(res);
         try {
@@ -292,6 +293,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());
         projectEventMsg.setOrganizationName(tenant.getTenantName());
         projectEventMsg.setOrganizationId(tenant.getTenantId());
+        projectEventMsg.setUseTemplate(projectDTO.getUseTemplate());
         return projectEventMsg;
     }
 

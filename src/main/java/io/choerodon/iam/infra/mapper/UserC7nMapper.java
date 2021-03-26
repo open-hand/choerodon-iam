@@ -424,5 +424,13 @@ public interface UserC7nMapper {
      * @param pinyin
      */
     void updatePinyinById(@Param("userId") Long userId, @Param("pinyin") String pinyin);
+
+    /**
+     * attribute14 作为存放拼音首字母字段
+     *
+     * @param userId
+     * @param pinyinHeadChar
+     */
+    void updatePinyinHeadCharById(@Param("userId") Long userId, @Param("pinyinHeadChar") String pinyinHeadChar);
 }
 

@@ -231,7 +231,8 @@
             AND (
             iut.target_login_name LIKE concat(concat('%',#{params}),'%') OR
             iut.real_name LIKE concat(concat('%',#{params}),'%') OR
-            iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+            iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+            iut.attribute14 LIKE concat(concat('%',#{params}),'%')
             )
         </if>
     </select>
@@ -289,7 +290,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -346,7 +348,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -680,7 +683,8 @@
             AND (
             iut.real_name LIKE concat(concat('%',#{params}),'%')
             OR iut.target_login_name LIKE concat(concat('%',#{params}),'%')
-            OR iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+            OR iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+            iut.attribute14 LIKE concat(concat('%',#{params}),'%')
             )
         </if>
     </select>
@@ -731,7 +735,8 @@
                 and (
                 t1.target_login_name like concat(concat('%',#{params}),'%') or
                 t1.real_name like concat(concat('%',#{params}),'%') OR
-                t1.attribute15 LIKE concat(concat('%',#{params}),'%')
+                t1.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                t1.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -788,7 +793,8 @@
                 and (
                 t1.target_login_name like concat(concat('%',#{params}),'%') or
                 t1.real_name like concat(concat('%',#{params}),'%') OR
-                t1.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -837,7 +843,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') or
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -885,7 +892,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -994,6 +1002,7 @@
                     or iu.login_name like concat('%', concat(#{userName}, '%'))
                     or iu.email like concat('%', concat(#{userName}, '%'))
                     or iu.attribute15 LIKE concat(concat('%',#{userName}),'%')
+                    or iu.attribute14 LIKE concat(concat('%',#{userName}),'%')
                     )
                 </if>
             </when>
@@ -1003,6 +1012,7 @@
                     OR ( iu.login_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.attribute15 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                    OR ( iu.attribute14 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                 )
             </otherwise>
         </choose>
@@ -1012,7 +1022,7 @@
             from iam_user iu2
             where iu2.is_enabled = 1
             <if test="exactMatchFlag == true">
-                and (iu2.real_name = #{userName} or iu2.login_name = #{userName} or iu2.email = #{userName} or iu2.attribute15= #{userName})
+                and (iu2.real_name = #{userName} or iu2.login_name = #{userName} or iu2.email = #{userName} or iu2.attribute15= #{userName} or iu2.attribute14= #{userName})
             </if>
             <if test="exactMatchFlag == null or exactMatchFlag == false">
                 and (
@@ -1020,6 +1030,7 @@
                 or iu2.login_name like concat('%', concat(#{userName}, '%'))
                 or iu2.email like concat('%', concat(#{userName}, '%'))
                 or iu2.attribute15 LIKE concat(concat('%',#{userName}),'%')
+                or iu2.attribute14 LIKE concat(concat('%',#{userName}),'%')
                 )
             </if>
 
@@ -1169,7 +1180,8 @@
             AND (
             login_name = #{params} OR
             real_name = #{params}) OR
-            attribute15 =#{params}
+            attribute15 =#{params} OR
+            attribute14 =#{params}
         </if>
     </select>
 
@@ -1182,7 +1194,8 @@
             AND (
             login_name LIKE concat(concat('%',#{params}),'%') OR
             real_name LIKE concat(concat('%',#{params}),'%') OR
-            attribute15 LIKE concat(concat('%',#{params}),'%')
+            attribute15 LIKE concat(concat('%',#{params}),'%') OR
+            attribute14 LIKE concat(concat('%',#{params}),'%')
             )
         </if>
         union
@@ -1194,7 +1207,8 @@
             AND (
             login_name = #{params} OR
             real_name = #{params} OR
-            attribute15 = #{params}
+            attribute15 = #{params} OR
+            attribute14 = #{params}
             )
         </if>
     </select>
@@ -1203,7 +1217,7 @@
         FROM (
             SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
             iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked,
-            iu.object_version_number,iu.attribute15,
+            iu.object_version_number,iu.attribute15,iu.attribute14,
             CASE
             WHEN iu.is_ldap = 1 THEN
             iu.login_name
@@ -1238,7 +1252,8 @@
                 and (
                 iut.login_name LIKE concat(concat('%',#{params}),'%') OR
                 iut.real_name LIKE concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -1321,6 +1336,13 @@
     <update id="updatePinyinById">
         UPDATE iam_user
         SET attribute15 = #{pinyin}
+        WHERE
+            id = #{userId};
+    </update>
+
+    <update id="updatePinyinHeadCharById">
+        UPDATE iam_user
+        SET attribute14 = #{pinyinHeadChar}
         WHERE
             id = #{userId};
     </update>

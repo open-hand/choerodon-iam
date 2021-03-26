@@ -5,4 +5,6 @@ public interface FixService {
     void fixProjectCateGory();
 
     void fixRealNameToPinyin();
+
+    void fixRealNameToPinyinHeaderChar();
 }

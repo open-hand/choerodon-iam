@@ -24,6 +24,7 @@ public class SyncNameToPinyinInterceptor implements HandlerInterceptor<User> {
     public void interceptor(User user) {
         if (user.getId() != null && !StringUtils.isEmpty(user.getRealName())) {
             userC7nMapper.updatePinyinById(user.getId(), StringUtil.toPinyin(user.getRealName()));
+            userC7nMapper.updatePinyinHeadCharById(user.getId(), StringUtil.getPinYinHeadChar(user.getRealName()));
         }
     }
 }

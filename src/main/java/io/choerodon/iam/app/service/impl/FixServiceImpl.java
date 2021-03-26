@@ -90,4 +90,11 @@ public class FixServiceImpl implements FixService {
             userC7nMapper.updatePinyinById(t.getId(), StringUtil.toPinyin(t.getRealName()));
         });
     }
+
+    @Override
+    public void fixRealNameToPinyinHeaderChar() {
+        userMapper.selectAll().forEach(t -> {
+            userC7nMapper.updatePinyinHeadCharById(t.getId(), StringUtil.getPinYinHeadChar(t.getRealName()));
+        });
+    }
 }

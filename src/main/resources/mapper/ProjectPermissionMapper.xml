@@ -69,7 +69,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -120,7 +121,8 @@
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
-                iut.attribute15 LIKE concat(concat('%',#{params}),'%')
+                iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
             </if>
         </where>
@@ -251,7 +253,8 @@
             AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
                  iu.real_name LIKE concat(concat('%',#{param}),'%') OR
                  iu.email LIKE concat(concat('%',#{param}),'%') OR
-                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                 )
         </if>
     </select>
@@ -295,7 +298,8 @@
         <if test="param != null">
             AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
                  iu.real_name LIKE concat(concat('%',#{param}),'%') OR
-                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                 )
         </if>
         GROUP BY iu.id
@@ -325,7 +329,8 @@
         <if test="param != null">
             AND (iu.login_name LIKE concat(concat('%', #{param}),'%') OR
                  iu.real_name LIKE concat(concat('%',#{param}),'%') OR
-                 iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                 iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                 iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                 )
         </if>
         GROUP BY iu.id
@@ -389,7 +394,8 @@
                 AND (
                 iu.login_name LIKE concat(concat('%',#{param}),'%') OR
                 iu.real_name LIKE concat(concat('%',#{param}),'%') OR
-                iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
         </where>
@@ -453,7 +459,8 @@
                         AND (
                         iu.login_name LIKE concat(concat('%',#{param}),'%') OR
                         iu.real_name LIKE concat(concat('%',#{param}),'%') OR
-                        iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                        iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                        iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                         )
                     </if>
             ) t
@@ -495,7 +502,8 @@
                 AND (
                 iu.login_name LIKE concat(concat('%',#{param}),'%') OR
                 iu.real_name LIKE concat(concat('%',#{param}),'%') OR
-                iu.attribute15 LIKE concat(concat('%',#{param}),'%')
+                iu.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+                iu.attribute14 LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
         </where>

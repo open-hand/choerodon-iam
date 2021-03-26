@@ -29,9 +29,12 @@ public class NameToPinyinTask {
     @TimedTask(name = "nameToPinyin", description = "同步拼音字段", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void syncRealNameToPinyin(Map<String, Object> map) {
-        logger.info("begin to sync name to pinyin!!");
+        logger.info("===========begin to sync name to pinyin!!=============");
         fixService.fixRealNameToPinyin();
-        logger.info("end to sync name to pinyin!!");
+        logger.info("===========end to sync name to pinyin!!===============");
+        logger.info("===========begin to sync name to pinyin head char!!=============");
+        fixService.fixRealNameToPinyinHeaderChar();
+        logger.info("===========end to sync name to pinyin head char!!===============");
     }
 
 }

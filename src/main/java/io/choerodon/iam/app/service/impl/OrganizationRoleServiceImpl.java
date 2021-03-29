@@ -1,11 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.service.role.RoleCreateService;
@@ -36,6 +34,7 @@ import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.StringUtil;
 
 /**
  * 〈功能简述〉
@@ -50,6 +49,9 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
     private static final String ERROR_BUILT_IN_ROLE_NOT_BE_EDIT = "error.built.in.role.not.be.edit";
     private static final String ERROR_ROLE_ID_NOT_BE_NULL = "error.role.id.not.be.null";
     private static final String DELETE_ENABLED_ROLE_FAILED = "delete.enabled.role.failed";
+    private static final String ADMINISTRATOR = "administrator";
+    private static final String ORG_LEVEL = "organization";
+    private static final String PROJECT_ADMIN = "project-admin";
     @Autowired
     private RoleService roleService;
     @Autowired
@@ -195,6 +197,12 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
         typeNames.add(HiamMenuType.DIR.value());
         typeNames.add(HiamMenuType.MENU.value());
         List<Menu> menus = menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
+        // 组织管理员展示项目层的菜单
+        List<Menu> projectMenus = new ArrayList<>();
+        if (StringUtils.equalsIgnoreCase(role.getCode(), ADMINISTRATOR)
+                && StringUtils.equalsIgnoreCase(role.getLevel(), ORG_LEVEL)) {
+            projectMenus = getProjectMenus(typeNames);
+        }
         SecurityTokenHelper.clear();
 
 
@@ -211,9 +219,56 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
             }
         });
         menus.addAll(permissionSetList);
+        //填充permission
+        if (StringUtils.equalsIgnoreCase(role.getCode(), ADMINISTRATOR)
+                && StringUtils.equalsIgnoreCase(role.getLevel(), ORG_LEVEL)) {
+            fillRolePermissions(projectMenus, roleId, organizationId);
+        }
 
         roleVO.setMenuList(menus);
+        // 组织管理员展示项目层的菜单
+        roleVO.setProjectList(projectMenus);
         return roleVO;
+    }
+
+    private void fillRolePermissions(List<Menu> projectMenus, Long roleId, Long organizationId) {
+        //查询当前组织下的项目所有者角色
+        Role role = new Role();
+        role.setTenantId(organizationId);
+        role.setCode(PROJECT_ADMIN);
+        role.setBuiltIn(true);
+        Role roleDb = roleMapper.selectOne(role);
+
+        if (Objects.isNull(roleDb)) {
+            return;
+        }
+        List<Menu> rolePermissions = rolePermissionC7nService.listRolePermissionByRoleIdAndLabels(roleId, null);
+        Set<Long> psIds = rolePermissions.stream().map(Menu::getId).collect(Collectors.toSet());
+        // 查询权限集
+        Set<Long> ids = projectMenus.stream().map(Menu::getId).collect(Collectors.toSet());
+        List<Menu> permissionSetList = menuC7nMapper.listPermissionSetByParentIds(ids);
+        permissionSetList.forEach(ps -> {
+            if (psIds.contains(ps.getId())) {
+                ps.setCheckedFlag("Y");
+            } else {
+                ps.setCheckedFlag("N");
+            }
+        });
+        projectMenus.addAll(permissionSetList);
+    }
+
+    private List<Menu> getProjectMenus(Set<String> typeNames) {
+        Set<String> labelNames = new HashSet<>();
+        labelNames.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+        labelNames.add(MenuLabelEnum.N_AGILE_MENU.value());
+        labelNames.add(MenuLabelEnum.N_REQUIREMENT_MENU.value());
+        labelNames.add(MenuLabelEnum.N_PROGRAM_PROJECT_MENU.value());
+        labelNames.add(MenuLabelEnum.N_TEST_MENU.value());
+        labelNames.add(MenuLabelEnum.N_DEVOPS_MENU.value());
+        labelNames.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
+        labelNames.add(MenuLabelEnum.N_PROGRAM_MENU.value());
+        List<Menu> projectList = menuC7nMapper.listMenuByLabelAndType(labelNames, typeNames);
+        return projectList;
     }
 
     @Override

@@ -30,6 +30,18 @@ public class RoleVO extends Role {
     private Set<Long> menuIdList;
 
     private List<Menu> menuList;
+    /**
+     * 角色展示的时候如果是组织管理员，需要连同展示项目层的菜单
+     */
+    private List<Menu> projectList;
+
+    public List<Menu> getProjectList() {
+        return projectList;
+    }
+
+    public void setProjectList(List<Menu> projectList) {
+        this.projectList = projectList;
+    }
 
     public Set<Long> getMenuIdList() {
         return menuIdList;

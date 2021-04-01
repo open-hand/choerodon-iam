@@ -994,7 +994,7 @@
         <choose>
             <when test="sourceType == 'site'">
                 <if test="exactMatchFlag == true">
-                    and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName})
+                    and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15 = #{userName} or iu.attribute14 = #{userName})
                 </if>
                 <if test="exactMatchFlag == null or exactMatchFlag == false">
                     and (
@@ -1007,7 +1007,7 @@
                 </if>
             </when>
             <otherwise>
-                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName}
+                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName} or iu.attribute14 = #{userName}
                     OR ( iu.real_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.login_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )

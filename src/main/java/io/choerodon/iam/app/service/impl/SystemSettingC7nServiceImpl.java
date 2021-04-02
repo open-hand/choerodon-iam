@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -12,6 +14,7 @@ import java.util.stream.Collectors;
 
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
+import org.hzero.common.HZeroService;
 import org.hzero.core.properties.ServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -256,7 +259,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private String uploadFile(MultipartFile file) {
-        return fileClient.uploadFile(0L, "iam-service", file.getOriginalFilename(), file);
+        return fileClient.uploadFile(0L, BACKETNAME,null, file.getOriginalFilename(), file);
     }
 
     /**

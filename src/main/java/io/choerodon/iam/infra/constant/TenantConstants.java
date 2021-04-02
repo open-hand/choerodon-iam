@@ -12,4 +12,7 @@ public class TenantConstants {
 
     public static final String DEFAULT_TENANT_NAME = "运营组织";
     public static final String DEFAULT_TENANT_NUM = "operation";
+
+    public static final String BACKETNAME = "iam-service";
+
 }

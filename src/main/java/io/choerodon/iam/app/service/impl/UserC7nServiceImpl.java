@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
 import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
@@ -211,7 +212,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
+        return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);
     }
 
     @Override
@@ -219,7 +220,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         checkLoginUser(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
-            return fileClient.uploadFile(0L, "iam-service", trimFileDirectory(file.getOriginalFilename()), file);
+            return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");

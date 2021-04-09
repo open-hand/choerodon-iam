@@ -124,7 +124,7 @@ env:
     # Ribbon 读取超时时间
     RIBBON_READ_TIMEOUT: 5000
     # Ribbon 连接超时时间
-    RIBBON_CONNECT_TIMEOUT: 2000
+    RIBBON_CONNECT_TIMEOUT: 10000
     # Ribbon从DiscoveryClient同步Server的间隔时间
     RIBBON_SERVER_LIST_REFRESH_INTERVAL: 10000
     # IO线程数, 它主要执行非阻塞的任务

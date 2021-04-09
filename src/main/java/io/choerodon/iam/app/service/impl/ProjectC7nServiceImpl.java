@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -57,6 +58,7 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.operator.AgileFeignClientOperator;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.iam.infra.utils.SagaTopic;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -182,10 +184,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         ProjectEventPayload projectEventMsg = new ProjectEventPayload();
         projectEventMsg.setUserName(details.getUsername());
         projectEventMsg.setUserId(user.getId());
-        if (tenant != null) {
-            projectEventMsg.setOrganizationCode(tenant.getTenantNum());
-            projectEventMsg.setOrganizationName(tenant.getTenantName());
-        }
+        CommonExAssertUtil.assertTrue(tenant != null, "error.tenant.is.null", newProject.getOrganizationId());
+
+        projectEventMsg.setOrganizationCode(tenant.getTenantNum());
+        projectEventMsg.setOrganizationName(tenant.getTenantName());
+
 
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
         projectMapCategoryDTO.setProjectId(projectDTO.getId());

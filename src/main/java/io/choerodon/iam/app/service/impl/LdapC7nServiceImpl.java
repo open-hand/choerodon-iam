@@ -119,30 +119,15 @@ public class LdapC7nServiceImpl implements LdapC7nService {
     public LdapAutoDTO updateLdapAuto(Long organizationId, LdapAutoDTO ldapAutoDTO) {
         LdapAutoDTO oldLdapAutoDTO = ldapAutoMapper.selectByPrimaryKey(ldapAutoDTO.getId());
         CommonExAssertUtil.assertTrue(organizationId.equals(oldLdapAutoDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
-
-        Boolean isNotChange = false;
-        if (ldapAutoDTO.getFrequency().equals(oldLdapAutoDTO.getFrequency()) && ldapAutoDTO.getStartTime().compareTo(oldLdapAutoDTO.getStartTime()) == 0) {
-            isNotChange = true;
-        }
         if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {
             throw new CommonException("error.update.ldap.auto");
         }
-
-        if (!isNotChange) {
-            LdapAutoTaskEventPayload taskEventPayload = new LdapAutoTaskEventPayload();
-            taskEventPayload.setLdapAutoId(ldapAutoDTO.getId());
-            taskEventPayload.setDeleteQuartzTaskId(oldLdapAutoDTO.getQuartzTaskId());
-            taskEventPayload.setOrganizationId(organizationId);
-            taskEventPayload.setActive(ldapAutoDTO.getActive());
-            sendProducerQuartzTaskEvent(taskEventPayload, organizationId, ResourceLevel.ORGANIZATION, CREATE_LDAP_AUTO);
-        } else if (ldapAutoDTO.getActive().compareTo(oldLdapAutoDTO.getActive()) != 0) {
-            ScheduleTaskDetail taskDetailDTO = getQuartzTaskDetail(organizationId, ldapAutoDTO.getQuartzTaskId());
-            if (ldapAutoDTO.getActive()) {
-                asgardFeignClient.enableOrgTask(organizationId, ldapAutoDTO.getQuartzTaskId(), taskDetailDTO.getObjectVersionNumber());
-            } else {
-                asgardFeignClient.disableOrgTask(organizationId, ldapAutoDTO.getQuartzTaskId(), taskDetailDTO.getObjectVersionNumber());
-            }
-        }
+        LdapAutoTaskEventPayload taskEventPayload = new LdapAutoTaskEventPayload();
+        taskEventPayload.setLdapAutoId(ldapAutoDTO.getId());
+        taskEventPayload.setDeleteQuartzTaskId(oldLdapAutoDTO.getQuartzTaskId());
+        taskEventPayload.setOrganizationId(organizationId);
+        taskEventPayload.setActive(ldapAutoDTO.getActive());
+        sendProducerQuartzTaskEvent(taskEventPayload, organizationId, ResourceLevel.ORGANIZATION, CREATE_LDAP_AUTO);
         return ldapAutoDTO;
     }
 

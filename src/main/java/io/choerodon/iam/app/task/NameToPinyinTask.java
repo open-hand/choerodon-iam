@@ -25,8 +25,8 @@ public class NameToPinyinTask {
     @Autowired
     private FixService fixService;
 
-    @JobTask(maxRetryCount = 3, code = "nameToPinyin", description = "同步拼音字段")
-    @TimedTask(name = "nameToPinyin", description = "同步拼音字段", oneExecution = true,
+    @JobTask(maxRetryCount = 3, code = "nameToPinyinHeadChar", description = "同步拼音字段/拼音首字母")
+    @TimedTask(name = "nameToPinyinHeadChar", description = "同步拼音字段/拼音首字母", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void syncRealNameToPinyin(Map<String, Object> map) {
         logger.info("===========begin to sync name to pinyin!!=============");

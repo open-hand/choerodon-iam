@@ -182,6 +182,7 @@ public class ClientC7nServiceImpl implements ClientC7nService {
     @Override
     public ClientVO create(ClientVO clientVO) {
         Client clientToCreate = new Client();
+        clientToCreate.setMenuIdFlag(0);
         BeanUtils.copyProperties(clientVO, clientToCreate);
         clientService.create(clientToCreate);
         if (clientVO.getSourceId() != null) {

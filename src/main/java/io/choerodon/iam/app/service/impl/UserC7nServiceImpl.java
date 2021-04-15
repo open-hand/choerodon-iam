@@ -1247,19 +1247,19 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public void switchSite() {
+    public Boolean switchSite() {
         userDetailsService.storeUserTenant(TenantConstants.DEFAULT_TENANT_TD);
         UserVO userVO = userRepository.selectSelf();
         LOGGER.info("==========================switch site user {}", userVO.toString());
         if (userVO.getCurrentRoleLevel().equals(ResourceLevel.SITE.value())) {
-            return;
+            return true;
         }
         List<org.hzero.iam.domain.vo.RoleVO> roles = roleRepository.selectSelfCurrentTenantRoles(true);
         LOGGER.info("==========================switch site roles {}", roles.toString());
         List<String> rolesStr = roles.stream().map(RoleVO::getLevel).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(roles) || !rolesStr.contains(ResourceLevel.SITE.value())) {
             LOGGER.warn("error.without.site.role");
-            return;
+            return false;
         }
         for (RoleVO t : roles) {
             if (t.getLevel().equals(ResourceLevel.SITE.value())) {
@@ -1267,6 +1267,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 break;
             }
         }
+        return true;
     }
 
     @Override

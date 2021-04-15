@@ -284,7 +284,7 @@ public interface UserC7nService {
 
     void assignUsersRolesOnOrganizationLevel(Long organizationId, List<MemberRole> memberRoleDTOS);
 
-    void switchSite();
+    Boolean switchSite();
 
     List<User> listUsersByRealNames(Set<String> realNames, Boolean onlyEnabled);
 

@@ -80,9 +80,8 @@ public class UserSelfC7nController extends BaseController {
     @GetMapping("/switch/site")
     @Permission(permissionLogin = true)
     @ApiOperation(value = "组织切换到平台")
-    public ResponseEntity<Void> switchSite() {
-        userC7nService.switchSite();
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Boolean> switchSite() {
+        return Results.success(userC7nService.switchSite());
     }
 
 }

@@ -156,7 +156,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         if (!(tenantVO.getTenantName().length() >= 1 && tenantVO.getTenantName().length() <= 32)) {
             throw new CommonException("error.organization.name.size");
         }
-        if (!Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())){
+        if (!Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())) {
             throw new CommonException("error.organization.name.illegal");
         }
     }
@@ -433,6 +433,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         defaultTenant.setTenantId(TenantConstants.DEFAULT_C7N_TENANT_TD);
         defaultTenant.setTenantNum(tenantNum);
         defaultTenant.setEnabledFlag(1);
+        defaultTenant.setEnableDataSecurity(0);
         initConfig(defaultTenant);
         tenantService.createTenant(defaultTenant);
         timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());

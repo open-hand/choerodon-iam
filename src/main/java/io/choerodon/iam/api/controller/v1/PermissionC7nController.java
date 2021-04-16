@@ -80,7 +80,7 @@ public class PermissionC7nController {
     })
     @PostMapping("/menus/check-permissions")
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
-            @RequestParam Long tenantId,
+            @RequestParam(required = false) Long tenantId,
             @RequestParam(required = false) Long projectId,
             @RequestBody List<String> codes) {
         return Results.success(permissionC7nService.checkPermissionSets(codes, tenantId, projectId));

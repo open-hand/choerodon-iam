@@ -90,7 +90,10 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         Boolean finalIsOrgRoot = isOrgRoot;
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
         LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self, projectId);
-        List<Long> currentRoleIds = roleC7nMapper.listRoleIdsByTenantId(self.getUserId(), tenantId);
+        List<Long> currentRoleIds = null;
+        if (tenantId != null) {
+            currentRoleIds = roleC7nMapper.listRoleIdsByTenantId(self.getUserId(), tenantId);
+        }
         if (CollectionUtils.isEmpty(currentRoleIds)) {
             currentRoleIds = self.roleMergeIds();
         }

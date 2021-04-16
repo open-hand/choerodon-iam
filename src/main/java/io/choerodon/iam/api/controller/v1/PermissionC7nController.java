@@ -4,6 +4,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -79,9 +80,10 @@ public class PermissionC7nController {
     })
     @PostMapping("/menus/check-permissions")
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
+            @RequestParam Long tenantId,
             @RequestParam(required = false) Long projectId,
             @RequestBody List<String> codes) {
-        return Results.success(permissionC7nService.checkPermissionSets(codes, projectId));
+        return Results.success(permissionC7nService.checkPermissionSets(codes, tenantId, projectId));
     }
 
     @Permission(permissionLogin = true)

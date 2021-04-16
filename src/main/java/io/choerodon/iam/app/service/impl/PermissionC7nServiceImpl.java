@@ -80,7 +80,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     }
 
     @Override
-    public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId) {
+    public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId) {
         CustomUserDetails self = UserUtils.getUserDetails();
         Boolean isOrgRoot = false;
         if (projectId != null) {
@@ -90,7 +90,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         Boolean finalIsOrgRoot = isOrgRoot;
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
         LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self, projectId);
-        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(self.roleMergeIds(), projectId, self.getUserId(), finalIsOrgRoot, c));
+        List<Long> currentRoleIds = roleC7nMapper.listRoleIdsByTenantId(self.getUserId(), tenantId);
+        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(currentRoleIds, projectId, self.getUserId(), finalIsOrgRoot, c));
     }
 
     @Override

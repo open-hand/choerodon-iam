@@ -91,7 +91,11 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
         LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self, projectId);
         List<Long> currentRoleIds = roleC7nMapper.listRoleIdsByTenantId(self.getUserId(), tenantId);
-        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(currentRoleIds, projectId, self.getUserId(), finalIsOrgRoot, c));
+        if (CollectionUtils.isEmpty(currentRoleIds)) {
+            currentRoleIds = self.roleMergeIds();
+        }
+        List<Long> finalCurrentRoleIds = currentRoleIds;
+        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(finalCurrentRoleIds, projectId, self.getUserId(), finalIsOrgRoot, c));
     }
 
     @Override

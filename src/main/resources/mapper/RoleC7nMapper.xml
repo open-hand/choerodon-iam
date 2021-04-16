@@ -403,4 +403,16 @@
         </if>
     </select>
 
+    <select id="listRoleIdsByTenantId" resultType="java.lang.Long">
+        SELECT
+            ir.id
+        FROM
+            iam_role ir
+                JOIN iam_user iu ON iu.id = #{userId}
+                JOIN iam_member_role imr ON imr.role_id = ir.id
+                AND imr.member_id = iu.id
+                AND imr.member_type = 'user'
+                AND imr.source_id = #{tenantId}
+    </select>
+
 </mapper>

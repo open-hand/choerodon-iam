@@ -21,7 +21,7 @@ public interface PermissionC7nService {
      * @param codes 权限集编码
      * @return 可访问的权限集编码
      */
-    List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long projectId);
+    List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId);
 
     List<org.hzero.iam.domain.entity.Permission> getPermission(String[] codes);
 

@@ -14,7 +14,10 @@ import java.util.stream.Collectors;
 
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
+import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
+import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.common.HZeroService;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.properties.ServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,10 +71,12 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private AsgardFeignClient asgardFeignClient;
 
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    private BasePasswordPolicyRepository basePasswordPolicyRepository;
 
 
     public SystemSettingC7nServiceImpl(FileClient fileClient,
                                        AsgardFeignClient asgardFeignClient,
+                                       BasePasswordPolicyRepository basePasswordPolicyRepository,
                                        @Lazy AsgardServiceClientOperator asgardServiceClientOperator,
                                        @Value("${choerodon.category.enabled:false}")
                                                Boolean enableCategory,
@@ -81,6 +86,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         this.asgardServiceClientOperator = asgardServiceClientOperator;
         this.enableCategory = enableCategory;
         this.sysSettingMapper = sysSettingMapper;
+        this.basePasswordPolicyRepository = basePasswordPolicyRepository;
     }
 
     @Override
@@ -200,6 +206,13 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                     }
                 }
             });
+        }
+        BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(BaseConstants.DEFAULT_TENANT_ID);
+        passwordPolicy.setOriginalPassword(sysSettingVO.getDefaultPassword());
+        passwordPolicy.setMinLength(sysSettingVO.getMinPasswordLength());
+        passwordPolicy.setMaxLength(sysSettingVO.getMaxPasswordLength());
+        if (basePasswordPolicyRepository.updateByPrimaryKey(passwordPolicy) != 1) {
+            throw new CommonException("error.update.setting.password.policy");
         }
         SysSettingVO dto = SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
         return dto;

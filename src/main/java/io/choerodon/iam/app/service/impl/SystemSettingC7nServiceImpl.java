@@ -211,7 +211,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         passwordPolicy.setOriginalPassword(sysSettingVO.getDefaultPassword());
         passwordPolicy.setMinLength(sysSettingVO.getMinPasswordLength());
         passwordPolicy.setMaxLength(sysSettingVO.getMaxPasswordLength());
-        basePasswordPolicyRepository.updateByPrimaryKey(passwordPolicy);
+        if (basePasswordPolicyRepository.updateByPrimaryKey(passwordPolicy) != 1) {
+            throw new CommonException("error.update.setting.password.policy");
+        }
         SysSettingVO dto = SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
         return dto;
     }

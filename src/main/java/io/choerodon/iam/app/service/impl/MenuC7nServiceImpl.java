@@ -142,7 +142,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     }
 
     @Override
-    public List<Menu> listNavMenuTree(Set<String> labels, Long projectId) {
+    public List<Menu> listNavMenuTree(Set<String> labels, Long tenantId, Long projectId) {
         if (labels == null && projectId == null) {
             throw new CommonException("error.menu.params");
         }

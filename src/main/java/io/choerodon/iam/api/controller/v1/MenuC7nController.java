@@ -4,6 +4,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.MenuC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.domain.entity.Menu;
@@ -36,9 +37,10 @@ public class MenuC7nController {
     @Permission(permissionLogin = true)
     @GetMapping(value = "/menu")
     public ResponseEntity<List<Menu>> listNavMenuTree(
+            @RequestParam(required = false) Long tenantId,
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) Set<String> labels) {
-        return ResponseEntity.ok(menuC7nService.listNavMenuTree(labels, projectId));
+        return ResponseEntity.ok(menuC7nService.listNavMenuTree(labels, tenantId, projectId));
     }
 
     @ApiOperation(value = "根据标签查询菜单")

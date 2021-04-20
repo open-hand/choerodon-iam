@@ -18,6 +18,7 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ImmutableProjectInfoVO;
 import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -60,6 +61,13 @@ public class ProjectC7nController extends BaseController {
                                             @RequestParam(value = "with_user_info", required = false, defaultValue = "true") Boolean withUserInfo,
                                             @RequestParam(value = "with_agile_info", required = false, defaultValue = "true") Boolean withAgileInfo) {
         return new ResponseEntity<>(projectService.queryProjectById(id, withCategoryInfo, withUserInfo, withAgileInfo), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping(value = "/{project_id}/immutable")
+    @ApiOperation(value = "按照项目Id查询项目的不可变信息")
+    public ResponseEntity<ImmutableProjectInfoVO> immutableProjectInfoById(@PathVariable(name = "project_id") Long id) {
+        return ResponseEntity.ok(projectService.queryImmutableProjectInfoById(id));
     }
 
     /**

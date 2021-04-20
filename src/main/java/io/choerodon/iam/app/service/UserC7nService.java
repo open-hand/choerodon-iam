@@ -169,6 +169,8 @@ public interface UserC7nService {
      */
     Boolean checkIsGitlabOwner(Long id, Long projectId, String level);
 
+    Boolean checkIsGitlabOwnerInOrgOrProject(Long projectId, Long userId);
+
 
     /**
      * 校验用户是否是项目的所有者

@@ -81,4 +81,28 @@
         </foreach>
     </select>
 
+    <select id="selectRoleLabelsForUserInProjectAndOrg" resultType="java.lang.String">
+        SELECT DISTINCT il.name
+        FROM iam_role ir
+                 INNER JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+                 INNER JOIN iam_label il ON il.id = hlr.label_id
+                 INNER JOIN (SELECT ir.id
+                             FROM fd_project_permission fpu
+                                      INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+                                      INNER JOIN iam_role ir ON imr.role_id = ir.id
+                                      left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+                                      Left JOIN iam_label il on il.id = hlr.label_id
+                             WHERE imr.member_id = #{userId}
+                               AND fpu.project_id = #{projectId}
+                               AND hlr.data_type = 'ROLE'
+                             UNION
+                             SELECT role.id
+                             FROM iam_role role
+                                      LEFT JOIN iam_member_role imr ON role.id = imr.role_id
+                             WHERE imr.member_id = #{userId}
+                               AND imr.member_type = 'user'
+                               AND imr.source_id = #{tenantId}
+                               AND imr.source_type = 'organization') tmp ON ir.id = tmp.id;
+    </select>
+
 </mapper>

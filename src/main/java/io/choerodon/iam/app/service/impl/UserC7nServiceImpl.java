@@ -8,10 +8,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.annotation.Resource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -35,6 +36,7 @@ import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +63,7 @@ import io.choerodon.iam.api.vo.devops.UserAttrVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
+import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
@@ -104,7 +107,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     private UserService userService;
     @Autowired
     private TransactionalProducer producer;
-    private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private FileClient fileClient;
     @Autowired
@@ -160,6 +162,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Autowired
     private StarProjectMapper starProjectMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    @Lazy
+    private ProjectC7nService projectC7nService;
 
     @Override
     public User queryInfo(Long userId) {
@@ -762,6 +769,24 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         }
         return false;
+    }
+
+    @Override
+    public Boolean checkIsGitlabOwnerInOrgOrProject(Long projectId, Long userId) {
+        String cacheKey = String.format(RedisCacheKeyConstants.IS_GITLAB_OWNER, userId);
+        String cacheValue = stringRedisTemplate.opsForValue().get(cacheKey);
+        if (cacheValue != null) {
+            return Boolean.valueOf(cacheValue);
+        } else {
+            ImmutableProjectInfoVO projectInfoVO = projectC7nService.queryImmutableProjectInfoById(projectId);
+            // 查出用户在项目层和组织层的所有角色标签
+            Set<String> labels = labelC7nMapper.selectRoleLabelsForUserInProjectAndOrg(userId, projectId, projectInfoVO.getTenantId());
+            // 是否包含owner标签或者admin标签
+            boolean result = labels.contains(RoleLabelEnum.GITLAB_OWNER.value()) || labels.contains(RoleLabelEnum.TENANT_ADMIN.value());
+            // 10s过期
+            stringRedisTemplate.opsForValue().set(cacheKey, String.valueOf(result), 10, TimeUnit.SECONDS);
+            return result;
+        }
     }
 
     @Override

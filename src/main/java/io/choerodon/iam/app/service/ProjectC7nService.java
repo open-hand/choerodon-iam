@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.vo.ImmutableProjectInfoVO;
 import io.choerodon.iam.api.vo.ProjectCategoryWarpVO;
 import io.choerodon.iam.api.vo.ProjectSagaVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
@@ -133,4 +134,6 @@ public interface ProjectC7nService {
      * @return
      */
     List<ProjectDTO> listAll(Boolean enabled);
+
+    ImmutableProjectInfoVO queryImmutableProjectInfoById(Long projectId);
 }

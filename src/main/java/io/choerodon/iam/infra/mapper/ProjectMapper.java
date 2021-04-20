@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.iam.api.vo.ImmutableProjectInfoVO;
 import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 import io.choerodon.iam.api.vo.ProjectSearchVO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -145,4 +146,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
     List<ProjectDTO> selectWithCategory(@Param("organizationId") Long organizationId, @Param("projectSearchVO") ProjectSearchVO projectSearchVO);
 
     List<ProjectDTO> listProjectOfDevopsOrOperations(@Param("projectName") String projectName, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);
+
+    ImmutableProjectInfoVO queryImmutableProjectInfo(@Param("projectId") Long projectId);
 }

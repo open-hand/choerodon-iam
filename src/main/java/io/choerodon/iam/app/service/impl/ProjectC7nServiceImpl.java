@@ -1,14 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.RedisCacheKeyConstants.PROJECT_INFO;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -20,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -59,6 +61,7 @@ import io.choerodon.iam.infra.feign.operator.AgileFeignClientOperator;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.JsonHelper;
 import io.choerodon.iam.infra.utils.SagaInstanceUtils;
 import io.choerodon.iam.infra.utils.SagaTopic;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -107,6 +110,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected UserC7nService userC7nService;
 
     private ProjectCategoryMapper projectCategoryMapper;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
@@ -125,6 +129,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  @Lazy
                                          UserC7nService userC7nService,
                                  RoleC7nMapper roleC7nMapper,
+                                 StringRedisTemplate stringRedisTemplate,
                                  ProjectCategoryMapper projectCategoryMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -140,6 +145,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.roleC7nMapper = roleC7nMapper;
         this.userC7nService = userC7nService;
         this.projectCategoryMapper = projectCategoryMapper;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     @Override
@@ -534,5 +540,30 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectMapCategoryDTO.setProjectId(projectDTO.getId());
         List<Long> dbProjectCategoryIds = projectMapCategoryMapper.select(projectMapCategoryDTO).stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
         return dbProjectCategoryIds;
+    }
+
+    @Override
+    public ImmutableProjectInfoVO queryImmutableProjectInfoById(Long projectId) {
+        String cacheKey = String.format(PROJECT_INFO, projectId);
+        // 先从 redis 中取数据
+        String result = stringRedisTemplate.opsForValue().get(cacheKey);
+        ImmutableProjectInfoVO info;
+
+        if (result == null) {
+            LOGGER.debug("Not Get immutable project info from cache for project with id {}, so set it...", projectId);
+            // 从数据库查询
+            info = projectMapper.queryImmutableProjectInfo(projectId);
+            if (info != null) {
+                // 存入 redis
+                stringRedisTemplate.opsForValue().set(cacheKey, JsonHelper.marshalByJackson(info), 24 + new Random().nextInt(3), TimeUnit.HOURS);
+            } else {
+                // 这个 null 也可以缓存 （但是目前没必要）
+                throw new CommonException("error.project.not.exist", projectId);
+            }
+        } else {
+            LOGGER.debug("Got immutable project info from cache for project with id {}", projectId);
+            info = JsonHelper.unmarshalByJackson(result, ImmutableProjectInfoVO.class);
+        }
+        return info;
     }
 }

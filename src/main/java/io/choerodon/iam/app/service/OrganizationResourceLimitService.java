@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.iam.api.vo.ResourceLimitVO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -54,4 +56,14 @@ public interface OrganizationResourceLimitService {
      * @param userNum
      */
     void checkEnableCreateUserOrThrowE(Long organizationId, int userNum);
+
+
+    /**
+     * 检查组织下是资源限制
+     *
+     * @param organizationId
+     * @return
+     */
+    ResourceLimitVO queryResourceLimit(Long organizationId);
+
 }

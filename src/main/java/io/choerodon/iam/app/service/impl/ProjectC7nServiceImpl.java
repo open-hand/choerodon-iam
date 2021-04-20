@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
@@ -110,7 +112,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     protected UserC7nService userC7nService;
 
     private ProjectCategoryMapper projectCategoryMapper;
-    private final StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
@@ -129,7 +132,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                                  @Lazy
                                          UserC7nService userC7nService,
                                  RoleC7nMapper roleC7nMapper,
-                                 StringRedisTemplate stringRedisTemplate,
                                  ProjectCategoryMapper projectCategoryMapper) {
         this.organizationProjectC7nService = organizationProjectC7nService;
         this.organizationAssertHelper = organizationAssertHelper;
@@ -145,7 +147,6 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         this.roleC7nMapper = roleC7nMapper;
         this.userC7nService = userC7nService;
         this.projectCategoryMapper = projectCategoryMapper;
-        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     @Override

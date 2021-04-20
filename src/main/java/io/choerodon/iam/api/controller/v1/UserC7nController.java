@@ -404,6 +404,15 @@ public class UserC7nController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验用户是否是gitlab组织层owner或者项目层的owner")
+    @GetMapping("/{id}/projects/{project_id}/check_is_org_or_proj_gitlab_owner")
+    public ResponseEntity<Boolean> checkIsOrgOrProjectGitlabOwner(
+            @Encrypt @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkIsGitlabOwnerInOrgOrProject(projectId, id));
+    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation("校验用户是否是项目的所有者")
     @GetMapping("/{id}/projects/{project_id}/check_is_owner")
     public ResponseEntity<Boolean> checkIsProjectOwner(

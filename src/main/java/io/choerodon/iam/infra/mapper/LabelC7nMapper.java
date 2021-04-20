@@ -19,6 +19,18 @@ public interface LabelC7nMapper {
 
     Set<String> selectLabelNamesInRoleIds(@Param("roleIds") Set<Long> roleIds);
 
+    /**
+     * 查出用户在项目层和组织层的所有角色标签
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @param tenantId  组织id
+     * @return 角色标签
+     */
+    Set<String> selectRoleLabelsForUserInProjectAndOrg(@Param("userId") Long userId,
+                                                       @Param("projectId") Long projectId,
+                                                       @Param("tenantId") Long tenantId);
+
     List<LabelDTO> listByOption(@Param("label") LabelDTO labelDTO);
 
     List<LabelDTO> selectLableNameByUserId(@Param("userId") Long userId);

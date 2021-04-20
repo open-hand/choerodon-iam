@@ -15,4 +15,10 @@ public final class RedisCacheKeyConstants {
      * 结构为 {@link io.choerodon.iam.api.vo.ImmutableProjectInfoVO}
      */
     public static final String PROJECT_INFO = KEY_PREFIX + "immutable-proj-info:%s";
+
+    /**
+     * 用户是否是gitlab owner，过期时间 10 秒
+     * 值是 true 或者 false
+     */
+    public static final String IS_GITLAB_OWNER = KEY_PREFIX + "is_gtlb_owner:%s";
 }

@@ -16,7 +16,7 @@ public interface MenuC7nService {
 
     List<Menu> listPermissionSetTree(Long tenantId, String menuLevel);
 
-    List<Menu> listNavMenuTree(Set<String> labels, Long projectId);
+    List<Menu> listNavMenuTree(Set<String> labels, Long tenantId, Long projectId);
 
     List<Menu> listMenuByLabel(Set<String> labels);
 

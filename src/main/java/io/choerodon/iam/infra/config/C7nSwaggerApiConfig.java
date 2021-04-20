@@ -46,6 +46,7 @@ public class C7nSwaggerApiConfig {
     public static final String CHOERODON_QUICK_LINK = "Choerodon Quick Link";
     public static final String CHOERODON_CUSTOM_LAYOUT_CONFIG = "Custom Layout Config";
     public static final String CHOERODON_PROJECT_SAGA = "Choerodon project saga";
+    public static final String CHOERODON_RESOURCE_LIMIT = "Choerodon reource limit";
 
 
     @Autowired
@@ -71,7 +72,8 @@ public class C7nSwaggerApiConfig {
                 new Tag(CHOERODON_ORGANIZATION_ADMIN, "choerodon组织管理员"),
                 new Tag(CHOERODON_COMPATIBLE, "choerodon对外组件向后兼容接口"),
                 new Tag(CHOERODON_CUSTOM_LAYOUT_CONFIG, "choerodon自定义工作台、项目概览组件配置接口"),
-                new Tag(CHOERODON_PROJECT_SAGA,"choerodon项目事务")
+                new Tag(CHOERODON_PROJECT_SAGA, "choerodon项目事务"),
+                new Tag(CHOERODON_RESOURCE_LIMIT, "Choerodon资源限制")
         );
     }
 }

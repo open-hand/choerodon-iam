@@ -699,4 +699,10 @@
                  INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};
     </select>
+
+    <select id="listProjectIdsInOrg" resultType="java.lang.Long">
+        SELECT id
+        FROM fd_project
+        WHERE fd_project.ORGANIZATION_ID = #{tenantId}
+    </select>
 </mapper>

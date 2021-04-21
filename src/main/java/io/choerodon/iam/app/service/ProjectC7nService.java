@@ -136,4 +136,12 @@ public interface ProjectC7nService {
     List<ProjectDTO> listAll(Boolean enabled);
 
     ImmutableProjectInfoVO queryImmutableProjectInfoById(Long projectId);
+
+    /**
+     * 根据组织id查询项目id集合
+     *
+     * @param tenantId 组织id
+     * @return 项目id集合
+     */
+    List<Long> queryProjectIdsInTenant(Long tenantId);
 }

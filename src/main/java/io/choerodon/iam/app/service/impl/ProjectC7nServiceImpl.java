@@ -567,4 +567,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         }
         return info;
     }
+
+    @Override
+    public List<Long> queryProjectIdsInTenant(Long tenantId) {
+        return projectMapper.listProjectIdsInOrg(tenantId);
+    }
 }

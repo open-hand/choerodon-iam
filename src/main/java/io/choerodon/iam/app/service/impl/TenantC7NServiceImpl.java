@@ -227,11 +227,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
         Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-//        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
-//        if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
-//            stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
-//        }
-//        Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
+        if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
+            stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
+        }
+        Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
         tenantVOPage.getContent().forEach(
                 tenantVO -> {
                     List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
@@ -258,7 +258,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         tenantVO.setDelay(true);
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-//                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
                 }
         );
         return tenantVOPage;

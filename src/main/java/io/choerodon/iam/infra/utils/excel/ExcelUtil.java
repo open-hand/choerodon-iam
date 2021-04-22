@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.utils.excel;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -11,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,6 +47,9 @@ public class ExcelUtil {
     private static final String DEFAULT_SHEET_NAME = "sheet";
 
     private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH24mmss";
+
+    private static final String ERROR_IO_WORKBOOK_WRITE_OUTPUTSTREAM = "error.io.workbook.write.output.stream";
+
 
     /**
      * @param workbook        excel工作薄
@@ -521,4 +527,14 @@ public class ExcelUtil {
 
         headerStyle.setFont(font);
     }
+
+    public static byte[] getBytes(Workbook workbook) {
+        try (ByteArrayOutputStream workbookOutputStream = new ByteArrayOutputStream()) {
+            workbook.write(workbookOutputStream);
+            return workbookOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new CommonException(ERROR_IO_WORKBOOK_WRITE_OUTPUTSTREAM, e);
+        }
+    }
+
 }

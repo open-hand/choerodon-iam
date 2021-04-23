@@ -62,20 +62,20 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(20, 180, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("C7n-selMenuPool-%d").build());
 
-    private MenuC7nMapper menuC7nMapper;
-    private MenuRepository menuRepository;
-    private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private UserRepository userRepository;
-    private MenuMapper menuMapper;
-    private MemberRoleC7nMapper memberRoleC7nMapper;
-    private RoleC7nMapper roleC7nMapper;
-    private ProjectPermissionMapper projectPermissionMapper;
-    private ProjectC7nService projectC7nService;
-    private UserC7nMapper userC7nMapper;
-    private RedisTemplate<String, String> redisTemplate;
-    private ProjectMapper projectMapper;
-    private UserMapper userMapper;
-    private StarProjectService starProjectService;
+    protected MenuC7nMapper menuC7nMapper;
+    protected MenuRepository menuRepository;
+    protected ProjectMapCategoryMapper projectMapCategoryMapper;
+    protected UserRepository userRepository;
+    protected MenuMapper menuMapper;
+    protected MemberRoleC7nMapper memberRoleC7nMapper;
+    protected RoleC7nMapper roleC7nMapper;
+    protected ProjectPermissionMapper projectPermissionMapper;
+    protected ProjectC7nService projectC7nService;
+    protected UserC7nMapper userC7nMapper;
+    protected RedisTemplate<String, String> redisTemplate;
+    protected ProjectMapper projectMapper;
+    protected UserMapper userMapper;
+    protected StarProjectService starProjectService;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,

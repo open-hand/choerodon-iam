@@ -195,6 +195,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
+        organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
         projectValidator.validateProjectCategory(projectDTO.getCategories());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null || enabled);

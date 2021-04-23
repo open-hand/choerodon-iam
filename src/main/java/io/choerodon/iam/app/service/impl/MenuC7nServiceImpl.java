@@ -53,7 +53,6 @@ import io.choerodon.iam.infra.utils.JsonHelper;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-@Service
 public class MenuC7nServiceImpl implements MenuC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MenuC7nServiceImpl.class);
     private static final String USER_MENU = "USER_MENU";
@@ -289,12 +288,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         return menuCount > 0;
     }
 
-    private String getCode(String code) {
-        int index = code.lastIndexOf('.');
-        return code.substring(index + 1);
-    }
-
-    private void saveVisitInfo(ProjectDTO projectDTO) {
+    @Override
+    public void saveVisitInfo(ProjectDTO projectDTO) {
         if (projectDTO != null) {
             Long userId = DetailsHelper.getUserDetails().getUserId();
             String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, projectDTO.getOrganizationId());
@@ -308,4 +303,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
         }
     }
+
+    private String getCode(String code) {
+        int index = code.lastIndexOf('.');
+        return code.substring(index + 1);
+    }
+
 }

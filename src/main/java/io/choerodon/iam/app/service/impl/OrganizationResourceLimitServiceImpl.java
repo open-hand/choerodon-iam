@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.iam.api.vo.ResourceLimitVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
  * 〈功能简述〉
@@ -49,5 +50,10 @@ public class OrganizationResourceLimitServiceImpl implements OrganizationResourc
     @Override
     public ResourceLimitVO queryResourceLimit(Long organizationId) {
         return null;
+    }
+
+    @Override
+    public void checkEnableCreateProjectType(Long organizationId, ProjectDTO projectDTO) {
+        // do nothing
     }
 }

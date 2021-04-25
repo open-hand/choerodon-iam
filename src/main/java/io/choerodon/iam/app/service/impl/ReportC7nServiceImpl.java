@@ -15,7 +15,7 @@ import io.choerodon.iam.infra.mapper.ReportMapper;
 @Service
 public class ReportC7nServiceImpl implements ReportC7nService {
 
-    private ReportMapper reportMapper;
+    protected ReportMapper reportMapper;
 
     public ReportC7nServiceImpl(ReportMapper reportMapper) {
         this.reportMapper = reportMapper;

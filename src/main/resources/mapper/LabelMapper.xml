@@ -99,7 +99,10 @@
                              SELECT role.id
                              FROM iam_role role
                                       LEFT JOIN iam_member_role imr ON role.id = imr.role_id
+                                      left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+                                      Left JOIN iam_label il on il.id = hlr.label_id
                              WHERE imr.member_id = #{userId}
+                               AND il.name = 'TENANT_ROLE'
                                AND imr.member_type = 'user'
                                AND imr.source_id = #{tenantId}
                                AND imr.source_type = 'organization') tmp ON ir.id = tmp.id;

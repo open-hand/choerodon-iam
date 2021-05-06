@@ -1,5 +1,7 @@
 package io.choerodon.iam.infra.dto.payload;
 
+import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,6 +25,17 @@ public class UserMemberEventPayload {
     private String uuid;
 
     private Boolean syncAll;
+
+    @ApiModelProperty("用户包含的角色ids")
+    private Set<Long> roleIds;
+
+    public Set<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(Set<Long> roleIds) {
+        this.roleIds = roleIds;
+    }
 
     public Set<String> getRoleLabels() {
         return roleLabels;

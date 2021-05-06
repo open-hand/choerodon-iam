@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import io.choerodon.iam.api.vo.*;
+
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
@@ -337,6 +338,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         Assert.notNull(userId, "error.userId.is.null");
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
 
+        Set<Long> newRoleIds = new HashSet<>();
 
         roleIds.forEach(roleId -> {
             User user = userMapper.selectByPrimaryKey(userId);
@@ -350,10 +352,12 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             if (projectPermissionMapper.selectOne(projectPermissionDTO) != null) {
                 return;
             }
+
             if (projectPermissionMapper.insertSelective(projectPermissionDTO) != 1) {
                 throw new CommonException(ERROR_SAVE_PROJECTUSER_FAILED);
             }
-
+            //把每一个用户新增的角色收集起来
+            newRoleIds.add(roleId);
             // 发送通知
             List<User> userList = new ArrayList<>();
             userList.add(user);
@@ -378,7 +382,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             }
         });
         // 3.发送saga
-        assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap);
+        assignUsersProjectRolesEvent(projectId, ResourceLevel.PROJECT, userRoleLabelsMap, newRoleIds);
     }
 
     @Override
@@ -388,6 +392,21 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
             UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
             userMemberEventPayload.setUserId(k);
             userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setResourceId(sourceId);
+            userMemberEventPayload.setResourceType(level.value());
+            userMemberEventPayloads.add(userMemberEventPayload);
+            roleMemberService.updateMemberRole(k, userMemberEventPayloads, level, sourceId);
+        });
+    }
+
+    @Override
+    public void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap, Set<Long> newRoleIds) {
+        userRoleLabelsMap.forEach((k, v) -> {
+            List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+            UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();
+            userMemberEventPayload.setUserId(k);
+            userMemberEventPayload.setRoleLabels(v);
+            userMemberEventPayload.setRoleIds(newRoleIds);
             userMemberEventPayload.setResourceId(sourceId);
             userMemberEventPayload.setResourceType(level.value());
             userMemberEventPayloads.add(userMemberEventPayload);

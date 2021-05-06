@@ -96,6 +96,7 @@ public interface ProjectPermissionService {
 
     void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap);
 
+    void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap, Set<Long> roleIds);
 
     void importProjectUser(Long projectId, List<ProjectPermissionDTO> projectUserDTOList);
 
@@ -132,6 +133,7 @@ public interface ProjectPermissionService {
 
     /**
      * 查询项目下的用户和校色
+     *
      * @param projectId
      * @return
      */

@@ -1,5 +1,8 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.iam.api.vo.ResourceLimitVO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -54,4 +57,22 @@ public interface OrganizationResourceLimitService {
      * @param userNum
      */
     void checkEnableCreateUserOrThrowE(Long organizationId, int userNum);
+
+
+    /**
+     * 检查组织下是资源限制
+     *
+     * @param organizationId
+     * @return
+     */
+    ResourceLimitVO queryResourceLimit(Long organizationId);
+
+
+    /**
+     * 检查能否创建该项目类型
+     * @param organizationId
+     * @param projectDTO
+     */
+    void checkEnableCreateProjectType(Long organizationId, ProjectDTO projectDTO);
+
 }

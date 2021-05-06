@@ -134,7 +134,7 @@ public class OrganizationProjectC7nController extends BaseController {
         return new ResponseEntity<>(organizationProjectC7nService.listProjectsByOrgId(organizationId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询项目/devops用")
     @GetMapping
     @CustomPageRequest

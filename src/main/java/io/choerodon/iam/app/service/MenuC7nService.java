@@ -5,6 +5,8 @@ import org.hzero.iam.domain.entity.Menu;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.infra.dto.ProjectDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -16,7 +18,7 @@ public interface MenuC7nService {
 
     List<Menu> listPermissionSetTree(Long tenantId, String menuLevel);
 
-    List<Menu> listNavMenuTree(Set<String> labels, Long projectId);
+    List<Menu> listNavMenuTree(Set<String> labels, Long tenantId, Long projectId);
 
     List<Menu> listMenuByLabel(Set<String> labels);
 
@@ -32,4 +34,6 @@ public interface MenuC7nService {
     List<Menu> listMenuByLevel(String code);
 
     Boolean hasSiteMenuPermission();
+
+    void saveVisitInfo(ProjectDTO projectDTO);
 }

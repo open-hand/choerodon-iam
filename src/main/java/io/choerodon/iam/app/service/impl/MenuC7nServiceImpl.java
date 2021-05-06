@@ -53,7 +53,6 @@ import io.choerodon.iam.infra.utils.JsonHelper;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-@Service
 public class MenuC7nServiceImpl implements MenuC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MenuC7nServiceImpl.class);
     private static final String USER_MENU = "USER_MENU";
@@ -62,20 +61,20 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(20, 180, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("C7n-selMenuPool-%d").build());
 
-    private MenuC7nMapper menuC7nMapper;
-    private MenuRepository menuRepository;
-    private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private UserRepository userRepository;
-    private MenuMapper menuMapper;
-    private MemberRoleC7nMapper memberRoleC7nMapper;
-    private RoleC7nMapper roleC7nMapper;
-    private ProjectPermissionMapper projectPermissionMapper;
-    private ProjectC7nService projectC7nService;
-    private UserC7nMapper userC7nMapper;
-    private RedisTemplate<String, String> redisTemplate;
-    private ProjectMapper projectMapper;
-    private UserMapper userMapper;
-    private StarProjectService starProjectService;
+    protected MenuC7nMapper menuC7nMapper;
+    protected MenuRepository menuRepository;
+    protected ProjectMapCategoryMapper projectMapCategoryMapper;
+    protected UserRepository userRepository;
+    protected MenuMapper menuMapper;
+    protected MemberRoleC7nMapper memberRoleC7nMapper;
+    protected RoleC7nMapper roleC7nMapper;
+    protected ProjectPermissionMapper projectPermissionMapper;
+    protected ProjectC7nService projectC7nService;
+    protected UserC7nMapper userC7nMapper;
+    protected RedisTemplate<String, String> redisTemplate;
+    protected ProjectMapper projectMapper;
+    protected UserMapper userMapper;
+    protected StarProjectService starProjectService;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -142,7 +141,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     }
 
     @Override
-    public List<Menu> listNavMenuTree(Set<String> labels, Long projectId) {
+    public List<Menu> listNavMenuTree(Set<String> labels, Long tenantId, Long projectId) {
         if (labels == null && projectId == null) {
             throw new CommonException("error.menu.params");
         }
@@ -289,12 +288,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         return menuCount > 0;
     }
 
-    private String getCode(String code) {
-        int index = code.lastIndexOf('.');
-        return code.substring(index + 1);
-    }
-
-    private void saveVisitInfo(ProjectDTO projectDTO) {
+    @Override
+    public void saveVisitInfo(ProjectDTO projectDTO) {
         if (projectDTO != null) {
             Long userId = DetailsHelper.getUserDetails().getUserId();
             String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, projectDTO.getOrganizationId());
@@ -308,4 +303,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
         }
     }
+
+    private String getCode(String code) {
+        int index = code.lastIndexOf('.');
+        return code.substring(index + 1);
+    }
+
 }

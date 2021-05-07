@@ -188,7 +188,7 @@
                 AND fp.name LIKE concat(concat('%', #{name}), '%')
             </if>
             <if test="params != null">
-                AND fp.name LIKE concat(concat('%', #{params}), '%')
+                AND (fp.name LIKE concat(concat('%', #{params}), '%') OR fo.tenant_name LIKE concat(concat('%', #{params}), '%'))
             </if>
             group by fp.id
 

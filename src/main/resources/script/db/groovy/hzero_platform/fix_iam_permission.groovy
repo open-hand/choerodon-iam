@@ -20,4 +20,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fix_iam_permission.groovy') {
     changeSet(author: 'scp', id: '2021-04-16-iam-member-role') {
         sql("UPDATE iam_member_role SET h_assign_level = 'organization' WHERE role_id = ( SELECT ir.id FROM iam_role ir WHERE ir.CODE = 'role/site/default/administrator' )")
     }
+
+    changeSet(author: 'scp', id: '2021-05-08-iam-user') {
+        sql("UPDATE iam_user SET id=0 where login_name='ANONYMOUS'")
+    }
 }

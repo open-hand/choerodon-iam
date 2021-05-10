@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -38,6 +39,7 @@ public class QuickLinkDTO extends AuditDomain {
 
     @ApiModelProperty(value = "快速链接地址")
     @NotEmpty
+    @Pattern(regexp = "^https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$", message = "快速链接url格式不正确，应该包含http或者https")
     private String linkUrl;
 
     @ApiModelProperty(value = "创建用户id")

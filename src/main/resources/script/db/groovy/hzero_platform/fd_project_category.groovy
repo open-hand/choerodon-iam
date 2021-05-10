@@ -37,4 +37,19 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_category.groovy') {
             column(name: 'sequence', type: "BIGINT UNSIGNED", remarks: '项目类型顺序', defaultValue: '60', afterColumn: 'ORGANIZATION_ID')
         }
     }
+
+    changeSet(author: 'wx', id: '2021-05-07-fd_project_category-fix-data') {
+
+        sql("""
+              UPDATE fd_project_category 
+              SET DESCRIPTION = 'DevOps管理',
+              NAME = 'DevOps管理' 
+              WHERE
+              CODE = 'N_DEVOPS';
+              UPDATE fd_project_category 
+              SET DESCRIPTION = 'DevOps管理'
+              WHERE
+              CODE = 'N_OPERATIONS'
+            """)
+    }
 }

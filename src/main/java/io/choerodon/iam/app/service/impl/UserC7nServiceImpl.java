@@ -1382,20 +1382,39 @@ public class UserC7nServiceImpl implements UserC7nService {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
-        // 普通用户只能查到启用的项目
-        if (!isAdmin && !isOrgAdmin) {
-            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-                return page;
-            } else {
-                projectDTO.setEnabled(true);
-            }
-        }
+        // 普通用户只能查到启用的项目(不包括项目所有者)
+//        if (!isAdmin && !isOrgAdmin) {
+//            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+//                return page;
+//            } else {
+//                projectDTO.setEnabled(true);
+//            }
+//        }
+        //查询到的项目包括已启用和未启用的
         page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {
             return page;
         }
+        //项目成员看不到未启用的
+        List<ProjectDTO> projectDTOS = page.getContent().stream().filter(projectDTOVO -> {
+            if (!projectDTOVO.getEnabled()) {
+                if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(userDetails.getUserId(), projectDTOVO.getId())) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return new Page<>();
+        }
+        page.setContent(projectDTOS);
+        page.setTotalElements(projectDTOS.size());
+        int remain = projectDTOS.size() % pageable.getSize();
+        page.setTotalPages(remain == 0 ? projectDTOS.size() / pageable.getSize() : projectDTOS.size() / pageable.getSize() + 1);
+
         // 添加额外信息
         addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
@@ -1448,6 +1467,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         boolean isAdmin = isRoot(userId);
 
         CommonExAssertUtil.assertTrue(userId != null, "error.user.get");
-      return  PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName,userId,isAdmin));
+        return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
     }
 }

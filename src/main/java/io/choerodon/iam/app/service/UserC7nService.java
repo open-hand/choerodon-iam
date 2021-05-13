@@ -312,6 +312,7 @@ public interface UserC7nService {
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 
     Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+    int getDisableProjectByProjectMember(Long tenantId, Long userId);
 
     /**
      * 查询用户在组织下可以访问的所有项目的id

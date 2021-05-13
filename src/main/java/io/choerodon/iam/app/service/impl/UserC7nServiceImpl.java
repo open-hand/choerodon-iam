@@ -1399,7 +1399,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         }
         //项目成员看不到未启用的
         List<ProjectDTO> projectDTOS = page.getContent().stream().filter(projectDTOVO -> {
+            //如果是停用的项目
             if (!projectDTOVO.getEnabled()) {
+                //如果用户的权限是项目成员，则过滤掉
                 if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(userDetails.getUserId(), projectDTOVO.getId())) {
                     return false;
                 }
@@ -1411,13 +1413,22 @@ public class UserC7nServiceImpl implements UserC7nService {
             return new Page<>();
         }
         page.setContent(projectDTOS);
-        page.setTotalElements(projectDTOS.size());
-        int remain = projectDTOS.size() % pageable.getSize();
-        page.setTotalPages(remain == 0 ? projectDTOS.size() / pageable.getSize() : projectDTOS.size() / pageable.getSize() + 1);
+        //TotalElements=page.getTotal-组织下停用且用户是项目成员角色的项目数量
+        if (!isAdmin && !isOrgAdmin) {
+            page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, userDetails.getUserId()));
+        }
+        int rawPage = (int) page.getTotalElements() / pageable.getSize();
+        int remains = (int) page.getTotalElements() % pageable.getSize();
+        page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
 
         // 添加额外信息
         addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
+    }
+
+    @Override
+    public int getDisableProjectByProjectMember(Long tenantId, Long userId) {
+        return projectMapper.selectDisableProjectByProjectMember(tenantId, userId);
     }
 
     @Override

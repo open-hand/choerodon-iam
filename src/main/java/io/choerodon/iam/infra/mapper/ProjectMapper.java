@@ -150,4 +150,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
     ImmutableProjectInfoVO queryImmutableProjectInfo(@Param("projectId") Long projectId);
 
     List<Long> listProjectIdsInOrg(@Param("tenantId") Long tenantId);
+
+    int selectDisableProjectByProjectMember(@Param("tenantId")Long tenantId, @Param("userId")Long userId);
 }

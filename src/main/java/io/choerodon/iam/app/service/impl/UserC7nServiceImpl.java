@@ -1428,7 +1428,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public int getDisableProjectByProjectMember(Long tenantId, Long userId) {
-        return projectMapper.selectDisableProjectByProjectMember(tenantId, userId);
+        Integer integer = projectMapper.selectDisableProjectByProjectMember(tenantId, userId);
+        if (Objects.isNull(integer)) {
+            return 0;
+        }
+        return integer.intValue();
     }
 
     @Override

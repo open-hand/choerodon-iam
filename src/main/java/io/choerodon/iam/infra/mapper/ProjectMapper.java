@@ -151,5 +151,5 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     List<Long> listProjectIdsInOrg(@Param("tenantId") Long tenantId);
 
-    int selectDisableProjectByProjectMember(@Param("tenantId")Long tenantId, @Param("userId")Long userId);
+    Integer selectDisableProjectByProjectMember(@Param("tenantId")Long tenantId, @Param("userId")Long userId);
 }

@@ -706,7 +706,7 @@
         WHERE fd_project.ORGANIZATION_ID = #{tenantId}
     </select>
 
-    <select id="selectDisableProjectByProjectMember" resultType="int">
+    <select id="selectDisableProjectByProjectMember" resultType="java.lang.Integer">
         SELECT
           count(1)
         FROM

@@ -35,6 +35,15 @@ public interface OrganizationResourceLimitService {
      */
     Boolean checkOrganizationIsRegister(Long tenantId);
 
+
+    /**
+     * 校验组织是否是saas注册组织
+     *
+     * @param tenantId
+     * @return 默认值false
+     */
+    Boolean checkOrganizationIsSaas(Long tenantId);
+
     /**
      * 校验组织是否还能创建项目
      *

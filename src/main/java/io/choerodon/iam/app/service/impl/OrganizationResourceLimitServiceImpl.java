@@ -33,6 +33,11 @@ public class OrganizationResourceLimitServiceImpl implements OrganizationResourc
     }
 
     @Override
+    public Boolean checkOrganizationIsSaas(Long tenantId) {
+        return false;
+    }
+
+    @Override
     public void checkEnableCreateProjectOrThrowE(Long organizationId) {
         // do nothing
     }

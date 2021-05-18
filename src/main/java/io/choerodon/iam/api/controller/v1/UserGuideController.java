@@ -32,7 +32,9 @@ public class UserGuideController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "查询指引步骤")
     @GetMapping
-    public ResponseEntity<List<UserGuideVO>> listUserGuideByMenuId(@RequestParam(value = "menu_id") Long menuId) {
-        return ResponseEntity.ok(userGuideService.listUserGuideByMenuId(menuId));
+    public ResponseEntity<List<UserGuideVO>> listUserGuideByMenuId(@RequestParam(value = "menu_id") Long menuId,
+                                                                   @RequestParam(value = "project_id", required = false) Long projectId,
+                                                                   @RequestParam(value = "organization_id", required = false) Long organizationId) {
+        return ResponseEntity.ok(userGuideService.listUserGuideByMenuId(menuId, projectId, organizationId));
     }
 }

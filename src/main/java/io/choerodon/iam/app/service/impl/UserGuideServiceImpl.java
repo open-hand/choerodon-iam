@@ -5,6 +5,7 @@ import java.util.List;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.iam.api.vo.UserGuideVO;
@@ -23,6 +24,8 @@ import io.choerodon.iam.infra.mapper.UserGuideMapper;
 @Service
 public class UserGuideServiceImpl implements UserGuideService {
 
+    @Value("${services.front.url: http://app.example.com}")
+    private String frontUrl;
     @Autowired
     private UserGuideMapper userGuideMapper;
     @Autowired
@@ -56,7 +59,7 @@ public class UserGuideServiceImpl implements UserGuideService {
                 pageUrl = pageUrl.replace("${organizationName}", tenant.getTenantName());
             }
         }
-        userGuideVO.setPageUrl(pageUrl);
+        userGuideVO.setPageUrl(frontUrl + pageUrl);
 
     }
 }

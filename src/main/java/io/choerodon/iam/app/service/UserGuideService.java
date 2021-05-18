@@ -13,5 +13,12 @@ import io.choerodon.iam.api.vo.UserGuideVO;
  */
 public interface UserGuideService {
 
-    List<UserGuideVO> listUserGuideByMenuId(Long menuId);
+    /**
+     * 查询菜单下的指引步骤
+     * @param menuId
+     * @param projectId
+     * @param organizationId
+     * @return
+     */
+    List<UserGuideVO> listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId);
 }

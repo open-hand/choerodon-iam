@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide.groovy') {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }
+            column(name: 'STEP_CODE', type: 'VARCHAR(256)', remarks: '步骤编码') {
+                constraints(nullable: false)
+            }
             column(name: 'STEP_NAME', type: 'VARCHAR(256)', remarks: '步骤名') {
                 constraints(nullable: false)
             }
@@ -26,6 +29,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+        addUniqueConstraint(tableName: 'FD_USER_GUIDE', columnNames: 'STEP_CODE', constraintName: 'UK_FD_USER_GUIDE_U1')
 
     }
 }

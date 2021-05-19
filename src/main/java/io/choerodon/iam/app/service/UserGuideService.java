@@ -20,5 +20,5 @@ public interface UserGuideService {
      * @param organizationId
      * @return
      */
-    List<UserGuideVO> listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId);
+    UserGuideVO listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId);
 }

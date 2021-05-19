@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.vo;
 
+import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,17 +20,14 @@ public class UserGuideVO {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty("步骤名")
-    private String stepName;
-    @ApiModelProperty("步骤描述")
-    private String description;
-    @ApiModelProperty("指引文档地址")
-    private String docUrl;
-    @ApiModelProperty("页面地址")
-    private String pageUrl;
+    @ApiModelProperty("指引编码")
+    private String code;
 
-    @ApiModelProperty("步骤顺序")
-    private Long stepOrder;
+    @ApiModelProperty("指引标题")
+    private String title;
+
+    private List<UserGuideStepVO> userGuideStepVOList;
+
 
     public Long getId() {
         return id;
@@ -39,43 +37,27 @@ public class UserGuideVO {
         this.id = id;
     }
 
-    public String getStepName() {
-        return stepName;
+    public String getCode() {
+        return code;
     }
 
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTitle() {
+        return title;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getDocUrl() {
-        return docUrl;
+    public List<UserGuideStepVO> getUserGuideStepVOList() {
+        return userGuideStepVOList;
     }
 
-    public void setDocUrl(String docUrl) {
-        this.docUrl = docUrl;
-    }
-
-    public String getPageUrl() {
-        return pageUrl;
-    }
-
-    public void setPageUrl(String pageUrl) {
-        this.pageUrl = pageUrl;
-    }
-
-    public Long getStepOrder() {
-        return stepOrder;
-    }
-
-    public void setStepOrder(Long stepOrder) {
-        this.stepOrder = stepOrder;
+    public void setUserGuideStepVOList(List<UserGuideStepVO> userGuideStepVOList) {
+        this.userGuideStepVOList = userGuideStepVOList;
     }
 }

@@ -485,6 +485,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         userMemberEventPayload.setResourceId(projectId);
         userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
         userMemberEventPayload.setSyncAll(syncAll);
+        userMemberEventPayload.setRoleIds(roleIdList);
         userMemberEventPayloads.add(userMemberEventPayload);
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
 

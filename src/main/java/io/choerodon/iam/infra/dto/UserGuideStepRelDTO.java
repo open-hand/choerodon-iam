@@ -7,6 +7,8 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -14,14 +16,14 @@ import io.swagger.annotations.ApiModelProperty;
  * @author wanghao
  * @since 2021/5/18 11:08
  */
-@Table(name = "fd_user_guide_menu_rel")
-public class UserGuideMenuRelDTO {
+@Table(name = "fd_user_guide_step_rel")
+public class UserGuideStepRelDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("菜单id")
-    private Long menuId;
+    private Long userGuideId;
     @ApiModelProperty("步骤id")
     private Long stepId;
     @ApiModelProperty("步骤顺序")
@@ -35,12 +37,12 @@ public class UserGuideMenuRelDTO {
         this.id = id;
     }
 
-    public Long getMenuId() {
-        return menuId;
+    public Long getUserGuideId() {
+        return userGuideId;
     }
 
-    public void setMenuId(Long menuId) {
-        this.menuId = menuId;
+    public void setUserGuideId(Long userGuideId) {
+        this.userGuideId = userGuideId;
     }
 
     public Long getStepId() {

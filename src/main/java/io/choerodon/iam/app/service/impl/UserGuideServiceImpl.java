@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.iam.api.vo.UserGuideStepVO;
 import io.choerodon.iam.api.vo.UserGuideVO;
 import io.choerodon.iam.app.service.UserGuideService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.UserGuideMapper;
+import io.choerodon.iam.infra.mapper.UserGuideStepMapper;
 
 /**
  * 〈功能简述〉
@@ -32,19 +34,24 @@ public class UserGuideServiceImpl implements UserGuideService {
     private ProjectMapper projectMapper;
     @Autowired
     private TenantMapper tenantMapper;
+    @Autowired
+    private UserGuideStepMapper userGuideStepMapper;
 
     @Override
-    public List<UserGuideVO> listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId) {
-        List<UserGuideVO> userGuideVOS = userGuideMapper.listUserGuideByMenuId(menuId);
-        userGuideVOS.forEach(userGuideVO -> {
-            calculatePageUrl(projectId, organizationId, userGuideVO);
-        });
+    public UserGuideVO listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId) {
 
-        return userGuideVOS;
+        UserGuideVO userGuideVO = userGuideMapper.queryUserGuideByMenuId(menuId);
+
+        List<UserGuideStepVO> userGuideStepVOList = userGuideStepMapper.listStepByGuideId(userGuideVO.getId());
+
+        userGuideStepVOList.forEach(userGuideStepVO -> calculatePageUrl(projectId, organizationId, userGuideStepVO));
+
+        userGuideVO.setUserGuideStepVOList(userGuideStepVOList);
+        return userGuideVO;
     }
 
-    private void calculatePageUrl(Long projectId, Long organizationId, UserGuideVO userGuideVO) {
-        String pageUrl = userGuideVO.getPageUrl();
+    private void calculatePageUrl(Long projectId, Long organizationId, UserGuideStepVO userGuideStepVO) {
+        String pageUrl = userGuideStepVO.getPageUrl();
         if (projectId != null) {
             ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
             pageUrl = pageUrl.replace("${projectId}", projectId.toString());
@@ -59,7 +66,7 @@ public class UserGuideServiceImpl implements UserGuideService {
                 pageUrl = pageUrl.replace("${organizationName}", tenant.getTenantName());
             }
         }
-        userGuideVO.setPageUrl(frontUrl + pageUrl);
+        userGuideStepVO.setPageUrl(frontUrl + pageUrl);
 
     }
 }

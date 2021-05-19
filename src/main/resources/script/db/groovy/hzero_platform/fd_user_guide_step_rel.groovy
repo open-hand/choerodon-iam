@@ -1,12 +1,12 @@
 package script.db.groovy.hzero_platform
 
-databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_menu_rel.groovy') {
-    changeSet(author: 'wanghao', id: '2021-05-18-fd_user_guide_menu_rel') {
-        createTable(tableName: "FD_USER_GUIDE_MENU_REL") {
+databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_step_rel.groovy') {
+    changeSet(author: 'wanghao', id: '2021-05-18-fd_user_guide_step_rel') {
+        createTable(tableName: "FD_USER_GUIDE_STEP_REL") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }
-            column(name: 'MENU_ID', type: 'BIGINT UNSIGNED', remarks: '菜单id') {
+            column(name: 'USER_GUIDE_ID', type: 'BIGINT UNSIGNED', remarks: '指引id') {
                 constraints(nullable: false)
             }
             column(name: 'STEP_ID', type: 'BIGINT UNSIGNED', remarks: '步骤id') {
@@ -22,7 +22,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_menu_rel.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'FD_USER_GUIDE_MENU_REL', columnNames: 'MENU_ID,STEP_ID', constraintName: 'UK_FD_USER_GUIDE_MENU_REL_U1')
+        addUniqueConstraint(tableName: 'FD_USER_GUIDE_STEP_REL', columnNames: 'USER_GUIDE_ID,STEP_ID', constraintName: 'UK_FD_USER_GUIDE_STEP_REL_U1')
 
     }
 }

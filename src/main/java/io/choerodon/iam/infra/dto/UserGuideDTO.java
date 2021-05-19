@@ -23,14 +23,16 @@ public class UserGuideDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty("步骤名")
-    private String stepName;
-    @ApiModelProperty("步骤描述")
-    private String description;
-    @ApiModelProperty("指引文档地址")
-    private String docUrl;
-    @ApiModelProperty("页面地址")
-    private String pageUrl;
+    @ApiModelProperty("指引编码")
+    private String code;
+
+    @ApiModelProperty("指引标题")
+    private String title;
+
+    @ApiModelProperty("菜单id")
+    private Long menuId;
+
+
 
     public Long getId() {
         return id;
@@ -40,35 +42,27 @@ public class UserGuideDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getStepName() {
-        return stepName;
+    public String getCode() {
+        return code;
     }
 
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTitle() {
+        return title;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getDocUrl() {
-        return docUrl;
+    public Long getMenuId() {
+        return menuId;
     }
 
-    public void setDocUrl(String docUrl) {
-        this.docUrl = docUrl;
-    }
-
-    public String getPageUrl() {
-        return pageUrl;
-    }
-
-    public void setPageUrl(String pageUrl) {
-        this.pageUrl = pageUrl;
+    public void setMenuId(Long menuId) {
+        this.menuId = menuId;
     }
 }

@@ -30,11 +30,12 @@ public class UserGuideController {
 
 
     @Permission(permissionLogin = true)
-    @ApiOperation(value = "查询指引步骤")
+    @ApiOperation(value = "查询指引步骤(menuId和guideCode不能同时为空)")
     @GetMapping
-    public ResponseEntity<UserGuideVO> listUserGuideByMenuId(@RequestParam(value = "menu_id") Long menuId,
-                                                                   @RequestParam(value = "project_id", required = false) Long projectId,
-                                                                   @RequestParam(value = "organization_id", required = false) Long organizationId) {
-        return ResponseEntity.ok(userGuideService.listUserGuideByMenuId(menuId, projectId, organizationId));
+    public ResponseEntity<UserGuideVO> listUserGuideByMenuId(@RequestParam(value = "menu_id", required = false) Long menuId,
+                                                             @RequestParam(value = "guide_code", required = false) String guideCode,
+                                                             @RequestParam(value = "project_id", required = false) Long projectId,
+                                                             @RequestParam(value = "organization_id", required = false) Long organizationId) {
+        return ResponseEntity.ok(userGuideService.listUserGuideByMenuId(menuId, guideCode, projectId, organizationId));
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
@@ -49,11 +50,18 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private TenantMapper tenantMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OrganizationResourceLimitService limitService;
 
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
         Long operatorId = DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId();
+        if (!CollectionUtils.isEmpty(memberRoleList)) {
+            memberRoleList.forEach(t -> {
+                limitService.checkEnableAddMember(t.getSourceId());
+            });
+        }
         if (isHzeroMemberRole(memberRoleList)) {
             if (!CollectionUtils.isEmpty(memberRoleList)) {
                 Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));

@@ -61,4 +61,9 @@ public class OrganizationResourceLimitServiceImpl implements OrganizationResourc
     public void checkEnableCreateProjectType(Long organizationId, ProjectDTO projectDTO) {
         // do nothing
     }
+
+    @Override
+    public void checkEnableAddMember(Long tenantId) {
+        // do nothing
+    }
 }

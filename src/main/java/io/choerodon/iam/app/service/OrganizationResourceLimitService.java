@@ -84,4 +84,11 @@ public interface OrganizationResourceLimitService {
      */
     void checkEnableCreateProjectType(Long organizationId, ProjectDTO projectDTO);
 
+    /**
+     * 检查能否启用、添加成员
+     * @param tenantId
+     * @return
+     */
+    void checkEnableAddMember(Long tenantId);
+
 }

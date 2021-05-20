@@ -49,7 +49,9 @@ public class UserGuideServiceImpl implements UserGuideService {
         } else {
             return null;
         }
-
+        if (userGuideVO == null) {
+            return null;
+        }
 
         List<UserGuideStepVO> userGuideStepVOList = userGuideStepMapper.listStepByGuideId(userGuideVO.getId());
 

@@ -16,4 +16,6 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface UserGuideMapper extends BaseMapper<UserGuideDTO> {
 
     UserGuideVO queryUserGuideByMenuId(@Param("menuId") Long menuId);
+
+    UserGuideVO queryUserGuideByCode(@Param("guideCode") String guideCode);
 }

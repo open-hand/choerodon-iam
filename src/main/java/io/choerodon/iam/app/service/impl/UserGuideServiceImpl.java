@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,17 @@ public class UserGuideServiceImpl implements UserGuideService {
     private UserGuideStepMapper userGuideStepMapper;
 
     @Override
-    public UserGuideVO listUserGuideByMenuId(Long menuId, Long projectId, Long organizationId) {
+    public UserGuideVO listUserGuideByMenuId(Long menuId, String guideCode, Long projectId, Long organizationId) {
+        UserGuideVO userGuideVO;
 
-        UserGuideVO userGuideVO = userGuideMapper.queryUserGuideByMenuId(menuId);
+        if (menuId != null) {
+            userGuideVO = userGuideMapper.queryUserGuideByMenuId(menuId);
+        } else if (StringUtils.isNoneBlank(guideCode)){
+            userGuideVO = userGuideMapper.queryUserGuideByCode(guideCode);
+        } else {
+            return null;
+        }
+
 
         List<UserGuideStepVO> userGuideStepVOList = userGuideStepMapper.listStepByGuideId(userGuideVO.getId());
 

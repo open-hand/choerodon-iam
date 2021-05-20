@@ -7,4 +7,9 @@
         from fd_user_guide fug
         where fug.menu_id = #{menuId}
     </select>
+    <select id="queryUserGuideByCode" resultType="io.choerodon.iam.api.vo.UserGuideVO">
+        select *
+        from fd_user_guide fug
+        where fug.code = #{guideCode}
+    </select>
 </mapper>

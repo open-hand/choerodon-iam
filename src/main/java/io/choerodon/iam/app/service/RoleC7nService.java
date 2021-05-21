@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
@@ -69,4 +70,6 @@ public interface RoleC7nService {
 
 
     Role getSiteRoleByCode(String code);
+
+    List<User> listVindicators();
 }

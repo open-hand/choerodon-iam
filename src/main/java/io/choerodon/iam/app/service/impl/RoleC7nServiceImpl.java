@@ -10,6 +10,7 @@ import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.springframework.stereotype.Service;
@@ -219,5 +220,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         return roleMapper.selectOne(role);
     }
 
-
+    @Override
+    public List<User> listVindicators() {
+        return roleC7nMapper.listVindicators();
+    }
 }

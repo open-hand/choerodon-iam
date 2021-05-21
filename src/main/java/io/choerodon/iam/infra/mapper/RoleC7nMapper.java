@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.RoleVO;
 
 import java.util.List;
@@ -111,4 +112,6 @@ public interface RoleC7nMapper {
     List<Role> listChildRoleByTplRoleId(@Param("roleId") Long roleId);
 
     List<Long> listRoleIdsByTenantId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
+
+    List<User> listVindicators();
 }

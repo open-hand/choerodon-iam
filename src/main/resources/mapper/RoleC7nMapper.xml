@@ -415,4 +415,15 @@
                 AND imr.source_id = #{tenantId}
     </select>
 
+    <select id="listVindicators" resultType="org.hzero.iam.domain.entity.User">
+        SELECT
+            iu.*
+        FROM
+            iam_user iu
+                JOIN iam_role ir ON ir.`code` = 'role/site/default/auditor'
+                JOIN iam_member_role imr ON imr.member_id = iu.id
+                AND imr.member_type = 'user'
+                AND imr.role_id = ir.id
+    </select>
+
 </mapper>

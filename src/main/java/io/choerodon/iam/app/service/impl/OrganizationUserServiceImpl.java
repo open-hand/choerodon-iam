@@ -492,7 +492,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId) {
         LOGGER.info("Start to batch insert {} users into tenant with id {}...", insertUsers.size(), organizationId);
         List<ErrorUserVO> errorUsers = new ArrayList<>();
-        List<UserEventPayload> payloads = new ArrayList<>();
+//        List<UserEventPayload> payloads = new ArrayList<>();
         boolean errorUserFlag = true;
         List<User> users = new ArrayList<>();
         for (User user : insertUsers) {
@@ -512,10 +512,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 errorUsers.add(errorUser);
                 errorUserFlag = false;
             }
-            boolean userEnabled = userDTO != null && userDTO.getEnabled();
-            if (userEnabled) {
-                generateUserEventPayload(payloads, userDTO);
-            }
+//            boolean userEnabled = userDTO != null && userDTO.getEnabled();
+//            if (userEnabled) {
+//                generateUserEventPayload(payloads, userDTO);
+//            }
             if (errorUserFlag) {
                 users.add(user);
             }
@@ -541,7 +541,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 ex -> LOGGER.info("Failed to send notices after batchCreateUsersOnExcel due to the ex", ex)
         );
 
-        sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
+//        sendBatchUserCreateEvent(payloads, insertUsers.get(0).getOrganizationId());
         LOGGER.info("Batch insert {} users into tenant with id {} processed...", insertUsers.size(), organizationId);
         return errorUsers;
     }

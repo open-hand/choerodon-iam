@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide.groovy') {
             column(name: 'TITLE', type: 'VARCHAR(256)', remarks: '标题') {
                 constraints(nullable: false)
             }
-            column(name: 'MENU_ID', type: 'BIGINT UNSIGNED', remarks: '菜单id') {
+            column(name: 'MENU_ID', type: 'BIGINT', remarks: '菜单id') {
                 constraints(nullable: false)
             }
 

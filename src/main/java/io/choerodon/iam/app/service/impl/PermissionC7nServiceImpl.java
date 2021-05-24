@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
+import org.hzero.iam.app.service.MenuService;
 import org.hzero.iam.domain.entity.Permission;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
@@ -67,6 +68,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private RolePermissionC7nMapper rolePermissionC7nMapper;
     @Autowired
     private RoleC7nMapper roleC7nMapper;
+    @Autowired
+    private MenuService menuService;
 
 
     @Override
@@ -111,6 +114,9 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     @Async
     public void asyncRolePermission() {
         try {
+            // 修复菜单层级（增量更新，只更新层级为null的）
+            menuService.fixMenuData(false);
+
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {
                 LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");

@@ -218,7 +218,18 @@ hzero:
         enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
   tenant-init:
     enable-async: false # 是否开启异步创建组织
-
+  lock:
+    #模式
+    pattern: ${HZERO_LOCK_PATTERN:single}
+    sentinel-server:
+      #哨兵模式
+      master-name: ${SPRING_REDIS_SENTINEL_MASTER:mymaster}
+      sentinel-addresses: ${SPRING_REDIS_SENTINEL_NODES:127.0.0.1:6389,127.0.0.1:6399}
+      #单节点模式
+    single-server:
+      address: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
 
 choerodon:
   saga:

@@ -44,6 +44,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-lock</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-core</artifactId>
         </dependency>

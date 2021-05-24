@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.iam.app.service.MenuService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.infra.constant.Constants;
@@ -30,8 +31,8 @@ import io.choerodon.iam.infra.utils.C7nCollectionUtils;
  * Description:
  */
 @Component
-public class PermissionFixRunner implements CommandLineRunner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionFixRunner.class);
+public class PermissionAndMenuFixRunner implements CommandLineRunner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionAndMenuFixRunner.class);
 
     @Autowired
     private RoleC7nMapper roleC7nMapper;
@@ -47,10 +48,15 @@ public class PermissionFixRunner implements CommandLineRunner {
     private Integer sleepTime;
     @Value("${choerodon.fix.data.flag: true}")
     private Boolean fixDataFlag;
+    @Autowired
+    private MenuService menuService;
 
     @Override
     public void run(String... strings) {
         try {
+            // 修复菜单层级
+            menuService.fixMenuData(true);
+
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {
                 LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");

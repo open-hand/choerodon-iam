@@ -27,4 +27,10 @@ public interface PermissionC7nService {
 
     void asyncRolePermission();
 
+
+    /**
+     * 修复菜单层级
+     * @param initAll 是否更新所有菜单
+     */
+    void fixLevelPath(Boolean initAll);
 }

@@ -14,19 +14,23 @@ import org.hzero.iam.domain.repository.PermissionRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.lock.annotation.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.*;
@@ -114,9 +118,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     @Async
     public void asyncRolePermission() {
         try {
-            // 修复菜单层级（增量更新，只更新层级为null的）
-            menuService.fixMenuData(false);
-
+            PermissionC7nServiceImpl permissionC7nService = ApplicationContextHelper.getBean(PermissionC7nServiceImpl.class);
+            permissionC7nService.fixLevelPath(false);
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {
                 LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");
@@ -126,6 +129,12 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }
+    }
+
+    @Override
+    @Lock(name = RedisCacheKeyConstants.FIX_MENU_LEVEL_PATH_FLAG)
+    public void fixLevelPath(Boolean initAll) {
+        menuService.fixMenuData(initAll);
     }
 
     private void fixChildPermission() {

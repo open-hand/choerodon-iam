@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.iam.app.service.MenuService;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.hzero.iam.infra.constant.Constants;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.RolePermissionC7nMapper;
@@ -49,13 +49,13 @@ public class PermissionAndMenuFixRunner implements CommandLineRunner {
     @Value("${choerodon.fix.data.flag: true}")
     private Boolean fixDataFlag;
     @Autowired
-    private MenuService menuService;
+    private PermissionC7nService permissionC7nService;
 
     @Override
     public void run(String... strings) {
         try {
             // 修复菜单层级
-            menuService.fixMenuData(true);
+            permissionC7nService.fixLevelPath(true);
 
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {

@@ -28,6 +28,15 @@ public class ReportDTO extends AuditDomain {
     private Long sort;
     private Long typeSequence;
     private Long visibility;
+    private String module;
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
 
     public Long getId() {
         return id;

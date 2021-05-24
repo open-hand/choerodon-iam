@@ -5,7 +5,9 @@ import io.choerodon.iam.app.service.ReportC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ReportDTO;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
@@ -34,9 +36,10 @@ public class ReportC7nController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询报表列表")
-    @GetMapping(value = "/list")
-    public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId) {
-        return new ResponseEntity<>(reportService.queryReportList(projectId), HttpStatus.OK);
+    @ApiOperation(value = "根据菜单的类型来查询图表")
+    @GetMapping(value = "/list/{module}")
+    public ResponseEntity<List<ReportDTO>> queryReportList(@PathVariable(value = "project_id") Long projectId
+            , @PathVariable(value = "module") String module) {
+        return new ResponseEntity<>(reportService.queryReportList(projectId, module), HttpStatus.OK);
     }
 }

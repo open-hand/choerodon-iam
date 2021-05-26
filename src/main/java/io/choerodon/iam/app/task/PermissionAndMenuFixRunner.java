@@ -57,11 +57,10 @@ public class PermissionAndMenuFixRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            // 修复菜单层级
-            fixService.fixMenuLevelPath(true);
-
-            // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {
+                // 修复菜单层级
+                fixService.fixMenuLevelPath(true);
+                // 修复子角色权限（保持和模板角色权限一致）
                 LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");
                 fixChildPermission();
                 LOGGER.info(">>>>>>>>>>>>>>>>>>> end fix role permission >>>>>>>>>>>>>>>>>>>>>>");

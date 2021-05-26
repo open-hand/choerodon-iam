@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.app.service.FixService;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
@@ -50,12 +51,14 @@ public class PermissionAndMenuFixRunner implements CommandLineRunner {
     private Boolean fixDataFlag;
     @Autowired
     private PermissionC7nService permissionC7nService;
+    @Autowired
+    private FixService fixService;
 
     @Override
     public void run(String... strings) {
         try {
             // 修复菜单层级
-            permissionC7nService.fixLevelPath(true);
+            fixService.fixMenuLevelPath(true);
 
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {

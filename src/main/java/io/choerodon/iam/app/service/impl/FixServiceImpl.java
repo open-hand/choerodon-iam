@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.iam.app.service.FixService;
+import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
@@ -10,7 +11,9 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
 import io.choerodon.iam.infra.utils.StringUtil;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.hzero.iam.app.service.MenuService;
 import org.hzero.iam.infra.mapper.UserMapper;
+import org.hzero.lock.annotation.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,8 @@ public class FixServiceImpl implements FixService {
     private UserC7nMapper userC7nMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private MenuService menuService;
 
     @Override
     @Async
@@ -97,4 +102,11 @@ public class FixServiceImpl implements FixService {
             userC7nMapper.updatePinyinHeadCharById(t.getId(), StringUtil.getPinYinHeadChar(t.getRealName()));
         });
     }
+
+    @Override
+    @Lock(name = RedisCacheKeyConstants.FIX_MENU_LEVEL_PATH_FLAG)
+    public void fixMenuLevelPath(Boolean initAll) {
+        menuService.fixMenuData(initAll);
+    }
+
 }

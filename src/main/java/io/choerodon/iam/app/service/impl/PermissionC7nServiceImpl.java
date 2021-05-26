@@ -118,8 +118,6 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     @Async
     public void asyncRolePermission() {
         try {
-            PermissionC7nServiceImpl permissionC7nService = ApplicationContextHelper.getBean(PermissionC7nServiceImpl.class);
-            permissionC7nService.fixLevelPath(false);
             // 修复子角色权限（保持和模板角色权限一致）
             if (Boolean.TRUE.equals(fixDataFlag)) {
                 LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");
@@ -129,12 +127,6 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }
-    }
-
-    @Override
-    @Lock(name = RedisCacheKeyConstants.FIX_MENU_LEVEL_PATH_FLAG)
-    public void fixLevelPath(Boolean initAll) {
-        menuService.fixMenuData(initAll);
     }
 
     private void fixChildPermission() {

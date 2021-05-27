@@ -14,20 +14,22 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * 〈〉
  *
  * @author wanghao
- * @since 2021/5/18 11:08
+ * @since 2021/5/18 11:05
  */
-@Table(name = "fd_user_guide_step_rel")
-public class UserGuideStepRelDTO extends AuditDomain {
+@Table(name = "fd_user_guide_menu_rel")
+public class UserGuideMenuRelDTO extends AuditDomain {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ApiModelProperty("菜单id")
+    private Long menuId;
+
     @ApiModelProperty("指引id")
     private Long userGuideId;
-    @ApiModelProperty("步骤id")
-    private Long stepId;
-    @ApiModelProperty("步骤顺序")
-    private Long stepOrder;
+
+
 
     public Long getId() {
         return id;
@@ -37,6 +39,7 @@ public class UserGuideStepRelDTO extends AuditDomain {
         this.id = id;
     }
 
+
     public Long getUserGuideId() {
         return userGuideId;
     }
@@ -45,19 +48,11 @@ public class UserGuideStepRelDTO extends AuditDomain {
         this.userGuideId = userGuideId;
     }
 
-    public Long getStepId() {
-        return stepId;
+    public Long getMenuId() {
+        return menuId;
     }
 
-    public void setStepId(Long stepId) {
-        this.stepId = stepId;
-    }
-
-    public Long getStepOrder() {
-        return stepOrder;
-    }
-
-    public void setStepOrder(Long stepOrder) {
-        this.stepOrder = stepOrder;
+    public void setMenuId(Long menuId) {
+        this.menuId = menuId;
     }
 }

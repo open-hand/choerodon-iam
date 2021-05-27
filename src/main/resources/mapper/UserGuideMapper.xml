@@ -5,7 +5,8 @@
     <select id="queryUserGuideByMenuId" resultType="io.choerodon.iam.api.vo.UserGuideVO">
         select *
         from fd_user_guide fug
-        where fug.menu_id = #{menuId}
+        inner join fd_user_guide_menu_rel fugmr on fug.id = fugmr.user_guide_id
+        where fugmr.menu_id = #{menuId}
     </select>
     <select id="queryUserGuideByCode" resultType="io.choerodon.iam.api.vo.UserGuideVO">
         select *

@@ -26,7 +26,6 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .sync()
                 .pre()
                 .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
-                .addInterceptorAfter(C7nUserLoginNameInterceptor.class, ValidationInterceptor.class)
                 .post()
                 .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
                 .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);

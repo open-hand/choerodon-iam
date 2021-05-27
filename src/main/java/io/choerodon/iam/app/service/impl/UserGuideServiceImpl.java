@@ -27,7 +27,7 @@ import io.choerodon.iam.infra.mapper.UserGuideStepMapper;
 @Service
 public class UserGuideServiceImpl implements UserGuideService {
 
-    @Value("${services.front.url: http://app.example.com}")
+    @Value("${services.front.url:http://app.example.com}")
     private String frontUrl;
     @Autowired
     private UserGuideMapper userGuideMapper;

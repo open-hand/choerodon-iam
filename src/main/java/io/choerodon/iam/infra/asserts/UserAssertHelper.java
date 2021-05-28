@@ -27,6 +27,11 @@ public class UserAssertHelper extends AssertHelper {
         dto.setLoginName("ANONYMOUS");
         return userMapper.selectOne(dto);
     }
+    public User queryAdminUser() {
+        User dto = new User();
+        dto.setLoginName("admin");
+        return userMapper.selectOne(dto);
+    }
 
     public User userNotExisted(Long id) {
         return userNotExisted(id, "error.user.not.exist");

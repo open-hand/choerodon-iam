@@ -196,6 +196,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         projectValidator.validateProjectCategory(projectDTO.getCategories());
+        // 如果使用的是客户端创建，获取到的用户是匿名用户，匿名用户没有gitlab用户，所以切换用户为admin创建
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (DetailsHelper.getAnonymousDetails().getUsername().equals(userDetails.getUsername())) {
+            User user = userAssertHelper.queryAdminUser();
+            CustomUserDetails customUserDetails = new CustomUserDetails(user.getLoginName(), "default");
+            customUserDetails.setUserId(user.getId());
+            customUserDetails.setLanguage(user.getLanguage());
+            DetailsHelper.setCustomUserDetails(customUserDetails);
+        }
+
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null || enabled);
         ProjectDTO res = create(projectDTO);

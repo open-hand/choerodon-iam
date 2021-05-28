@@ -218,7 +218,18 @@ hzero:
         enable: true    # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
   tenant-init:
     enable-async: false # 是否开启异步创建组织
-
+  lock:
+    #模式
+    pattern: ${HZERO_LOCK_PATTERN:single}
+    sentinel-server:
+      #哨兵模式
+      master-name: ${SPRING_REDIS_SENTINEL_MASTER:mymaster}
+      sentinel-addresses: ${SPRING_REDIS_SENTINEL_NODES:127.0.0.1:6389,127.0.0.1:6399}
+      #单节点模式
+    single-server:
+      address: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
 
 choerodon:
   saga:
@@ -226,13 +237,14 @@ choerodon:
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数
-      poll-interval: 3 # 拉取消息的间隔(秒)，默认1秒
+      poll-interval-ms: 3000 # 拉取消息的间隔(毫秒)，默认1000毫秒
       enabled: true # 是否启用消费端
   schedule:
     consumer:
       enabled: true # 启用任务调度消费端
-      thread-num: 1 # 任务调度消费线程数
-      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+      core-thread-num: 20
+      max-thread-num: 20 # 消费线程数
+      poll-interval-ms: 3000 # 拉取间隔，默认1000毫秒
   category:
     enabled: true
   fix:

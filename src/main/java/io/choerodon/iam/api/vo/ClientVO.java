@@ -76,6 +76,17 @@ public class ClientVO {
     @ApiModelProperty(value = "项目Id")
     private Long projectId;
 
+    @ApiModelProperty("接口加密标识")
+    private Integer apiEncryptFlag;
+
+    public Integer getApiEncryptFlag() {
+        return apiEncryptFlag;
+    }
+
+    public void setApiEncryptFlag(Integer apiEncryptFlag) {
+        this.apiEncryptFlag = apiEncryptFlag;
+    }
+
     public Long getId() {
         return id;
     }

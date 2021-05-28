@@ -38,10 +38,9 @@
         INNER JOIN fd_project fp ON fspur.PROJECT_ID = fp.ID
         <if test="!isAdmin">
             INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.ID
-            INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+            INNER JOIN iam_member_role imr ON (imr.id = fpu.MEMBER_ROLE_ID AND imr.member_id = #{userId} and imr member_type = 'user')
         </if>
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND fp.IS_ENABLED = true AND fspur.USER_ID = #{userId}
-          AND imr.member_id = #{userId} and imr member_type = 'user'
         GROUP BY fp.id
         ORDER BY fspur.id desc
         <if test="size != null">

@@ -195,7 +195,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
-        projectValidator.validateProjectCategory(projectDTO.getCategories());
+
         // 如果使用的是客户端创建，获取到的用户是匿名用户，匿名用户没有gitlab用户，所以切换用户为admin创建
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         if (DetailsHelper.getAnonymousDetails().getUsername().equals(userDetails.getUsername())) {
@@ -206,6 +206,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             DetailsHelper.setCustomUserDetails(customUserDetails);
         }
 
+        projectValidator.validateProjectCategory(projectDTO.getCategories());
         Boolean enabled = projectDTO.getEnabled();
         projectDTO.setEnabled(enabled == null || enabled);
         ProjectDTO res = create(projectDTO);

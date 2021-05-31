@@ -77,7 +77,7 @@ public class UserGuideServiceImpl implements UserGuideService {
                 pageUrl = pageUrl.replace("${organizationName}", tenant.getTenantName());
             }
         }
-        userGuideStepVO.setPageUrl(frontUrl + pageUrl);
+        userGuideStepVO.setPageUrl(pageUrl);
 
     }
 }

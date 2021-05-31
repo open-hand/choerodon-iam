@@ -17,7 +17,12 @@ import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -167,6 +172,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Resource
     @Lazy
     private ProjectC7nService projectC7nService;
+    @Autowired
+    private BasePasswordPolicyRepository basePasswordPolicyRepository;
+    @Autowired
+    private PasswordPolicyManager passwordPolicyManager;
+    @Autowired
+    private EncryptClient encryptClient;
 
     @Override
     public User queryInfo(Long userId) {
@@ -1015,6 +1026,14 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (!user.comparePassword(userPasswordDTO.getOriginalPassword())) {
             throw new CommonException("error.password.originalPassword");
         }
+
+        String decryptPassword = encryptClient.decrypt(userPasswordDTO.getPassword());
+        BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(user.getOrganizationId());
+        Long tenantId = passwordPolicy.getEnablePassword() ? user.getOrganizationId() : 0L;
+        BaseUser baseUser = new BaseUser();
+        BeanUtils.copyProperties(user, baseUser);
+        baseUser.setPassword(decryptPassword);
+        passwordPolicyManager.passwordValidate(decryptPassword, tenantId, baseUser);
         userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
 
         // send siteMsg

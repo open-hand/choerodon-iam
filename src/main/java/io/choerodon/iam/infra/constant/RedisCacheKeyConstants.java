@@ -19,8 +19,9 @@ public final class RedisCacheKeyConstants {
     /**
      * 用户是否是gitlab owner，过期时间 10 秒
      * 值是 true 或者 false
+     * 参数是项目id，用户id
      */
-    public static final String IS_GITLAB_OWNER = KEY_PREFIX + "is_gtlb_owner:%s";
+    public static final String IS_GITLAB_OWNER = KEY_PREFIX + "is_gtlb_owner:%s-%s";
 
     /**
      * 是否正在修复菜单层级

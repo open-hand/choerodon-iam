@@ -784,7 +784,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean checkIsGitlabOwnerInOrgOrProject(Long projectId, Long userId) {
-        String cacheKey = String.format(RedisCacheKeyConstants.IS_GITLAB_OWNER, userId);
+        String cacheKey = String.format(RedisCacheKeyConstants.IS_GITLAB_OWNER, projectId, userId);
         String cacheValue = stringRedisTemplate.opsForValue().get(cacheKey);
         if (cacheValue != null) {
             return Boolean.valueOf(cacheValue);
@@ -1497,7 +1497,12 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest) {
-        Long userId = DetailsHelper.getUserDetails().getUserId();
+        Long userId;
+        if (DetailsHelper.getUserDetails() != null) {
+            userId = DetailsHelper.getUserDetails().getUserId();
+        } else {
+            userId = userAssertHelper.queryAnonymousUser().getId();
+        }
         boolean isAdmin = isRoot(userId);
 
         CommonExAssertUtil.assertTrue(userId != null, "error.user.get");

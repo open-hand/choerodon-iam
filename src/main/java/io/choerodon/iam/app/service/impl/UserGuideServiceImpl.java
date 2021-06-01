@@ -70,11 +70,16 @@ public class UserGuideServiceImpl implements UserGuideService {
 
         Set<Long> psIds = userGuideStepVOList.stream().map(UserGuideStepVO::getPermissionId).collect(Collectors.toSet());
         Set<Long> permittedIds = null;
-        if (projectId != null) {
-            permittedIds = projectPermissionService.listProjectUserPermission(userDetails.getUserId(), psIds, projectId);
+        if (Boolean.TRUE.equals(userDetails.getAdmin())) {
+            permittedIds = psIds;
         } else {
-            permittedIds = roleMemberService.listUserPermission(userDetails.getUserId(), psIds, organizationId);
+            if (projectId != null) {
+                permittedIds = projectPermissionService.listProjectUserPermission(userDetails.getUserId(), psIds, projectId);
+            } else {
+                permittedIds = roleMemberService.listUserPermission(userDetails.getUserId(), psIds, organizationId);
+            }
         }
+
 
 
         Set<Long> finalPermittedIds = permittedIds;

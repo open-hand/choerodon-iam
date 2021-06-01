@@ -786,6 +786,19 @@
         INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
     </select>
+    <select id="queryProjectUserPermission" resultType="java.lang.Long">
+        select irp.permission_id
+        from fd_project_permission fpp
+                 inner join iam_member_role imr on (imr.id = fpp.MEMBER_ROLE_ID)
+                 inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = true)
+                 inner join iam_role_permission irp on (irp.role_id = ir.id and type = 'PS')
+        where imr.member_type = 'user' and imr.member_id = #{userId}
+          and imr.source_id = #{organizationId} and imr.source_type = 'organization'
+          and fpp.PROJECT_ID = #{projectId} and irp.permission_id in
+        <foreach collection="psIds" item="psId" open="(" close=")" separator="," index="i">
+            #{psId}
+        </foreach>
+    </select>
 
 
 </mapper>

@@ -65,4 +65,6 @@ public interface RoleMemberService {
     void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roleList);
 
     void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds,Long operatorId);
+
+    Set<Long> listUserPermission(Long userId, Set<Long> psIds, Long organizationId);
 }

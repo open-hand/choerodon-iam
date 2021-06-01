@@ -16,13 +16,15 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @since 2021/5/19 14:59
  */
-@Table(name = "fd_user_guide_step_rel")
+@Table(name = "fd_user_guide_step")
 public class UserGuideStepDTO extends AuditDomain {
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("步骤编码")
+    private String stepCode;
     @ApiModelProperty("步骤名")
     private String stepName;
     @ApiModelProperty("步骤描述")
@@ -31,6 +33,16 @@ public class UserGuideStepDTO extends AuditDomain {
     private String docUrl;
     @ApiModelProperty("页面地址")
     private String pageUrl;
+    @ApiModelProperty("权限集id")
+    private Long permissionId;
+
+    public String getStepCode() {
+        return stepCode;
+    }
+
+    public void setStepCode(String stepCode) {
+        this.stepCode = stepCode;
+    }
 
     public String getStepName() {
         return stepName;
@@ -62,5 +74,21 @@ public class UserGuideStepDTO extends AuditDomain {
 
     public void setPageUrl(String pageUrl) {
         this.pageUrl = pageUrl;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPermissionId() {
+        return permissionId;
+    }
+
+    public void setPermissionId(Long permissionId) {
+        this.permissionId = permissionId;
     }
 }

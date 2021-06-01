@@ -32,4 +32,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_step.groovy') {
         addUniqueConstraint(tableName: 'FD_USER_GUIDE_STEP', columnNames: 'STEP_CODE', constraintName: 'UK_FD_USER_GUIDE_STEP_U1')
 
     }
+
+    changeSet(author: 'wanghao', id: '2021-04-19-fd-user-guide-step-add-column') {
+        addColumn(tableName: 'FD_USER_GUIDE_STEP') {
+            column(name: 'PERMISSION_ID', type: "BIGINT UNSIGNED", remarks: '权限集id', afterColumn: 'PAGE_URL')
+        }
+    }
 }

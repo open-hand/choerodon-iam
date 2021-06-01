@@ -22,6 +22,20 @@ public class UserGuideStepVO {
     @ApiModelProperty("步骤顺序")
     private Long stepOrder;
 
+    @ApiModelProperty("权限集id")
+    private Long permissionId;
+
+    @ApiModelProperty("是否有权限")
+    private Boolean permitted;
+
+    public Long getPermissionId() {
+        return permissionId;
+    }
+
+    public void setPermissionId(Long permissionId) {
+        this.permissionId = permissionId;
+    }
+
     public String getStepName() {
         return stepName;
     }
@@ -60,5 +74,13 @@ public class UserGuideStepVO {
 
     public void setStepOrder(Long stepOrder) {
         this.stepOrder = stepOrder;
+    }
+
+    public Boolean getPermitted() {
+        return permitted;
+    }
+
+    public void setPermitted(Boolean permitted) {
+        this.permitted = permitted;
     }
 }

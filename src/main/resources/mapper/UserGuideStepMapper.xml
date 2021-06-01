@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.UserGuideStepMapper">
 
     <select id="listStepByGuideId" resultType="io.choerodon.iam.api.vo.UserGuideStepVO">
-        SELECT fugs.*,fugsr.STEP_ORDER
+        SELECT fugs.*,fugsr.STEP_ORDER,fugs.PERMISSION_ID
         FROM fd_user_guide_step_rel fugsr
                  LEFT JOIN fd_user_guide_step fugs ON fugsr.STEP_ID = fugs.ID
         WHERE fugsr.USER_GUIDE_ID = #{guideId}

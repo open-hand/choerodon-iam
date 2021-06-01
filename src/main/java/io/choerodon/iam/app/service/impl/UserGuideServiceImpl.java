@@ -1,6 +1,8 @@
 package io.choerodon.iam.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.domain.entity.Tenant;
@@ -9,8 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.UserGuideStepVO;
 import io.choerodon.iam.api.vo.UserGuideVO;
+import io.choerodon.iam.app.service.ProjectPermissionService;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserGuideService;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
@@ -37,10 +43,17 @@ public class UserGuideServiceImpl implements UserGuideService {
     private TenantMapper tenantMapper;
     @Autowired
     private UserGuideStepMapper userGuideStepMapper;
+    @Autowired
+    private ProjectPermissionService projectPermissionService;
+    @Autowired
+    private RoleMemberService roleMemberService;
 
     @Override
     public UserGuideVO listUserGuideByMenuId(Long menuId, String guideCode, Long projectId, Long organizationId) {
         UserGuideVO userGuideVO;
+
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+
 
         if (menuId != null) {
             userGuideVO = userGuideMapper.queryUserGuideByMenuId(menuId);
@@ -55,7 +68,20 @@ public class UserGuideServiceImpl implements UserGuideService {
 
         List<UserGuideStepVO> userGuideStepVOList = userGuideStepMapper.listStepByGuideId(userGuideVO.getId());
 
-        userGuideStepVOList.forEach(userGuideStepVO -> calculatePageUrl(projectId, organizationId, userGuideStepVO));
+        Set<Long> psIds = userGuideStepVOList.stream().map(UserGuideStepVO::getPermissionId).collect(Collectors.toSet());
+        Set<Long> permittedIds = null;
+        if (projectId != null) {
+            permittedIds = projectPermissionService.listProjectUserPermission(userDetails.getUserId(), psIds, projectId);
+        } else {
+            permittedIds = roleMemberService.listUserPermission(userDetails.getUserId(), psIds, organizationId);
+        }
+
+
+        Set<Long> finalPermittedIds = permittedIds;
+        userGuideStepVOList.forEach(userGuideStepVO -> {
+            calculatePageUrl(projectId, organizationId, userGuideStepVO);
+            userGuideStepVO.setPermitted(finalPermittedIds.contains(userGuideStepVO.getPermissionId()));
+        });
 
         userGuideVO.setUserGuideStepVOList(userGuideStepVOList);
         return userGuideVO;

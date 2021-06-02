@@ -332,7 +332,13 @@
             </if>
         </where>
         GROUP BY fp.id
-        order by fp.is_enabled desc,fp.creation_date desc
+        order by
+        <if test="projectDTO!=null">
+            <if test="projectDTO.id !=null">
+                fp.id=#{projectDTO.id} desc,
+            </if>
+        </if>
+        fp.is_enabled desc,fp.creation_date desc
     </select>
 
     <select id="selectProjectIdsByUserIdOrAdmin" resultType="long">

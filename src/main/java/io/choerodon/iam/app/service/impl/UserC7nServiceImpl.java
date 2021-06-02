@@ -1441,7 +1441,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
 
         // 添加额外信息
-        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
+//        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
     }
 

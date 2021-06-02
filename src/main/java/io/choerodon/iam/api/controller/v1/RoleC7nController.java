@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,4 +88,15 @@ public class RoleC7nController {
     public ResponseEntity<Role> getSiteRoleByCode(@RequestParam(value = "code") String code) {
         return ResponseEntity.ok(roleC7nService.getSiteRoleByCode(code));
     }
+
+    //
+    // 查询所有平台维护用户
+    // ------------------------------------------------------------------------------
+    @ApiOperation("查询所有平台维护用户")
+    @Permission(permissionWithin = true)
+    @GetMapping("/list_vindicators")
+    public ResponseEntity<List<User>> listVindicators() {
+        return Results.success(roleC7nService.listVindicators());
+    }
+
 }

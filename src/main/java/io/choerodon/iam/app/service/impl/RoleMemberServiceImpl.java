@@ -838,6 +838,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         });
     }
 
+    @Override
+    public Set<Long> listUserPermission(Long userId, Set<Long> psIds, Long organizationId) {
+        return memberRoleC7nMapper.listUserPermission(userId, psIds, organizationId);
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

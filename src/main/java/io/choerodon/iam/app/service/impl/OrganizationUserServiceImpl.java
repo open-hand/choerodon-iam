@@ -436,6 +436,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
     public User enableUser(Long organizationId, Long userId) {
+        organizationResourceLimitService.checkEnableAddMember(organizationId);
         userService.unfrozenUser(userId, organizationId);
         User user = query(organizationId, userId);
         UserEventPayload userEventPayload = new UserEventPayload();

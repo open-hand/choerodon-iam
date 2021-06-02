@@ -140,4 +140,6 @@ public interface ProjectPermissionService {
     List<UserDTO> getUserListByProjectId(Long projectId);
 
     List<ProjectWithUserVO> listProjectOwnerByIds(Set<Long> projectIds);
+
+    Set<Long> listProjectUserPermission(Long userId, Set<Long> psIds, Long projectId);
 }

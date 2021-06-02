@@ -253,4 +253,9 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
 
     List<ProjectWithUserVO> listUsersByRoleLabelAndProjectIds(@Param("projectIds") Set<Long> projectIds,
                                                               @Param("roleLabel") String roleLabel);
+
+    Set<Long> queryProjectUserPermission(@Param("userId") Long userId,
+                                         @Param("psIds") Set<Long> psIds,
+                                         @Param("projectId") Long projectId,
+                                         @Param("organizationId") Long organizationId);
 }

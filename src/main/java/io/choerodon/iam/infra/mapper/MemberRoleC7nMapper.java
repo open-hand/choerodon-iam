@@ -32,4 +32,10 @@ public interface MemberRoleC7nMapper {
 
     List<Role> listRoleByUserIdAndTenantId(@Param("userId") Long userId,
                                            @Param("tenantId") Long tenantId);
+
+    Set<Long> listUserPermission(@Param("userId") Long userId,
+                                 @Param("psIds") Set<Long> psIds,
+                                 @Param("organizationId") Long organizationId);
+
+
 }

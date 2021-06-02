@@ -22,4 +22,9 @@ public final class RedisCacheKeyConstants {
      * 参数是项目id，用户id
      */
     public static final String IS_GITLAB_OWNER = KEY_PREFIX + "is_gtlb_owner:%s-%s";
+
+    /**
+     * 是否正在修复菜单层级
+     */
+    public static final String FIX_MENU_LEVEL_PATH_FLAG = KEY_PREFIX + "fix_menu_level_path_flag";
 }

@@ -217,6 +217,12 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
+    public Set<Long> listProjectUserPermission(Long userId, Set<Long> psIds, Long projectId) {
+        ProjectDTO projectDTO = projectC7nService.queryBasicInfo(projectId);
+        return projectPermissionMapper.queryProjectUserPermission(userId, psIds, projectId, projectDTO.getOrganizationId());
+    }
+
+    @Override
     public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
         return projectPermissionMapper.listUsersByNameWithLimit(projectId, param);
     }

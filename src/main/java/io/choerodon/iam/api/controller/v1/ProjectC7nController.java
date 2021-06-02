@@ -37,11 +37,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/choerodon/v1/projects")
 public class ProjectC7nController extends BaseController {
-
-    @Value("${choerodon.category.enabled:false}")
-    private boolean enableCategory;
-
-    private ProjectC7nService projectService;
+    private final ProjectC7nService projectService;
 
     public ProjectC7nController(ProjectC7nService projectService) {
         this.projectService = projectService;
@@ -63,11 +59,18 @@ public class ProjectC7nController extends BaseController {
         return new ResponseEntity<>(projectService.queryProjectById(id, withCategoryInfo, withUserInfo, withAgileInfo), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @GetMapping(value = "/{project_id}/immutable")
     @ApiOperation(value = "按照项目Id查询项目的不可变信息")
     public ResponseEntity<ImmutableProjectInfoVO> immutableProjectInfoById(@PathVariable(name = "project_id") Long id) {
         return ResponseEntity.ok(projectService.queryImmutableProjectInfoById(id));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @GetMapping("/list/ids_in_org")
+    @ApiOperation("根据组织id查询项目的id集合")
+    public ResponseEntity<List<Long>> listProjectIdsInOrg(@RequestParam("tenant_id") Long tenantId) {
+        return ResponseEntity.ok(projectService.queryProjectIdsInTenant(tenantId));
     }
 
     /**

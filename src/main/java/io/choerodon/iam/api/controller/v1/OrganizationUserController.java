@@ -229,6 +229,7 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+                                                                   @RequestParam(value = "project_id",required = false) Long projectId,
                                                                    @RequestParam(required = false) String name,
                                                                    @RequestParam(required = false) String code,
                                                                    @RequestParam(required = false) String category,
@@ -236,6 +237,7 @@ public class OrganizationUserController extends BaseController {
                                                                    @RequestParam(required = false) Long createdBy,
                                                                    @RequestParam(required = false) String params) {
         ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setId(projectId);
         projectDTO.setName(name);
         projectDTO.setCode(code);
         projectDTO.setCategory(category);

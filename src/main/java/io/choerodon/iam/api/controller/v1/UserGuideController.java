@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +33,7 @@ public class UserGuideController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "查询指引步骤(menuId和guideCode不能同时为空)")
     @GetMapping
-    public ResponseEntity<UserGuideVO> listUserGuideByMenuId(@RequestParam(value = "menu_id", required = false) Long menuId,
+    public ResponseEntity<UserGuideVO> listUserGuideByMenuId(@RequestParam(value = "menu_id", required = false) @Encrypt Long menuId,
                                                              @RequestParam(value = "guide_code", required = false) String guideCode,
                                                              @RequestParam(value = "project_id", required = false) Long projectId,
                                                              @RequestParam(value = "organization_id", required = false) Long organizationId) {

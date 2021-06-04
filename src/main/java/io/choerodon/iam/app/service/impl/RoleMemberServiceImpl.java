@@ -429,6 +429,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional
     public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         validateSourceId(sourceId, sourceType);
@@ -789,7 +790,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    @Transactional
     public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds, Long operatorId) {
         Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
         User user = userMapper.selectByPrimaryKey(userId);

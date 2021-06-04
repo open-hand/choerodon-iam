@@ -209,7 +209,6 @@ public class ExcelImportUserTask {
     }
 
     @Async("excel-executor")
-    @Transactional
     public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);

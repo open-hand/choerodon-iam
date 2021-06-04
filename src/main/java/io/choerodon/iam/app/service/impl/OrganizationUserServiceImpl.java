@@ -505,7 +505,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 ErrorUserVO errorUser = new ErrorUserVO();
                 BeanUtils.copyProperties(user, errorUser);
                 if (e instanceof CommonException && ERROR_ORGANIZATION_USER_NUM_MAX.equals(((CommonException) e).getCode())) {
-                    errorUser.setCause("组织用户数量已达上限：100，无法创建更多用户");
+                    errorUser.setCause("组织用户数量已达上限，无法创建更多用户");
                 } else {
                     errorUser.setCause("用户或角色插入异常, 异常code是: " + e.getMessage());
                 }

@@ -27,7 +27,6 @@ import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp
@@ -59,7 +58,7 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         Long operatorId = DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId();
         if (!CollectionUtils.isEmpty(memberRoleList)) {
             memberRoleList.forEach(t -> {
-                limitService.checkEnableAddMember(t.getSourceId());
+                limitService.checkEnableImportUserOrThrowE(t.getSourceId(), t.getMemberId(), 1);
             });
         }
         if (isHzeroMemberRole(memberRoleList)) {

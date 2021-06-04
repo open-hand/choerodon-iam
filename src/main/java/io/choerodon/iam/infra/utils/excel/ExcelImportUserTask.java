@@ -231,7 +231,6 @@ public class ExcelImportUserTask {
         //***优化查询次数
         // 校验参数，以及装配用户要分配的角色
         List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
-        AtomicReference<Long> importUserCount = new AtomicReference<>(0L);
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
@@ -291,8 +290,6 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(uploadHistory.getSourceId());
-                    organizationResourceLimitService.checkEnableImportUserOrThrowE(projectDTO.getOrganizationId(), userId, TypeUtil.objToInt(importUserCount.get()));
                     projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
@@ -309,7 +306,6 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
-                    organizationResourceLimitService.checkEnableImportUserOrThrowE(uploadHistory.getSourceId(), userId, TypeUtil.objToInt(importUserCount.get()));
                     roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();

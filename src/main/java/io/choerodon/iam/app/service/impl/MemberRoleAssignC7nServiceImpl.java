@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.MemberRoleC7nMapper;
@@ -33,6 +34,8 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
     private RoleC7nMapper roleC7nMapper;
     @Autowired
     private MemberRoleC7nMapper memberRoleC7nMapper;
+    @Autowired
+    private OrganizationResourceLimitService limitService;
 
     /**
      * 检查有效性
@@ -45,6 +48,9 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
         if (CollectionUtils.isEmpty(memberRoleList)) {
             return;
         }
+        memberRoleList.forEach(t -> {
+            limitService.checkEnableImportUserOrThrowE(t.getSourceId(), t.getMemberId(), 1);
+        });
         if (isHzeroMemberRole(memberRoleList)) {
             Map<Long, List<MemberRole>> listMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
             for (Long memberId : listMap.keySet()) {

@@ -67,6 +67,14 @@ public interface OrganizationResourceLimitService {
      */
     void checkEnableCreateUserOrThrowE(Long organizationId, int userNum);
 
+    /**
+     * 检查组织层是否还导入用户（给用户分配角色）
+     *
+     * @param organizationId
+     * @param userNum
+     */
+    void checkEnableImportUserOrThrowE(Long organizationId, Long userId, int userNum);
+
 
     /**
      * 检查组织下是资源限制
@@ -79,6 +87,7 @@ public interface OrganizationResourceLimitService {
 
     /**
      * 检查能否创建该项目类型
+     *
      * @param organizationId
      * @param projectDTO
      */
@@ -86,6 +95,7 @@ public interface OrganizationResourceLimitService {
 
     /**
      * 检查能否启用、添加成员
+     *
      * @param tenantId
      * @return
      */

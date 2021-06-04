@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -12,16 +13,15 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
-import org.hzero.iam.domain.entity.Label;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.core.message.MessageAccessor;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,19 +29,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.util.TypeUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.AlreadyExistedException;
-import io.choerodon.core.exception.ext.NotExistedException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.api.vo.ExcelMemberRoleDTO;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.app.service.ProjectPermissionService;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -53,10 +49,7 @@ import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.C7nCollectionUtils;
-import io.choerodon.iam.infra.utils.CustomContextUtil;
-import io.choerodon.iam.infra.utils.MockMultipartFile;
-import io.choerodon.iam.infra.utils.RandomInfoGenerator;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 
 
@@ -97,6 +90,8 @@ public class ExcelImportUserTask {
 
     private ProjectAssertHelper projectAssertHelper;
     private MessageClient messageClient;
+    @Autowired
+    private OrganizationResourceLimitService organizationResourceLimitService;
 
 
     public ExcelImportUserTask(RoleMemberService roleMemberService,
@@ -236,6 +231,7 @@ public class ExcelImportUserTask {
         //***优化查询次数
         // 校验参数，以及装配用户要分配的角色
         List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
+        AtomicReference<Long> importUserCount = new AtomicReference<>(0L);
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
@@ -295,12 +291,14 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
+                    ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(uploadHistory.getSourceId());
+                    organizationResourceLimitService.checkEnableImportUserOrThrowE(projectDTO.getOrganizationId(), userId, TypeUtil.objToInt(importUserCount.get()));
                     projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());
                     excelMemberRoleDTO.setRoleCode(role.getCode());
-                    excelMemberRoleDTO.setRoleCode("未知错误，请重试！");
+                    excelMemberRoleDTO.setCause(getErrorMessage(e));
                     errorMemberRoles.add(excelMemberRoleDTO);
                 }
             } else {
@@ -311,12 +309,13 @@ public class ExcelImportUserTask {
                 Set<Long> roleIds = new HashSet<>();
                 roleIds.add(roleId);
                 try {
+                    organizationResourceLimitService.checkEnableImportUserOrThrowE(uploadHistory.getSourceId(), userId, TypeUtil.objToInt(importUserCount.get()));
                     roleMemberService.addTenantRoleForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());
                     excelMemberRoleDTO.setRoleCode(role.getCode());
-                    excelMemberRoleDTO.setRoleCode("未知错误，请重试！");
+                    excelMemberRoleDTO.setCause(getErrorMessage(e));
                     errorMemberRoles.add(excelMemberRoleDTO);
                 }
             }
@@ -344,6 +343,13 @@ public class ExcelImportUserTask {
         }
     }
 
+    private String getErrorMessage(Exception e) {
+        if (!StringUtils.isEmpty(e.getMessage()) && MessageAccessor.getMessage(e.getMessage()) != null) {
+            return MessageAccessor.getMessage(e.getMessage()).desc();
+        } else {
+            return "未知错误，请重试！";
+        }
+    }
 
     /**
      * 项目下导入用户 发送消息

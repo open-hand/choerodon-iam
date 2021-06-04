@@ -49,18 +49,11 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private TenantMapper tenantMapper;
     @Autowired
     private UserMapper userMapper;
-    @Autowired
-    private OrganizationResourceLimitService limitService;
 
 
     @Override
     public void assignMemberRole(List<MemberRole> memberRoleList) {
         Long operatorId = DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId();
-        if (!CollectionUtils.isEmpty(memberRoleList)) {
-            memberRoleList.forEach(t -> {
-                limitService.checkEnableImportUserOrThrowE(t.getSourceId(), t.getMemberId(), 1);
-            });
-        }
         if (isHzeroMemberRole(memberRoleList)) {
             if (!CollectionUtils.isEmpty(memberRoleList)) {
                 Map<Long, List<MemberRole>> sourceMemberMap = memberRoleList.stream().collect(Collectors.groupingBy(MemberRole::getSourceId));

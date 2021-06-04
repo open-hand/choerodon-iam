@@ -53,6 +53,11 @@ public class OrganizationResourceLimitServiceImpl implements OrganizationResourc
     }
 
     @Override
+    public void checkEnableImportUserOrThrowE(Long organizationId, Long userId, int userNum) {
+        // do nothing
+    }
+
+    @Override
     public ResourceLimitVO queryResourceLimit(Long organizationId) {
         return null;
     }

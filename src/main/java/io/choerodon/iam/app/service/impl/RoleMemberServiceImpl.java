@@ -443,7 +443,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
             excelImportUserTask.importMemberRole(userDetails.getUserId(), memberRoles, uploadHistory, finishFallback);
-            finishFallback.callback(uploadHistory);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new CommonException("error.excel.read", e);
         } catch (IllegalArgumentException e) {

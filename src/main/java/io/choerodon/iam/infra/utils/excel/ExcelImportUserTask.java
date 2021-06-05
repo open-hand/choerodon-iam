@@ -26,6 +26,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -335,6 +336,7 @@ public class ExcelImportUserTask {
             uploadHistory.setUrl(url);
             uploadHistory.setFinished(true);
         }
+        finishFallback.callback(uploadHistory);
     }
 
     private String getErrorMessage(Exception e) {
@@ -731,6 +733,7 @@ public class ExcelImportUserTask {
         }
 
         @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public void callback(UploadHistoryDTO uploadHistoryDTO) {
             UploadHistoryDTO history = uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDTO.getId());
             history.setEndTime(new Date((System.currentTimeMillis())));

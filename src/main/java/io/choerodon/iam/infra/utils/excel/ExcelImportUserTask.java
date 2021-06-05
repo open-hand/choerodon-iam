@@ -231,7 +231,7 @@ public class ExcelImportUserTask {
         //***优化查询次数
         // 校验参数，以及装配用户要分配的角色
         List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
-        distinctList.parallelStream().forEach(emr -> {
+        distinctList.forEach(emr -> {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
             //检查loginName是否存在

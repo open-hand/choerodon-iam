@@ -339,6 +339,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
+    @Transactional
     public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId) {
         Assert.notNull(projectId, "error.projectId.is.null");
         Assert.notNull(userId, "error.userId.is.null");

@@ -789,6 +789,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional
     public void addTenantRoleForUser(Long tenantId, Long userId, Set<Long> roleIds, Long operatorId) {
         Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
         User user = userMapper.selectByPrimaryKey(userId);

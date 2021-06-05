@@ -209,6 +209,7 @@ public class ExcelImportUserTask {
     }
 
     @Async("excel-executor")
+    @Transactional
     public void importMemberRole(Long fromUserId, List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory, FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
@@ -329,12 +330,10 @@ public class ExcelImportUserTask {
                 throw e;
             } finally {
                 uploadHistory.setUrl(url);
-                finishFallback.callback(uploadHistory);
             }
         } else {
             uploadHistory.setUrl(url);
             uploadHistory.setFinished(true);
-            finishFallback.callback(uploadHistory);
         }
     }
 

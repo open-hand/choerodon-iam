@@ -5,6 +5,7 @@ import org.hzero.iam.domain.service.RootUserService;
 import org.hzero.iam.domain.service.user.impl.DefaultUserDetailsService;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
@@ -21,6 +22,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     @Autowired
     private TenantMapper tenantMapper;
+    @Lazy
     @Autowired
     private UserC7nService userC7nService;
 

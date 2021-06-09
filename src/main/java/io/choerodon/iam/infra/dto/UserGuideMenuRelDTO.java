@@ -29,7 +29,17 @@ public class UserGuideMenuRelDTO extends AuditDomain {
     @ApiModelProperty("指引id")
     private Long userGuideId;
 
+    @ApiModelProperty("tab页code")
+    private String tabCode;
 
+
+    public String getTabCode() {
+        return tabCode;
+    }
+
+    public void setTabCode(String tabCode) {
+        this.tabCode = tabCode;
+    }
 
     public Long getId() {
         return id;

@@ -10,6 +10,7 @@ import org.hzero.iam.infra.mapper.TenantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -49,14 +50,20 @@ public class UserGuideServiceImpl implements UserGuideService {
     private RoleMemberService roleMemberService;
 
     @Override
-    public UserGuideVO listUserGuideByMenuId(Long menuId, String guideCode, Long projectId, Long organizationId) {
+    public UserGuideVO listUserGuideByMenuId(Long menuId, String tabCode, String guideCode, Long projectId, Long organizationId) {
         UserGuideVO userGuideVO;
 
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
 
-
         if (menuId != null) {
-            userGuideVO = userGuideMapper.queryUserGuideByMenuId(menuId);
+            userGuideVO = userGuideMapper.queryUserGuideByMenuIdAndCode(menuId, tabCode);
+            if (userGuideVO == null) {
+                List<UserGuideVO> userGuideVOList = userGuideMapper.queryUserGuideByMenuId(menuId);
+                if (CollectionUtils.isEmpty(userGuideVOList)) {
+                    return null;
+                }
+                userGuideVO = userGuideVOList.get(0);
+            }
         } else if (StringUtils.isNoneBlank(guideCode)){
             userGuideVO = userGuideMapper.queryUserGuideByCode(guideCode);
         } else {

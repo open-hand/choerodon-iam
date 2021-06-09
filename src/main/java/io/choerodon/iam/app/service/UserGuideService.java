@@ -14,10 +14,11 @@ public interface UserGuideService {
     /**
      * 查询菜单下的指引步骤， meunId不为空则根据menuId查询，否则根据guideCode查询
      * @param menuId
+     * @param tabCode
      * @param guideCode
      * @param projectId
      * @param organizationId
      * @return
      */
-    UserGuideVO listUserGuideByMenuId(Long menuId, String guideCode, Long projectId, Long organizationId);
+    UserGuideVO listUserGuideByMenuId(Long menuId, String tabCode, String guideCode, Long projectId, Long organizationId);
 }

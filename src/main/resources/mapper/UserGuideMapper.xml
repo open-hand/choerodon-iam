@@ -2,15 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.UserGuideMapper">
 
-    <select id="queryUserGuideByMenuId" resultType="io.choerodon.iam.api.vo.UserGuideVO">
+    <select id="queryUserGuideByMenuIdAndCode" resultType="io.choerodon.iam.api.vo.UserGuideVO">
         select *
         from fd_user_guide fug
         inner join fd_user_guide_menu_rel fugmr on fug.id = fugmr.user_guide_id
         where fugmr.menu_id = #{menuId}
+        <if test="tabCode != null">
+            and fugmr.tab_code = #{tabCode}
+        </if>
     </select>
     <select id="queryUserGuideByCode" resultType="io.choerodon.iam.api.vo.UserGuideVO">
         select *
         from fd_user_guide fug
         where fug.code = #{guideCode}
+    </select>
+    <select id="queryUserGuideByMenuId" resultType="io.choerodon.iam.api.vo.UserGuideVO">
+        select *
+        from fd_user_guide fug
+                 inner join fd_user_guide_menu_rel fugmr on fug.id = fugmr.user_guide_id
+        where fugmr.menu_id = #{menuId}
     </select>
 </mapper>

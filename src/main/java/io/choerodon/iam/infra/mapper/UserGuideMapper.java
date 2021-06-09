@@ -1,5 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.vo.UserGuideVO;
@@ -15,7 +17,9 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface UserGuideMapper extends BaseMapper<UserGuideDTO> {
 
-    UserGuideVO queryUserGuideByMenuId(@Param("menuId") Long menuId);
+    UserGuideVO queryUserGuideByMenuIdAndCode(@Param("menuId") Long menuId, @Param("tabCode") String tabCode);
 
-    UserGuideVO queryUserGuideByCode(@Param("guideCode") String guideCode);
+    UserGuideVO queryUserGuideByCode(@Param("guideCode") String menuCode);
+
+    List<UserGuideVO> queryUserGuideByMenuId(@Param("menuId") Long menuId);
 }

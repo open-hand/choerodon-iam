@@ -19,6 +19,6 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_help_doc.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'FD_USER_GUIDE_MENU_REL', columnNames: 'MENU_ID,MENU_CODE,TAB_CODE', constraintName: 'UK_FD_HELP_DOC_U1')
+        addUniqueConstraint(tableName: 'FD_HELP_DOC', columnNames: 'MENU_ID,MENU_CODE,TAB_CODE', constraintName: 'UK_FD_HELP_DOC_U1')
     }
 }

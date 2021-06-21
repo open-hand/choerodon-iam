@@ -26,4 +26,12 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
     changeSet(author: 'scp', id: '2020-11-03-rename-table') {
         renameTable(newTableName: 'fd_project_permission', oldTableName: 'fd_project_user')
     }
+    changeSet(author: 'scp', id: '2021-06-18-add-index') {
+        createIndex(indexName: 'U1_PERMISSION_PROJECT_ID', tableName: 'fd_project_permission') {
+            column(name: 'PROJECT_ID')
+        }
+        createIndex(indexName: 'U1_PERMISSION_MEMBER_ROLE_ID', tableName: 'fd_project_permission') {
+            column(name: 'MEMBER_ROLE_ID')
+        }
+    }
 }

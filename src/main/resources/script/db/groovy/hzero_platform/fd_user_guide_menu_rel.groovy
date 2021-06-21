@@ -12,6 +12,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_menu_rel.groovy') {
             column(name: 'USER_GUIDE_ID', type: 'BIGINT UNSIGNED', remarks: '指引id') {
                 constraints(nullable: false)
             }
+            column(name: 'TAB_CODE', type: 'VARCHAR(256)', remarks: 'TAB页code')
 
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -19,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_menu_rel.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'FD_USER_GUIDE_MENU_REL', columnNames: 'MENU_ID', constraintName: 'UK_FD_USER_GUIDE_MENU_REL_U1')
+        addUniqueConstraint(tableName: 'FD_USER_GUIDE_MENU_REL', columnNames: 'MENU_ID,USER_GUIDE_ID', constraintName: 'UK_FD_USER_GUIDE_MENU_REL_U1')
 
     }
 }

@@ -22,6 +22,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
@@ -128,6 +129,8 @@ public class UserC7nController extends BaseController {
         }
         user.setAdmin(queryInfo.getAdmin());
         //不能修改状态
+        user.setEmailCheckFlag(BaseConstants.Flag.YES);
+        user.setPhoneCheckFlag(BaseConstants.Flag.YES);
         user.setEnabled(queryInfo.getEnabled());
         user.setLdap(queryInfo.getLdap());
         user.setOrganizationId(queryInfo.getOrganizationId());

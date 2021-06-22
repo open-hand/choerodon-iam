@@ -1436,9 +1436,11 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (!isAdmin && !isOrgAdmin) {
             page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, userDetails.getUserId()));
         }
-        int rawPage = (int) page.getTotalElements() / pageable.getSize();
-        int remains = (int) page.getTotalElements() % pageable.getSize();
-        page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
+        if (pageable.getSize() != 0) {
+            int rawPage = (int) page.getTotalElements() / pageable.getSize();
+            int remains = (int) page.getTotalElements() % pageable.getSize();
+            page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
+        }
 
         // 添加额外信息
         addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);

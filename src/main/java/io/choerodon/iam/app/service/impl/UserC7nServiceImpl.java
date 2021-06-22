@@ -1440,6 +1440,8 @@ public class UserC7nServiceImpl implements UserC7nService {
             int rawPage = (int) page.getTotalElements() / pageable.getSize();
             int remains = (int) page.getTotalElements() % pageable.getSize();
             page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
+        } else {
+            page.setTotalPages(1);
         }
 
         // 添加额外信息

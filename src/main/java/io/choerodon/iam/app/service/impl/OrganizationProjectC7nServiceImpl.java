@@ -204,6 +204,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             CustomUserDetails customUserDetails = new CustomUserDetails(user.getLoginName(), "default");
             customUserDetails.setUserId(user.getId());
             customUserDetails.setLanguage(user.getLanguage());
+            customUserDetails.setOrganizationId(user.getOrganizationId());
             DetailsHelper.setCustomUserDetails(customUserDetails);
         }
 

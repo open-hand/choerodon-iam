@@ -732,9 +732,6 @@
 	      AND fp.is_enabled= 0
 	      AND hlr.data_type = 'ROLE'
         AND il.name = 'PROJECT_MEMBER'
-
-        GROUP BY
-          fp.id
         ORDER BY
 	      fp.is_enabled DESC,
 	      fp.creation_date DESC

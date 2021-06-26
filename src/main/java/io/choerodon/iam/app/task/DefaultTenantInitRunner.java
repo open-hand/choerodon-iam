@@ -31,6 +31,7 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
     @Autowired
     private UserMapper userMapper;
     private static final String ADMIN_LOGIN_NAME = "admin";
+
     @Override
     public void run(String... strings) {
         try {
@@ -44,6 +45,7 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
                 user.setLoginName(ADMIN_LOGIN_NAME);
                 User admin = userMapper.selectOne(user);
                 DetailsHelper.setCustomUserDetails(admin.getId(), BaseConstants.DEFAULT_LOCALE_STR);
+                DetailsHelper.getUserDetails().setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
                 tenantC7nService.createDefaultTenant(TenantConstants.DEFAULT_TENANT_NAME, TenantConstants.DEFAULT_TENANT_NUM);
             } else {
                 LOGGER.info(">>>>>>>>>>>>>>>>>> Default tenant is created <<<<<<<<<<<<<<<<<<<<<<<");

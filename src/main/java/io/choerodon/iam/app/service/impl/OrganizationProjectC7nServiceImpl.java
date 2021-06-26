@@ -222,6 +222,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             } else {
                 user = userAssertHelper.queryAnonymousUser();
                 DetailsHelper.setCustomUserDetails(user.getId(),user.getLanguage());
+                DetailsHelper.getUserDetails().setOrganizationId(user.getOrganizationId());
             }
             //创建项目成功发送webhook
             Map<String, String> params = new HashMap<>();

@@ -4,7 +4,8 @@ import org.hzero.core.interceptor.InterceptorChainBuilder;
 import org.hzero.core.interceptor.InterceptorChainConfigurer;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.service.user.interceptor.UserOperation;
-import org.hzero.iam.domain.service.user.interceptor.interceptors.*;
+import org.hzero.iam.domain.service.user.interceptor.interceptors.LastHandlerInterceptor;
+import org.hzero.iam.domain.service.user.interceptor.interceptors.ValidationInterceptor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +48,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(UpdateUserEmailInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER)
@@ -56,7 +58,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(UpdateUserEmailInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)

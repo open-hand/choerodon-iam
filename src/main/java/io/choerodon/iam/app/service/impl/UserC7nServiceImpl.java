@@ -195,7 +195,6 @@ public class UserC7nServiceImpl implements UserC7nService {
             checkLoginUser(user.getId());
         }
         User dto;
-        UserEventPayload userEventPayload = new UserEventPayload();
         dto = userService.updateUser(user);
         // hzero update 不更新imageUrl
         User imageUser = new User();
@@ -204,24 +203,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
         dto = userRepository.selectByPrimaryKey(user.getId());
-        userEventPayload.setEmail(dto.getEmail());
-        userEventPayload.setId(dto.getId().toString());
-        userEventPayload.setName(dto.getRealName());
-        userEventPayload.setUsername(dto.getLoginName());
-        BeanUtils.copyProperties(dto, dto);
-        try {
-            producer.apply(StartSagaBuilder.newBuilder()
-                            .withSagaCode(USER_UPDATE)
-                            .withPayloadAndSerialize(userEventPayload)
-                            .withRefId(dto.getId() + "")
-                            .withRefType("user"),
-                    builder -> {
-                    }
-            );
-        } catch (Exception e) {
-            throw new CommonException("error.UserService.updateInfo.event", e);
-        }
-        Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
+           Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         return dto;

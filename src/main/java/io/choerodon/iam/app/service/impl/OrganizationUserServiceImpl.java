@@ -328,25 +328,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setEmail(user.getEmail());
-            userEventPayload.setId(user.getId().toString());
-            userEventPayload.setName(user.getRealName());
-            userEventPayload.setUsername(user.getLoginName());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_UPDATE)
-                                .withRefType("user")
-                                .withRefId(userEventPayload.getId())
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(user.getOrganizationId())
-                                .withJson(input),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.updateUser.event", e);
-            }
         }
         // 2. 更新用户角色
         roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());

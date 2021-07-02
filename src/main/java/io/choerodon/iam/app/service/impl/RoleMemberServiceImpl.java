@@ -719,7 +719,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
         // 要删除的角色
         Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        Long operatorId = DetailsHelper.getUserDetails().getUserId();
+        Long operatorId = DetailsHelper.getUserDetailsElseAnonymous().getUserId();
 
         List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
             MemberRole memberRole = new MemberRole();

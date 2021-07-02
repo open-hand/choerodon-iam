@@ -16,14 +16,12 @@ import io.choerodon.iam.app.service.UserC7nService;
  * @description
  */
 @Component
-public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
-    @Lazy
+public class CheckCreateUserInterceptor implements HandlerInterceptor<User> {
     @Autowired
-    private UserC7nService userC7nService;
+    private OrganizationResourceLimitService organizationResourceLimitService;
 
     @Override
     public void interceptor(User user) {
-        UserValidator.validateEmail(user.getEmail());
-        userC7nService.checkEmail(user);
+        organizationResourceLimitService.checkEnableCreateUserOrThrowE(user.getOrganizationId(), 1);
     }
 }

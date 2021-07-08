@@ -888,7 +888,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
             Set<Long> dtoList = projectMapper.listProjectIdsForUserId(organizationId, userId);
             if (!CollectionUtils.isEmpty(dtoList)) {
-                dtoList.forEach(t -> deleteProjectRole(t, userId, null, true));
+                dtoList.forEach(t -> deleteProjectRole(t, userId, null, false));
             }
         }
     }

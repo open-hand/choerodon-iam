@@ -335,7 +335,7 @@ public class RoleMemberC7nController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除用户角色")
-    @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/delete")
+    @DeleteMapping(value = "/organizations/{organization_id}/users/{user_id}/delete")
     public ResponseEntity<Void> deleteUserRoles(@PathVariable(name = "organization_id") Long organizationId,
                                                 @Encrypt @PathVariable(name = "user_id") Long userId,
                                                 @RequestParam(defaultValue = "true") Boolean onlyOrganization) {

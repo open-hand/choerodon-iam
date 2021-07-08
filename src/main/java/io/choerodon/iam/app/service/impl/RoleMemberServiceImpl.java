@@ -886,11 +886,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
         updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
         if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
-            ProjectDTO projectDTO = new ProjectDTO();
-            projectDTO.setOrganizationId(organizationId);
-            List<ProjectDTO> dtoList = projectMapper.select(projectDTO);
+            Set<Long> dtoList = projectMapper.listProjectIdsForUserId(organizationId, userId);
             if (!CollectionUtils.isEmpty(dtoList)) {
-                dtoList.forEach(t -> deleteProjectRole(t.getId(), userId, null, true));
+                dtoList.forEach(t -> deleteProjectRole(t, userId, null, true));
             }
         }
     }

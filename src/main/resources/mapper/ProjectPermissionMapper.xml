@@ -612,7 +612,10 @@
         <if test="param != null">
             AND (
             iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%')
+            iu1.real_name LIKE concat(concat('%',#{param}),'%') OR
+            iu1.email LIKE concat(concat('%',#{param}),'%') OR
+            iu1.attribute15 LIKE concat(concat('%',#{param}),'%') OR
+            iu1.attribute14 LIKE concat(concat('%',#{param}),'%')
             )
         </if>
         order by weight desc, iu1.id asc

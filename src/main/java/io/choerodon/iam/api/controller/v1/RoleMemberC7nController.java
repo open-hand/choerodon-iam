@@ -333,6 +333,17 @@ public class RoleMemberC7nController extends BaseController {
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除用户角色")
+    @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/delete")
+    public ResponseEntity<Void> deleteUserRoles(@PathVariable(name = "organization_id") Long organizationId,
+                                                @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                @RequestParam(defaultValue = "true") Boolean onlyOrganization) {
+
+        roleMemberService.deleteUserRoles(organizationId, userId, onlyOrganization);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * 根据角色Id分页查询该角色被分配的用户
      *

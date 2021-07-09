@@ -7,8 +7,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard_user.groovy') {
             column(name: "dashboard_id", type: "BIGINT(20)",  remarks: "面板ID")  {constraints(nullable:"false")}  
             column(name: "created_by", type: "BIGINT(20)",   defaultValue:"-1",   remarks: "创建人")  {constraints(nullable:"false")}  
             column(name: "last_updated_by", type: "BIGINT(20)",   defaultValue:"-1",   remarks: "最近更新人")  {constraints(nullable:"false")}  
-            column(name: "creation_date", type: "DATETIME",   defaultValue:"CURRENT_TIMESTAMP",   remarks: "创建时间")  {constraints(nullable:"false")}  
-            column(name: "last_update_date", type: "DATETIME",   defaultValue:"CURRENT_TIMESTAMP",   remarks: "最近更新时间")  {constraints(nullable:"false")}  
+            column(name: "creation_date", type: "DATETIME",   defaultValueComputed:"CURRENT_TIMESTAMP",   remarks: "创建时间")  {constraints(nullable:"false")}
+            column(name: "last_update_date", type: "DATETIME",   defaultValueComputed:"CURRENT_TIMESTAMP",   remarks: "最近更新时间")  {constraints(nullable:"false")}
             column(name: "object_version_number", type: "BIGINT(20)",   defaultValue:"1",   remarks: "行版本号，用来处理锁")  {constraints(nullable:"false")}  
         }
         addUniqueConstraint(columnNames:"dashboard_id,user_id",tableName:"fd_dashboard_user",constraintName: "fd_dashboard_user_u1")

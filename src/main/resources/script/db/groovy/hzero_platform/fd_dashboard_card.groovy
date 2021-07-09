@@ -16,8 +16,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard_card.groovy') {
             column(name: "max_h", type: "INT(11)",  remarks: "卡片最大高")   
             column(name: "created_by", type: "BIGINT(20)",   defaultValue:"-1",   remarks: "创建人")  {constraints(nullable:"false")}  
             column(name: "last_updated_by", type: "BIGINT(20)",   defaultValue:"-1",   remarks: "最近更新人")  {constraints(nullable:"false")}  
-            column(name: "creation_date", type: "DATETIME",   defaultValue:"CURRENT_TIMESTAMP",   remarks: "创建时间")  {constraints(nullable:"false")}  
-            column(name: "last_update_date", type: "DATETIME",   defaultValue:"CURRENT_TIMESTAMP",   remarks: "最近更新时间")  {constraints(nullable:"false")}  
+            column(name: "creation_date", type: "DATETIME",   defaultValueComputed:"CURRENT_TIMESTAMP",   remarks: "创建时间")  {constraints(nullable:"false")}
+            column(name: "last_update_date", type: "DATETIME",   defaultValueComputed:"CURRENT_TIMESTAMP",   remarks: "最近更新时间")  {constraints(nullable:"false")}
             column(name: "object_version_number", type: "BIGINT(20)",   defaultValue:"1",   remarks: "行版本号，用来处理锁")  {constraints(nullable:"false")}  
         }
         addUniqueConstraint(columnNames:"card_code",tableName:"fd_dashboard_card",constraintName: "fd_dashboard_card_u1")

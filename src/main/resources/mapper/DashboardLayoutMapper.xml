@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.DashboardLayoutMapper">
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="io.choerodon.iam.infra.dto.DashboardLayoutDTO">
+        <result column="layout_id" property="layoutId" jdbcType="DECIMAL"/>
+        <result column="user_id" property="userId" jdbcType="DECIMAL"/>
+        <result column="dashboard_id" property="dashboardId" jdbcType="DECIMAL"/>
+        <result column="card_id" property="cardId" jdbcType="DECIMAL"/>
+        <result column="w" property="w" jdbcType="DECIMAL"/>
+        <result column="h" property="h" jdbcType="DECIMAL"/>
+        <result column="x" property="x" jdbcType="DECIMAL"/>
+        <result column="y" property="y" jdbcType="DECIMAL"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="queryLayoutByDashboard" resultType="io.choerodon.iam.api.vo.DashboardLayoutVO">
+        SELECT
+        fdl.layout_id,
+        fdl.user_id,
+        fdl.dashboard_id,
+        fdl.card_id,
+        fdl.w,
+        fdl.h,
+        fdl.x,
+        fdl.y,
+        fdl.object_version_number,
+        fdc.card_code,
+        fdc.card_name,
+        fdc.min_w,
+        fdc.min_h,
+        fdc.max_w,
+        fdc.max_h
+        FROM fd_dashboard_layout fdl
+        JOIN fd_dashboard fd ON fd.dashboard_id = fdl.dashboard_id
+        JOIN fd_dashboard_card fdc ON fdc.card_id = fdl.card_id
+        WHERE fdl.dashboard_id = #{dashboardId}
+          AND ((fd.dashboard_type = 'INTERNAL' AND fd.default_flag = 1) OR fdl.user_id = #{userId})
+    </select>
+</mapper>

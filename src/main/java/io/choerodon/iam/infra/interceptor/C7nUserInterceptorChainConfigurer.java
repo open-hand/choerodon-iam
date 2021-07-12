@@ -50,7 +50,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(UpdateUserEmailInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.UPDATE_USER)
@@ -59,7 +60,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
-                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(UpdateUserEmailInterceptor.class, LastHandlerInterceptor.class);
 
         builder
                 .selectChain(UserOperation.IMPORT_USER)

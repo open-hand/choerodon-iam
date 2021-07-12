@@ -457,6 +457,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
         Set<Long> deleteMemberRoleIds = new HashSet<>();
         // 删除角色，不删除member-role表中的角色（可能会有并发问题）
+        Set<String> deleteRoleLabels = new HashSet<>();
         if (!CollectionUtils.isEmpty(deleteRoleIds)) {
             deleteRoleIds.forEach(v -> {
                 Long memberRoleId = oldMemberRoleMap.get(v);
@@ -465,6 +466,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                 }
             });
             projectPermissionMapper.deleteByIds(projectId, deleteMemberRoleIds);
+            deleteRoleLabels.addAll(labelC7nMapper.selectLabelNamesInRoleIds(deleteRoleIds));
         }
         // 新增角色
         if (!CollectionUtils.isEmpty(insertRoleIds)) {
@@ -493,6 +495,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
         userMemberEventPayload.setSyncAll(syncAll);
         userMemberEventPayload.setRoleIds(roleIdList);
+        userMemberEventPayload.setDeleteRoleLabels(deleteRoleLabels);
         userMemberEventPayloads.add(userMemberEventPayload);
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
 

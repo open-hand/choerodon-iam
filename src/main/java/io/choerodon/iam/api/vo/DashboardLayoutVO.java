@@ -30,6 +30,8 @@ public class DashboardLayoutVO {
     private Long maxW;
     @ApiModelProperty(value = "卡片最大高")
     private Long maxH;
+    @ApiModelProperty(value = "分类")
+    private String groupId;
 
     public Long getLayoutId() {
         return layoutId;
@@ -141,5 +143,13 @@ public class DashboardLayoutVO {
 
     public void setMaxH(Long maxH) {
         this.maxH = maxH;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 }

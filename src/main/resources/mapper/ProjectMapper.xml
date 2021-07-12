@@ -737,4 +737,19 @@
 	      fp.creation_date DESC
 
     </select>
+
+    <select id="listProjectIdsForUserId" resultType="java.lang.Long">
+        SELECT
+            fp.id
+        FROM
+            fd_project fp
+                JOIN iam_member_role imr ON imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_id = #{tenantId}
+                AND imr.source_type = 'organization'
+                JOIN fd_project_permission fpp ON fpp.PROJECT_ID = fp.id
+                AND fpp.MEMBER_ROLE_ID = imr.id
+        WHERE
+            fp.ORGANIZATION_ID = #{tenantId}
+    </select>
 </mapper>

@@ -29,6 +29,17 @@ public class UserMemberEventPayload {
     @ApiModelProperty("用户包含的角色ids")
     private Set<Long> roleIds;
 
+    @ApiModelProperty("已经删除角色的标签")
+    private Set<String> deleteRoleLabels;
+
+    public Set<String> getDeleteRoleLabels() {
+        return deleteRoleLabels;
+    }
+
+    public void setDeleteRoleLabels(Set<String> deleteRoleLabels) {
+        this.deleteRoleLabels = deleteRoleLabels;
+    }
+
     public Set<Long> getRoleIds() {
         return roleIds;
     }

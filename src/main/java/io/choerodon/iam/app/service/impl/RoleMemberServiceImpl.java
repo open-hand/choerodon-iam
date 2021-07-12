@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -881,5 +882,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
 
-
+    @Override
+    public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
+        updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
+        if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
+            Set<Long> dtoList = projectMapper.listProjectIdsForUserId(organizationId, userId);
+            if (!CollectionUtils.isEmpty(dtoList)) {
+                dtoList.forEach(t -> deleteProjectRole(t, userId, null, false));
+            }
+        }
+    }
 }

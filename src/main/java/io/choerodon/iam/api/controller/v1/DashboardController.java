@@ -1,7 +1,11 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.DashboardVO;
 import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -11,6 +15,7 @@ import io.choerodon.iam.app.service.DashboardService;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
@@ -56,5 +61,13 @@ public class DashboardController extends BaseController {
     @GetMapping
     public ResponseEntity<List<DashboardDTO>> queryDashboard() {
         return Results.success(dashboardService.queryDashboard());
+    }
+
+    @ApiOperation(value = "查询-官方视图")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @GetMapping("/internal")
+    public ResponseEntity<Page<DashboardDTO>> queryInternalDashboard(@ApiIgnore @SortDefault(value = DashboardDTO.FIELD_DASHBOARD_ID,
+                                                                        direction = Sort.Direction.DESC) PageRequest pageRequest) {
+        return Results.success(dashboardService.queryInternalDashboard(pageRequest));
     }
 }

@@ -61,8 +61,8 @@ public class DashboardCardDTO extends AuditDomain {
     @ApiModelProperty(value = "卡片名称", required = true)
     @NotBlank
     private String cardName;
-	@ApiModelProperty(value = "关联的服务")
-	private String linkService;
+	@ApiModelProperty(value = "卡片描述", required = true)
+	private String description;
 	@ApiModelProperty(value = "卡片默认宽", required = true)
     @NotNull
     private Long w;
@@ -77,6 +77,8 @@ public class DashboardCardDTO extends AuditDomain {
     private Long maxW;
     @ApiModelProperty(value = "卡片最大高")
     private Long maxH;
+	@ApiModelProperty(value = "卡片图标")
+	private String icon;
 
 	//
     // 非数据库字段
@@ -137,14 +139,6 @@ public class DashboardCardDTO extends AuditDomain {
 	public DashboardCardDTO setCardName(String cardName) {
 		this.cardName = cardName;
         return this;
-	}
-
-	public String getLinkService() {
-		return linkService;
-	}
-
-	public void setLinkService(String linkService) {
-		this.linkService = linkService;
 	}
 
 	/**
@@ -214,5 +208,20 @@ public class DashboardCardDTO extends AuditDomain {
         return this;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
 }
 

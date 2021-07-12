@@ -1,7 +1,9 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.DashboardVO;
 import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -41,4 +43,12 @@ public interface DashboardService {
      * @return
      */
     List<DashboardDTO> queryDashboard();
+
+    /**
+     * 查询所有官方视图
+     *
+     * @return
+     * @param pageRequest
+     */
+    Page<DashboardDTO> queryInternalDashboard(PageRequest pageRequest);
 }

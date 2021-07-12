@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -12,6 +13,8 @@ import io.choerodon.iam.infra.dto.DashboardUserDTO;
 import io.choerodon.iam.infra.enums.DashboardType;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.core.base.BaseConstants;
@@ -19,7 +22,6 @@ import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.DashboardService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,7 +71,9 @@ public class DashboardServiceImpl implements DashboardService {
             dashboardDTO.setDashboardName(dashboard.getDashboardName());
             dashboardMapper.updateOptional(dashboardDTO, DashboardDTO.FIELD_DASHBOARD_NAME);
         }
-        dashboardLayoutService.batchCreateOrUpdateLayout(dashboard.getDashboardId(), dashboard.getDashboardLayoutS());
+        if (dashboard.getUpdateLayoutFlag() == BaseConstants.Flag.YES) {
+            dashboardLayoutService.batchCreateOrUpdateLayout(dashboard.getDashboardId(), dashboard.getDashboardLayoutS());
+        }
         return dashboardDTO;
     }
 
@@ -95,8 +99,21 @@ public class DashboardServiceImpl implements DashboardService {
         if (CollectionUtils.isNotEmpty(dashboards)) {
             return dashboards;
         }
-        return dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())
-                .setDefaultFlag(BaseConstants.Flag.YES));
+        List<DashboardDTO> defaultDashboards =
+                dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())
+                        .setDefaultFlag(BaseConstants.Flag.YES));
+        defaultDashboards.forEach(defaultDashboard -> {
+            dashboardUserService.createDashboardUser(new DashboardUserDTO()
+                    .setDashboardId(defaultDashboard.getDashboardId())
+                    .setUserId(obtainUserId()));
+        });
+        return defaultDashboards;
+    }
+
+    @Override
+    public Page<DashboardDTO> queryInternalDashboard(PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest,
+                () -> dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())));
     }
 
     private void deleteDashboard(DashboardDTO dashboard) {

@@ -7,8 +7,9 @@
         <result column="fd_level" property="fdLevel" jdbcType="VARCHAR"/>
         <result column="card_code" property="cardCode" jdbcType="VARCHAR"/>
         <result column="card_name" property="cardName" jdbcType="VARCHAR"/>
-        <result column="link_service" property="linkService" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="group_id" property="groupId" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
         <result column="w" property="w" jdbcType="DECIMAL"/>
         <result column="h" property="h" jdbcType="DECIMAL"/>
         <result column="min_w" property="minW" jdbcType="DECIMAL"/>
@@ -28,6 +29,8 @@
         fdc.fd_level,
         fdc.card_code,
         fdc.card_name,
+        fdc.description,
+        fdc.icon,
         fdc.w,
         fdc.h,
         fdc.min_w,

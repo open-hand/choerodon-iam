@@ -5,14 +5,11 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.DashboardLayoutVO;
 import io.choerodon.iam.infra.constant.DashboardConstants;
-import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardLayoutDTO;
 import io.choerodon.iam.infra.mapper.DashboardLayoutMapper;
-import io.choerodon.iam.infra.mapper.DashboardMapper;
-import io.choerodon.iam.infra.mapper.DashboardUserMapper;
-import io.choerodon.mybatis.domain.AuditDomain;
 import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.DashboardLayoutService;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,50 +23,23 @@ import java.util.Objects;
 @Service
 public class DashboardLayoutServiceImpl implements DashboardLayoutService {
 
-    private DashboardUserMapper dashboardUserMapper;
-
     private DashboardLayoutMapper dashboardLayoutMapper;
 
-    private DashboardMapper dashboardMapper;
-
-    public DashboardLayoutServiceImpl(DashboardUserMapper dashboardUserMapper,
-                                      DashboardLayoutMapper dashboardLayoutMapper,
-                                      DashboardMapper dashboardMapper) {
-        this.dashboardUserMapper = dashboardUserMapper;
+    public DashboardLayoutServiceImpl(DashboardLayoutMapper dashboardLayoutMapper) {
         this.dashboardLayoutMapper = dashboardLayoutMapper;
-        this.dashboardMapper = dashboardMapper;
     }
 
     @Override
     public List<DashboardLayoutDTO> batchCreateOrUpdateLayout(Long dashboardId, List<DashboardLayoutDTO> dashboardLayoutS) {
-        List<DashboardLayoutDTO> updateDashboardLayoutList = new ArrayList<>();
-        List<DashboardLayoutDTO> createDashboardLayoutList = new ArrayList<>();
-        List<DashboardLayoutDTO> deleteDashboardLayoutList = new ArrayList<>();
         Long userId = DetailsHelper.getUserDetails().getUserId();
+        dashboardLayoutMapper.delete(new DashboardLayoutDTO().setUserId(userId).setDashboardId(dashboardId));
+        if (CollectionUtils.isEmpty(dashboardLayoutS)) {
+            return new ArrayList<>();
+        }
         dashboardLayoutS.forEach(dashboardLayout -> {
             dashboardLayout.setUserId(userId);
             dashboardLayout.setDashboardId(dashboardId);
-            if (Objects.isNull(dashboardLayout.getLayoutId())) {
-                createDashboardLayoutList.add(dashboardLayout);
-                return;
-            }
-            if (Objects.equals(dashboardLayout.get_status(), AuditDomain.RecordStatus.update)) {
-                updateDashboardLayoutList.add(dashboardLayout);
-                return;
-            }
-            if (Objects.equals(dashboardLayout.get_status(), AuditDomain.RecordStatus.delete)) {
-                deleteDashboardLayoutList.add(dashboardLayout);
-                return;
-            }
-        });
-        createDashboardLayoutList.forEach(createDashboardLayout -> {
-            dashboardLayoutMapper.insertSelective(createDashboardLayout);
-        });
-        updateDashboardLayoutList.forEach(updateDashboardLayout -> {
-            dashboardLayoutMapper.updateByPrimaryKeySelective(updateDashboardLayout);
-        });
-        deleteDashboardLayoutList.forEach(deleteDashboardLayout -> {
-            dashboardLayoutMapper.deleteByPrimaryKey(deleteDashboardLayout);
+            dashboardLayoutMapper.insertSelective(dashboardLayout);
         });
         return dashboardLayoutS;
     }

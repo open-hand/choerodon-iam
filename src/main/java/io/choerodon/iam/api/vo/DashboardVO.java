@@ -12,6 +12,8 @@ public class DashboardVO {
     private Long dashboardId;
     @ApiModelProperty(value = "视图名称")
     private String dashboardName;
+    @ApiModelProperty(value = "是否更新布局")
+    private Integer updateLayoutFlag;
     @ApiModelProperty(value = "布局信息")
     @Encrypt
     private List<DashboardLayoutDTO> dashboardLayoutS;
@@ -22,6 +24,14 @@ public class DashboardVO {
 
     public void setDashboardId(Long dashboardId) {
         this.dashboardId = dashboardId;
+    }
+
+    public Integer getUpdateLayoutFlag() {
+        return updateLayoutFlag;
+    }
+
+    public void setUpdateLayoutFlag(Integer updateLayoutFlag) {
+        this.updateLayoutFlag = updateLayoutFlag;
     }
 
     public List<DashboardLayoutDTO> getDashboardLayoutS() {

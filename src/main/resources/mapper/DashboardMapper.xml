@@ -17,6 +17,7 @@
     <select id="queryDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
         SELECT fd.dashboard_id,
                fd.dashboard_type,
+               fd.dashboard_name,
                fd.default_flag,
                fd.created_by,
                fd.object_version_number
@@ -29,6 +30,7 @@
         SELECT
         fd.dashboard_id,
         fd.dashboard_type,
+        fd.dashboard_name,
         fd.default_flag,
         fd.created_by,
         fd.object_version_number

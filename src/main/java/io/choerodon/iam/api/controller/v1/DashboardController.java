@@ -20,7 +20,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.List;
 
 /**
- *  管理 API
+ * 管理 API
  *
  * @author jian.zhang02@hand-china.com 2021-07-08 10:05:56
  */
@@ -30,7 +30,7 @@ public class DashboardController extends BaseController {
 
     private DashboardService dashboardService;
 
-    public DashboardController(DashboardService dashboardService){
+    public DashboardController(DashboardService dashboardService) {
         this.dashboardService = dashboardService;
     }
 
@@ -66,8 +66,10 @@ public class DashboardController extends BaseController {
     @ApiOperation(value = "查询-官方视图")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping("/internal")
-    public ResponseEntity<Page<DashboardDTO>> queryInternalDashboard(@ApiIgnore @SortDefault(value = DashboardDTO.FIELD_DASHBOARD_ID,
-                                                                        direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Results.success(dashboardService.queryInternalDashboard(pageRequest));
+    public ResponseEntity<Page<DashboardDTO>> queryInternalDashboard(@RequestParam("filterFlag") Integer filterFlag,
+                                                                     @ApiIgnore @SortDefault(
+                                                                             value = DashboardDTO.FIELD_DASHBOARD_ID,
+                                                                             direction = Sort.Direction.DESC) PageRequest pageRequest) {
+        return Results.success(dashboardService.queryInternalDashboard(filterFlag, pageRequest));
     }
 }

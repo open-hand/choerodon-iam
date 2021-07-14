@@ -111,9 +111,9 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Page<DashboardDTO> queryInternalDashboard(PageRequest pageRequest) {
+    public Page<DashboardDTO> queryInternalDashboard(Integer filterFlag, PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest,
-                () -> dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())));
+                () -> dashboardMapper.queryInternalDashboard(obtainUserId(), filterFlag));
     }
 
     private void deleteDashboard(DashboardDTO dashboard) {

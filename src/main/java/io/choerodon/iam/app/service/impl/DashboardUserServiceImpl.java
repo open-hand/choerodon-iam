@@ -69,7 +69,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
         if (Objects.isNull(dashboard)) {
             throw new CommonException(DashboardConstants.ErrorCode.ERROR_DASHBOARD_NOT_EXIST);
         }
-        if (StringUtils.equals(dashboard.getDashboardType(), DashboardType.CUSTOMIZE.getValue()) ||
+        if (StringUtils.equals(dashboard.getDashboardType(), DashboardType.CUSTOMIZE.getValue()) &&
                 !Objects.equals(dashboard.getCreatedBy(), dashboardUser.getUserId())) {
             throw new CommonException(DashboardConstants.ErrorCode.ERROR_NOT_ASSIGN_DASHBOARD);
         }

@@ -48,7 +48,8 @@ public interface DashboardService {
      * 查询所有官方视图
      *
      * @return
+     * @param filterFlag
      * @param pageRequest
      */
-    Page<DashboardDTO> queryInternalDashboard(PageRequest pageRequest);
+    Page<DashboardDTO> queryInternalDashboard(Integer filterFlag, PageRequest pageRequest);
 }

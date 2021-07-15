@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import groovy.lang.Lazy;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.redis.RedisHelper;
+import org.hzero.websocket.helper.SocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import io.choerodon.iam.infra.dto.StarProjectUserRelDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.StarProjectMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -57,6 +59,8 @@ public class StarProjectServiceImpl implements StarProjectService {
     @Autowired
     @Lazy
     private ProjectCategoryC7nService projectCategoryC7nService;
+    @Autowired
+    private SocketSendHelper socketSendHelper;
 
     @Override
     @Transactional
@@ -76,6 +80,7 @@ public class StarProjectServiceImpl implements StarProjectService {
                 throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
             }
         }
+        socketSendHelper.sendByUserId(userId, "star-projects", JsonHelper.marshalByJackson(query(organizationId, null)));
     }
 
     @Override
@@ -120,7 +125,8 @@ public class StarProjectServiceImpl implements StarProjectService {
                 throw new CommonException(ERROR_DELETE_STAR_PROJECT_FAILED);
             }
         }
-
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        socketSendHelper.sendByUserId(userId, "star-projects", JsonHelper.marshalByJackson(query(projectDTO.getOrganizationId(), null)));
     }
 
     @Override
@@ -165,5 +171,6 @@ public class StarProjectServiceImpl implements StarProjectService {
             starProjectUserRelDTO1.setSort(index.getAndIncrement());
             starProjectMapper.updateByPrimaryKeySelective(starProjectUserRelDTO1);
         });
+        socketSendHelper.sendByUserId(userId, "star-projects", JsonHelper.marshalByJackson(query(organizationId, null)));
     }
 }

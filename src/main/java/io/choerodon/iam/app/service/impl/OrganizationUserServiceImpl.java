@@ -260,6 +260,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private UserEventPayload getUserEventPayload(User user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
+        userEventPayload.setPhone(user.getPhone());
         userEventPayload.setId(user.getId().toString());
         userEventPayload.setName(user.getRealName());
         userEventPayload.setUsername(user.getLoginName());
@@ -286,6 +287,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private void generateUserEventPayload(List<UserEventPayload> payloads, User userDTO) {
         UserEventPayload payload = new UserEventPayload();
         payload.setEmail(userDTO.getEmail());
+        payload.setPhone(userDTO.getPhone());
         payload.setId(userDTO.getId().toString());
         payload.setName(userDTO.getRealName());
         payload.setUsername(userDTO.getLoginName());

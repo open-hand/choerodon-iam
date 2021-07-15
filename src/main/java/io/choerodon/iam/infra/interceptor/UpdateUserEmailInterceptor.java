@@ -26,8 +26,7 @@ public class UpdateUserEmailInterceptor implements HandlerInterceptor<User> {
 
     @Override
     public void interceptor(User user) {
-        user.isEmailChanged();
-        if (user.isEmailChanged()) {
+        if (user.isEmailChanged() || user.isPhoneChanged()) {
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setEmail(user.getEmail());
             userEventPayload.setPhone(user.getPhone());

@@ -25,8 +25,10 @@ import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
+import org.hzero.websocket.helper.SocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -38,6 +40,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.MenuC7nService;
+import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
@@ -60,6 +63,10 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     // 查询菜单的线程池
     private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(20, 180, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("C7n-selMenuPool-%d").build());
+    @Autowired
+    private OrganizationProjectC7nService organizationProjectC7nService;
+    @Autowired
+    private SocketSendHelper socketSendHelper;
 
     protected MenuC7nMapper menuC7nMapper;
     protected MenuRepository menuRepository;
@@ -301,6 +308,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                     .setProjectId(projectDTO.getId());
             entries.put(projectVisitInfoKey, JsonHelper.marshalByJackson(projectVisitInfoVO));
             redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
+
+            socketSendHelper.sendByUserId(userId, "latest_visit", JsonHelper.marshalByJackson(organizationProjectC7nService.queryLatestVisitProjectInfo(projectDTO.getOrganizationId())));
         }
     }
 

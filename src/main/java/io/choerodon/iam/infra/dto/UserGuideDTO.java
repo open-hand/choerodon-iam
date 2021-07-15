@@ -29,9 +29,6 @@ public class UserGuideDTO extends AuditDomain {
     @ApiModelProperty("指引标题")
     private String title;
 
-    @ApiModelProperty("菜单id")
-    private Long menuId;
-
 
 
     public Long getId() {
@@ -58,11 +55,4 @@ public class UserGuideDTO extends AuditDomain {
         this.title = title;
     }
 
-    public Long getMenuId() {
-        return menuId;
-    }
-
-    public void setMenuId(Long menuId) {
-        this.menuId = menuId;
-    }
 }

@@ -30,6 +30,7 @@ public class UpdateUserEmailInterceptor implements HandlerInterceptor<User> {
         if (user.isEmailChanged()) {
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setEmail(user.getEmail());
+            userEventPayload.setPhone(user.getPhone());
             userEventPayload.setId(user.getId().toString());
             userEventPayload.setName(user.getRealName());
             userEventPayload.setUsername(user.getLoginName());

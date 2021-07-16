@@ -6,6 +6,7 @@
         <result column="dashboard_user_id" property="dashboardUserId" jdbcType="DECIMAL"/>
         <result column="user_id" property="userId" jdbcType="DECIMAL"/>
         <result column="dashboard_id" property="dashboardId" jdbcType="DECIMAL"/>
+        <result column="rank" property="rank" javaType="DECIMAL"/>
         <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
         <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
         <result column="creation_date" property="creationDate" jdbcType="DATE"/>
@@ -13,5 +14,20 @@
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
     </resultMap>
 
+    <select id="queryMaxRankByUserId" resultType="java.lang.Integer">
+        SELECT MAX(fdu.rank)
+        FROM fd_dashboard_user fdu
+        WHERE fdu.user_id = #{userId}
+    </select>
 
+    <select id="queryCustomizeDashboardByUserId" resultType="io.choerodon.iam.infra.dto.DashboardUserDTO">
+        SELECT fdu.dashboard_user_id,
+               fdu.user_id,
+               fdu.dashboard_id,
+               fdu.rank,
+               fdu.object_version_number
+        FROM fd_dashboard_user fdu
+        JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
+        WHERE fdu.user_id = #{userId} AND fd.dashboard_type = 'CUSTOMIZE'
+    </select>
 </mapper>

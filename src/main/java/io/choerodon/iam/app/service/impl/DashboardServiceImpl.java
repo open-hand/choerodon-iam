@@ -103,9 +103,11 @@ public class DashboardServiceImpl implements DashboardService {
                 dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())
                         .setDefaultFlag(BaseConstants.Flag.YES));
         defaultDashboards.forEach(defaultDashboard -> {
-            dashboardUserService.createDashboardUser(new DashboardUserDTO()
+            DashboardUserDTO dashboardUserDTO = new DashboardUserDTO()
                     .setDashboardId(defaultDashboard.getDashboardId())
-                    .setUserId(obtainUserId()));
+                    .setUserId(obtainUserId());
+            dashboardUserService.createDashboardUser(dashboardUserDTO);
+            defaultDashboard.setObjectVersionNumber(dashboardUserDTO.getObjectVersionNumber());
         });
         return defaultDashboards;
     }

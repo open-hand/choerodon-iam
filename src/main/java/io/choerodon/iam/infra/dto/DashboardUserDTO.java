@@ -27,6 +27,7 @@ public class DashboardUserDTO extends AuditDomain {
     public static final String FIELD_DASHBOARD_USER_ID = "dashboardUserId";
     public static final String FIELD_USER_ID = "userId";
     public static final String FIELD_DASHBOARD_ID = "dashboardId";
+    public static final String FIELD_RANK = "rank";
     public static final String FD_DASHBOARD_USER_U1 = "fd_dashboard_user_u1";
 
     //
@@ -51,6 +52,8 @@ public class DashboardUserDTO extends AuditDomain {
     @Unique(FD_DASHBOARD_USER_U1)
     @Encrypt
     private Long dashboardId;
+    @ApiModelProperty(value = "序号")
+    private Integer rank;
 
 	//
     // 非数据库字段
@@ -93,5 +96,12 @@ public class DashboardUserDTO extends AuditDomain {
         return this;
 	}
 
+    public Integer getRank() {
+        return rank;
+    }
+
+    public void setRank(Integer rank) {
+        this.rank = rank;
+    }
 }
 

@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
 
+import java.util.List;
+
 /**
  * 应用服务
  *
@@ -23,4 +25,12 @@ public interface DashboardUserService {
      * @return
      */
     DashboardUserDTO deleteDashboardUser(Long dashboardId);
+
+    /**
+     * 更新用户视图顺序
+     *
+     * @param dashboardUserS
+     * @return
+     */
+    List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS);
 }

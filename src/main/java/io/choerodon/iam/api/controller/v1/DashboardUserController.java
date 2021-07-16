@@ -11,8 +11,10 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 
+import java.util.List;
+
 /**
- *  管理 API
+ * 管理 API
  *
  * @author jian.zhang02@hand-china.com 2021-07-08 10:05:56
  */
@@ -22,7 +24,7 @@ public class DashboardUserController extends BaseController {
 
     private DashboardUserService dashboardUserService;
 
-    public DashboardUserController(DashboardUserService dashboardUserService){
+    public DashboardUserController(DashboardUserService dashboardUserService) {
         this.dashboardUserService = dashboardUserService;
     }
 
@@ -32,5 +34,12 @@ public class DashboardUserController extends BaseController {
     public ResponseEntity<DashboardUserDTO> createDashboardUser(@Encrypt @RequestBody DashboardUserDTO dashboardUser) {
         validObject(dashboardUser);
         return Results.success(dashboardUserService.createDashboardUser(dashboardUser));
+    }
+
+    @ApiOperation(value = "维护-批量更新用户视图顺序")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @PostMapping
+    public ResponseEntity<List<DashboardUserDTO>> batchUpdateDashboardUserRank(@Encrypt @RequestBody List<DashboardUserDTO> dashboardUserS) {
+        return Results.success(dashboardUserService.batchUpdateDashboardUserRank(dashboardUserS));
     }
 }

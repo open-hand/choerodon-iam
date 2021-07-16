@@ -9,8 +9,13 @@ import io.choerodon.iam.infra.dto.DashboardUserDTO;
 import io.choerodon.iam.infra.enums.DashboardType;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 import java.util.Objects;
+
+import org.hzero.core.base.BaseConstants;
 import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.DashboardUserService;
 
@@ -40,8 +45,39 @@ public class DashboardUserServiceImpl implements DashboardUserService {
         }
         dashboardUser.setUserId(customUserDetails.getUserId());
         check(dashboardUser);
-        dashboardUserMapper.insert(dashboardUser);
+        DashboardDTO dashboardDTO = dashboardMapper.selectByPrimaryKey(dashboardUser.getDashboardId());
+        if (StringUtils.equals(dashboardDTO.getDashboardType(), DashboardType.INTERNAL.getValue())) {
+            createInternalDashboardUser(dashboardUser);
+            return dashboardUser;
+        }
+        createCustomizeDashboardUser(dashboardUser);
         return dashboardUser;
+    }
+
+    private void createCustomizeDashboardUser(DashboardUserDTO dashboardUser) {
+        Integer rank = dashboardUserMapper.queryMaxRankByUserId(dashboardUser.getUserId());
+        if (Objects.isNull(rank)) {
+            dashboardUser.setRank(BaseConstants.Digital.ZERO);
+        } else {
+            dashboardUser.setRank(++rank);
+        }
+        dashboardUserMapper.insert(dashboardUser);
+    }
+
+    private void createInternalDashboardUser(DashboardUserDTO dashboardUser) {
+        List<DashboardUserDTO> customizeDashboardUserDTOS = dashboardUserMapper.queryCustomizeDashboardByUserId(dashboardUser.getUserId());
+        if (CollectionUtils.isEmpty(customizeDashboardUserDTOS)) {
+            createCustomizeDashboardUser(dashboardUser);
+            return;
+        }
+        Integer rank = customizeDashboardUserDTOS.get(BaseConstants.Digital.ZERO).getRank();
+        dashboardUser.setRank(rank);
+        for (DashboardUserDTO customizeDashboardUser : customizeDashboardUserDTOS) {
+            customizeDashboardUser.setRank(++rank);
+        }
+        customizeDashboardUserDTOS.add(dashboardUser);
+        customizeDashboardUserDTOS.forEach(customizeDashboardUser ->
+                dashboardUserMapper.updateOptional(customizeDashboardUser, DashboardUserDTO.FIELD_RANK));
     }
 
     @Override
@@ -54,6 +90,18 @@ public class DashboardUserServiceImpl implements DashboardUserService {
         }
         dashboardUserMapper.deleteByPrimaryKey(dashboardUserDTO);
         return dashboardUserDTO;
+    }
+
+    @Override
+    public List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS) {
+        if (CollectionUtils.isEmpty(dashboardUserS)) {
+            return dashboardUserS;
+        }
+        for (int i = 0; i < dashboardUserS.size(); i++) {
+            dashboardUserS.get(i).setRank(i);
+            dashboardUserMapper.updateOptional(dashboardUserS.get(i), DashboardUserDTO.FIELD_RANK);
+        }
+        return dashboardUserS;
     }
 
     private Long obtainUserId() {
@@ -74,7 +122,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
             throw new CommonException(DashboardConstants.ErrorCode.ERROR_NOT_ASSIGN_DASHBOARD);
         }
         DashboardUserDTO dashboardUserDTO = dashboardUserMapper.selectOne(dashboardUser);
-        if(Objects.nonNull(dashboardUserDTO)){
+        if (Objects.nonNull(dashboardUserDTO)) {
             throw new CommonException(DashboardConstants.ErrorCode.ERROR_ALREADY_ASSIGN_DASHBOARD);
         }
     }

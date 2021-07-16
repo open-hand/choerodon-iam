@@ -13,4 +13,12 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard_user.groovy') {
         }
         addUniqueConstraint(columnNames:"dashboard_id,user_id",tableName:"fd_dashboard_user",constraintName: "fd_dashboard_user_u1")
     }
+
+    changeSet(author: "jian.zhang02@hand-china.com", id: "fd_dashboard_user-2021-07-15-version-2") {
+        addColumn (tableName: "fd_dashboard_user") {
+            column (name: "rank", type: "INT(11)", remarks: "序号", afterColumn: "dashboard_id", defaultValue: "0") {
+                constraints (nullable: "false")
+            }
+        }
+    }
 }

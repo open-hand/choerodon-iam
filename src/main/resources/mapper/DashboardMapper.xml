@@ -20,10 +20,11 @@
                fd.dashboard_name,
                fd.default_flag,
                fd.created_by,
-               fd.object_version_number
+               fdu.object_version_number
         FROM fd_dashboard_user fdu
                  JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
         WHERE fdu.user_id = #{userId}
+        ORDER BY fdu.rank ASC
     </select>
 
     <select id="queryInternalDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">

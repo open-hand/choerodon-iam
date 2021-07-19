@@ -38,7 +38,7 @@ public class DashboardUserController extends BaseController {
 
     @ApiOperation(value = "维护-批量更新用户视图顺序")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @PostMapping
+    @PostMapping("/dashboard-rank")
     public ResponseEntity<List<DashboardUserDTO>> batchUpdateDashboardUserRank(@Encrypt @RequestBody List<DashboardUserDTO> dashboardUserS) {
         return Results.success(dashboardUserService.batchUpdateDashboardUserRank(dashboardUserS));
     }

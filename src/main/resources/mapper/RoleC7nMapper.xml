@@ -427,4 +427,20 @@
                 AND imr.role_id = ir.id
     </select>
 
+    <select id="listRolesByIds" resultType="io.choerodon.iam.api.vo.SimpleRoleVO">
+        SELECT
+            ir.id,
+            ir.`name` AS roleName,
+            ir.`code` AS roleCode
+        FROM
+            iam_role ir
+        WHERE
+            ir.id IN
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
+          AND ir.h_tenant_id = #{tenantId}
+          AND ir.fd_level = 'organization'
+    </select>
+
 </mapper>

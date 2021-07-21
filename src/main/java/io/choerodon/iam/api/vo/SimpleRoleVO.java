@@ -8,8 +8,8 @@ package io.choerodon.iam.api.vo;
  */
 public class SimpleRoleVO {
     private Long id;
-    private String roleName;
-    private String roleCode;
+    private String name;
+    private String code;
 
     public Long getId() {
         return id;
@@ -19,19 +19,19 @@ public class SimpleRoleVO {
         this.id = id;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public String getName() {
+        return name;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getRoleCode() {
-        return roleCode;
+    public String getCode() {
+        return code;
     }
 
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
+    public void setCode(String code) {
+        this.code = code;
     }
 }

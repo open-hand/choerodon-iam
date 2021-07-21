@@ -19,10 +19,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.ClientRoleQueryVO;
-import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
-import io.choerodon.iam.api.vo.UserPermissionVO;
-import io.choerodon.iam.api.vo.UserRoleVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.agile.RoleUserCountVO;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.iam.infra.constant.LabelC7nConstants;
@@ -223,5 +220,10 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     @Override
     public List<User> listVindicators() {
         return roleC7nMapper.listVindicators();
+    }
+
+    @Override
+    public List<SimpleRoleVO> listRolesByIds(List<Long> roleIds, Long tenantId) {
+        return !CollectionUtils.isEmpty(roleIds) ? roleC7nMapper.listRolesByIds(roleIds, tenantId) : null;
     }
 }

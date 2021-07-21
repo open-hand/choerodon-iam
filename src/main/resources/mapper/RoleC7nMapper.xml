@@ -430,8 +430,8 @@
     <select id="listRolesByIds" resultType="io.choerodon.iam.api.vo.SimpleRoleVO">
         SELECT
             ir.id,
-            ir.`name` AS roleName,
-            ir.`code` AS roleCode
+            ir.`name`,
+            ir.`code`
         FROM
             iam_role ir
         WHERE

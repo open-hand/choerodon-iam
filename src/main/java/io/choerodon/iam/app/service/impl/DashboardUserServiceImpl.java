@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.app.service.DashboardService;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
@@ -12,6 +13,7 @@ import io.choerodon.iam.infra.mapper.DashboardUserMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,10 +33,14 @@ public class DashboardUserServiceImpl implements DashboardUserService {
 
     private DashboardMapper dashboardMapper;
 
+    private DashboardService dashboardService;
+
     public DashboardUserServiceImpl(DashboardUserMapper dashboardUserMapper,
-                                    DashboardMapper dashboardMapper) {
+                                    DashboardMapper dashboardMapper,
+                                    DashboardService dashboardService) {
         this.dashboardUserMapper = dashboardUserMapper;
         this.dashboardMapper = dashboardMapper;
+        this.dashboardService = dashboardService;
     }
 
     @Override
@@ -93,15 +99,15 @@ public class DashboardUserServiceImpl implements DashboardUserService {
     }
 
     @Override
-    public List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS) {
+    public List<DashboardDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS) {
         if (CollectionUtils.isEmpty(dashboardUserS)) {
-            return dashboardUserS;
+            return Collections.EMPTY_LIST;
         }
         for (int i = 0; i < dashboardUserS.size(); i++) {
             dashboardUserS.get(i).setRank(i);
             dashboardUserMapper.updateOptional(dashboardUserS.get(i), DashboardUserDTO.FIELD_RANK);
         }
-        return dashboardUserS;
+        return dashboardService.queryDashboard();
     }
 
     private Long obtainUserId() {

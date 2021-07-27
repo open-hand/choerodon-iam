@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
 
 import java.util.List;
@@ -32,5 +33,5 @@ public interface DashboardUserService {
      * @param dashboardUserS
      * @return
      */
-    List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS);
+    List<DashboardDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS);
 }

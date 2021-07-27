@@ -95,7 +95,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
     }
 
     @Override
-    public List<DashboardDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS) {
+    public List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS) {
         if (CollectionUtils.isEmpty(dashboardUserS)) {
             return Collections.EMPTY_LIST;
         }
@@ -103,7 +103,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
             dashboardUserS.get(i).setRank(i);
             dashboardUserMapper.updateOptional(dashboardUserS.get(i), DashboardUserDTO.FIELD_RANK);
         }
-        return dashboardMapper.queryDashboard(obtainUserId());
+        return dashboardUserMapper.select(new DashboardUserDTO().setUserId(obtainUserId()));
     }
 
     private Long obtainUserId() {

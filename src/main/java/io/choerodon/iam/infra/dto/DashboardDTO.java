@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import javax.validation.constraints.NotBlank;
@@ -50,6 +51,8 @@ public class DashboardDTO extends AuditDomain {
     private String dashboardName;
     @ApiModelProperty(value = "默认面板")
     private Integer defaultFlag;
+    @Transient
+	private String dashboardUserId;
 
 	//
     // 非数据库字段
@@ -103,5 +106,12 @@ public class DashboardDTO extends AuditDomain {
         return this;
 	}
 
+	public String getDashboardUserId() {
+		return dashboardUserId;
+	}
+
+	public void setDashboardUserId(String dashboardUserId) {
+		this.dashboardUserId = dashboardUserId;
+	}
 }
 

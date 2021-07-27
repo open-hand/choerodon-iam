@@ -15,7 +15,8 @@
     </resultMap>
 
     <select id="queryDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
-        SELECT fd.dashboard_id,
+        SELECT fdu.dashboard_user_id,
+               fd.dashboard_id,
                fd.dashboard_type,
                fd.dashboard_name,
                fd.default_flag,

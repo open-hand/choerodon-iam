@@ -7,6 +7,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import javax.validation.constraints.NotBlank;
+
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -15,8 +16,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
- * 
- *
  * @author jian.zhang02@hand-china.com 2021-07-08 10:05:56
  */
 @ApiModel("")
@@ -42,7 +41,7 @@ public class DashboardDTO extends AuditDomain {
     @ApiModelProperty("面板ID")
     @Id
     @GeneratedValue
-	@Encrypt
+    @Encrypt
     private Long dashboardId;
     @ApiModelProperty(value = "面板类型(CUSTOMIZE/自定义;INTERNAL/内置)")
     private String dashboardType;
@@ -52,9 +51,9 @@ public class DashboardDTO extends AuditDomain {
     @ApiModelProperty(value = "默认面板")
     private Integer defaultFlag;
     @Transient
-	private String dashboardUserId;
+    private Long dashboardUserId;
 
-	//
+    //
     // 非数据库字段
     // ------------------------------------------------------------------------------
     //
@@ -64,54 +63,57 @@ public class DashboardDTO extends AuditDomain {
     /**
      * @return 面板ID
      */
-	public Long getDashboardId() {
-		return dashboardId;
-	}
+    public Long getDashboardId() {
+        return dashboardId;
+    }
 
-	public DashboardDTO setDashboardId(Long dashboardId) {
-		this.dashboardId = dashboardId;
+    public DashboardDTO setDashboardId(Long dashboardId) {
+        this.dashboardId = dashboardId;
         return this;
-	}
+    }
+
     /**
-     * @return 面板类型(CUSTOMIZE/自定义;INTERNAL/内置)
+     * @return 面板类型(CUSTOMIZE / 自定义 ; INTERNAL / 内置)
      */
-	public String getDashboardType() {
-		return dashboardType;
-	}
+    public String getDashboardType() {
+        return dashboardType;
+    }
 
-	public DashboardDTO setDashboardType(String dashboardType) {
-		this.dashboardType = dashboardType;
+    public DashboardDTO setDashboardType(String dashboardType) {
+        this.dashboardType = dashboardType;
         return this;
-	}
+    }
+
     /**
      * @return 面板名称
      */
-	public String getDashboardName() {
-		return dashboardName;
-	}
+    public String getDashboardName() {
+        return dashboardName;
+    }
 
-	public DashboardDTO setDashboardName(String dashboardName) {
-		this.dashboardName = dashboardName;
+    public DashboardDTO setDashboardName(String dashboardName) {
+        this.dashboardName = dashboardName;
         return this;
-	}
+    }
+
     /**
      * @return 默认面板
      */
-	public Integer getDefaultFlag() {
-		return defaultFlag;
-	}
+    public Integer getDefaultFlag() {
+        return defaultFlag;
+    }
 
-	public DashboardDTO setDefaultFlag(Integer defaultFlag) {
-		this.defaultFlag = defaultFlag;
+    public DashboardDTO setDefaultFlag(Integer defaultFlag) {
+        this.defaultFlag = defaultFlag;
         return this;
-	}
+    }
 
-	public String getDashboardUserId() {
-		return dashboardUserId;
-	}
+    public Long getDashboardUserId() {
+        return dashboardUserId;
+    }
 
-	public void setDashboardUserId(String dashboardUserId) {
-		this.dashboardUserId = dashboardUserId;
-	}
+    public void setDashboardUserId(Long dashboardUserId) {
+        this.dashboardUserId = dashboardUserId;
+    }
 }
 

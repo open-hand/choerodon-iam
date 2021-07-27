@@ -33,14 +33,10 @@ public class DashboardUserServiceImpl implements DashboardUserService {
 
     private DashboardMapper dashboardMapper;
 
-    private DashboardService dashboardService;
-
     public DashboardUserServiceImpl(DashboardUserMapper dashboardUserMapper,
-                                    DashboardMapper dashboardMapper,
-                                    DashboardService dashboardService) {
+                                    DashboardMapper dashboardMapper) {
         this.dashboardUserMapper = dashboardUserMapper;
         this.dashboardMapper = dashboardMapper;
-        this.dashboardService = dashboardService;
     }
 
     @Override
@@ -107,7 +103,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
             dashboardUserS.get(i).setRank(i);
             dashboardUserMapper.updateOptional(dashboardUserS.get(i), DashboardUserDTO.FIELD_RANK);
         }
-        return dashboardService.queryDashboard();
+        return dashboardMapper.queryDashboard(obtainUserId());
     }
 
     private Long obtainUserId() {

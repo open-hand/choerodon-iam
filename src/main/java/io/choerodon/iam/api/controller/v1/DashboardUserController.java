@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
@@ -40,7 +39,7 @@ public class DashboardUserController extends BaseController {
     @ApiOperation(value = "维护-批量更新用户视图顺序")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @PostMapping("/dashboard-rank")
-    public ResponseEntity<List<DashboardDTO>> batchUpdateDashboardUserRank(@Encrypt @RequestBody List<DashboardUserDTO> dashboardUserS) {
+    public ResponseEntity<List<DashboardUserDTO>> batchUpdateDashboardUserRank(@Encrypt @RequestBody List<DashboardUserDTO> dashboardUserS) {
         return Results.success(dashboardUserService.batchUpdateDashboardUserRank(dashboardUserS));
     }
 }

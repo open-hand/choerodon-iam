@@ -5,10 +5,7 @@ import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,10 +13,7 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
 import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
-import org.hzero.common.HZeroService;
 import org.hzero.core.base.BaseConstants;
-import org.hzero.core.properties.ServiceProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.app.service.SysSettingHandler;
 import io.choerodon.iam.app.service.SystemSettingC7nService;
 import io.choerodon.iam.infra.dto.SysSettingDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
@@ -46,20 +41,20 @@ import io.choerodon.iam.infra.utils.SysSettingUtils;
  */
 @Service
 public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
-    private static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
-    private static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
-    private static final String DEFAULT_CLEAN_NUM = "180";
-    private static final String CHOERODON_MESSAGE = "choerodon-message";
+    protected static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
+    protected static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
+    protected static final String DEFAULT_CLEAN_NUM = "180";
+    protected static final String CHOERODON_MESSAGE = "choerodon-message";
     /**
      * 清理消息类型 WEBHOOK/EMAIL
      */
-    private static final String MESSAGE_TYPE = "messageType";
+    protected static final String MESSAGE_TYPE = "messageType";
 
     /**
      * 清理多少天前的数据
      */
-    private static final String CLEAN_NUM = "cleanNum";
-    private static final String MESSAGE_TYPE_EMAIL = "EMAIL";
+    protected static final String CLEAN_NUM = "cleanNum";
+    protected static final String MESSAGE_TYPE_EMAIL = "EMAIL";
     private static final String MESSAGE_TYPE_WEBHOOK = "WEB_HOOK";
     private FileClient fileClient;
 
@@ -72,6 +67,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
 
     private AsgardServiceClientOperator asgardServiceClientOperator;
     private BasePasswordPolicyRepository basePasswordPolicyRepository;
+    private List<SysSettingHandler> sysSettingHandlers;
 
 
     public SystemSettingC7nServiceImpl(FileClient fileClient,
@@ -80,13 +76,15 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                                        @Lazy AsgardServiceClientOperator asgardServiceClientOperator,
                                        @Value("${choerodon.category.enabled:false}")
                                                Boolean enableCategory,
-                                       SysSettingMapper sysSettingMapper) {
+                                       SysSettingMapper sysSettingMapper,
+                                       List<SysSettingHandler> sysSettingHandlers) {
         this.fileClient = fileClient;
         this.asgardFeignClient = asgardFeignClient;
         this.asgardServiceClientOperator = asgardServiceClientOperator;
         this.enableCategory = enableCategory;
         this.sysSettingMapper = sysSettingMapper;
         this.basePasswordPolicyRepository = basePasswordPolicyRepository;
+        this.sysSettingHandlers = sysSettingHandlers;
     }
 
     @Override
@@ -119,9 +117,11 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             return null;
         }
         List<SysSettingDTO> oldSysSettingDTOList = sysSettingMapper.selectAll();
-        SysSettingVO oldSysSettingVO = SysSettingUtils.listToSysSettingVo(oldSysSettingDTOList);
+        SysSettingVO oldSysSettingVO = new SysSettingVO();
+        SysSettingUtils.listToSysSettingVo(sysSettingHandlers, oldSysSettingDTOList, oldSysSettingVO);
         Map<String, SysSettingDTO> sysSettingDTOMap = sysSettingMapper.selectAll().stream().collect(Collectors.toMap(SysSettingDTO::getSettingKey, Function.identity()));
-        Map<String, String> settingDTOMap = SysSettingUtils.sysSettingVoToGeneralInfoMap(sysSettingVO);
+        Map<String, String> settingDTOMap = new HashMap<>();
+        SysSettingUtils.sysSettingVoToGeneralInfoMap(sysSettingHandlers, sysSettingVO, settingDTOMap);
         settingDTOMap.forEach((k, v) -> {
             SysSettingDTO settingDTO;
             if (sysSettingDTOMap.containsKey(k)) {
@@ -147,10 +147,12 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 || !sysSettingVO.getAutoCleanWebhookRecordInterval().equals(oldSysSettingVO.getAutoCleanWebhookRecordInterval())) {
             handleScheduleTask(MESSAGE_TYPE_WEBHOOK, sysSettingVO.getAutoCleanWebhookRecord(), sysSettingVO.getAutoCleanWebhookRecordInterval());
         }
-        return SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
+        SysSettingVO sysSettingResultVO = new SysSettingVO();
+        SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), sysSettingResultVO);
+        return sysSettingResultVO;
     }
 
-    private void handleScheduleTask(String messageType, Boolean autoClean, Integer cleanNum) {
+    protected void handleScheduleTask(String messageType, Boolean autoClean, Integer cleanNum) {
         String taskName = messageType.equals(MESSAGE_TYPE_EMAIL) ? CLEAN_EMAIL_RECORD : CLEAN_WEBHOOK_RECORD;
         asgardFeignClient.deleteSiteTask(taskName);
         if (autoClean) {
@@ -214,7 +216,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         if (basePasswordPolicyRepository.updateByPrimaryKey(passwordPolicy) != 1) {
             throw new CommonException("error.update.setting.password.policy");
         }
-        SysSettingVO dto = SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
+        SysSettingVO dto = new SysSettingVO();
+        SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), dto);
         return dto;
     }
 
@@ -263,7 +266,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
 
     @Override
     public SysSettingVO getSetting() {
-        return SysSettingUtils.listToSysSettingVo(sysSettingMapper.selectAll());
+        SysSettingVO sysSettingVO = new SysSettingVO();
+        SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), sysSettingVO);
+        return sysSettingVO;
     }
 
     @Override
@@ -272,7 +277,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private String uploadFile(MultipartFile file) {
-        return fileClient.uploadFile(0L, BACKETNAME,null, file.getOriginalFilename(), file);
+        return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);
     }
 
     /**

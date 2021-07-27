@@ -1,15 +1,17 @@
 package io.choerodon.iam.api.validator;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.vo.SysSettingVO;
-import io.choerodon.iam.infra.dto.SysSettingDTO;
-import io.choerodon.iam.infra.mapper.SysSettingMapper;
-import io.choerodon.iam.infra.utils.SysSettingUtils;
+import java.util.List;
+
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.app.service.SysSettingHandler;
+import io.choerodon.iam.infra.dto.SysSettingDTO;
+import io.choerodon.iam.infra.mapper.SysSettingMapper;
+import io.choerodon.iam.infra.utils.SysSettingUtils;
 
 /**
  * 当用户组织的密码策略未开启时，如果修改过系统设置，根据系统设置中的密码长度要求，校验用户密码
@@ -23,10 +25,14 @@ public class UserPasswordValidator {
 
     private SysSettingMapper sysSettingMapper;
 
+    private List<SysSettingHandler> sysSettingHandlers;
+
     public UserPasswordValidator(PasswordPolicyMapper passwordPolicyMapper,
-                                 SysSettingMapper sysSettingMapper) {
+                                 SysSettingMapper sysSettingMapper,
+                                 List<SysSettingHandler> sysSettingHandlers) {
         this.passwordPolicyMapper = passwordPolicyMapper;
         this.sysSettingMapper = sysSettingMapper;
+        this.sysSettingHandlers = sysSettingHandlers;
     }
 
     /**
@@ -46,7 +52,8 @@ public class UserPasswordValidator {
             return true;
         }
         List<SysSettingDTO> settingDTOS = sysSettingMapper.selectAll();
-        SysSettingVO setting = SysSettingUtils.listToSysSettingVo(settingDTOS);
+        SysSettingVO setting = new SysSettingVO();
+        SysSettingUtils.listToSysSettingVo(sysSettingHandlers, settingDTOS, setting);
         // 系统设置为空时，跳过
         if (setting == null || setting.getMinPasswordLength() == null || setting.getMaxPasswordLength() == null) {
             return true;

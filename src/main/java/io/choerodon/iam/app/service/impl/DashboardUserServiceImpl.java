@@ -74,10 +74,10 @@ public class DashboardUserServiceImpl implements DashboardUserService {
         }
         Integer rank = customizeDashboardUserDTOS.get(BaseConstants.Digital.ZERO).getRank();
         dashboardUser.setRank(rank);
+        dashboardUserMapper.insert(dashboardUser);
         for (DashboardUserDTO customizeDashboardUser : customizeDashboardUserDTOS) {
             customizeDashboardUser.setRank(++rank);
         }
-        customizeDashboardUserDTOS.add(dashboardUser);
         customizeDashboardUserDTOS.forEach(customizeDashboardUser ->
                 dashboardUserMapper.updateOptional(customizeDashboardUser, DashboardUserDTO.FIELD_RANK));
     }

@@ -203,7 +203,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
         dto = userRepository.selectByPrimaryKey(user.getId());
-           Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
+        Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         return dto;
@@ -1493,5 +1493,14 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         CommonExAssertUtil.assertTrue(userId != null, "error.user.get");
         return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
+    }
+
+    @Override
+    public Page<User> listPageUsersByIds(Long[] ids, PageRequest pageable, Boolean onlyEnabled) {
+        if (ObjectUtils.isEmpty(ids)) {
+            return new Page<>();
+        } else {
+            return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listUsersByIds(ids, onlyEnabled));
+        }
     }
 }

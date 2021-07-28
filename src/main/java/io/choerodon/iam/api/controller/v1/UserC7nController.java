@@ -19,6 +19,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -181,15 +182,15 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
-    @Permission(level=ResourceLevel.ORGANIZATION,permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在项目列表（只包含devops项目和运维项目）")
     @GetMapping(value = "/projects/devops_and_operations")
     @CustomPageRequest
     public ResponseEntity<Page<ProjectDTO>> queryProjectsOfDevopsOrOperations(
             PageRequest pageRequest,
-            @RequestParam(value = "project_name",required = false)String projectName
-    ){
-        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName,pageRequest));
+            @RequestParam(value = "project_name", required = false) String projectName
+    ) {
+        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName, pageRequest));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -242,6 +243,17 @@ public class UserC7nController extends BaseController {
                                                      @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据id批量分页查询用户信息列表（敏捷需要的）")
+    @PostMapping(value = "/ids/page")
+    @CustomPageRequest
+    public ResponseEntity<Page<User>> listPageUsersByIds(@Encrypt @RequestBody Long[] ids,
+                                                         @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled,
+                                                         @ApiIgnore PageRequest pageable) {
+        return new ResponseEntity<>(userC7nService.listPageUsersByIds(ids, pageable, onlyEnabled), HttpStatus.OK);
+    }
+
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询带有gitlab用户id的用户信息列表")

@@ -18,6 +18,7 @@
         <result property="locked" column="is_locked"/>
         <result property="email" column="email"/>
         <result property="ldap" column="is_ldap"/>
+        <result property="imageUrl" column="image_url"/>
         <result property="creationDate" column="creation_date"/>
         <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">

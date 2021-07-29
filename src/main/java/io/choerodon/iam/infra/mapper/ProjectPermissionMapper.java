@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.iam.api.vo.ProjectWithUserVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -171,13 +172,11 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * 根据项目查询项目成员和传入的敏捷用户
      */
     List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
-                                              @Param("userIds") Set<Long> userIds,
-                                              @Param("param") String param,
+                                              @Param("agileUserVO") AgileUserVO agileUserVO,
                                               @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     List<UserDTO> selectAgileUsersByProjectIds(@Param("projectIds") Set<Long> projectIds,
-                                               @Param("userIds") Set<Long> userIds,
-                                               @Param("param") String param,
+                                               @Param("agileUserVO") AgileUserVO agileUserVO,
                                                @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     /**

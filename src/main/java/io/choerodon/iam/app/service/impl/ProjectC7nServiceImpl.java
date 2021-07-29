@@ -345,14 +345,14 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
-    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
+    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, AgileUserVO agileUserVO) {
         ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
         if (ObjectUtils.isEmpty(project)) {
             return new Page<>();
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectId(projectId, agileUserVO, adminRoleIds));
     }
 
     @Override
@@ -362,12 +362,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             throw new CommonException("error.feign.agile.user.organizationId.null");
         }
         Set<Long> projectIds = agileUserVO.getProjectIds();
-        Set<Long> userIds = agileUserVO.getUserIds();
         if (ObjectUtils.isEmpty(projectIds)) {
             throw new CommonException("error.feign.agile.user.projectIds.empty");
         }
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectIds(projectIds, userIds, agileUserVO.getParam(), adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectIds(projectIds, agileUserVO, adminRoleIds));
     }
 
     @Override

@@ -355,6 +355,5 @@ public interface UserC7nService {
      */
     Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest);
 
-    Page<User> listPageUsersByIds(Long[] ids, PageRequest pageable, Boolean onlyEnabled);
 
 }

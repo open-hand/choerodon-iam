@@ -144,4 +144,6 @@ public interface ProjectC7nService {
      * @return 项目id集合
      */
     List<Long> queryProjectIdsInTenant(Long tenantId);
+
+    Page<UserDTO> listAgile(Long projectId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 }

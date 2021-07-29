@@ -244,16 +244,6 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
 
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "根据id批量分页查询用户信息列表（敏捷需要的）")
-    @PostMapping(value = "/ids/page")
-    @CustomPageRequest
-    public ResponseEntity<Page<User>> listPageUsersByIds(@Encrypt @RequestBody Long[] ids,
-                                                         @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled,
-                                                         @ApiIgnore PageRequest pageable) {
-        return new ResponseEntity<>(userC7nService.listPageUsersByIds(ids, pageable, onlyEnabled), HttpStatus.OK);
-    }
-
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询带有gitlab用户id的用户信息列表")

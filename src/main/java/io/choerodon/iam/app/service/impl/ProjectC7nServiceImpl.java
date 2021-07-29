@@ -317,7 +317,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         Long organizationId = project.getOrganizationId();
         Role projectAdmin = queryProjectAdminByTenantId(organizationId);
         Role projectMember = queryProjectMemberByTenantId(organizationId);
-        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId()));
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId(), Collections.EMPTY_LIST));
     }
 
     protected Role queryProjectAdminByTenantId(Long organizationId) {
@@ -571,5 +571,17 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public List<Long> queryProjectIdsInTenant(Long tenantId) {
         return projectMapper.listProjectIdsInOrg(tenantId);
+    }
+
+    @Override
+    public Page<UserDTO> listAgile(Long projectId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds) {
+        ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
+        if (ObjectUtils.isEmpty(project)) {
+            return new Page<>();
+        }
+        Long organizationId = project.getOrganizationId();
+        Role projectAdmin = queryProjectAdminByTenantId(organizationId);
+        Role projectMember = queryProjectMemberByTenantId(organizationId);
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId(), notSelectUserIds));
     }
 }

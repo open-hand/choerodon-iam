@@ -455,6 +455,12 @@
                     <if test="email != null">
                         AND iu.email LIKE concat(concat('%',#{email}),'%')
                     </if>
+                    <if test="notSelectUserIds != null and notSelectUserIds.size() != 0">
+                        AND iu.id NOT IN
+                        <foreach collection="notSelectUserIds" item="id" separator="," open="(" close=")">
+                            #{id,jdbcType=BIGINT}
+                        </foreach>
+                    </if>
                     <if test="param != null">
                         AND (
                         iu.login_name LIKE concat(concat('%',#{param}),'%') OR

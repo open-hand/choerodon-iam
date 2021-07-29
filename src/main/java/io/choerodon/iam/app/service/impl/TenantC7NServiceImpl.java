@@ -323,7 +323,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public Page<User> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param));
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param, Collections.EMPTY_LIST));
+    }
+
+    @Override
+    public Page<User> pagingQueryUsersOnOrganizationAgile(Long organizationId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds) {
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param, notSelectUserIds));
     }
 
     @Override

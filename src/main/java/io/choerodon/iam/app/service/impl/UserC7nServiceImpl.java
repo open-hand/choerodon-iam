@@ -1495,12 +1495,5 @@ public class UserC7nServiceImpl implements UserC7nService {
         return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
     }
 
-    @Override
-    public Page<User> listPageUsersByIds(Long[] ids, PageRequest pageable, Boolean onlyEnabled) {
-        if (ObjectUtils.isEmpty(ids)) {
-            return new Page<>();
-        } else {
-            return PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listUsersByIds(ids, onlyEnabled));
-        }
-    }
+
 }

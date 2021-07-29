@@ -70,7 +70,8 @@ public interface UserC7nMapper {
                                             @Param("sourceId") Long sourceId,
                                             @Param("userId") Long userId,
                                             @Param("email") String email,
-                                            @Param("param") String param);
+                                            @Param("param") String param,
+                                            @Param("notSelectUserIds") List<Long> notSelectUserIds);
 
     /**
      * 组织层查询用户总数.

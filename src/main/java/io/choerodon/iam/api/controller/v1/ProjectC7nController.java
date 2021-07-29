@@ -162,6 +162,20 @@ public class ProjectC7nController extends BaseController {
         return ResponseEntity.ok(projectService.pagingQueryTheUsersOfProject(projectId, userId, email, pageRequest, param));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页模糊查询项目下的用户(敏捷需要的)")
+    @PostMapping(value = "/{project_id}/users/agile")
+    @CustomPageRequest
+    public ResponseEntity<Page<UserDTO>> listAgile(@PathVariable(name = "project_id") Long projectId,
+                                                   @ApiIgnore
+                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                   @Encrypt @RequestParam(required = false, name = "id") Long userId,
+                                                   @RequestParam(required = false) String email,
+                                                   @RequestParam(required = false) String param,
+                                                   @RequestBody @Encrypt List<Long> notSelectUserIds) {
+        return ResponseEntity.ok(projectService.listAgile(projectId, userId, email, pageRequest, param, notSelectUserIds));
+    }
+
     /**
      * 查询项目基本信息
      *

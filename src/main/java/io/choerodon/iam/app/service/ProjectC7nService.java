@@ -81,11 +81,10 @@ public interface ProjectC7nService {
      *
      * @param projectId
      * @param pageable
-     * @param userIds
-     * @param param
+     * @param agileUserVO
      * @return user 分页数据
      */
-    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
+    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, AgileUserVO agileUserVO);
 
     ProjectDTO queryBasicInfo(Long id);
 

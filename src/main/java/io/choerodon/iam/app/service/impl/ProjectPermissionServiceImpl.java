@@ -217,6 +217,12 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
+    public Set<Long> listProjectUserPermission(Long userId, Set<Long> psIds, Long projectId) {
+        ProjectDTO projectDTO = projectC7nService.queryBasicInfo(projectId);
+        return projectPermissionMapper.queryProjectUserPermission(userId, psIds, projectId, projectDTO.getOrganizationId());
+    }
+
+    @Override
     public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
         return projectPermissionMapper.listUsersByNameWithLimit(projectId, param);
     }
@@ -333,6 +339,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
+    @Transactional
     public void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId) {
         Assert.notNull(projectId, "error.projectId.is.null");
         Assert.notNull(userId, "error.userId.is.null");
@@ -450,6 +457,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
         Set<Long> deleteMemberRoleIds = new HashSet<>();
         // 删除角色，不删除member-role表中的角色（可能会有并发问题）
+        Set<String> deleteRoleLabels = new HashSet<>();
         if (!CollectionUtils.isEmpty(deleteRoleIds)) {
             deleteRoleIds.forEach(v -> {
                 Long memberRoleId = oldMemberRoleMap.get(v);
@@ -458,6 +466,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
                 }
             });
             projectPermissionMapper.deleteByIds(projectId, deleteMemberRoleIds);
+            deleteRoleLabels.addAll(labelC7nMapper.selectLabelNamesInRoleIds(deleteRoleIds));
         }
         // 新增角色
         if (!CollectionUtils.isEmpty(insertRoleIds)) {
@@ -486,6 +495,7 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         userMemberEventPayload.setResourceType(ResourceLevel.PROJECT.value());
         userMemberEventPayload.setSyncAll(syncAll);
         userMemberEventPayload.setRoleIds(roleIdList);
+        userMemberEventPayload.setDeleteRoleLabels(deleteRoleLabels);
         userMemberEventPayloads.add(userMemberEventPayload);
         roleMemberService.updateMemberRole(DetailsHelper.getUserDetails().getUserId(), userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
 

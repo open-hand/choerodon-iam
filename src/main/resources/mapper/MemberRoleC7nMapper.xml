@@ -79,4 +79,16 @@
               AND imr.source_id = #{tenantId}
               and imr.source_type = 'organization'
     </select>
+    <select id="listUserPermission" resultType="java.lang.Long">
+        select irp.permission_id
+        from iam_member_role imr
+        inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = true)
+        inner join iam_role_permission irp on (irp.role_id = ir.id and type = 'PS')
+        where imr.member_type = 'user' and imr.member_id = #{userId}
+        and imr.source_id = #{organizationId}
+        and irp.permission_id in
+        <foreach collection="psIds" item="psId" open="(" close=")" separator="," index="i">
+            #{psId}
+        </foreach>
+    </select>
 </mapper>

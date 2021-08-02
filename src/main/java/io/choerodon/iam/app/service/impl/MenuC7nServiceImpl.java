@@ -25,8 +25,10 @@ import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.mapper.MenuMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
+import org.hzero.websocket.helper.SocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -38,6 +40,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ProjectVisitInfoVO;
 import io.choerodon.iam.app.service.MenuC7nService;
+import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
@@ -53,7 +56,6 @@ import io.choerodon.iam.infra.utils.JsonHelper;
  * @author wanghao
  * @since 2020/4/23 17:36
  */
-@Service
 public class MenuC7nServiceImpl implements MenuC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MenuC7nServiceImpl.class);
     private static final String USER_MENU = "USER_MENU";
@@ -61,21 +63,25 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     // 查询菜单的线程池
     private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(20, 180, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("C7n-selMenuPool-%d").build());
+    @Autowired
+    private OrganizationProjectC7nService organizationProjectC7nService;
+    @Autowired
+    private SocketSendHelper socketSendHelper;
 
-    private MenuC7nMapper menuC7nMapper;
-    private MenuRepository menuRepository;
-    private ProjectMapCategoryMapper projectMapCategoryMapper;
-    private UserRepository userRepository;
-    private MenuMapper menuMapper;
-    private MemberRoleC7nMapper memberRoleC7nMapper;
-    private RoleC7nMapper roleC7nMapper;
-    private ProjectPermissionMapper projectPermissionMapper;
-    private ProjectC7nService projectC7nService;
-    private UserC7nMapper userC7nMapper;
-    private RedisTemplate<String, String> redisTemplate;
-    private ProjectMapper projectMapper;
-    private UserMapper userMapper;
-    private StarProjectService starProjectService;
+    protected MenuC7nMapper menuC7nMapper;
+    protected MenuRepository menuRepository;
+    protected ProjectMapCategoryMapper projectMapCategoryMapper;
+    protected UserRepository userRepository;
+    protected MenuMapper menuMapper;
+    protected MemberRoleC7nMapper memberRoleC7nMapper;
+    protected RoleC7nMapper roleC7nMapper;
+    protected ProjectPermissionMapper projectPermissionMapper;
+    protected ProjectC7nService projectC7nService;
+    protected UserC7nMapper userC7nMapper;
+    protected RedisTemplate<String, String> redisTemplate;
+    protected ProjectMapper projectMapper;
+    protected UserMapper userMapper;
+    protected StarProjectService starProjectService;
 
     public MenuC7nServiceImpl(MenuC7nMapper menuC7nMapper,
                               ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -142,7 +148,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
     }
 
     @Override
-    public List<Menu> listNavMenuTree(Set<String> labels, Long projectId) {
+    public List<Menu> listNavMenuTree(Set<String> labels, Long tenantId, Long projectId) {
         if (labels == null && projectId == null) {
             throw new CommonException("error.menu.params");
         }
@@ -289,12 +295,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
         return menuCount > 0;
     }
 
-    private String getCode(String code) {
-        int index = code.lastIndexOf('.');
-        return code.substring(index + 1);
-    }
-
-    private void saveVisitInfo(ProjectDTO projectDTO) {
+    @Override
+    public void saveVisitInfo(ProjectDTO projectDTO) {
         if (projectDTO != null) {
             Long userId = DetailsHelper.getUserDetails().getUserId();
             String userVisitInfoKey = String.format(USER_VISIT_INFO_KEY_TEMPLATE, userId, projectDTO.getOrganizationId());
@@ -306,6 +308,14 @@ public class MenuC7nServiceImpl implements MenuC7nService {
                     .setProjectId(projectDTO.getId());
             entries.put(projectVisitInfoKey, JsonHelper.marshalByJackson(projectVisitInfoVO));
             redisTemplate.opsForHash().putAll(userVisitInfoKey, entries);
+
+            socketSendHelper.sendByUserId(userId, "latest_visit", JsonHelper.marshalByJackson(organizationProjectC7nService.queryLatestVisitProjectInfo(projectDTO.getOrganizationId())));
         }
     }
+
+    private String getCode(String code) {
+        int index = code.lastIndexOf('.');
+        return code.substring(index + 1);
+    }
+
 }

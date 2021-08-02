@@ -16,6 +16,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
@@ -164,7 +165,7 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) String homePage,
                                                       @RequestParam(required = false) String params,
                                                       @RequestParam(required = false) String isRegister) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params,isRegister), HttpStatus.OK);
+        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params, isRegister), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
@@ -227,6 +228,20 @@ public class TenantC7nController extends BaseController {
                                                                      @RequestParam(required = false) String email,
                                                                      @RequestParam(required = false) String param) {
         return new ResponseEntity<>(tenantC7nService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_MEMBER)
+    @ApiOperation(value = "分页模糊查询组织下的用户(敏捷需要)")
+    @PostMapping(value = "/{tenant_id}/users/agile")
+    @CustomPageRequest
+    public ResponseEntity<Page<User>> pagingQueryUsersOnOrganizationAgile(@PathVariable(name = "tenant_id") Long id,
+                                                                          @ApiIgnore
+                                                                          @SortDefault(value = "organizationId", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                          @Encrypt @RequestParam(required = false, name = "id") Long userId,
+                                                                          @RequestParam(required = false) String email,
+                                                                          @RequestParam(required = false) String param,
+                                                                          @RequestBody @Encrypt List<Long> notSelectUserIds) {
+        return new ResponseEntity<>(tenantC7nService.pagingQueryUsersOnOrganizationAgile(id, userId, email, pageRequest, param, notSelectUserIds), HttpStatus.OK);
     }
 
     @CustomPageRequest

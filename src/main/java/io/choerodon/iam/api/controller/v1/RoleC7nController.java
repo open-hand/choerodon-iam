@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.SimpleRoleVO;
 import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -87,4 +89,23 @@ public class RoleC7nController {
     public ResponseEntity<Role> getSiteRoleByCode(@RequestParam(value = "code") String code) {
         return ResponseEntity.ok(roleC7nService.getSiteRoleByCode(code));
     }
+
+    //
+    // 查询所有平台维护用户
+    // ------------------------------------------------------------------------------
+    @ApiOperation("查询所有平台维护用户")
+    @Permission(permissionWithin = true)
+    @GetMapping("/list_vindicators")
+    public ResponseEntity<List<User>> listVindicators() {
+        return Results.success(roleC7nService.listVindicators());
+    }
+
+    @ApiOperation("敏捷使用——根据角色id查询角色")
+    @Permission(permissionWithin = true)
+    @PostMapping("/list_roles")
+    public ResponseEntity<List<SimpleRoleVO>> listRolesByIds(@RequestParam(value = "tenantId") Long tenantId,
+                                                             @RequestBody List<Long> roleIds) {
+        return Results.success(roleC7nService.listRolesByIds(roleIds, tenantId));
+    }
+
 }

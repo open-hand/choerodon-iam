@@ -19,9 +19,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
@@ -128,6 +130,8 @@ public class UserC7nController extends BaseController {
         }
         user.setAdmin(queryInfo.getAdmin());
         //不能修改状态
+        user.setEmailCheckFlag(BaseConstants.Flag.YES);
+        user.setPhoneCheckFlag(BaseConstants.Flag.YES);
         user.setEnabled(queryInfo.getEnabled());
         user.setLdap(queryInfo.getLdap());
         user.setOrganizationId(queryInfo.getOrganizationId());
@@ -178,15 +182,15 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
-    @Permission(level=ResourceLevel.ORGANIZATION,permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在项目列表（只包含devops项目和运维项目）")
     @GetMapping(value = "/projects/devops_and_operations")
     @CustomPageRequest
     public ResponseEntity<Page<ProjectDTO>> queryProjectsOfDevopsOrOperations(
             PageRequest pageRequest,
-            @RequestParam(value = "project_name",required = false)String projectName
-    ){
-        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName,pageRequest));
+            @RequestParam(value = "project_name", required = false) String projectName
+    ) {
+        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName, pageRequest));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -239,6 +243,7 @@ public class UserC7nController extends BaseController {
                                                      @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
+
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询带有gitlab用户id的用户信息列表")

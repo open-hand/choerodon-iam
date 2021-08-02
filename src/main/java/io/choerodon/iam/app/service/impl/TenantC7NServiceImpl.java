@@ -52,7 +52,10 @@ import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.PageUtils;
+import io.choerodon.iam.infra.utils.SagaInstanceUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -320,7 +323,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public Page<User> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param));
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param, Collections.EMPTY_LIST));
+    }
+
+    @Override
+    public Page<User> pagingQueryUsersOnOrganizationAgile(Long organizationId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds) {
+        return PageHelper.doPageAndSort(pageRequest, () -> userC7nMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param, notSelectUserIds));
     }
 
     @Override

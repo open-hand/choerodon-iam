@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -719,7 +720,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
         // 要删除的角色
         Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        Long operatorId = DetailsHelper.getUserDetails().getUserId();
+        Long operatorId = DetailsHelper.getUserDetailsElseAnonymous().getUserId();
 
         List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
             MemberRole memberRole = new MemberRole();
@@ -838,6 +839,11 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         });
     }
 
+    @Override
+    public Set<Long> listUserPermission(Long userId, Set<Long> psIds, Long organizationId) {
+        return memberRoleC7nMapper.listUserPermission(userId, psIds, organizationId);
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -876,5 +882,14 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.PROJECT, projectId);
     }
 
-
+    @Override
+    public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
+        updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
+        if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
+            Set<Long> dtoList = projectMapper.listProjectIdsForUserId(organizationId, userId);
+            if (!CollectionUtils.isEmpty(dtoList)) {
+                dtoList.forEach(t -> deleteProjectRole(t, userId, null, false));
+            }
+        }
+    }
 }

@@ -332,7 +332,13 @@
             </if>
         </where>
         GROUP BY fp.id
-        order by fp.is_enabled desc,fp.creation_date desc
+        order by
+        <if test="projectDTO!=null">
+            <if test="projectDTO.id !=null">
+                fp.id=#{projectDTO.id} desc,
+            </if>
+        </if>
+        fp.is_enabled desc,fp.creation_date desc
     </select>
 
     <select id="selectProjectIdsByUserIdOrAdmin" resultType="long">
@@ -698,5 +704,52 @@
         FROM fd_project fd
                  INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};
+    </select>
+
+    <select id="listProjectIdsInOrg" resultType="java.lang.Long">
+        SELECT id
+        FROM fd_project
+        WHERE fd_project.ORGANIZATION_ID = #{tenantId}
+    </select>
+
+    <select id="selectDisableProjectByProjectMember" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM
+	      fd_project fp
+	      LEFT JOIN iam_user iu ON iu.id = fp.created_by
+	      INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+	      INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+	      INNER JOIN iam_role ir ON ( ir.is_enabled = 1 AND ir.id = imr.role_id )
+	      JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+	      Left JOIN iam_label il on il.id = hlr.label_id
+        WHERE
+	      fp.organization_id = #{tenantId}
+	      AND imr.member_id = #{userId}
+	      AND imr.member_type = 'user'
+	      AND imr.source_type = 'organization'
+	      AND imr.source_id = #{tenantId}
+	      AND fp.is_enabled= 0
+	      AND hlr.data_type = 'ROLE'
+        AND il.name = 'PROJECT_MEMBER'
+        ORDER BY
+	      fp.is_enabled DESC,
+	      fp.creation_date DESC
+
+    </select>
+
+    <select id="listProjectIdsForUserId" resultType="java.lang.Long">
+        SELECT
+            fp.id
+        FROM
+            fd_project fp
+                JOIN iam_member_role imr ON imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_id = #{tenantId}
+                AND imr.source_type = 'organization'
+                JOIN fd_project_permission fpp ON fpp.PROJECT_ID = fp.id
+                AND fpp.MEMBER_ROLE_ID = imr.id
+        WHERE
+            fp.ORGANIZATION_ID = #{tenantId}
     </select>
 </mapper>

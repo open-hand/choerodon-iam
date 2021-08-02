@@ -455,6 +455,12 @@
                     <if test="email != null">
                         AND iu.email LIKE concat(concat('%',#{email}),'%')
                     </if>
+                    <if test="notSelectUserIds != null and notSelectUserIds.size() != 0">
+                        AND iu.id NOT IN
+                        <foreach collection="notSelectUserIds" item="id" separator="," open="(" close=")">
+                            #{id,jdbcType=BIGINT}
+                        </foreach>
+                    </if>
                     <if test="param != null">
                         AND (
                         iu.login_name LIKE concat(concat('%',#{param}),'%') OR
@@ -536,28 +542,38 @@
                 from iam_member_role imr
                 join fd_project_permission fpu on imr.id = fpu.member_role_id
                 where fpu.project_id = #{projectId}
-                <if test="userIds != null and userIds.size > 0">
-                    union
-                    select
-                    iu.id,
-                    0 as weight
-                    from iam_user iu
-                    where iu.id in
-                    <foreach item="id" index="index" collection="userIds"
-                             open="(" separator="," close=")">
-                        #{id}
-                    </foreach>
+                <if test="agileUserVO != null">
+                    <if test="agileUserVO.userIds != null and agileUserVO.userIds.size > 0">
+                        union
+                        select
+                        iu.id,
+                        0 as weight
+                        from iam_user iu
+                        where iu.id in
+                        <foreach item="id" index="index" collection="agileUserVO.userIds"
+                                 open="(" separator="," close=")">
+                            #{id}
+                        </foreach>
+                    </if>
                 </if>
             ) t
             group by t.member_id
         ) t1
         join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
-        <if test="param != null">
-            AND (
-            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%')
-            )
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.param != null">
+                AND (
+                iu1.login_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.real_name LIKE concat(concat('%',#{agileUserVO.param}),'%')
+                )
+            </if>
+            <if test="agileUserVO.ignoredUserIds != null and agileUserVO.ignoredUserIds.size > 0">
+                AND iu1.id NOT IN
+                <foreach collection="agileUserVO.ignoredUserIds" item="ignoredUserId" open="(" separator="," close=")">
+                    #{ignoredUserId}
+                </foreach>
+            </if>
         </if>
         order by weight desc, iu1.id asc
     </select>
@@ -592,28 +608,41 @@
         <foreach item="projectId" index="index" collection="projectIds" open="(" separator="," close=")">
             #{projectId}
         </foreach>
-        <if test="userIds != null and userIds.size > 0">
-            union
-            select
-            iu.id,
-            0 as weight
-            from iam_user iu
-            where iu.id in
-            <foreach item="id" index="index" collection="userIds"
-                     open="(" separator="," close=")">
-                #{id}
-            </foreach>
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.userIds != null and agileUserVO.userIds.size > 0">
+                union
+                select
+                iu.id,
+                0 as weight
+                from iam_user iu
+                where iu.id in
+                <foreach item="id" index="index" collection="agileUserVO.userIds"
+                         open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </if>
         ) t
         group by t.member_id
         ) t1
         join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
-        <if test="param != null">
-            AND (
-            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%')
-            )
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.param != null">
+                AND (
+                iu1.login_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.real_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.email LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.attribute15 LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.attribute14 LIKE concat(concat('%',#{agileUserVO.param}),'%')
+                )
+            </if>
+            <if test="agileUserVO.ignoredUserIds != null  and agileUserVO.ignoredUserIds.size > 0">
+                AND iu1.id NOT IN
+                <foreach collection="agileUserVO.ignoredUserIds" item="ignoredUserId" open="(" separator="," close=")">
+                    #{ignoredUserId}
+                </foreach>
+            </if>
         </if>
         order by weight desc, iu1.id asc
     </select>
@@ -785,6 +814,19 @@
         INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         INNER JOIN fd_project fp ON fp.ID = fpu.PROJECT_ID
         WHERE fp.ORGANIZATION_ID = #{organizationId} AND imr.member_id = #{userId} AND imr.member_type = 'user'
+    </select>
+    <select id="queryProjectUserPermission" resultType="java.lang.Long">
+        select irp.permission_id
+        from fd_project_permission fpp
+                 inner join iam_member_role imr on (imr.id = fpp.MEMBER_ROLE_ID)
+                 inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = true)
+                 inner join iam_role_permission irp on (irp.role_id = ir.id and type = 'PS')
+        where imr.member_type = 'user' and imr.member_id = #{userId}
+          and imr.source_id = #{organizationId} and imr.source_type = 'organization'
+          and fpp.PROJECT_ID = #{projectId} and irp.permission_id in
+        <foreach collection="psIds" item="psId" open="(" close=")" separator="," index="i">
+            #{psId}
+        </foreach>
     </select>
 
 

@@ -260,6 +260,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private UserEventPayload getUserEventPayload(User user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
+        userEventPayload.setPhone(user.getPhone());
         userEventPayload.setId(user.getId().toString());
         userEventPayload.setName(user.getRealName());
         userEventPayload.setUsername(user.getLoginName());
@@ -286,6 +287,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private void generateUserEventPayload(List<UserEventPayload> payloads, User userDTO) {
         UserEventPayload payload = new UserEventPayload();
         payload.setEmail(userDTO.getEmail());
+        payload.setPhone(userDTO.getPhone());
         payload.setId(userDTO.getId().toString());
         payload.setName(userDTO.getRealName());
         payload.setUsername(userDTO.getLoginName());
@@ -328,25 +330,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setEmail(user.getEmail());
-            userEventPayload.setId(user.getId().toString());
-            userEventPayload.setName(user.getRealName());
-            userEventPayload.setUsername(user.getLoginName());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_UPDATE)
-                                .withRefType("user")
-                                .withRefId(userEventPayload.getId())
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(user.getOrganizationId())
-                                .withJson(input),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.updateUser.event", e);
-            }
         }
         // 2. 更新用户角色
         roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
@@ -436,6 +419,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
     public User enableUser(Long organizationId, Long userId) {
+        organizationResourceLimitService.checkEnableAddMember(organizationId);
         userService.unfrozenUser(userId, organizationId);
         User user = query(organizationId, userId);
         UserEventPayload userEventPayload = new UserEventPayload();
@@ -504,7 +488,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 ErrorUserVO errorUser = new ErrorUserVO();
                 BeanUtils.copyProperties(user, errorUser);
                 if (e instanceof CommonException && ERROR_ORGANIZATION_USER_NUM_MAX.equals(((CommonException) e).getCode())) {
-                    errorUser.setCause("组织用户数量已达上限：100，无法创建更多用户");
+                    errorUser.setCause("组织用户数量已达上限，无法创建更多用户");
                 } else {
                     errorUser.setCause("用户或角色插入异常, 异常code是: " + e.getMessage());
                 }

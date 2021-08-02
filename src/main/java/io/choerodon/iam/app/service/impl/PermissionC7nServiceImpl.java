@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
+import org.hzero.iam.app.service.MenuService;
 import org.hzero.iam.domain.entity.Permission;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.RolePermission;
@@ -13,19 +14,23 @@ import org.hzero.iam.domain.repository.PermissionRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.lock.annotation.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.*;
@@ -67,6 +72,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private RolePermissionC7nMapper rolePermissionC7nMapper;
     @Autowired
     private RoleC7nMapper roleC7nMapper;
+    @Autowired
+    private MenuService menuService;
 
 
     @Override

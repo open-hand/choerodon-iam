@@ -188,7 +188,7 @@
                 AND fp.name LIKE concat(concat('%', #{name}), '%')
             </if>
             <if test="params != null">
-                AND fp.name LIKE concat(concat('%', #{params}), '%')
+                AND (fp.name LIKE concat(concat('%', #{params}), '%') OR fo.tenant_name LIKE concat(concat('%', #{params}), '%'))
             </if>
             group by fp.id
 
@@ -332,11 +332,12 @@
     <select id="listOrgByUserIdAndTenantIds" resultType="java.lang.Long">
           SELECT imr.source_id
           FROM iam_member_role imr
+          inner join iam_role ir on ir.id = imr.role_id
           INNER JOIN iam_role_permission irp ON imr.role_id = irp.role_id
           INNER JOIN iam_menu im ON im.id = irp.permission_id
           INNER JOIN hiam_label_rel hlr ON (hlr.data_type = 'MENU' AND hlr.data_id = im.id)
           INNER JOIN iam_label il ON il.id = hlr.label_id
-          WHERE il.name = 'TENANT_MENU' AND imr.member_type = 'user' AND imr.member_id = #{userId}
+          WHERE ir.is_enabled = 1 and il.name = 'TENANT_MENU' AND imr.member_type = 'user' AND imr.member_id = #{userId}
           AND imr.source_type = 'organization' AND imr.source_id IN
           <foreach collection="orgIds" item="orgId" open="(" close=")" separator=",">
               #{orgId}
@@ -413,6 +414,33 @@
                 AND imr.member_id = iu.id
                 AND imr.member_type = 'user'
                 AND imr.source_id = #{tenantId}
+    </select>
+
+    <select id="listVindicators" resultType="org.hzero.iam.domain.entity.User">
+        SELECT
+            iu.*
+        FROM
+            iam_user iu
+                JOIN iam_role ir ON ir.`code` = 'role/site/default/auditor'
+                JOIN iam_member_role imr ON imr.member_id = iu.id
+                AND imr.member_type = 'user'
+                AND imr.role_id = ir.id
+    </select>
+
+    <select id="listRolesByIds" resultType="io.choerodon.iam.api.vo.SimpleRoleVO">
+        SELECT
+            ir.id,
+            ir.`name`,
+            ir.`code`
+        FROM
+            iam_role ir
+        WHERE
+            ir.id IN
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
+          AND ir.h_tenant_id = #{tenantId}
+          AND ir.fd_level = 'organization'
     </select>
 
 </mapper>

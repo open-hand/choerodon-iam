@@ -313,8 +313,11 @@ public interface UserC7nService {
 
     Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
 
+    int getDisableProjectByProjectMember(Long tenantId, Long userId);
+
     /**
      * 查询用户在组织下可以访问的所有项目的id
+     *
      * @param organizationId
      * @param userId
      * @return
@@ -351,4 +354,6 @@ public interface UserC7nService {
      * @return
      */
     Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest);
+
+
 }

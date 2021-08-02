@@ -195,6 +195,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
+        organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
 
         // 如果使用的是客户端创建，获取到的用户是匿名用户，匿名用户没有gitlab用户，所以切换用户为admin创建
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
@@ -203,6 +204,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             CustomUserDetails customUserDetails = new CustomUserDetails(user.getLoginName(), "default");
             customUserDetails.setUserId(user.getId());
             customUserDetails.setLanguage(user.getLanguage());
+            customUserDetails.setOrganizationId(user.getOrganizationId());
             DetailsHelper.setCustomUserDetails(customUserDetails);
         }
 
@@ -221,6 +223,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             } else {
                 user = userAssertHelper.queryAnonymousUser();
                 DetailsHelper.setCustomUserDetails(user.getId(),user.getLanguage());
+                DetailsHelper.getUserDetails().setOrganizationId(user.getOrganizationId());
             }
             //创建项目成功发送webhook
             Map<String, String> params = new HashMap<>();

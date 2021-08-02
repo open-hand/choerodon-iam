@@ -27,6 +27,16 @@ public class ReportDTO extends AuditDomain {
     private String path;
     private Long sort;
     private Long typeSequence;
+    private Long visibility;
+    private String module;
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
 
     public Long getId() {
         return id;
@@ -90,5 +100,13 @@ public class ReportDTO extends AuditDomain {
 
     public void setTypeSequence(Long typeSequence) {
         this.typeSequence = typeSequence;
+    }
+
+    public Long getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Long visibility) {
+        this.visibility = visibility;
     }
 }

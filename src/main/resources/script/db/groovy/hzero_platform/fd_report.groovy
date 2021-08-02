@@ -32,4 +32,14 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
             column(name: 'type_sequence', type: "BIGINT UNSIGNED", remarks: '图表类型顺序', defaultValue: '10', afterColumn: 'SORT')
         }
     }
+    changeSet(author: 'scp', id: '2021-04-23-fd_report-add-column') {
+        addColumn(tableName: 'fd_report') {
+            column(name: 'VISIBILITY', type: "TINYINT UNSIGNED", remarks: '图表可见度，标准版是1，高级版10，开发版30', afterColumn: 'type_sequence', defaultValue: "1")
+        }
+    }
+    changeSet(author: 'wx', id: '2021-05-24-fd_report-add-column') {
+        addColumn(tableName: 'fd_report') {
+            column(name: 'MODULE', type: "VARCHAR(32)", remarks: '图表所属的菜单模块', afterColumn: 'type_sequence')
+        }
+    }
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.iam.api.vo.ProjectWithUserVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.MemberRole;
@@ -150,8 +152,8 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
                                                    @Param("email") String email,
                                                    @Param("param") String param,
                                                    @Param("projectAdminId") Long projectAdminId,
-                                                   @Param("projectMemberId") Long projectMemberId
-                                                   );
+                                                   @Param("projectMemberId") Long projectMemberId,
+                                                   @Param("notSelectUserIds") List<Long> notSelectUserIds);
 
 
     /**
@@ -170,13 +172,11 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
      * 根据项目查询项目成员和传入的敏捷用户
      */
     List<UserDTO> selectAgileUsersByProjectId(@Param("projectId") Long projectId,
-                                              @Param("userIds") Set<Long> userIds,
-                                              @Param("param") String param,
+                                              @Param("agileUserVO") AgileUserVO agileUserVO,
                                               @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     List<UserDTO> selectAgileUsersByProjectIds(@Param("projectIds") Set<Long> projectIds,
-                                               @Param("userIds") Set<Long> userIds,
-                                               @Param("param") String param,
+                                               @Param("agileUserVO") AgileUserVO agileUserVO,
                                                @Param("adminRoleIds") Set<Long> adminRoleIds);
 
     /**
@@ -249,8 +249,13 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
                           @Param("startTime") Date startTime,
                           @Param("endTime") Date endTime);
 
-    List<UserDTO> getUserListByProjectId(@Param("projectId")Long projectId);
+    List<UserDTO> getUserListByProjectId(@Param("projectId") Long projectId);
 
     List<ProjectWithUserVO> listUsersByRoleLabelAndProjectIds(@Param("projectIds") Set<Long> projectIds,
                                                               @Param("roleLabel") String roleLabel);
+
+    Set<Long> queryProjectUserPermission(@Param("userId") Long userId,
+                                         @Param("psIds") Set<Long> psIds,
+                                         @Param("projectId") Long projectId,
+                                         @Param("organizationId") Long organizationId);
 }

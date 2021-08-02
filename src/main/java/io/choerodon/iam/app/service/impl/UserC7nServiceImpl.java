@@ -17,7 +17,12 @@ import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
+import org.hzero.boot.oauth.domain.entity.BaseUser;
+import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.boot.oauth.policy.PasswordPolicyManager;
+import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -167,6 +172,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Resource
     @Lazy
     private ProjectC7nService projectC7nService;
+    @Autowired
+    private BasePasswordPolicyRepository basePasswordPolicyRepository;
+    @Autowired
+    private PasswordPolicyManager passwordPolicyManager;
+    @Autowired
+    private EncryptClient encryptClient;
 
     @Override
     public User queryInfo(Long userId) {
@@ -184,7 +195,6 @@ public class UserC7nServiceImpl implements UserC7nService {
             checkLoginUser(user.getId());
         }
         User dto;
-        UserEventPayload userEventPayload = new UserEventPayload();
         dto = userService.updateUser(user);
         // hzero update 不更新imageUrl
         User imageUser = new User();
@@ -193,23 +203,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
         dto = userRepository.selectByPrimaryKey(user.getId());
-        userEventPayload.setEmail(dto.getEmail());
-        userEventPayload.setId(dto.getId().toString());
-        userEventPayload.setName(dto.getRealName());
-        userEventPayload.setUsername(dto.getLoginName());
-        BeanUtils.copyProperties(dto, dto);
-        try {
-            producer.apply(StartSagaBuilder.newBuilder()
-                            .withSagaCode(USER_UPDATE)
-                            .withPayloadAndSerialize(userEventPayload)
-                            .withRefId(dto.getId() + "")
-                            .withRefType("user"),
-                    builder -> {
-                    }
-            );
-        } catch (Exception e) {
-            throw new CommonException("error.UserService.updateInfo.event", e);
-        }
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
@@ -1015,6 +1008,14 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (!user.comparePassword(userPasswordDTO.getOriginalPassword())) {
             throw new CommonException("error.password.originalPassword");
         }
+
+        String decryptPassword = encryptClient.decrypt(userPasswordDTO.getPassword());
+        BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(user.getOrganizationId());
+        Long tenantId = passwordPolicy.getEnablePassword() ? user.getOrganizationId() : 0L;
+        BaseUser baseUser = new BaseUser();
+        BeanUtils.copyProperties(user, baseUser);
+        baseUser.setPassword(decryptPassword);
+        passwordPolicyManager.passwordValidate(decryptPassword, tenantId, baseUser);
         userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
 
         // send siteMsg
@@ -1382,23 +1383,61 @@ public class UserC7nServiceImpl implements UserC7nService {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
-        // 普通用户只能查到启用的项目
-        if (!isAdmin && !isOrgAdmin) {
-            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-                return page;
-            } else {
-                projectDTO.setEnabled(true);
-            }
-        }
+        // 普通用户只能查到启用的项目(不包括项目所有者)
+//        if (!isAdmin && !isOrgAdmin) {
+//            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
+//                return page;
+//            } else {
+//                projectDTO.setEnabled(true);
+//            }
+//        }
+        //查询到的项目包括已启用和未启用的
         page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {
             return page;
         }
+        //项目成员看不到未启用的
+        List<ProjectDTO> projectDTOS = page.getContent().stream().filter(projectDTOVO -> {
+            //如果是停用的项目
+            if (!projectDTOVO.getEnabled()) {
+                //如果用户的权限是项目成员，则过滤掉
+                if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(userDetails.getUserId(), projectDTOVO.getId())) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return new Page<>();
+        }
+        page.setContent(projectDTOS);
+        //TotalElements=page.getTotal-组织下停用且用户是项目成员角色的项目数量
+        if (!isAdmin && !isOrgAdmin) {
+            page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, userDetails.getUserId()));
+        }
+        if (pageable.getSize() != 0) {
+            int rawPage = (int) page.getTotalElements() / pageable.getSize();
+            int remains = (int) page.getTotalElements() % pageable.getSize();
+            page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
+        } else {
+            page.setTotalPages(1);
+        }
+
         // 添加额外信息
         addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
+    }
+
+    @Override
+    public int getDisableProjectByProjectMember(Long tenantId, Long userId) {
+        Integer integer = projectMapper.selectDisableProjectByProjectMember(tenantId, userId);
+        if (Objects.isNull(integer)) {
+            return 0;
+        }
+        return integer.intValue();
     }
 
     @Override
@@ -1455,4 +1494,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         CommonExAssertUtil.assertTrue(userId != null, "error.user.get");
         return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
     }
+
+
 }

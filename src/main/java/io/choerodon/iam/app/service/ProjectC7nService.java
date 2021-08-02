@@ -81,11 +81,10 @@ public interface ProjectC7nService {
      *
      * @param projectId
      * @param pageable
-     * @param userIds
-     * @param param
+     * @param agileUserVO
      * @return user 分页数据
      */
-    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param);
+    Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, AgileUserVO agileUserVO);
 
     ProjectDTO queryBasicInfo(Long id);
 
@@ -136,4 +135,14 @@ public interface ProjectC7nService {
     List<ProjectDTO> listAll(Boolean enabled);
 
     ImmutableProjectInfoVO queryImmutableProjectInfoById(Long projectId);
+
+    /**
+     * 根据组织id查询项目id集合
+     *
+     * @param tenantId 组织id
+     * @return 项目id集合
+     */
+    List<Long> queryProjectIdsInTenant(Long tenantId);
+
+    Page<UserDTO> listAgile(Long projectId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 }

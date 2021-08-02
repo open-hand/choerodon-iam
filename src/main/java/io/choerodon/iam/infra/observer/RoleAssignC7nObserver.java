@@ -20,13 +20,13 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 
 /**
  * @author scp

@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
@@ -174,9 +175,8 @@ public class ProjectUserC7nController extends BaseController {
                                                     @ApiIgnore
                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                             PageRequest pageable,
-                                                    @Encrypt @RequestBody Set<Long> userIds,
-                                                    @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+                                                    @Encrypt @RequestBody AgileUserVO agileUserVO) {
+        return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, agileUserVO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

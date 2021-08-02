@@ -56,6 +56,13 @@ public class DashboardController extends BaseController {
         return Results.success(dashboardService.deleteDashboard(dashboardId));
     }
 
+    @ApiOperation(value = "维护-批量删除视图")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @DeleteMapping
+    public ResponseEntity<List<DashboardDTO>> batchDeleteDashboard(@Encrypt @RequestBody List<Long> dashboardIds) {
+        return Results.success(dashboardService.batchDeleteDashboard(dashboardIds));
+    }
+
     @ApiOperation(value = "查询-用户视图")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping

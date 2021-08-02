@@ -24,6 +24,7 @@
         fdl.user_id,
         fdl.dashboard_id,
         fdl.card_id,
+        fdc.fd_level,
         fdl.w,
         fdl.h,
         fdl.x,
@@ -35,17 +36,12 @@
         fdc.min_h,
         fdc.max_w,
         fdc.group_id,
-        fdc.max_h
+        fdc.max_h,
+        1 AS permission_flag
         FROM fd_dashboard_layout fdl
         JOIN fd_dashboard fd ON fd.dashboard_id = fdl.dashboard_id
         JOIN fd_dashboard_card fdc ON fdc.card_id = fdl.card_id
         WHERE fdl.dashboard_id = #{dashboardId}
-          AND fdc.fd_level IN (
-            SELECT ir.fd_level
-            FROM iam_member_role imr
-            INNER JOIN iam_role ir ON imr.role_id = ir.id
-            WHERE imr.member_type = 'user' AND imr.member_id = #{userId}
-          )
           AND ((fd.dashboard_type = 'INTERNAL' AND fd.default_flag = 1) OR fdl.user_id = #{userId})
     </select>
 </mapper>

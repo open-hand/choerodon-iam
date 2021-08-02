@@ -432,5 +432,12 @@ public interface UserC7nMapper {
      * @param pinyinHeadChar
      */
     void updatePinyinHeadCharById(@Param("userId") Long userId, @Param("pinyinHeadChar") String pinyinHeadChar);
+
+    /**
+     * 查询用户所拥有角色的层级
+     *
+     * @param userId
+     */
+    List<String> queryUserRoleLevels(@Param("userId") Long userId);
 }
 

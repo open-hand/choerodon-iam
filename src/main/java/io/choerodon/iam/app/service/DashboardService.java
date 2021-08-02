@@ -52,4 +52,11 @@ public interface DashboardService {
      * @param pageRequest
      */
     Page<DashboardDTO> queryInternalDashboard(Integer filterFlag, PageRequest pageRequest);
+
+    /**
+     * 批量删除官方视图
+     * @param dashboardIds
+     * @return
+     */
+    List<DashboardDTO> batchDeleteDashboard(List<Long> dashboardIds);
 }

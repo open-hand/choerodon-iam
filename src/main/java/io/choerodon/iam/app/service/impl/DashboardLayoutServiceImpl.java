@@ -7,6 +7,9 @@ import io.choerodon.iam.api.vo.DashboardLayoutVO;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardLayoutDTO;
 import io.choerodon.iam.infra.mapper.DashboardLayoutMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.DashboardLayoutService;
 import org.springframework.util.CollectionUtils;
@@ -25,8 +28,12 @@ public class DashboardLayoutServiceImpl implements DashboardLayoutService {
 
     private DashboardLayoutMapper dashboardLayoutMapper;
 
-    public DashboardLayoutServiceImpl(DashboardLayoutMapper dashboardLayoutMapper) {
+    private UserC7nMapper userC7nMapper;
+
+    public DashboardLayoutServiceImpl(DashboardLayoutMapper dashboardLayoutMapper,
+                                      UserC7nMapper userC7nMapper) {
         this.dashboardLayoutMapper = dashboardLayoutMapper;
+        this.userC7nMapper = userC7nMapper;
     }
 
     @Override
@@ -52,7 +59,14 @@ public class DashboardLayoutServiceImpl implements DashboardLayoutService {
 
     @Override
     public List<DashboardLayoutVO> queryLayoutByDashboard(Long dashboardId) {
-        return dashboardLayoutMapper.queryLayoutByDashboard(dashboardId, obtainUserId());
+        List<String> userRoleLevels = userC7nMapper.queryUserRoleLevels(obtainUserId());
+        List<DashboardLayoutVO> dashboardLayouts = dashboardLayoutMapper.queryLayoutByDashboard(dashboardId, obtainUserId());
+        dashboardLayouts.forEach(dashboardLayout -> {
+            if (!userRoleLevels.contains(dashboardLayout.getFdLevel())) {
+                dashboardLayout.setPermissionFlag(BaseConstants.Flag.NO);
+            }
+        });
+        return dashboardLayouts;
     }
 
     private Long obtainUserId() {

@@ -11,6 +11,7 @@ import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.service.role.MemberRoleAssignService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -35,6 +36,7 @@ public class MemberRoleAssignC7nServiceImpl extends MemberRoleAssignService {
     @Autowired
     private MemberRoleC7nMapper memberRoleC7nMapper;
     @Autowired
+    @Lazy
     private OrganizationResourceLimitService limitService;
 
     /**

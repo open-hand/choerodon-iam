@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.iam.app.service.DashboardService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -116,6 +117,14 @@ public class DashboardServiceImpl implements DashboardService {
     public Page<DashboardDTO> queryInternalDashboard(Integer filterFlag, PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest,
                 () -> dashboardMapper.queryInternalDashboard(obtainUserId(), filterFlag));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public List<DashboardDTO> batchDeleteDashboard(List<Long> dashboardIds) {
+        List<DashboardDTO> deleteDashboards = new ArrayList<>();
+        dashboardIds.forEach(dashboardId -> deleteDashboards.add(deleteDashboard(dashboardId)));
+        return deleteDashboards;
     }
 
     private void deleteDashboard(DashboardDTO dashboard) {

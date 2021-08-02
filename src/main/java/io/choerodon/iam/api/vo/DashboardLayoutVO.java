@@ -10,6 +10,8 @@ public class DashboardLayoutVO {
     private Long dashboardId;
     @ApiModelProperty(value = "卡片ID")
     private Long cardId;
+    @ApiModelProperty(value = "卡片层级")
+    private String fdLevel;
     @ApiModelProperty(value = "卡片宽")
     private Long w;
     @ApiModelProperty(value = "卡片高")
@@ -32,6 +34,8 @@ public class DashboardLayoutVO {
     private Long maxH;
     @ApiModelProperty(value = "分类")
     private String groupId;
+    @ApiModelProperty(value = "是否有权限查看")
+    private Integer permissionFlag;
 
     public Long getLayoutId() {
         return layoutId;
@@ -151,5 +155,21 @@ public class DashboardLayoutVO {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public Integer getPermissionFlag() {
+        return permissionFlag;
+    }
+
+    public void setPermissionFlag(Integer permissionFlag) {
+        this.permissionFlag = permissionFlag;
+    }
+
+    public String getFdLevel() {
+        return fdLevel;
+    }
+
+    public void setFdLevel(String fdLevel) {
+        this.fdLevel = fdLevel;
     }
 }

@@ -1,7 +1,9 @@
 package io.choerodon.iam.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DashboardLayoutVO {
     private Long layoutId;
     @ApiModelProperty(value = "用户ID")
@@ -10,7 +12,7 @@ public class DashboardLayoutVO {
     private Long dashboardId;
     @ApiModelProperty(value = "卡片ID")
     private Long cardId;
-    @ApiModelProperty(value = "卡片层级")
+    @ApiModelProperty(value = "卡片层级(SITE/平台层,ORGANIZATION/组织层,PROJECT/项目层)")
     private String fdLevel;
     @ApiModelProperty(value = "卡片宽")
     private Long w;

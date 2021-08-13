@@ -555,7 +555,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             info = projectMapper.queryImmutableProjectInfo(projectId);
             if (info != null) {
                 // 存入 redis
-                stringRedisTemplate.opsForValue().set(cacheKey, JsonHelper.marshalByJackson(info), 24 + new Random().nextInt(3), TimeUnit.HOURS);
+                stringRedisTemplate.opsForValue().set(cacheKey, JsonHelper.marshalByJackson(info), 24L + new Random().nextInt(3), TimeUnit.HOURS);
             } else {
                 // 这个 null 也可以缓存 （但是目前没必要）
                 throw new CommonException("error.project.not.exist", projectId);

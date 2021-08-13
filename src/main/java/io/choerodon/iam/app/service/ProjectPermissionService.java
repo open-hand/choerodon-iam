@@ -92,8 +92,6 @@ public interface ProjectPermissionService {
 
     List<RoleVO> listRolesByName(Long sourceId, String roleName, Boolean onlySelectEnable);
 
-    void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList);
-
     void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap);
 
     void assignUsersProjectRolesEvent(Long sourceId, ResourceLevel level, Map<Long, Set<String>> userRoleLabelsMap, Set<Long> roleIds);

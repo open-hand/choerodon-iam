@@ -6,6 +6,8 @@ import java.util.Set;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 
+import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -39,4 +41,6 @@ public interface RolePermissionC7nService {
      * @param roleId
      */
     void deleteByRoleId(Long roleId);
+
+    void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList);
 }

@@ -13,16 +13,14 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.iam.api.eventhandler.payload.ClientPayload;
 import io.choerodon.iam.api.vo.ProjectCategoryVO;
-import io.choerodon.iam.app.service.ClientC7nService;
-import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectPermissionService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
@@ -39,6 +37,9 @@ public class OrganizationListener {
     private LdapC7nService ldapC7nService;
     private ProjectPermissionService projectPermissionService;
     private ClientC7nService clientC7nService;
+    @Autowired
+    @Lazy
+    private RolePermissionC7nService memberRoleAssignService;
 
     @Autowired
     private ProjectC7nService projectC7nService;
@@ -61,7 +62,7 @@ public class OrganizationListener {
         List<ProjectPermissionDTO> userDTOList = gson.fromJson(message,
                 new TypeToken<List<ProjectPermissionDTO>>() {
                 }.getType());
-        projectPermissionService.assignUsersProjectRoles(userDTOList.get(0).getMemberId(), userDTOList);
+        memberRoleAssignService.assignUsersProjectRoles(userDTOList.get(0).getMemberId(), userDTOList);
     }
 
     @SagaTask(code = DELETE_CLIENT, sagaCode = DELETE_CLIENT, seq = 10, description = "删除client角色")

@@ -300,15 +300,6 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         return roleVOS;
     }
 
-    @Override
-    public void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList) {
-        Long operatorId = DetailsHelper.getUserDetails().getUserId();
-        Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
-        map.forEach((k, v) -> addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()), operatorId));
-
-    }
-
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void assignProjectUserRolesInternal(Long projectId, List<ProjectPermissionDTO> projectUsers) {

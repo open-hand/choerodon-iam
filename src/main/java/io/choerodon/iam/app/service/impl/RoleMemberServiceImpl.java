@@ -883,6 +883,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
         updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
         if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {

@@ -20,6 +20,9 @@ public class UserDTO extends User {
 
     public static final String PHONE_REG = "^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$";
 
+    @ApiModelProperty("手机号是否有效")
+    private Boolean phoneValid;
+
     @Transient
     @ApiModelProperty("组织code")
     private String organizationCode;
@@ -42,6 +45,14 @@ public class UserDTO extends User {
     @ApiModelProperty(value = "事务实例id")
     @Encrypt
     private Long sagaInstanceId;
+
+    public Boolean getPhoneValid() {
+        return phoneValid;
+    }
+
+    public void setPhoneValid(Boolean phoneValid) {
+        this.phoneValid = phoneValid;
+    }
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;

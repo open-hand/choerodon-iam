@@ -23,6 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
@@ -119,7 +120,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")
     public ResponseEntity<User> updateInfo(@Encrypt @PathVariable Long id,
-                                           @RequestBody User user) {
+                                           @RequestBody UserDTO user) {
         user.setId(id);
         if (user.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.null");
@@ -137,6 +138,10 @@ public class UserC7nController extends BaseController {
         user.setOrganizationId(queryInfo.getOrganizationId());
         user.setLoginName(queryInfo.getLoginName());
         user.setLocked(queryInfo.getLocked());
+        //判断改手机号码没有改
+        if (!StringUtils.equalsIgnoreCase(user.getPhone(), queryInfo.getPhone())) {
+            user.setPhoneValid(Boolean.FALSE);
+        }
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 

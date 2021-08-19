@@ -38,6 +38,6 @@ public interface MemberRoleC7nMapper {
                                  @Param("psIds") Set<Long> psIds,
                                  @Param("organizationId") Long organizationId);
 
-    User checkRole(@Param("userId") Long userId);
+    Integer checkRole(@Param("userId") Long userId);
 
 }

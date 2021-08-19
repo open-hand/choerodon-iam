@@ -92,10 +92,9 @@
         </foreach>
     </select>
 
-    <select id="checkRole" resultType="org.hzero.iam.domain.entity.User">
+    <select id="checkRole" resultType="java.lang.Integer">
         SELECT
-            DISTINCT
-            iu.*
+            count(iu.id)
         FROM
             iam_user iu
         JOIN iam_role ir ON ir.`code` in ('role/site/default/auditor','role/site/default/administrator')

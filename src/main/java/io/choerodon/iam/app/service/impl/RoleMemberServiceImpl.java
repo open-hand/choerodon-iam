@@ -897,6 +897,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public Boolean checkRole(Long userId) {
-        return !ObjectUtils.isEmpty(memberRoleC7nMapper.checkRole(userId));
+        return memberRoleC7nMapper.checkRole(userId) > 0;
     }
 }

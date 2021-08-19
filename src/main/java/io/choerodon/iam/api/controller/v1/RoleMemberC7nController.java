@@ -365,4 +365,13 @@ public class RoleMemberC7nController extends BaseController {
             @PathVariable(name = "organization_id") Long sourceId) {
         return new ResponseEntity<>(userC7nService.pagingQueryUsersByRoleIdOnOrganizationLevel(roleId, sourceId), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "检查用户是否是平台管理员或者市场审核员角色")
+    @GetMapping(value = "/check_role")
+    public ResponseEntity<Boolean> checkRole(
+            @Encrypt @RequestParam(name = "user_id") Long userId) {
+        return new ResponseEntity<>(roleMemberService.checkRole(userId), HttpStatus.OK);
+    }
+
 }

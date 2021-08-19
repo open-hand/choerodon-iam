@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 
 /**
  * @author carllhw
@@ -37,5 +38,6 @@ public interface MemberRoleC7nMapper {
                                  @Param("psIds") Set<Long> psIds,
                                  @Param("organizationId") Long organizationId);
 
+    User checkRole(@Param("userId") Long userId);
 
 }

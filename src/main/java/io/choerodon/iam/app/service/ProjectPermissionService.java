@@ -1,21 +1,22 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.hzero.iam.api.dto.RoleDTO;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
 import io.choerodon.iam.api.vo.ProjectWithUserVO;
 import io.choerodon.iam.api.vo.RoleVO;
+import io.choerodon.iam.api.vo.UserSearchVO;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.UserWithGitlabIdDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.hzero.iam.api.dto.RoleDTO;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author zmf
@@ -27,8 +28,7 @@ public interface ProjectPermissionService {
      *
      * @return 用户列表（包括用户信息以及所分配的项目角色信息）
      */
-    Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, String loginName, String realName,
-                                                          String roleName, Boolean enabled, String params);
+    Page<UserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, PageRequest pageRequest, UserSearchVO userSearchVO);
 
 
     /**

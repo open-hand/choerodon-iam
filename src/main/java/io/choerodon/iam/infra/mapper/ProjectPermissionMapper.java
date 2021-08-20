@@ -38,6 +38,8 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
                                        @Param("realName") String realName,
                                        @Param("roleName") String roleName,
                                        @Param("enabled") Boolean enabled,
+                                       @Param("phone") String phone,
+                                       @Param("email") String email,
                                        @Param("params") String params);
 
 
@@ -58,6 +60,8 @@ public interface ProjectPermissionMapper extends BaseMapper<ProjectPermissionDTO
             @Param("realName") String realName,
             @Param("roleName") String roleName,
             @Param("enabled") Boolean enabled,
+            @Param("phone") String phone,
+            @Param("email") String email,
             @Param("params") String params);
 
     /**

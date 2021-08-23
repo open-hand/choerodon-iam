@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.infra.utils.SagaTopic;
 import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -897,6 +898,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public Boolean checkRole(Long userId) {
-        return memberRoleC7nMapper.checkRole(userId) > 0;
+        boolean returnFlag = false;
+        User requestUser = new User();
+        requestUser.setId(userId);
+        User user = userMapper.selectByPrimaryKey(requestUser);
+        if ((!ObjectUtils.isEmpty(user) && user.getAdmin().equals(true)) || memberRoleC7nMapper.checkRole(userId) > 0) {
+            returnFlag = true;
+        }
+        return returnFlag;
     }
 }

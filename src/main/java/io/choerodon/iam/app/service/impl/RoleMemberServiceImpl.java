@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.infra.utils.SagaTopic;
 import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;

@@ -203,7 +203,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
         dto = userRepository.selectByPrimaryKey(user.getId());
-           Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
+        Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         return dto;
@@ -1383,6 +1383,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
         // 普通用户只能查到启用的项目(不包括项目所有者)
 //        if (!isAdmin && !isOrgAdmin) {
 //            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
@@ -1403,7 +1404,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             //如果是停用的项目
             if (!projectDTOVO.getEnabled()) {
                 //如果用户的权限是项目成员，则过滤掉
-                if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(userDetails.getUserId(), projectDTOVO.getId())) {
+                if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(currentUserId, projectDTOVO.getId())) {
                     return false;
                 }
             }
@@ -1416,7 +1417,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         page.setContent(projectDTOS);
         //TotalElements=page.getTotal-组织下停用且用户是项目成员角色的项目数量
         if (!isAdmin && !isOrgAdmin) {
-            page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, userDetails.getUserId()));
+            page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, currentUserId));
         }
         if (pageable.getSize() != 0) {
             int rawPage = (int) page.getTotalElements() / pageable.getSize();
@@ -1494,4 +1495,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         CommonExAssertUtil.assertTrue(userId != null, "error.user.get");
         return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
     }
+
+
 }

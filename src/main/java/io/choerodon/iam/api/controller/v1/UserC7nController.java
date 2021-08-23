@@ -19,9 +19,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
@@ -118,7 +120,7 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")
     public ResponseEntity<User> updateInfo(@Encrypt @PathVariable Long id,
-                                           @RequestBody User user) {
+                                           @RequestBody UserDTO user) {
         user.setId(id);
         if (user.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.null");
@@ -136,6 +138,10 @@ public class UserC7nController extends BaseController {
         user.setOrganizationId(queryInfo.getOrganizationId());
         user.setLoginName(queryInfo.getLoginName());
         user.setLocked(queryInfo.getLocked());
+        //判断改手机号码没有改
+        if (!StringUtils.equalsIgnoreCase(user.getPhone(), queryInfo.getPhone())) {
+            user.setPhoneValid(Boolean.FALSE);
+        }
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }
 
@@ -181,15 +187,15 @@ public class UserC7nController extends BaseController {
         return new ResponseEntity<>(userC7nService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
-    @Permission(level=ResourceLevel.ORGANIZATION,permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在项目列表（只包含devops项目和运维项目）")
     @GetMapping(value = "/projects/devops_and_operations")
     @CustomPageRequest
     public ResponseEntity<Page<ProjectDTO>> queryProjectsOfDevopsOrOperations(
             PageRequest pageRequest,
-            @RequestParam(value = "project_name",required = false)String projectName
-    ){
-        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName,pageRequest));
+            @RequestParam(value = "project_name", required = false) String projectName
+    ) {
+        return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName, pageRequest));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
@@ -242,6 +248,7 @@ public class UserC7nController extends BaseController {
                                                      @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
         return new ResponseEntity<>(userC7nService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
+
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询带有gitlab用户id的用户信息列表")

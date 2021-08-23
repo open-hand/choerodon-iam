@@ -8,6 +8,7 @@
         <result property="loginName" column="login_name"/>
         <result property="enabled" column="is_enabled"/>
         <result property="ldap" column="is_ldap"/>
+        <result property="phone" column="phone"/>
         <result property="imageUrl" column="image_url"/>
         <result property="locked" column="is_locked"/>
         <result property="organizationId" column="organization_id"/>
@@ -65,10 +66,18 @@
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
             </if>
+            <if test="phone != null">
+                and iut.phone LIKE concat(concat('%',#{phone}),'%')
+            </if>
+            <if test="email != null">
+                and iut.email LIKE concat(concat('%',#{email}),'%')
+            </if>
             <if test="params != null">
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
+                iut.email like concat(concat('%',#{params}),'%') OR
+                iut.phone like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
@@ -78,7 +87,7 @@
     </select>
 
     <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMap">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,
+        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,t2.phone,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
         fo.tenant_name as user_org_name,
@@ -117,10 +126,18 @@
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
             </if>
+            <if test="phone != null">
+                and iut.phone LIKE concat(concat('%',#{phone}),'%')
+            </if>
+            <if test="email != null">
+                and iut.email LIKE concat(concat('%',#{email}),'%')
+            </if>
             <if test="params != null">
                 and (
                 iut.target_login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
+                iut.email like concat(concat('%',#{params}),'%') OR
+                iut.phone like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
                 )
@@ -455,6 +472,12 @@
                     <if test="email != null">
                         AND iu.email LIKE concat(concat('%',#{email}),'%')
                     </if>
+                    <if test="notSelectUserIds != null and notSelectUserIds.size() != 0">
+                        AND iu.id NOT IN
+                        <foreach collection="notSelectUserIds" item="id" separator="," open="(" close=")">
+                            #{id,jdbcType=BIGINT}
+                        </foreach>
+                    </if>
                     <if test="param != null">
                         AND (
                         iu.login_name LIKE concat(concat('%',#{param}),'%') OR
@@ -536,28 +559,38 @@
                 from iam_member_role imr
                 join fd_project_permission fpu on imr.id = fpu.member_role_id
                 where fpu.project_id = #{projectId}
-                <if test="userIds != null and userIds.size > 0">
-                    union
-                    select
-                    iu.id,
-                    0 as weight
-                    from iam_user iu
-                    where iu.id in
-                    <foreach item="id" index="index" collection="userIds"
-                             open="(" separator="," close=")">
-                        #{id}
-                    </foreach>
+                <if test="agileUserVO != null">
+                    <if test="agileUserVO.userIds != null and agileUserVO.userIds.size > 0">
+                        union
+                        select
+                        iu.id,
+                        0 as weight
+                        from iam_user iu
+                        where iu.id in
+                        <foreach item="id" index="index" collection="agileUserVO.userIds"
+                                 open="(" separator="," close=")">
+                            #{id}
+                        </foreach>
+                    </if>
                 </if>
             ) t
             group by t.member_id
         ) t1
         join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
-        <if test="param != null">
-            AND (
-            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%')
-            )
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.param != null">
+                AND (
+                iu1.login_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.real_name LIKE concat(concat('%',#{agileUserVO.param}),'%')
+                )
+            </if>
+            <if test="agileUserVO.ignoredUserIds != null and agileUserVO.ignoredUserIds.size > 0">
+                AND iu1.id NOT IN
+                <foreach collection="agileUserVO.ignoredUserIds" item="ignoredUserId" open="(" separator="," close=")">
+                    #{ignoredUserId}
+                </foreach>
+            </if>
         </if>
         order by weight desc, iu1.id asc
     </select>
@@ -592,31 +625,41 @@
         <foreach item="projectId" index="index" collection="projectIds" open="(" separator="," close=")">
             #{projectId}
         </foreach>
-        <if test="userIds != null and userIds.size > 0">
-            union
-            select
-            iu.id,
-            0 as weight
-            from iam_user iu
-            where iu.id in
-            <foreach item="id" index="index" collection="userIds"
-                     open="(" separator="," close=")">
-                #{id}
-            </foreach>
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.userIds != null and agileUserVO.userIds.size > 0">
+                union
+                select
+                iu.id,
+                0 as weight
+                from iam_user iu
+                where iu.id in
+                <foreach item="id" index="index" collection="agileUserVO.userIds"
+                         open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </if>
         ) t
         group by t.member_id
         ) t1
         join iam_user iu1 on t1.member_id = iu1.id
         where 1=1
-        <if test="param != null">
-            AND (
-            iu1.login_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.real_name LIKE concat(concat('%',#{param}),'%') OR
-            iu1.email LIKE concat(concat('%',#{param}),'%') OR
-            iu1.attribute15 LIKE concat(concat('%',#{param}),'%') OR
-            iu1.attribute14 LIKE concat(concat('%',#{param}),'%')
-            )
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.param != null">
+                AND (
+                iu1.login_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.real_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.email LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.attribute15 LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iu1.attribute14 LIKE concat(concat('%',#{agileUserVO.param}),'%')
+                )
+            </if>
+            <if test="agileUserVO.ignoredUserIds != null  and agileUserVO.ignoredUserIds.size > 0">
+                AND iu1.id NOT IN
+                <foreach collection="agileUserVO.ignoredUserIds" item="ignoredUserId" open="(" separator="," close=")">
+                    #{ignoredUserId}
+                </foreach>
+            </if>
         </if>
         order by weight desc, iu1.id asc
     </select>

@@ -317,7 +317,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         Long organizationId = project.getOrganizationId();
         Role projectAdmin = queryProjectAdminByTenantId(organizationId);
         Role projectMember = queryProjectMemberByTenantId(organizationId);
-        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId()));
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId(), Collections.EMPTY_LIST));
     }
 
     protected Role queryProjectAdminByTenantId(Long organizationId) {
@@ -345,14 +345,14 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
-    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, Set<Long> userIds, String param) {
+    public Page<UserDTO> agileUsers(Long projectId, PageRequest pageable, AgileUserVO agileUserVO) {
         ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
         if (ObjectUtils.isEmpty(project)) {
             return new Page<>();
         }
         Long organizationId = project.getOrganizationId();
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectId(projectId, userIds, param, adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectId(projectId, agileUserVO, adminRoleIds));
     }
 
     @Override
@@ -362,12 +362,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             throw new CommonException("error.feign.agile.user.organizationId.null");
         }
         Set<Long> projectIds = agileUserVO.getProjectIds();
-        Set<Long> userIds = agileUserVO.getUserIds();
         if (ObjectUtils.isEmpty(projectIds)) {
             throw new CommonException("error.feign.agile.user.projectIds.empty");
         }
         Set<Long> adminRoleIds = getRoleIdsByLabel(organizationId, RoleLabelEnum.PROJECT_ADMIN.value());
-        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectIds(projectIds, userIds, agileUserVO.getParam(), adminRoleIds));
+        return PageHelper.doPage(pageable, () -> projectPermissionMapper.selectAgileUsersByProjectIds(projectIds, agileUserVO, adminRoleIds));
     }
 
     @Override
@@ -556,7 +555,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             info = projectMapper.queryImmutableProjectInfo(projectId);
             if (info != null) {
                 // 存入 redis
-                stringRedisTemplate.opsForValue().set(cacheKey, JsonHelper.marshalByJackson(info), 24 + new Random().nextInt(3), TimeUnit.HOURS);
+                stringRedisTemplate.opsForValue().set(cacheKey, JsonHelper.marshalByJackson(info), 24L + new Random().nextInt(3), TimeUnit.HOURS);
             } else {
                 // 这个 null 也可以缓存 （但是目前没必要）
                 throw new CommonException("error.project.not.exist", projectId);
@@ -571,5 +570,17 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public List<Long> queryProjectIdsInTenant(Long tenantId) {
         return projectMapper.listProjectIdsInOrg(tenantId);
+    }
+
+    @Override
+    public Page<UserDTO> listAgile(Long projectId, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds) {
+        ProjectDTO project = projectMapper.selectByPrimaryKey(projectId);
+        if (ObjectUtils.isEmpty(project)) {
+            return new Page<>();
+        }
+        Long organizationId = project.getOrganizationId();
+        Role projectAdmin = queryProjectAdminByTenantId(organizationId);
+        Role projectMember = queryProjectMemberByTenantId(organizationId);
+        return PageHelper.doPage(pageRequest, () -> projectPermissionMapper.selectUsersByOptionsOrderByRoles(projectId, userId, email, param, projectAdmin.getId(), projectMember.getId(), notSelectUserIds));
     }
 }

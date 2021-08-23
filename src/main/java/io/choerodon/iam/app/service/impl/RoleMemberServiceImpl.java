@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -883,6 +884,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
         updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
         if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
@@ -891,5 +893,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 dtoList.forEach(t -> deleteProjectRole(t, userId, null, false));
             }
         }
+    }
+
+    @Override
+    public Boolean checkRole(Long userId) {
+        return memberRoleC7nMapper.checkRole(userId) > 0;
     }
 }

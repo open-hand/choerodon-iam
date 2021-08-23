@@ -897,6 +897,13 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public Boolean checkRole(Long userId) {
-        return memberRoleC7nMapper.checkRole(userId) > 0;
+        boolean returnFlag = false;
+        User requestUser = new User();
+        requestUser.setId(userId);
+        User user = userMapper.selectByPrimaryKey(requestUser);
+        if ((!ObjectUtils.isEmpty(user) && user.getAdmin().equals(true)) || memberRoleC7nMapper.checkRole(userId) > 0) {
+            returnFlag = true;
+        }
+        return returnFlag;
     }
 }

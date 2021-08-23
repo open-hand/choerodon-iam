@@ -72,7 +72,8 @@ public class DashboardServiceImpl implements DashboardService {
             dashboardDTO.setDashboardName(dashboard.getDashboardName());
             dashboardMapper.updateOptional(dashboardDTO, DashboardDTO.FIELD_DASHBOARD_NAME);
         }
-        if (dashboard.getUpdateLayoutFlag().equals(BaseConstants.Flag.YES)) {
+
+        if (Objects.equals(dashboard.getUpdateLayoutFlag(), BaseConstants.Flag.YES)) {
             dashboardLayoutService.batchCreateOrUpdateLayout(dashboard.getDashboardId(), dashboard.getDashboardLayoutS());
         }
         return dashboardDTO;

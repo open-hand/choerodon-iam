@@ -901,7 +901,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         User requestUser = new User();
         requestUser.setId(userId);
         User user = userMapper.selectByPrimaryKey(requestUser);
-        if ((!ObjectUtils.isEmpty(user) && user.getAdmin().equals(true)) || memberRoleC7nMapper.checkRole(userId) > 0) {
+        if ((!ObjectUtils.isEmpty(user) && Boolean.TRUE.equals(user.getAdmin())) || memberRoleC7nMapper.checkRole(userId) > 0) {
             returnFlag = true;
         }
         return returnFlag;

@@ -14,6 +14,8 @@ public class UserEventPayload {
 
     private String email;
 
+    private String phone;
+
     private Long fromUserId;
 
     private Long organizationId;
@@ -66,4 +68,11 @@ public class UserEventPayload {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }

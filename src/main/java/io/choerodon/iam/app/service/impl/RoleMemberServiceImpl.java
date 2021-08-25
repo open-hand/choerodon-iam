@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -720,7 +721,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
         // 要删除的角色
         Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        Long operatorId = DetailsHelper.getUserDetails().getUserId();
+        Long operatorId = DetailsHelper.getUserDetailsElseAnonymous().getUserId();
 
         List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {
             MemberRole memberRole = new MemberRole();
@@ -883,6 +884,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization) {
         updateOrganizationMemberRole(organizationId, userId, new ArrayList<>());
         if (onlyOrganization != null && BooleanUtils.isNotTrue(onlyOrganization)) {
@@ -891,5 +893,17 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 dtoList.forEach(t -> deleteProjectRole(t, userId, null, false));
             }
         }
+    }
+
+    @Override
+    public Boolean checkRole(Long userId) {
+        boolean returnFlag = false;
+        User requestUser = new User();
+        requestUser.setId(userId);
+        User user = userMapper.selectByPrimaryKey(requestUser);
+        if ((!ObjectUtils.isEmpty(user) && Boolean.TRUE.equals(user.getAdmin())) || memberRoleC7nMapper.checkRole(userId) > 0) {
+            returnFlag = true;
+        }
+        return returnFlag;
     }
 }

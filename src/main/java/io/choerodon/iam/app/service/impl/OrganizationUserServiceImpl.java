@@ -29,6 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -108,6 +109,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    @Lazy
+    private UserPasswordC7nService userPasswordC7nService;
 
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
@@ -260,6 +264,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private UserEventPayload getUserEventPayload(User user) {
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setEmail(user.getEmail());
+        userEventPayload.setPhone(user.getPhone());
         userEventPayload.setId(user.getId().toString());
         userEventPayload.setName(user.getRealName());
         userEventPayload.setUsername(user.getLoginName());
@@ -286,6 +291,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private void generateUserEventPayload(List<UserEventPayload> payloads, User userDTO) {
         UserEventPayload payload = new UserEventPayload();
         payload.setEmail(userDTO.getEmail());
+        payload.setPhone(userDTO.getPhone());
         payload.setId(userDTO.getId().toString());
         payload.setName(userDTO.getRealName());
         payload.setUsername(userDTO.getLoginName());
@@ -328,25 +334,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setEmail(user.getEmail());
-            userEventPayload.setId(user.getId().toString());
-            userEventPayload.setName(user.getRealName());
-            userEventPayload.setUsername(user.getLoginName());
-            try {
-                String input = mapper.writeValueAsString(userEventPayload);
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_UPDATE)
-                                .withRefType("user")
-                                .withRefId(userEventPayload.getId())
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(user.getOrganizationId())
-                                .withJson(input),
-                        builder -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.updateUser.event", e);
-            }
         }
         // 2. 更新用户角色
         roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
@@ -372,7 +359,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             newPassword = sysSettingMapper.selectOne(sysSettingDTO).getSettingValue();
         }
 
-        userPasswordService.updateUserPassword(userId, newPassword, false);
+        userPasswordC7nService.updateUserPassword(userId, newPassword, false, true);
 
         // 发送重置密码消息
         sendResetOrganizationUserPassword(organizationId, user, newPassword);

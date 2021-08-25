@@ -14,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.SimpleRoleVO;
 import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -97,6 +98,14 @@ public class RoleC7nController {
     @GetMapping("/list_vindicators")
     public ResponseEntity<List<User>> listVindicators() {
         return Results.success(roleC7nService.listVindicators());
+    }
+
+    @ApiOperation("敏捷使用——根据角色id查询角色")
+    @Permission(permissionWithin = true)
+    @PostMapping("/list_roles")
+    public ResponseEntity<List<SimpleRoleVO>> listRolesByIds(@RequestParam(value = "tenantId") Long tenantId,
+                                                             @RequestBody List<Long> roleIds) {
+        return Results.success(roleC7nService.listRolesByIds(roleIds, tenantId));
     }
 
 }

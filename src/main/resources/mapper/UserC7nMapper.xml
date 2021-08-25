@@ -18,6 +18,7 @@
         <result property="locked" column="is_locked"/>
         <result property="email" column="email"/>
         <result property="ldap" column="is_ldap"/>
+        <result property="imageUrl" column="image_url"/>
         <result property="creationDate" column="creation_date"/>
         <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">
@@ -202,6 +203,12 @@
         </if>
         <if test="email != null">
             AND iam_user.email LIKE concat(concat('%',#{email}),'%')
+        </if>
+        <if test="notSelectUserIds != null and notSelectUserIds.size() != 0">
+            AND iam_user.id NOT IN
+            <foreach collection="notSelectUserIds" item="id" separator="," open="(" close=")">
+                #{id,jdbcType=BIGINT}
+            </foreach>
         </if>
         <if test="param != null">
             AND (
@@ -1007,13 +1014,17 @@
                 </if>
             </when>
             <otherwise>
-                and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName} or iu.attribute14 = #{userName}
-                    OR ( iu.real_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
+                <if test="exactMatchFlag == true">
+                    and (iu.real_name = #{userName} or iu.login_name = #{userName} or iu.email = #{userName} or iu.attribute15= #{userName} or iu.attribute14 = #{userName})
+                </if>
+                <if test="exactMatchFlag == null or exactMatchFlag == false">
+                OR ( iu.real_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.login_name LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.attribute15 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.attribute14 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                 )
+                </if>
             </otherwise>
         </choose>
         <if test="sourceType == 'organization' or sourceType == 'project'">
@@ -1356,4 +1367,11 @@
         WHERE
             id = #{userId};
     </update>
+
+    <select id="queryUserRoleLevels" resultType="java.lang.String">
+        SELECT ir.fd_level
+        FROM iam_member_role imr
+             INNER JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId}
+    </select>
 </mapper>

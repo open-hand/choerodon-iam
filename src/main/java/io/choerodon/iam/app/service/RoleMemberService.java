@@ -69,4 +69,6 @@ public interface RoleMemberService {
     Set<Long> listUserPermission(Long userId, Set<Long> psIds, Long organizationId);
 
     void deleteUserRoles(Long organizationId, Long userId, Boolean onlyOrganization);
+
+    Boolean checkRole(Long userId);
 }

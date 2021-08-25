@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.DashboardMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="io.choerodon.iam.infra.dto.DashboardDTO">
+        <result column="dashboard_id" property="dashboardId" jdbcType="DECIMAL"/>
+        <result column="dashboard_type" property="dashboardType" jdbcType="VARCHAR"/>
+        <result column="dashboard_name" property="dashboardName" jdbcType="VARCHAR"/>
+        <result column="default_flag" property="defaultFlag" jdbcType="DECIMAL"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="queryDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        SELECT fdu.dashboard_user_id,
+               fd.dashboard_id,
+               fd.dashboard_type,
+               fd.dashboard_name,
+               fd.default_flag,
+               fd.created_by,
+               fdu.object_version_number
+        FROM fd_dashboard_user fdu
+                 JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
+        WHERE fdu.user_id = #{userId}
+        ORDER BY fdu.rank ASC
+    </select>
+
+    <select id="queryInternalDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        SELECT
+        fd.dashboard_id,
+        fd.dashboard_type,
+        fd.dashboard_name,
+        fd.default_flag,
+        fd.created_by,
+        fd.object_version_number
+        FROM fd_dashboard fd
+        WHERE fd.dashboard_type = 'INTERNAL'
+        <if test="filterFlag == 1">
+            AND NOT EXISTS(
+            SELECT 1
+            FROM fd_dashboard_user fdu
+            WHERE fdu.dashboard_id = fd.dashboard_id AND fdu.user_id = #{userId}
+            )
+        </if>
+    </select>
+</mapper>

@@ -91,4 +91,16 @@
             #{psId}
         </foreach>
     </select>
+
+    <select id="checkRole" resultType="java.lang.Integer">
+        SELECT
+            count(iu.id)
+        FROM
+            iam_user iu
+        JOIN iam_role ir ON ir.`code` in ('role/site/default/auditor','role/site/default/administrator')
+        JOIN iam_member_role imr ON imr.member_id = iu.id
+            AND imr.member_type = 'user'
+            AND imr.role_id = ir.id
+        WHERE iu.id = #{userId}
+    </select>
 </mapper>

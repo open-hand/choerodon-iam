@@ -1,14 +1,28 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectPermissionService;
-import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.api.vo.UserSearchVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -18,20 +32,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
@@ -44,6 +44,8 @@ public class ProjectUserC7nController extends BaseController {
     private final RoleMemberService roleMemberService;
 
     private final ProjectC7nService projectC7nService;
+    @Autowired
+    private RolePermissionC7nService memberRoleAssignService;
 
     public ProjectUserC7nController(ProjectPermissionService projectPermissionService,
                                     RoleMemberService roleMemberService,
@@ -65,17 +67,8 @@ public class ProjectUserC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
-            @RequestParam(required = false) String loginName,
-            @ApiParam(value = "用户名")
-            @RequestParam(required = false) String realName,
-            @ApiParam(value = "角色名")
-            @RequestParam(required = false) String roleName,
-            @ApiParam(value = "是否启用")
-            @RequestParam(required = false) Boolean enabled,
-            @ApiParam(value = "查询参数")
-            @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, loginName, realName, roleName,
-                enabled, params), HttpStatus.OK);
+                    UserSearchVO userSearchVO) {
+        return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, userSearchVO), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)
@@ -174,9 +167,8 @@ public class ProjectUserC7nController extends BaseController {
                                                     @ApiIgnore
                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                             PageRequest pageable,
-                                                    @Encrypt @RequestBody Set<Long> userIds,
-                                                    @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, userIds, param), HttpStatus.OK);
+                                                    @Encrypt @RequestBody AgileUserVO agileUserVO) {
+        return new ResponseEntity<>(projectC7nService.agileUsers(id, pageable, agileUserVO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -184,7 +176,7 @@ public class ProjectUserC7nController extends BaseController {
     @PostMapping(value = "/{project_id}/users/assign_roles")
     public ResponseEntity<Void> assignUsersRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                                @RequestBody List<ProjectPermissionDTO> projectUserDTOList) {
-        projectPermissionService.assignUsersProjectRoles(projectId, projectUserDTOList);
+        memberRoleAssignService.assignUsersProjectRoles(projectId, projectUserDTOList);
         return ResponseEntity.noContent().build();
     }
 

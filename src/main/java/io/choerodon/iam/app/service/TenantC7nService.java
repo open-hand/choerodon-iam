@@ -92,4 +92,6 @@ public interface TenantC7nService {
 
     void createDefaultTenant(String tenantName, String tenantNum);
 
+    Page<User> pagingQueryUsersOnOrganizationAgile(Long id, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
+
 }

@@ -23,6 +23,7 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -178,6 +179,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private PasswordPolicyManager passwordPolicyManager;
     @Autowired
     private EncryptClient encryptClient;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
 
     @Override
     public User queryInfo(Long userId) {
@@ -206,6 +209,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
+        //如果手机号改了 修改认证标记
+        if (user.isPhoneChanged()) {
+            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(dto.getId());
+            if (!Objects.isNull(userInfo)) {
+                userInfo.setPhoneCheckFlag(BaseConstants.Flag.NO);
+                userInfoMapper.updateByPrimaryKey(userInfo);
+            }
+        }
+
         return dto;
     }
 

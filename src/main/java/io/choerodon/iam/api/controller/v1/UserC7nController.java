@@ -140,7 +140,7 @@ public class UserC7nController extends BaseController {
         user.setLocked(queryInfo.getLocked());
         //判断改手机号码没有改
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), queryInfo.getPhone())) {
-            user.setPhoneValid(Boolean.FALSE);
+            user.setPhoneChanged(Boolean.TRUE);
         }
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);
     }

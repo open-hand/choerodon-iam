@@ -1329,9 +1329,10 @@
         WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND ir.id = #{roleId} and fpu.PROJECT_ID = #{projectId}
     </select>
     <select id="queryPersonalInfo" resultMap="UserDTOMap">
-        SELECT iu.*, ht.tenant_name, ht.tenant_num
+        SELECT iu.*, ht.tenant_name, ht.tenant_num, hui.phone_check_flag
         FROM iam_user iu
         LEFT JOIN hpfm_tenant ht ON iu.organization_id = ht.tenant_id
+        LEFT JOIN hiam_user_info hui ON hui.user_id=iu.id
         WHERE iu.id = #{userId}
     </select>
 

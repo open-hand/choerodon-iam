@@ -210,7 +210,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         //如果手机号改了 修改认证标记
-        if (user.isPhoneChanged()) {
+        if (user.isPhoneChanged() && !dto.getLdap()) {
             UserInfo userInfo = userInfoMapper.selectByPrimaryKey(dto.getId());
             if (!Objects.isNull(userInfo)) {
                 userInfo.setPhoneCheckFlag(BaseConstants.Flag.NO);

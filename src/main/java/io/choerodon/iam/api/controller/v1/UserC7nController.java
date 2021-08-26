@@ -139,7 +139,7 @@ public class UserC7nController extends BaseController {
         user.setLoginName(queryInfo.getLoginName());
         user.setLocked(queryInfo.getLocked());
         //判断改手机号码没有改
-        if (!StringUtils.equalsIgnoreCase(user.getPhone(), queryInfo.getPhone())) {
+        if (!StringUtils.equalsIgnoreCase(user.getPhone(), queryInfo.getPhone()) && !queryInfo.getLdap()) {
             user.setPhoneChanged(Boolean.TRUE);
         }
         return new ResponseEntity<>(userC7nService.updateInfo(user, true), HttpStatus.OK);

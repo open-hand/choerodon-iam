@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -23,7 +24,7 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
-import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.app.service.MemberRoleService;
@@ -32,9 +33,12 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.repository.UserSelfRepository;
+import org.hzero.iam.domain.service.user.UserCaptchaService;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.feign.OauthAdminFeignClient;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,7 +184,11 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private EncryptClient encryptClient;
     @Autowired
-    private UserInfoMapper userInfoMapper;
+    private UserSelfRepository userSelfRepository;
+    @Autowired
+    private OauthAdminFeignClient oauthAdminFeignClient;
+    @Autowired
+    protected UserCaptchaService userCaptchaService;
 
     @Override
     public User queryInfo(Long userId) {
@@ -209,15 +217,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
-        //如果手机号改了 修改认证标记
-        if (user.isPhoneChanged() && !dto.getLdap()) {
-            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(dto.getId());
-            if (!Objects.isNull(userInfo)) {
-                userInfo.setPhoneCheckFlag(BaseConstants.Flag.NO);
-                userInfoMapper.updateByPrimaryKey(userInfo);
-            }
-        }
-
         return dto;
     }
 
@@ -1028,7 +1027,10 @@ public class UserC7nServiceImpl implements UserC7nService {
         BeanUtils.copyProperties(user, baseUser);
         baseUser.setPassword(decryptPassword);
         passwordPolicyManager.passwordValidate(decryptPassword, tenantId, baseUser);
+        // 处理强制使用手机验证码校验
+        userCaptchaService.validateForceCodeVerify(passwordPolicy, user, userPasswordDTO);
         userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
+        userSelfRepository.clearErrorTimes(user.getId());
 
         // send siteMsg
         Map<String, String> paramsMap = new HashMap<>();
@@ -1036,6 +1038,13 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<Long> userIds = new ArrayList<>();
         userIds.add(user.getId());
         sendNotice(userIds, "modifyPassword", paramsMap, 0L, ResourceLevel.SITE);
+        // 检查是否需要重新登录
+        String accessToken = TokenUtils.getToken();
+        if (BooleanUtils.isTrue(passwordPolicy.getEnablePassword())
+                && BooleanUtils.isTrue(passwordPolicy.getLoginAgain())
+                && org.apache.commons.lang3.StringUtils.isNotBlank(accessToken)) {
+            oauthAdminFeignClient.invalidByToken(accessToken);
+        }
     }
 
 

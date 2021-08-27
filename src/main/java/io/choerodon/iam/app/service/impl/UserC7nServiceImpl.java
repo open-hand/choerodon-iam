@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +24,6 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -183,8 +184,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private EncryptClient encryptClient;
     @Autowired
-    private UserInfoMapper userInfoMapper;
-    @Autowired
     private UserSelfRepository userSelfRepository;
     @Autowired
     private OauthAdminFeignClient oauthAdminFeignClient;
@@ -218,15 +217,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
-        //如果手机号改了 修改认证标记
-        if (user.isPhoneChanged() && !dto.getLdap()) {
-            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(dto.getId());
-            if (!Objects.isNull(userInfo)) {
-                userInfo.setPhoneCheckFlag(BaseConstants.Flag.NO);
-                userInfoMapper.updateByPrimaryKey(userInfo);
-            }
-        }
-
         return dto;
     }
 

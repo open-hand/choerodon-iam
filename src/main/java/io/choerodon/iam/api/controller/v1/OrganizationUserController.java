@@ -113,6 +113,14 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询用户默认密码")
+    @GetMapping("/users/default_password")
+    public ResponseEntity<String> queryDefaultPassword(
+            @PathVariable(name = "organization_id") Long organizationId) {
+        return Results.success(organizationUserService.queryDefaultPassword(organizationId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改用户")
     @PutMapping(value = "/users/{id}")
     public ResponseEntity<Void> update(

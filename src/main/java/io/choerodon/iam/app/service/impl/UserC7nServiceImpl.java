@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -24,6 +25,7 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -1111,6 +1113,18 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
             userVO.setRecentAccessTenantList(list);
         }
+        // 判断是否提醒修改密码
+        boolean changePasswordFlag = false;
+        Integer passwordUpdateRate = Optional.ofNullable(userVO.getPasswordUpdateRate()).orElse(0);
+        Integer passwordReminderPeriod = Optional.ofNullable(userVO.getPasswordReminderPeriod()).orElse(0);
+        if (passwordUpdateRate > 0) {
+            // 得到提醒日期
+            Date date = DateUtils.addDays(userVO.getLastPasswordUpdatedAt(), passwordUpdateRate - passwordReminderPeriod);
+            changePasswordFlag = new Date().after(date);
+        }
+        // 比较当前时间是否在提醒时间之后
+        userVO.setChangePasswordFlag(changePasswordFlag ? BaseConstants.Flag.YES : BaseConstants.Flag.NO);
+
         return userVO;
     }
 

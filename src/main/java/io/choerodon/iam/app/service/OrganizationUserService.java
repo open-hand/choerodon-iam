@@ -62,4 +62,11 @@ public interface OrganizationUserService {
 
     List<ErrorUserVO> batchCreateUsersOnExcel(List<UserDTO> insertUsers, Long fromUserId, Long organizationId);
 
+    /**
+     * 获取默认密码
+     *
+     * @param organizationId
+     * @return
+     */
+    String queryDefaultPassword(Long organizationId);
 }

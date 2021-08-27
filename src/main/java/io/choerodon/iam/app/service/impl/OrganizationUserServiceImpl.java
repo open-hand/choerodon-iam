@@ -11,6 +11,7 @@ import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
+import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
@@ -106,6 +107,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final MessageSendService messageSendService;
     private final PasswordPolicyRepository passwordPolicyRepository;
     private final SysSettingMapper sysSettingMapper;
+    private final EncryptClient encryptClient;
+
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
@@ -134,7 +137,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        MessageClient messageClient,
                                        PasswordPolicyRepository passwordPolicyRepository,
                                        MessageSendService messageSendService,
-                                       SysSettingMapper sysSettingMapper
+                                       SysSettingMapper sysSettingMapper,
+                                       EncryptClient encryptClient
     ) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
@@ -157,6 +161,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.passwordPolicyRepository = passwordPolicyRepository;
         this.messageSendService = messageSendService;
         this.sysSettingMapper = sysSettingMapper;
+        this.encryptClient = encryptClient;
     }
 
     @Override
@@ -208,6 +213,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         User result = userService.createUserInternal(user);
         sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
+    }
+
+    @Override
+    public String queryDefaultPassword(Long organizationId) {
+        String defaultPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
+        return encryptClient.encrypt(defaultPassword);
     }
 
     @Override

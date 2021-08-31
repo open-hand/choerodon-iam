@@ -43,6 +43,16 @@ public class UserDTO extends User {
     @Encrypt
     private Long sagaInstanceId;
 
+    @ApiModelProperty("手机号是否绑定")
+    private Boolean phoneBind;
+
+    public Boolean getPhoneBind() {
+        return phoneBind;
+    }
+
+    public void setPhoneBind(Boolean phoneBind) {
+        this.phoneBind = phoneBind;
+    }
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;

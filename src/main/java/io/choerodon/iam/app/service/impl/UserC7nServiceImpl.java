@@ -1375,9 +1375,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = customUserDetails.getUserId();
         UserDTO userDTO = userC7nMapper.queryPersonalInfo(userId);
-        if (StringUtils.isEmpty(userDTO.getPhone())){
-            userDTO.setPhoneCheckFlag(BaseConstants.Flag.YES);
-        }
         return userDTO;
     }
 

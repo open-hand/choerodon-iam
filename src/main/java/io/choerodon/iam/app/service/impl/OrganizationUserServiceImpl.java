@@ -20,6 +20,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
+import org.hzero.iam.domain.service.user.interceptor.interceptors.SendMessageInterceptor;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.saas.app.service.TenantService;
@@ -108,6 +109,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final PasswordPolicyRepository passwordPolicyRepository;
     private final SysSettingMapper sysSettingMapper;
     private final EncryptClient encryptClient;
+    private final SendMessageInterceptor sendMessageInterceptor;
 
 
     @Autowired
@@ -138,7 +140,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        PasswordPolicyRepository passwordPolicyRepository,
                                        MessageSendService messageSendService,
                                        SysSettingMapper sysSettingMapper,
-                                       EncryptClient encryptClient
+                                       EncryptClient encryptClient,
+                                       SendMessageInterceptor sendMessageInterceptor
     ) {
         this.labelC7nMapper = labelC7nMapper;
         this.memberRoleC7nMapper = memberRoleC7nMapper;
@@ -162,6 +165,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.messageSendService = messageSendService;
         this.sysSettingMapper = sysSettingMapper;
         this.encryptClient = encryptClient;
+        this.sendMessageInterceptor = sendMessageInterceptor;
     }
 
     @Override
@@ -211,6 +215,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Role> roles = user.getRoles();
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, roles));
         User result = userService.createUserInternal(user);
+        sendMessageInterceptor.interceptor(user);
         sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
         return result;
     }

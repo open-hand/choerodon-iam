@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -14,7 +13,6 @@ import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -25,7 +23,6 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -79,7 +76,6 @@ import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.constant.ResourceCheckConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.*;
-import io.choerodon.iam.infra.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.*;
@@ -1113,18 +1109,6 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
             userVO.setRecentAccessTenantList(list);
         }
-        // 判断是否提醒修改密码
-        boolean changePasswordFlag = false;
-        Integer passwordUpdateRate = Optional.ofNullable(userVO.getPasswordUpdateRate()).orElse(0);
-        Integer passwordReminderPeriod = Optional.ofNullable(userVO.getPasswordReminderPeriod()).orElse(0);
-        if (passwordUpdateRate > 0) {
-            // 得到提醒日期
-            Date date = DateUtils.addDays(userVO.getLastPasswordUpdatedAt(), passwordUpdateRate - passwordReminderPeriod);
-            changePasswordFlag = new Date().after(date);
-        }
-        // 比较当前时间是否在提醒时间之后
-        userVO.setChangePasswordFlag(changePasswordFlag ? BaseConstants.Flag.YES : BaseConstants.Flag.NO);
-
         return userVO;
     }
 

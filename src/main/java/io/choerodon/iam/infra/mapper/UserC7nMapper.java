@@ -440,5 +440,7 @@ public interface UserC7nMapper {
      * @param userId
      */
     List<String> queryUserRoleLevels(@Param("userId") Long userId);
+
+    void updateUserPhoneBind(@Param("userId") Long userId, @Param("false") Integer no);
 }
 

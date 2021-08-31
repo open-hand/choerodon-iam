@@ -1375,4 +1375,10 @@
              INNER JOIN iam_role ir ON imr.role_id = ir.id
         WHERE imr.member_type = 'user' AND imr.member_id = #{userId}
     </select>
+    <update id="updateUserPhoneBind">
+        UPDATE iam_user
+        SET phone_bind = #{false}
+        WHERE
+        id = #{userId};
+    </update>
 </mapper>

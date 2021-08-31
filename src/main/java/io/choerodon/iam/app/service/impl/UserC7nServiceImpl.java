@@ -23,6 +23,7 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -211,6 +212,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setImageUrl(user.getImageUrl());
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
+        if (user.isPhoneChanged()){
+            userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
+        }
         dto = userRepository.selectByPrimaryKey(user.getId());
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());

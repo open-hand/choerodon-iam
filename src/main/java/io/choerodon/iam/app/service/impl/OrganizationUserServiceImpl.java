@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -35,7 +36,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -110,7 +110,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final SysSettingMapper sysSettingMapper;
     private final EncryptClient encryptClient;
     private final SendMessageInterceptor sendMessageInterceptor;
-
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
@@ -365,11 +364,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
-        String newPassword;
-        PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(organizationId);
-        if (passwordPolicy != null && passwordPolicy.getEnablePassword() && !StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
-            newPassword = passwordPolicy.getOriginalPassword();
-        } else {
+        String newPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
+        if (StringUtils.isBlank(newPassword)) {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();
             sysSettingDTO.setSettingKey(SysSettingEnum.DEFAULT_PASSWORD.value());
             newPassword = sysSettingMapper.selectOne(sysSettingDTO).getSettingValue();

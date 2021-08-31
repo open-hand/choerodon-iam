@@ -210,7 +210,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 允许邮箱和手机号登录
         user.setEmailCheckFlag(BaseConstants.Flag.YES);
         user.setPhoneCheckFlag(BaseConstants.Flag.YES);
-
+        if (StringUtils.isBlank(user.getPassword())) {
+            user.setPassword(getDefaultPassword(user.getOrganizationId()));
+        }
         List<Role> roles = user.getRoles();
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, roles));
         User result = userService.createUserInternal(user);
@@ -364,18 +366,23 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
+
+        String newPassword = getDefaultPassword(organizationId);
+        userPasswordC7nService.updateUserPassword(userId, newPassword, false, true);
+
+        // 发送重置密码消息
+        sendResetOrganizationUserPassword(organizationId, user, newPassword);
+        return user;
+    }
+
+    private String getDefaultPassword(Long organizationId) {
         String newPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
         if (StringUtils.isBlank(newPassword)) {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();
             sysSettingDTO.setSettingKey(SysSettingEnum.DEFAULT_PASSWORD.value());
             newPassword = sysSettingMapper.selectOne(sysSettingDTO).getSettingValue();
         }
-
-        userPasswordC7nService.updateUserPassword(userId, newPassword, false, true);
-
-        // 发送重置密码消息
-        sendResetOrganizationUserPassword(organizationId, user, newPassword);
-        return user;
+        return newPassword;
     }
 
     private void sendResetOrganizationUserPassword(Long organizationId, User user, String newPassword) {

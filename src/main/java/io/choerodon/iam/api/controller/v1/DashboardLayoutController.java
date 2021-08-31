@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.iam.api.vo.DashboardLayoutVO;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class DashboardLayoutController extends BaseController {
     @ApiOperation(value = "维护-查询明细")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping("/{dashboard_id}")
-    public ResponseEntity<List<DashboardLayoutVO>> queryLayoutByDashboard(@PathVariable("dashboard_id") Long dashboardId) {
+    public ResponseEntity<List<DashboardLayoutVO>> queryLayoutByDashboard(@Encrypt @PathVariable("dashboard_id") Long dashboardId) {
         return Results.success(dashboardLayoutService.queryLayoutByDashboard(dashboardId));
     }
 }

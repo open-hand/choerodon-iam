@@ -1113,6 +1113,9 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
             userVO.setRecentAccessTenantList(list);
         }
+        if(userVO.getLdap()){
+            userVO.setChangePasswordFlag(BaseConstants.Flag.NO);
+        }
         return userVO;
     }
 

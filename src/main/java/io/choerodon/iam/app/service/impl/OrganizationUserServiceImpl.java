@@ -347,10 +347,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        boolean phoneChange = false;
+        if (StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
+            phoneChange = true;
+        }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
             userService.updateUserInternal(user);
+        }
+        //如果修改了手机号，则用户手机号绑定状态变为未绑定
+        if (phoneChange) {
+            userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
         }
         // 2. 更新用户角色
         roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());

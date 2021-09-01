@@ -23,6 +23,7 @@ import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -1108,6 +1109,9 @@ public class UserC7nServiceImpl implements UserC7nService {
                 throw new CommonException("error.get.user.tenants");
             }
             userVO.setRecentAccessTenantList(list);
+        }
+        if(userVO.getLdap()){
+            userVO.setChangePasswordFlag(BaseConstants.Flag.NO);
         }
         return userVO;
     }

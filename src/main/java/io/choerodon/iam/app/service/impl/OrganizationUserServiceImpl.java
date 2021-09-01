@@ -348,7 +348,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
         boolean phoneChange = false;
-        if (StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
+        if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
         }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {

@@ -1172,7 +1172,7 @@
     <select id="queryUserByLoginName" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT iu.*
         FROM iam_user iu
-        WHERE iu.login_name = #{loginName,jdbcType=VARCHAR}
+        WHERE iu.login_name = #{loginName,jdbcType=VARCHAR} or iu.email = #{loginName,jdbcType=VARCHAR}
     </select>
 
     <select id="selectAllUsersSimplifiedInfo" resultMap="simplifiedUserDTO">

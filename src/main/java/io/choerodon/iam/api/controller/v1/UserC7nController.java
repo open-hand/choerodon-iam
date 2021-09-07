@@ -20,15 +20,12 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.PasswordPolicy;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -503,5 +500,19 @@ public class UserC7nController extends BaseController {
     @GetMapping(value = "/all_user_ids")
     public ResponseEntity<Set<Long>> listAllUserIds() {
         return ResponseEntity.ok(userC7nService.listAllUserIds());
+    }
+
+    @ApiModelProperty(value = "查询用户是不是平台管理员")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping(value = "/self/is_site_administrator")
+    public ResponseEntity<Boolean> platformAdministrator() {
+        return ResponseEntity.ok(userC7nService.platformAdministrator());
+    }
+
+    @ApiModelProperty(value = "查询用户是不是平台管理员")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping(value = "/self/admin/org/list")
+    public ResponseEntity<List<Tenant>> adminOrgList() {
+        return ResponseEntity.ok(userC7nService.adminOrgList());
     }
 }

@@ -212,7 +212,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         imageUser.setImageUrl(user.getImageUrl());
         imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
         userMapper.updateByPrimaryKeySelective(imageUser);
-        if (user.isPhoneChanged()){
+        if (user.isPhoneChanged()) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
         }
         dto = userRepository.selectByPrimaryKey(user.getId());
@@ -1113,7 +1113,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             }
             userVO.setRecentAccessTenantList(list);
         }
-        if(userVO.getLdap()){
+        if (userVO.getLdap()) {
             userVO.setChangePasswordFlag(BaseConstants.Flag.NO);
         }
         return userVO;
@@ -1522,5 +1522,14 @@ public class UserC7nServiceImpl implements UserC7nService {
         return PageHelper.doPage(pageRequest, () -> projectMapper.listProjectOfDevopsOrOperations(projectName, userId, isAdmin));
     }
 
+    @Override
+    public Boolean platformAdministrator() {
+        return userC7nMapper.platformAdministrator(DetailsHelper.getUserDetails().getUserId());
+    }
 
+    @Override
+    public List<Tenant> adminOrgList() {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        return userC7nMapper.adminOrgList(userId);
+    }
 }

@@ -7,6 +7,7 @@ import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 
 import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 
 import java.sql.Date;
@@ -442,5 +443,9 @@ public interface UserC7nMapper {
     List<String> queryUserRoleLevels(@Param("userId") Long userId);
 
     void updateUserPhoneBind(@Param("userId") Long userId, @Param("false") Integer no);
+
+    Boolean platformAdministrator(@Param("userId") Long userId);
+
+    List<Tenant> adminOrgList(@Param("userId") Long userId);
 }
 

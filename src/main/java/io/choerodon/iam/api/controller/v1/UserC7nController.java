@@ -502,14 +502,14 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.listAllUserIds());
     }
 
-    @ApiModelProperty(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户是不是平台管理员")
     @Permission(level = ResourceLevel.SITE)
     @GetMapping(value = "/self/is_site_administrator")
     public ResponseEntity<Boolean> platformAdministrator() {
         return ResponseEntity.ok(userC7nService.platformAdministrator());
     }
 
-    @ApiModelProperty(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户是不是平台管理员")
     @Permission(level = ResourceLevel.SITE)
     @GetMapping(value = "/self/admin/org/list")
     public ResponseEntity<List<Tenant>> adminOrgList() {

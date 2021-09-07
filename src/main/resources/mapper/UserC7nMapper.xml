@@ -1381,4 +1381,35 @@
         WHERE
         id = #{userId};
     </update>
+    <select id="platformAdministrator" resultType="boolean">
+        SELECT
+	       count(imr.id)
+        FROM
+	       iam_member_role imr
+	    JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE
+	       imr.source_type = 'site'
+	    AND imr.member_type = 'user'
+	    AND imr.source_id = 0
+	    AND ir.CODE = 'role/site/default/administrator'
+	    AND imr.member_id = #{userId,jdbcType=BIGINT}
+    </select>
+
+    <select id="adminOrgList" resultType="org.hzero.iam.domain.entity.Tenant">
+        SELECT
+            ht.*
+        FROM
+        	iam_member_role imr
+        	LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        	LEFT JOIN hiam_label_rel hlr ON ir.id = hlr.data_id
+        	AND hlr.data_type = 'ROLE'
+        	LEFT JOIN iam_label il ON hlr.label_id = il.id
+        	JOIN hpfm_tenant ht ON imr.source_id = ht.tenant_id
+        WHERE
+        	il.NAME = 'TENANT_ADMIN'
+        	AND imr.source_type = 'organization'
+        	AND imr.member_type = 'user'
+        	AND ht.enabled_flag= 1
+        	AND imr.member_id = #{userId,jdbcType=BIGINT}
+    </select>
 </mapper>

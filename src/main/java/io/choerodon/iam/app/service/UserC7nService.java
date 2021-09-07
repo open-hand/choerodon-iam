@@ -8,6 +8,7 @@ import java.util.Set;
 import org.hzero.iam.api.dto.UserPasswordDTO;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -355,5 +356,10 @@ public interface UserC7nService {
      */
     Page<ProjectDTO> queryProjectsOfDevopsOrOperations(String projectName, PageRequest pageRequest);
 
+
+    Boolean platformAdministrator();
+
+
+    List<Tenant> adminOrgList();
 
 }

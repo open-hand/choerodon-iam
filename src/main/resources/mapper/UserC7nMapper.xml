@@ -1411,5 +1411,6 @@
         	AND imr.member_type = 'user'
         	AND ht.enabled_flag= 1
         	AND imr.member_id = #{userId,jdbcType=BIGINT}
+            AND ht.tenant_id !=0
     </select>
 </mapper>

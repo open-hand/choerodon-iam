@@ -1413,4 +1413,15 @@
         	AND imr.member_id = #{userId,jdbcType=BIGINT}
             AND ht.tenant_id !=0
     </select>
+
+    <select id="listSiteAdministrator" resultType="org.hzero.iam.domain.entity.User">
+         SELECT
+            iu.*
+        FROM
+            iam_user iu
+            JOIN iam_role ir ON ir.`code` = 'role/site/default/administrator'
+                                AND ir.fd_level = 'site'
+            JOIN iam_member_role imr ON imr.member_id = iu.id
+                                        AND imr.role_id = ir.id
+    </select>
 </mapper>

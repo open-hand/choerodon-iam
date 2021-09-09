@@ -482,6 +482,14 @@ public class UserC7nController extends BaseController {
     }
 
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询平台层市场审核员的用户")
+    @GetMapping(value = "/roles/site/administrator")
+    public ResponseEntity<List<User>> listSiteAdministrator() {
+        return ResponseEntity.ok(userC7nService.listSiteAdministrator());
+    }
+
+
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "查询系统的所有root用户 包括admin")
     @GetMapping(value = "/root")
     public ResponseEntity<List<User>> listRoot() {

@@ -94,4 +94,6 @@ public interface TenantC7nService {
 
     Page<User> pagingQueryUsersOnOrganizationAgile(Long id, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 
+    List<Tenant> queryTenants(Set<Long> tenantIds);
+
 }

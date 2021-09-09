@@ -332,6 +332,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
+    public List<Tenant> queryTenants(Set<Long> tenantIds) {
+      return tenantMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(tenantIds, ","));
+    }
+
+    @Override
     public Page<Tenant> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageable) {
         if (CollectionUtils.isEmpty(orgIds)) {
             return new Page<>();

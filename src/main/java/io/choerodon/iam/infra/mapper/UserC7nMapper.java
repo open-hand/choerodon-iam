@@ -447,5 +447,7 @@ public interface UserC7nMapper {
     Boolean platformAdministrator(@Param("userId") Long userId);
 
     List<Tenant> adminOrgList(@Param("userId") Long userId);
+
+    List<User> listSiteAdministrator();
 }
 

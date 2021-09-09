@@ -1532,4 +1532,9 @@ public class UserC7nServiceImpl implements UserC7nService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         return userC7nMapper.adminOrgList(userId);
     }
+
+    @Override
+    public List<User> listSiteAdministrator() {
+        return userC7nMapper.listSiteAdministrator();
+    }
 }

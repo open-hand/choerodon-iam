@@ -94,4 +94,7 @@ public interface TenantC7nMapper {
      * @return User列表
      */
     List<User> listMemberIds(@Param("tenantId") Long tenantId);
+
+    Long queryCurrentUserNum(@Param("tenantId") Long tenantId);
+
 }

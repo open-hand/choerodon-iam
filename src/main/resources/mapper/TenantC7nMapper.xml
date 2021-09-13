@@ -61,13 +61,7 @@
         THEN 0
         ELSE t.project_count
         END
-        AS projectCount,
-        CASE
-        WHEN f.user_count IS NULL
-        THEN 0
-        ELSE f.user_count
-        END
-        AS userCount
+        AS projectCount
         FROM hpfm_tenant org
         LEFT JOIN
         (

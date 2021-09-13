@@ -52,10 +52,7 @@ import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.PageUtils;
-import io.choerodon.iam.infra.utils.SagaInstanceUtils;
-import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
+import io.choerodon.iam.infra.utils.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -262,6 +259,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
                     tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                    // 统计当前组织人数 组织人数+角色
+                    tenantVO.setUserCount(TypeUtil.objToInteger(tenantC7nMapper.queryCurrentUserNum(tenantVO.getTenantId())));
                 }
         );
         return tenantVOPage;
@@ -333,7 +332,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public List<Tenant> queryTenants(Set<Long> tenantIds) {
-      return tenantMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(tenantIds, ","));
+        return tenantMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(tenantIds, ","));
     }
 
     @Override

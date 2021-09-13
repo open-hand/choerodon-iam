@@ -27,6 +27,31 @@
         <result column="limit_user_qty" property="limitUserQty" jdbcType="DECIMAL"/>
     </resultMap>
 
+    <select id="queryCurrentUserNum" resultType="java.lang.Long">
+        SELECT
+            count( * )
+        FROM
+            (
+                SELECT
+                    iu.id
+                FROM
+                    iam_user iu
+                WHERE
+                    iu.organization_id = #{tenantId} and iu.is_enabled = 1
+                UNION
+                SELECT DISTINCT
+                    imr.member_id
+                FROM
+                    iam_member_role imr
+                        JOIN iam_user iu1 ON imr.member_id = iu1.id AND iu1.is_enabled = 1
+                WHERE
+                    imr.source_type = 'organization'
+                  AND imr.source_id = #{tenantId}
+                  AND imr.member_type = 'user'
+                  AND imr.member_id NOT IN ( SELECT id FROM iam_user iu WHERE iu.organization_id = #{tenantId} )
+            ) temp
+    </select>
+
     <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">
         SELECT
         org.*,
@@ -54,15 +79,6 @@
         ON o.tenant_id = p.organization_id
         GROUP BY p.organization_id
         ) t ON org.tenant_id = t.org_id
-        LEFT JOIN(
-        SELECT
-        imr.source_id AS source_id,
-        COUNT(imr.member_id) AS user_count
-        FROM iam_member_role imr
-        WHERE imr.SOURCE_TYPE='organization'
-        GROUP BY imr.source_id
-        ) f ON org.tenant_id= f.source_id
-
         <if test="homePage != null and homePage != ''">
             LEFT JOIN hpfm_tenant_config htc ON htc.tenant_id = org.tenant_id AND htc.config_key = 'homePage'
         </if>

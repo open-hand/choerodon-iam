@@ -51,6 +51,7 @@ public class DashboardDTO extends AuditDomain {
     @ApiModelProperty(value = "默认面板")
     private Integer defaultFlag;
     @Transient
+    @Encrypt
     private Long dashboardUserId;
 
     //

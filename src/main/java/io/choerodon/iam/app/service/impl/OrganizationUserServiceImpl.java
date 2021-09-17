@@ -11,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
+import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.core.base.BaseConstants;
@@ -116,6 +118,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Autowired
     @Lazy
     private UserPasswordC7nService userPasswordC7nService;
+    @Autowired
+    private BasePasswordPolicyRepository basePasswordPolicyRepository;
 
 
     public OrganizationUserServiceImpl(LabelC7nMapper labelC7nMapper,
@@ -384,7 +388,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     private String getDefaultPassword(Long organizationId) {
-        String newPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
+        // 组织层启用密码策略用组织层的 否则用平台层的
+        String newPassword = null;
+        BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(organizationId);
+        if (passwordPolicy.getEnablePassword()) {
+            newPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
+        }
         if (StringUtils.isBlank(newPassword)) {
             SysSettingDTO sysSettingDTO = new SysSettingDTO();
             sysSettingDTO.setSettingKey(SysSettingEnum.DEFAULT_PASSWORD.value());

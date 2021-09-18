@@ -12,8 +12,11 @@ import java.util.stream.Collectors;
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
-import org.hzero.boot.oauth.domain.repository.BasePasswordPolicyRepository;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.app.service.PasswordPolicyService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.repository.PasswordPolicyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -66,13 +69,15 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private AsgardFeignClient asgardFeignClient;
 
     private AsgardServiceClientOperator asgardServiceClientOperator;
-    private BasePasswordPolicyRepository basePasswordPolicyRepository;
+    private PasswordPolicyRepository passwordPolicyRepository;
     private List<SysSettingHandler> sysSettingHandlers;
-
+    @Autowired
+    @Lazy
+    private PasswordPolicyService passwordPolicyService;
 
     public SystemSettingC7nServiceImpl(FileClient fileClient,
                                        AsgardFeignClient asgardFeignClient,
-                                       BasePasswordPolicyRepository basePasswordPolicyRepository,
+                                       PasswordPolicyRepository passwordPolicyRepository,
                                        @Lazy AsgardServiceClientOperator asgardServiceClientOperator,
                                        @Value("${choerodon.category.enabled:false}")
                                                Boolean enableCategory,
@@ -83,7 +88,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         this.asgardServiceClientOperator = asgardServiceClientOperator;
         this.enableCategory = enableCategory;
         this.sysSettingMapper = sysSettingMapper;
-        this.basePasswordPolicyRepository = basePasswordPolicyRepository;
+        this.passwordPolicyRepository = passwordPolicyRepository;
         this.sysSettingHandlers = sysSettingHandlers;
     }
 
@@ -209,13 +214,11 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 }
             });
         }
-        BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(BaseConstants.DEFAULT_TENANT_ID);
+        PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(BaseConstants.DEFAULT_TENANT_ID);
         passwordPolicy.setOriginalPassword(sysSettingVO.getDefaultPassword());
         passwordPolicy.setMinLength(sysSettingVO.getMinPasswordLength());
         passwordPolicy.setMaxLength(sysSettingVO.getMaxPasswordLength());
-        if (basePasswordPolicyRepository.updateByPrimaryKey(passwordPolicy) != 1) {
-            throw new CommonException("error.update.setting.password.policy");
-        }
+        passwordPolicyService.updatePasswordPolicy(BaseConstants.DEFAULT_TENANT_ID, passwordPolicy);
         SysSettingVO dto = new SysSettingVO();
         SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), dto);
         return dto;

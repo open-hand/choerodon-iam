@@ -28,6 +28,7 @@ import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.QuickLinkMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import io.choerodon.iam.infra.utils.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -168,8 +169,7 @@ public class QuickLinkServiceImpl implements QuickLinkService {
             page = PageHelper.doPage(pageable, () -> quickLinkMapper.queryAllProject(organizationId, projectId, userId));
             page.getContent().forEach(v -> v.setEditFlag(true));
         }
-
-
+        UserDTOFillUtil.fillUserInfo(page.getContent(), "createUserId", "user");
         return page;
     }
 

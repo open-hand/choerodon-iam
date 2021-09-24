@@ -41,11 +41,11 @@ public class SysSettingVO extends AuditDomain {
     private String defaultLanguage;
 
     @ApiModelProperty(value = "不启用组织层密码策略时的密码最小长度，非必填字段，默认6")
-    @Range(min = 0, max = 65535, message = "error.minLength")
+    @Range(min = 6, max = 15, message = "error.minLength", groups = {SysSettingValidator.PasswordPolicyGroup.class})
     private Integer minPasswordLength;
 
-    @ApiModelProperty(value = "不启用组织层密码策略时的密码最大长度, 非必填字段，默认18")
-    @Range(min = 0, max = 65535, message = "error.maxLength")
+    @ApiModelProperty(value = "不启用组织层密码策略时的密码最大长度, 非必填字段，默认15")
+    @Range(min = 6, max = 15, message = "error.maxLength", groups = {SysSettingValidator.PasswordPolicyGroup.class})
     private Integer maxPasswordLength;
 
     @ApiModelProperty(value = "是否启用注册")

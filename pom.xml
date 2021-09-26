@@ -84,6 +84,7 @@
         <dependency>
             <groupId>org.hzero.boot</groupId>
             <artifactId>hzero-boot-monitor</artifactId>
+            <version>1.6.3.BETA</version>
         </dependency>
         <dependency>
             <groupId>org.hzero.boot</groupId>

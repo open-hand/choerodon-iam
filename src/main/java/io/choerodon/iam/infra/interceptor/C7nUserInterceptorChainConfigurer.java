@@ -43,7 +43,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .post()
                 .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
                 .addInterceptorAfter(LdapUserPostInterceptor.class, LastHandlerInterceptor.class)
-                .addInterceptorBefore(GitlabUserInterceptor.class, GitlabUserInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
 
 
         builder

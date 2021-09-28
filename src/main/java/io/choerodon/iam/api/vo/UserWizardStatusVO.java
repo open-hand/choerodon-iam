@@ -7,10 +7,12 @@ package io.choerodon.iam.api.vo;
  * @Modified By:
  */
 public class UserWizardStatusVO {
+    private String code;
     private String name;
     private String status;
     private Boolean enableClick;
     private String remark;
+    private String operationLink;
 
     public String getName() {
         return name;
@@ -42,5 +44,21 @@ public class UserWizardStatusVO {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getOperationLink() {
+        return operationLink;
+    }
+
+    public void setOperationLink(String operationLink) {
+        this.operationLink = operationLink;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

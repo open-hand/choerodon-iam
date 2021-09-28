@@ -30,7 +30,8 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorAfter(CheckCreateUserInterceptor.class, ValidationInterceptor.class)
                 .post()
                 .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
-                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(GitlabUserInterceptor.class, GitlabUserInterceptor.class);
 
         builder
                 .selectChain(UserOperation.CREATE_USER_INTERNAL)
@@ -41,7 +42,9 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorBefore(LdapUserPreInterceptor.class, ValidationInterceptor.class)
                 .post()
                 .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
-                .addInterceptorAfter(LdapUserPostInterceptor.class, LastHandlerInterceptor.class);
+                .addInterceptorAfter(LdapUserPostInterceptor.class, LastHandlerInterceptor.class)
+                .addInterceptorBefore(GitlabUserInterceptor.class, GitlabUserInterceptor.class);
+
 
         builder
                 .selectChain(UserOperation.UPDATE_USER_INTERNAL)

@@ -3,6 +3,7 @@ package io.choerodon.iam.api.eventhandler;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
+import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
 import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 import java.io.IOException;

@@ -17,6 +17,7 @@ import io.choerodon.iam.api.vo.UserWizardStatusVO;
 import io.choerodon.iam.app.service.UserWizardService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.UserWizardDTO;
+import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -46,4 +47,11 @@ public class UserWizardController {
         return Results.success(userWizardService.listUserWizardsStatus(organizationId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询组织下向导完成情况")
+    @GetMapping(value = "/completed")
+    public ResponseEntity<Void> updateUserWizardCompleted(@PathVariable("organization_id") Long organizationId) {
+        userWizardService.updateUserWizardCompleted(organizationId, UserWizardStepEnum.OPEN_SPRINT.value());
+        return Results.success();
+    }
 }

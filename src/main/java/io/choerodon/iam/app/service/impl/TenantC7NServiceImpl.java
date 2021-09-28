@@ -44,6 +44,7 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
+import io.choerodon.iam.app.service.UserWizardService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -106,6 +107,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantMapper tenantMapper;
     @Autowired
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
+    @Autowired
+    private UserWizardService userWizardService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -448,7 +451,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         defaultTenant.setEnabledFlag(1);
         defaultTenant.setEnableDataSecurity(0);
         initConfig(defaultTenant);
-        tenantService.createTenant(defaultTenant);
+        Tenant tenant = tenantService.createTenant(defaultTenant);
+        // 用户向导初始化
+        userWizardService.initUserWizardByTenantId(tenant.getTenantId());
         timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());
     }
 

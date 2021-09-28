@@ -59,6 +59,7 @@ import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.infra.enums.ProjectCategoryEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
+import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
@@ -143,6 +144,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Autowired
     @Lazy
     private ProjectCategoryC7nService projectCategoryC7nService;
+    @Autowired
+    private UserWizardService userWizardService;
 
     public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
                                              ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -222,7 +225,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
             } else {
                 user = userAssertHelper.queryAnonymousUser();
-                DetailsHelper.setCustomUserDetails(user.getId(),user.getLanguage());
+                DetailsHelper.setCustomUserDetails(user.getId(), user.getLanguage());
                 DetailsHelper.getUserDetails().setOrganizationId(user.getOrganizationId());
             }
             //创建项目成功发送webhook
@@ -239,6 +242,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         } catch (Exception e) {
             LOGGER.error("error.send.message", e);
         }
+        userWizardService.updateUserWizardCompleted(organizationId, UserWizardStepEnum.CREATE_PROJECT.value());
         return res;
     }
 

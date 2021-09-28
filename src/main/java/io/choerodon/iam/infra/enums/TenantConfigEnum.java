@@ -16,7 +16,8 @@ public enum TenantConfigEnum {
     IS_REGISTER("isRegister"),
     EMAIL_SUFFIX("emailSuffix"),
     IMAGE_URL("imageUrl"),
-    REMOTE_TOKEN_ENABLED("remoteTokenEnabled");
+    REMOTE_TOKEN_ENABLED("remoteTokenEnabled"),
+    USER_WIZARD("userWizard");
 
     private final String value;
 

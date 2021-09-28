@@ -30,7 +30,7 @@
 
     <select id="queryByTenantIdAndCode" resultType="io.choerodon.iam.infra.dto.UserWizardTenantDTO">
         SELECT
-            iuwt.`STATUS`
+            iuwt.*
         FROM
             IAM_USER_WIZARD_TENANT iuwt
                 JOIN IAM_USER_WIZARD iuw ON iuw.id = iuwt.WIZARD_ID

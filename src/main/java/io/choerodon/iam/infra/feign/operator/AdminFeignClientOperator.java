@@ -27,6 +27,8 @@ public class AdminFeignClientOperator {
     }
 
     public Boolean haveAgileModel() {
+        // todo 删除 scp
+        haveAgileModel = true;
         if (haveAgileModel == null) {
             haveAgileModel = listModels().contains("agile");
         }

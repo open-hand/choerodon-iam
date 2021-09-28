@@ -578,5 +578,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         token.setConfigValue("true");
         tenantConfigs.add(token);
         defaultTenant.setTenantConfigs(tenantConfigs);
+
+        TenantConfig userWizard = new TenantConfig();
+        userWizard.setConfigKey(TenantConfigEnum.USER_WIZARD.value());
+        userWizard.setConfigValue("true");
+        tenantConfigs.add(userWizard);
+        defaultTenant.setTenantConfigs(tenantConfigs);
     }
 }

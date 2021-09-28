@@ -51,6 +51,12 @@ public class UserWizardServiceImpl implements UserWizardService {
         if (!checkTenantOwner(organizationId)) {
             return null;
         }
+        // 判断组织是要需要向导
+        // 之前的旧组织不进行数据迁移，新组织加属性
+        TenantConfig config = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(organizationId, TenantConfigEnum.USER_WIZARD.value());
+        if (config == null) {
+            return null;
+        }
         // 判断是否已经完成 创建项目第一步
         if (checkCompletedFirstStep(organizationId)) {
             return null;
@@ -68,10 +74,15 @@ public class UserWizardServiceImpl implements UserWizardService {
         if (!checkTenantOwner(organizationId)) {
             return null;
         }
+        TenantConfig config = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(organizationId, TenantConfigEnum.USER_WIZARD.value());
+        if (config == null) {
+            return null;
+        }
         List<UserWizardStatusVO> list = userWizardTenantMapper.queryUserWizardStatusByOrgId(organizationId);
         // 如果不存在数据 进行初始化
         if (CollectionUtils.isEmpty(list)) {
             initUserWizardByTenantId(organizationId);
+            list = userWizardTenantMapper.queryUserWizardStatusByOrgId(organizationId);
         }
         // 判断是否已经完成 创建项目第一步
         // 没有完整不可点击第三步
@@ -98,7 +109,7 @@ public class UserWizardServiceImpl implements UserWizardService {
                 wizardTenantDTO.setTenantId(tenantId);
                 wizardTenantDTO.setWizardId(t.getId());
                 // 不存在则初始化
-                if (userWizardTenantMapper.selectOne(wizardTenantDTO) != null) {
+                if (userWizardTenantMapper.selectOne(wizardTenantDTO) == null) {
                     wizardTenantDTO.setStatus(UserWizardStatusEnum.UNCOMPLETED.value());
                     if (userWizardTenantMapper.insertSelective(wizardTenantDTO) != 1) {
                         throw new CommonException("error.insert.user.wizard.tenant");
@@ -148,6 +159,7 @@ public class UserWizardServiceImpl implements UserWizardService {
 
     /**
      * 查询第一步的状态
+     *
      * @param organizationId
      * @return
      */

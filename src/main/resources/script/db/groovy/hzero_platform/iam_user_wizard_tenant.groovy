@@ -16,5 +16,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user_wizard_tenant.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+        addUniqueConstraint(tableName: 'IAM_USER_WIZARD_TENANT', columnNames: 'WIZARD_ID,TENANT_ID', constraintName: 'UK_IAM_USER_WIZARD_TENANT_U1')
     }
 }

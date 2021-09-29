@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-
 import org.hzero.iam.domain.entity.TenantConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
@@ -58,10 +58,17 @@ public class TenantConfigConvertUtils {
                     case REMARK:
                         tenantConfigVO.setRemark(t.getConfigValue());
                         break;
+                    case VISITORS:
+                        Long visitors = 0L;
+                        if (!StringUtils.isEmpty(t.getConfigValue())) {
+                            visitors = TypeUtil.objToLong(t.getConfigValue());
+                        }
+                        tenantConfigVO.setVisitors(visitors);
+                        break;
                 }
             });
         } catch (Exception e) {
-            LOGGER.warn("Compatible dirty data:{}",e.getMessage());
+            LOGGER.warn("Compatible dirty data:{}", e.getMessage());
         }
         return tenantConfigVO;
     }

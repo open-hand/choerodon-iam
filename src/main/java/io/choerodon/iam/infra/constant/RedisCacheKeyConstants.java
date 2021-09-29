@@ -7,6 +7,7 @@ package io.choerodon.iam.infra.constant;
 public final class RedisCacheKeyConstants {
     private RedisCacheKeyConstants() {
     }
+
     private static final String KEY_PREFIX = "c7n-iam:";
 
     /**
@@ -27,4 +28,9 @@ public final class RedisCacheKeyConstants {
      * 是否正在修复菜单层级
      */
     public static final String FIX_MENU_LEVEL_PATH_FLAG = KEY_PREFIX + "fix_menu_level_path_flag";
+    /**
+     * 组织访问人数记录
+     */
+    public static final String TENANT_VISITORS_FORMAT = "tenant-visitors:%s";
+
 }

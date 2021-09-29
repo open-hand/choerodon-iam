@@ -27,6 +27,7 @@ import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -45,6 +46,7 @@ import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.OrganizationTypeEnum;
@@ -107,6 +109,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantMapper tenantMapper;
     @Autowired
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -242,6 +246,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                             .build());
                     TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
                     tenantVO.setTenantConfigVO(tenantConfigVO);
+                    // 设置 组织访问人数
+                    setVisitor(tenantVO.getTenantId(), tenantConfigVO);
                     // 只有平台类型
                     tenantConfigVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
                     if (tenantConfigVO.getUserId() != null) {
@@ -260,6 +266,22 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 }
         );
         return tenantVOPage;
+    }
+
+    /**
+     * 设置组织访问量
+     *
+     * @param tenantId
+     * @param tenantConfigVO
+     */
+    private void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO) {
+        String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
+        String redisVisitorsStr = stringRedisTemplate.opsForValue().get(key);
+        Long redisVisitors = 0L;
+        if (!StringUtils.isEmpty(redisVisitorsStr)) {
+            redisVisitors = TypeUtil.objToLong(redisVisitorsStr);
+        }
+        tenantConfigVO.setVisitors(redisVisitors + tenantConfigVO.getVisitors());
     }
 
     private List<TenantVO> fillTenant(List<TenantVO> content) {

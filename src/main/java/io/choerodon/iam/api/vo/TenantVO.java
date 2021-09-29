@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
@@ -49,6 +50,9 @@ public class TenantVO extends Tenant {
     @ApiModelProperty("事务实例id")
     @Encrypt
     private Long sagaInstanceId;
+    @ApiModelProperty("组织来源")
+    private String orgOrigin;
+
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;
@@ -144,5 +148,13 @@ public class TenantVO extends Tenant {
 
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
+    }
+
+    public String getOrgOrigin() {
+        return orgOrigin;
+    }
+
+    public void setOrgOrigin(String orgOrigin) {
+        this.orgOrigin = orgOrigin;
     }
 }

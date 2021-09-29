@@ -47,6 +47,7 @@ import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.OrganizationTypeEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
@@ -225,7 +226,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Override
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, isRegister));
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
@@ -241,6 +242,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                             .build());
                     TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
                     tenantVO.setTenantConfigVO(tenantConfigVO);
+                    // 只有平台类型
+                    tenantVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
                     if (tenantConfigVO.getUserId() != null) {
                         User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
                         if (user != null) {
@@ -249,13 +252,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                             tenantVO.setOwnerPhone(user.getPhone());
                             tenantVO.setOwnerLoginName(user.getLoginName());
                         }
-                    }
-                    //如果是注册组织，并且已经过期，则显示延期的按钮
-                    if (Objects.isNull(tenantConfigVO)) {
-                        return;
-                    }
-                    if (BooleanUtils.isTrue(tenantConfigVO.getRegister()) && LocalDateTime.now().minusDays(PROBATION_TIME).isAfter(tenantVO.getCreationDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) {
-                        tenantVO.setDelay(true);
                     }
                     //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
                     tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));

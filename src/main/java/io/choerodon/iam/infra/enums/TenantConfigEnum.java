@@ -18,6 +18,10 @@ public enum TenantConfigEnum {
     IMAGE_URL("imageUrl"),
     REMOTE_TOKEN_ENABLED("remoteTokenEnabled"),
     REMARK("remark"),
+    /**
+     * 组织访问量
+     */
+    VISITORS("visitors"),
     USER_WIZARD("userWizard");
 
     private final String value;

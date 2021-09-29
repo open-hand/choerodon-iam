@@ -43,6 +43,8 @@ public class TenantConfigVO {
     private String orgOrigin;
     @ApiModelProperty("备注")
     private String remark;
+    @ApiModelProperty("访问人数")
+    private Long visitors;
 
 
     public String getCategory() {
@@ -139,5 +141,13 @@ public class TenantConfigVO {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Long getVisitors() {
+        return visitors;
+    }
+
+    public void setVisitors(Long visitors) {
+        this.visitors = visitors;
     }
 }

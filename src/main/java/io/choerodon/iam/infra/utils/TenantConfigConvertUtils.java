@@ -142,6 +142,13 @@ public class TenantConfigConvertUtils {
             image.setTenantId(tenantId);
             tenantConfigs.add(image);
         }
+        if (!Objects.isNull(tenantConfigVO.getRemark())) {
+            TenantConfig remark = new TenantConfig();
+            remark.setConfigKey(TenantConfigEnum.REMARK.value());
+            remark.setConfigValue(tenantConfigVO.getRemark());
+            remark.setTenantId(tenantId);
+            tenantConfigs.add(remark);
+        }
         return tenantConfigs;
     }
 }

@@ -31,7 +31,7 @@ public class TenantConfigVO {
     private String emailSuffix;
 
     @ApiModelProperty(value = "是否是注册组织")
-    private Boolean isRegister ;
+    private Boolean isRegister;
 
 
     @ApiModelProperty(value = "远程令牌连接功能是否开启，默认为true")
@@ -41,6 +41,8 @@ public class TenantConfigVO {
     private String category;
     @ApiModelProperty("组织来源")
     private String orgOrigin;
+    @ApiModelProperty("备注")
+    private String remark;
 
 
     public String getCategory() {
@@ -129,5 +131,13 @@ public class TenantConfigVO {
 
     public void setOrgOrigin(String orgOrigin) {
         this.orgOrigin = orgOrigin;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

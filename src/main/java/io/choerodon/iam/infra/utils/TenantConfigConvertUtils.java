@@ -55,6 +55,9 @@ public class TenantConfigConvertUtils {
                     case CATEGORY:
                         tenantConfigVO.setCategory(t.getConfigValue());
                         break;
+                    case REMARK:
+                        tenantConfigVO.setRemark(t.getConfigValue());
+                        break;
                 }
             });
         } catch (Exception e) {

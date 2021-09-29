@@ -17,6 +17,7 @@ public enum TenantConfigEnum {
     EMAIL_SUFFIX("emailSuffix"),
     IMAGE_URL("imageUrl"),
     REMOTE_TOKEN_ENABLED("remoteTokenEnabled"),
+    REMARK("remark"),
     USER_WIZARD("userWizard");
 
     private final String value;

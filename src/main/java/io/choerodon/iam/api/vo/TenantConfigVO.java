@@ -39,6 +39,9 @@ public class TenantConfigVO {
 
     @ApiModelProperty(value = "组织类别")
     private String category;
+    @ApiModelProperty("组织来源")
+    private String orgOrigin;
+
 
     public String getCategory() {
         return category;
@@ -118,5 +121,13 @@ public class TenantConfigVO {
 
     public void setEmailSuffix(String emailSuffix) {
         this.emailSuffix = emailSuffix;
+    }
+
+    public String getOrgOrigin() {
+        return orgOrigin;
+    }
+
+    public void setOrgOrigin(String orgOrigin) {
+        this.orgOrigin = orgOrigin;
     }
 }

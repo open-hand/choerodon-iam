@@ -243,7 +243,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                     TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
                     tenantVO.setTenantConfigVO(tenantConfigVO);
                     // 只有平台类型
-                    tenantVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
+                    tenantConfigVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
                     if (tenantConfigVO.getUserId() != null) {
                         User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
                         if (user != null) {

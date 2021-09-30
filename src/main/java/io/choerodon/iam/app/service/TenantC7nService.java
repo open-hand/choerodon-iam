@@ -9,6 +9,7 @@ import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
+import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -27,6 +28,8 @@ public interface TenantC7nService {
     TenantVO queryTenantWithRoleById(Long tenantId);
 
     Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String orgOrigin);
+
+    void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO);
 
     Page<TenantVO> getAllTenants(PageRequest pageable);
 

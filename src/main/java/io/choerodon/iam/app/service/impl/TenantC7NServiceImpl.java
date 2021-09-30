@@ -274,7 +274,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
      * @param tenantId
      * @param tenantConfigVO
      */
-    private void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO) {
+    @Override
+    public void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO) {
         String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
         String redisVisitorsStr = stringRedisTemplate.opsForValue().get(key);
         Long redisVisitors = 0L;

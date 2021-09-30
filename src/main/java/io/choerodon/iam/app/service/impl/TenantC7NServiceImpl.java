@@ -282,7 +282,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         if (!StringUtils.isEmpty(redisVisitorsStr)) {
             redisVisitors = TypeUtil.objToLong(redisVisitorsStr);
         }
-        tenantConfigVO.setVisitors(redisVisitors + tenantConfigVO.getVisitors());
+        if (tenantConfigVO.getVisitors() == null) {
+            tenantConfigVO.setVisitors(redisVisitors);
+        } else {
+            tenantConfigVO.setVisitors(redisVisitors + tenantConfigVO.getVisitors());
+        }
     }
 
     private List<TenantVO> fillTenant(List<TenantVO> content) {

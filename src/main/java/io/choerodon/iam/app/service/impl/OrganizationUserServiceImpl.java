@@ -222,6 +222,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         User result = userService.createUserInternal(user);
         sendMessageInterceptor.interceptor(user);
         sendUserCreationSaga(fromUserId, result, userRoles, ResourceLevel.ORGANIZATION.value(), result.getOrganizationId());
+        //开源版本直接发送
+        messageSendService.sendSiteCreateUser(result);
         return result;
     }
 

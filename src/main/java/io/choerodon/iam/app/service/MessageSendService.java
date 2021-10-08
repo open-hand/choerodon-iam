@@ -90,4 +90,11 @@ public interface MessageSendService {
      * @param userId
      */
     void sendProjectAddUserMsg(ProjectDTO projectDTO, Map<String, String> params, String projectAddUser, Long userId);
+
+    /**
+     * 平台层创建用户发送邮件
+     * @param dbUser
+     */
+    void sendSiteCreateUser(User dbUser);
+
 }

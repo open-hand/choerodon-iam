@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.impl.UserServiceImpl;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -13,6 +14,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import io.choerodon.iam.app.service.MessageSendService;
 
 /**
  * @author scp
@@ -33,6 +36,8 @@ public class C7nUserServiceImpl extends UserServiceImpl {
     private UserRepository userRepository;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private MessageSendService messageSendService;
 
 
     /**
@@ -76,5 +81,22 @@ public class C7nUserServiceImpl extends UserServiceImpl {
             user.unfrozen();
             userRepository.updateOptional(user, User.FIELD_ENABLED, User.FIELD_PHONE);
         }
+    }
+
+    /**
+     * 重写hzero创建用户的方法，仅处理平台层
+     *
+     * @param user
+     * @return
+     */
+    @Override
+    public User createUser(User user) {
+        User dbUser = super.createUser(user);
+        //发送邮件通知，用户创建成功
+        if (user.getOrganizationId() == BaseConstants.DEFAULT_TENANT_ID){
+            messageSendService.sendSiteCreateUser(dbUser);
+        }
+        return dbUser;
+
     }
 }

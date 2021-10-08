@@ -12,8 +12,11 @@ import java.util.stream.Collectors;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +25,20 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.SysSettingVO;
 import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.SystemSettingC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.constant.MessageCodeConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.TenantC7nMapper;
+import io.choerodon.iam.infra.utils.StringUtil;
 
 @Service
 public class MessageSendServiceImpl implements MessageSendService {
@@ -56,6 +63,10 @@ public class MessageSendServiceImpl implements MessageSendService {
 
     @Autowired
     private TenantC7nMapper tenantC7nMapper;
+    @Autowired
+    private SystemSettingC7nService systemSettingC7nService;
+    @Autowired
+    private PasswordPolicyRepository passwordPolicyRepository;
 
     @Override
     @Async
@@ -447,6 +458,51 @@ public class MessageSendServiceImpl implements MessageSendService {
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>send Project Add User Msg projectDTO: {},params:{},projectAddUser:{} userId:{}", JSON.toJSONString(projectDTO), params, projectAddUser, userId);
+        }
+    }
+
+    @Override
+    public void sendSiteCreateUser(User dbUser) {
+        try {
+            MessageSender messageSender = new MessageSender();
+            messageSender.setMessageCode("SITE_CREATE_USER");
+            // 默认为0L,都填0L,可不填写
+            messageSender.setTenantId(0L);
+
+            List<Receiver> receiverList = new ArrayList<>();
+            Receiver receiver = new Receiver();
+            receiver.setUserId(dbUser.getId());
+            // 发送邮件消息时 必填
+            receiver.setEmail(dbUser.getEmail());
+            // 必填
+            receiver.setTargetUserTenantId(dbUser.getOrganizationId());
+            receiverList.add(receiver);
+            Map<String, String> params = new HashMap<>();
+            SysSettingVO sysSettingVO = systemSettingC7nService.getSetting();
+            if (dbUser.getOrganizationId() == BaseConstants.DEFAULT_TENANT_ID) {
+                params.put("sitePassword", sysSettingVO.getDefaultPassword());
+            } else {
+                PasswordPolicy passwordPolicy = passwordPolicyRepository.selectTenantPasswordPolicy(dbUser.getOrganizationId());
+                if (StringUtils.isEmpty(passwordPolicy.getOriginalPassword())) {
+                    params.put("sitePassword", sysSettingVO.getDefaultPassword());
+                } else {
+                    params.put("sitePassword", passwordPolicy.getOriginalPassword());
+                }
+            }
+
+            params.put("email", dbUser.getEmail());
+
+            params.put("loginUrl", frontUrl);
+            messageSender.setArgs(params);
+            //额外参数，用于逻辑过滤 包括项目id，环境id，devops的消息事件
+            Map<String, Object> objectMap = new HashMap<>();
+            //发送组织层和项目层消息时必填 当前组织id
+            objectMap.put(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), dbUser.getOrganizationId());
+
+            messageSender.setAdditionalInformation(objectMap);
+            messageClient.async().sendMessage(messageSender);
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>Send Site Create User");
         }
     }
 }

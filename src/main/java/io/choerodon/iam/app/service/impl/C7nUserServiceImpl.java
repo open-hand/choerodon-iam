@@ -89,14 +89,14 @@ public class C7nUserServiceImpl extends UserServiceImpl {
      * @param user
      * @return
      */
-    @Override
-    public User createUser(User user) {
-        User dbUser = super.createUser(user);
-        //发送邮件通知，用户创建成功
-        if (user.getOrganizationId() == BaseConstants.DEFAULT_TENANT_ID){
-            messageSendService.sendSiteCreateUser(dbUser);
-        }
-        return dbUser;
-
-    }
+//    @Override
+//    public User createUser(User user) {
+//        User dbUser = super.createUser(user);
+//        //发送邮件通知，用户创建成功
+//        if (user.getOrganizationId() == BaseConstants.DEFAULT_TENANT_ID){
+//            messageSendService.sendSiteCreateUser(dbUser);
+//        }
+//        return dbUser;
+//
+//    }
 }

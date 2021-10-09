@@ -5,6 +5,7 @@ import org.hzero.core.interceptor.InterceptorChainConfigurer;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.service.user.interceptor.UserOperation;
 import org.hzero.iam.domain.service.user.interceptor.interceptors.LastHandlerInterceptor;
+import org.hzero.iam.domain.service.user.interceptor.interceptors.SendMessageInterceptor;
 import org.hzero.iam.domain.service.user.interceptor.interceptors.ValidationInterceptor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ public class C7nUserInterceptorChainConfigurer implements InterceptorChainConfig
                 .addInterceptorAfter(C7nUserEmailInterceptor.class, ValidationInterceptor.class)
                 .addInterceptorAfter(CheckCreateUserInterceptor.class, ValidationInterceptor.class)
                 .post()
+                .removeInterceptor(SendMessageInterceptor.class)
                 .addInterceptorBefore(SyncNameToPinyinInterceptor.class, LastHandlerInterceptor.class)
                 .addInterceptorAfter(GitlabUserInterceptor.class, LastHandlerInterceptor.class);
 

@@ -35,6 +35,8 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -173,8 +175,9 @@ public class TenantC7nController extends BaseController {
         headers.add("charset", "utf-8");
         //设置下载文件名
         String filename = null;
+        String date = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString();
         try {
-            filename = URLEncoder.encode("组织管理.xlsx", "UTF-8");
+            filename = URLEncoder.encode("组织管理-" + date + ".xlsx", "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new CommonException("error.encode.url");
         }

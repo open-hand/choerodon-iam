@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -645,7 +646,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         List<ExportTenantVO> exportTenantVOList = convertTenantVOToExportTenantVO(tenantVOList);
         try {
             XSSFWorkbook workbook = ExcelExportHelper.exportExcel2007(
-                    Collections.singletonList(new DataSheet("SAAS租户管理",
+                    Collections.singletonList(new DataSheet("组织管理",
                             exportTenantVOList,
                             ExportTenantVO.class,
                             getPropertyMap())));
@@ -666,6 +667,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     private List<ExportTenantVO> convertTenantVOToExportTenantVO(List<TenantVO> tenantVOList) {
         List<ExportTenantVO> exportTenantVOList = new ArrayList<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         tenantVOList.forEach(tenantVO -> {
             ExportTenantVO exportTenantVO = new ExportTenantVO();
             exportTenantVO.setTenantName(tenantVO.getTenantName());
@@ -679,8 +681,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             exportTenantVO.setUserCount(tenantVO.getUserCount());
             exportTenantVO.setVisitors(tenantVO.getTenantConfigVO().getVisitors());
             exportTenantVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
-            exportTenantVO.setCreationDate(ObjectUtils.isEmpty(tenantVO) ? null : toDate(tenantVO.getCreationDate()));
-            exportTenantVO.setEnabledFlag(tenantVO.getEnabledFlag());
+            exportTenantVO.setCreationDate(ObjectUtils.isEmpty(tenantVO) ? null : formatter.format(tenantVO.getCreationDate()));
+            exportTenantVO.setEnabledFlag(tenantVO.getEnabledFlag() == 1 ? "启用" : "停用");
             exportTenantVOList.add(exportTenantVO);
         });
         return exportTenantVOList;
@@ -702,9 +704,5 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         map.put("creationDate", "创建时间");
         map.put("enabledFlag", "状态");
         return map;
-    }
-
-    private String toDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString();
     }
 }

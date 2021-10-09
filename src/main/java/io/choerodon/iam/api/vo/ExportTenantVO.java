@@ -69,7 +69,7 @@ public class ExportTenantVO {
     /**
      * 状态
      */
-    private Integer enabledFlag;
+    private String enabledFlag;
 
     public String getTenantName() {
         return tenantName;
@@ -167,11 +167,11 @@ public class ExportTenantVO {
         this.creationDate = creationDate;
     }
 
-    public Integer getEnabledFlag() {
+    public String getEnabledFlag() {
         return enabledFlag;
     }
 
-    public void setEnabledFlag(Integer enabledFlag) {
+    public void setEnabledFlag(String enabledFlag) {
         this.enabledFlag = enabledFlag;
     }
 }

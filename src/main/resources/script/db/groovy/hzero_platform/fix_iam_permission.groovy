@@ -24,4 +24,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fix_iam_permission.groovy') {
     changeSet(author: 'scp', id: '2021-05-08-iam-user') {
         sql("UPDATE iam_user SET id=0 where login_name='ANONYMOUS'")
     }
+
+    changeSet(author: 'scp', id: '2021-10-09-iam-client-modify-column') {
+        sql("ALTER TABLE oauth_client MODIFY COLUMN `web_server_redirect_uri` text BINARY comment '授权重定向URL'")
+    }
 }

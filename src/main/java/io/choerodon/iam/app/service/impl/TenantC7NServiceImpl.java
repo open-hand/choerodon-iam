@@ -3,6 +3,10 @@ package io.choerodon.iam.app.service.impl;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -11,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
@@ -27,10 +32,13 @@ import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -38,6 +46,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.vo.ExportTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.api.vo.TenantConfigVO;
@@ -56,6 +65,8 @@ import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.utils.excel.ExcelExportHelper;
+import io.choerodon.iam.infra.utils.excel.domain.DataSheet;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -232,40 +243,47 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
         Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
+        setInfoToTenant(tenantVOPage.getContent(), refIds);
+        return tenantVOPage;
+    }
+
+    /**
+     * 设置tenantVO参数信息
+     */
+    private void setInfoToTenant(List<TenantVO> tenantVOList, List<String> refIds) {
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
             stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
         }
         Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
-        tenantVOPage.getContent().forEach(
-                tenantVO -> {
-                    List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
-                            .where(Sqls.custom()
-                                    .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantVO.getTenantId())
-                            )
-                            .build());
-                    TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
-                    tenantVO.setTenantConfigVO(tenantConfigVO);
-                    // 设置 组织访问人数
-                    setVisitor(tenantVO.getTenantId(), tenantConfigVO);
-                    // 只有平台类型
-                    tenantConfigVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
-                    if (tenantConfigVO.getUserId() != null) {
-                        User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
-                        if (user != null) {
-                            tenantVO.setOwnerRealName(user.getRealName());
-                            tenantVO.setOwnerEmail(user.getEmail());
-                            tenantVO.setOwnerPhone(user.getPhone());
-                            tenantVO.setOwnerLoginName(user.getLoginName());
-                        }
+        tenantVOList.forEach(
+            tenantVO -> {
+                List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
+                        .where(Sqls.custom()
+                                .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantVO.getTenantId())
+                        )
+                        .build());
+                TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
+                tenantVO.setTenantConfigVO(tenantConfigVO);
+                // 设置 组织访问人数
+                setVisitor(tenantVO.getTenantId(), tenantConfigVO);
+                // 只有平台类型
+                tenantConfigVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
+                if (tenantConfigVO.getUserId() != null) {
+                    User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
+                    if (user != null) {
+                        tenantVO.setOwnerRealName(user.getRealName());
+                        tenantVO.setOwnerEmail(user.getEmail());
+                        tenantVO.setOwnerPhone(user.getPhone());
+                        tenantVO.setOwnerLoginName(user.getLoginName());
                     }
-                    //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
-                    // 统计当前组织人数 组织人数+角色
-                    tenantVO.setUserCount(TypeUtil.objToInteger(tenantC7nMapper.queryCurrentUserNum(tenantVO.getTenantId())));
                 }
+                //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
+                tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                // 统计当前组织人数 组织人数+角色
+                tenantVO.setUserCount(TypeUtil.objToInteger(tenantC7nMapper.queryCurrentUserNum(tenantVO.getTenantId())));
+            }
         );
-        return tenantVOPage;
     }
 
     /**
@@ -356,6 +374,29 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Override
     public List<Tenant> queryTenants(Set<Long> tenantIds) {
         return tenantMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(tenantIds, ","));
+    }
+
+    @Override
+    public Resource exportTenant(Boolean isAll, List<Long> tenantIds) {
+        List<TenantVO> tenantVOList = tenantC7nMapper.fulltextSearch(null, null, null, null, null, null, null);
+        if (Boolean.FALSE.equals(isAll)) {
+            if (!org.springframework.util.CollectionUtils.isEmpty(tenantIds)) {
+                tenantVOList = tenantVOList.stream().filter(t -> tenantIds.contains(t.getTenantId())).collect(Collectors.toList());
+            } else {
+                tenantVOList.clear();
+            }
+        }
+        if (org.springframework.util.CollectionUtils.isEmpty(tenantVOList)) {
+            return null;
+        }
+        List<String> refIds = tenantVOList.stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
+        setInfoToTenant(tenantVOList, refIds);
+        try {
+            InputStream inputStream = writeInfoToInputStream(tenantVOList);
+            return new InputStreamResource(inputStream);
+        } catch (Exception e) {
+            throw new CommonException("error.export.saas.tenant", e);
+        }
     }
 
     @Override
@@ -596,5 +637,74 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         token.setConfigValue("true");
         tenantConfigs.add(token);
         defaultTenant.setTenantConfigs(tenantConfigs);
+    }
+
+    private InputStream writeInfoToInputStream(List<TenantVO> tenantVOList) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ByteArrayInputStream bis = null;
+        List<ExportTenantVO> exportTenantVOList = convertTenantVOToExportTenantVO(tenantVOList);
+        try {
+            XSSFWorkbook workbook = ExcelExportHelper.exportExcel2007(
+                    Collections.singletonList(new DataSheet("SAAS租户管理",
+                            exportTenantVOList,
+                            ExportTenantVO.class,
+                            getPropertyMap())));
+            workbook.write(bos);
+            bis = new ByteArrayInputStream(bos.toByteArray());
+            return bis;
+        } catch (Exception e) {
+            throw new CommonException("error.write.info.to.inputStream");
+        } finally {
+            if (bos != null) {
+                bos.close();
+            }
+            if (bis != null) {
+                bis.close();
+            }
+        }
+    }
+
+    private List<ExportTenantVO> convertTenantVOToExportTenantVO(List<TenantVO> tenantVOList) {
+        List<ExportTenantVO> exportTenantVOList = new ArrayList<>();
+        tenantVOList.forEach(tenantVO -> {
+            ExportTenantVO exportTenantVO = new ExportTenantVO();
+            exportTenantVO.setTenantName(tenantVO.getTenantName());
+            exportTenantVO.setTenantNum(tenantVO.getTenantNum());
+            exportTenantVO.setAddress(tenantVO.getTenantConfigVO().getAddress());
+            exportTenantVO.setOrgOrigin(tenantVO.getTenantConfigVO().getOrgOrigin());
+            exportTenantVO.setOwnerRealName(tenantVO.getOwnerRealName());
+            exportTenantVO.setOwnerEmail(tenantVO.getOwnerEmail());
+            exportTenantVO.setOwnerPhone(tenantVO.getOwnerPhone());
+            exportTenantVO.setProjectCount(tenantVO.getProjectCount());
+            exportTenantVO.setUserCount(tenantVO.getUserCount());
+            exportTenantVO.setVisitors(tenantVO.getTenantConfigVO().getVisitors());
+            exportTenantVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
+            exportTenantVO.setCreationDate(ObjectUtils.isEmpty(tenantVO) ? null : toDate(tenantVO.getCreationDate()));
+            exportTenantVO.setEnabledFlag(tenantVO.getEnabledFlag());
+            exportTenantVOList.add(exportTenantVO);
+        });
+        return exportTenantVOList;
+    }
+
+    private Map<String, String> getPropertyMap() {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("tenantName", "组织名称");
+        map.put("tenantNum", "组织编码");
+        map.put("address", "组织所在地");
+        map.put("orgOrigin", "组织来源");
+        map.put("ownerRealName", "组织所有者");
+        map.put("ownerEmail", "邮箱");
+        map.put("ownerPhone", "手机号码");
+        map.put("projectCount", "项目数量");
+        map.put("userCount", "用户数量");
+        map.put("visitors", "访问量");
+        map.put("homePage", "官网地址");
+        map.put("creationDate", "创建时间");
+        map.put("enabledFlag", "状态");
+        return map;
+    }
+
+    private String toDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString();
     }
 }

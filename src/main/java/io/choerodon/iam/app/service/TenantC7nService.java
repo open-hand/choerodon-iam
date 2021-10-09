@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.springframework.core.io.Resource;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
@@ -98,5 +99,7 @@ public interface TenantC7nService {
     Page<User> pagingQueryUsersOnOrganizationAgile(Long id, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
+
+    Resource exportTenant(Boolean isAll, List<Long> tenantIds);
 
 }

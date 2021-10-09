@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -23,12 +24,17 @@ import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Set;
 
@@ -153,6 +159,30 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) String params,
                                                       @RequestParam(required = false) String orgOrigin) {
         return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "导出组织管理")
+    @PostMapping("/export_tenant")
+    public ResponseEntity<Resource> exportTenant(@RequestParam(value = "isAll", defaultValue = "true") Boolean isAll,
+                                                       @RequestBody @Encrypt List<Long> tenantIds) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("charset", "utf-8");
+        //设置下载文件名
+        String filename = null;
+        try {
+            filename = URLEncoder.encode("组织管理.xlsx", "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new CommonException("error.encode.url");
+        }
+        headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+
+        Resource resource = tenantC7nService.exportTenant(isAll, tenantIds);
+        //excel2007
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})

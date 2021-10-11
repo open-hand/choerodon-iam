@@ -1,5 +1,9 @@
 package io.choerodon.iam.app.service;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -43,6 +47,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     private TenantConfigMapper tenantConfigMapper;
     @Autowired
     private TenantConfigC7nMapper tenantConfigC7nMapper;
+    private Map<Long, Long> tenantIdsMap = new HashMap<>();
 
     @Override
     public void storeUserTenant(Long tenantId) {
@@ -58,22 +63,26 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
 
     /**
      * 记录访问人数
+     *
      * @param tenantId
      */
     public void updateVisitors(Long tenantId) {
-        String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
-        String visitorsStr = stringRedisTemplate.opsForValue().get(key);
-        Integer visitors = 0;
-        if (!StringUtils.isEmpty(visitorsStr)) {
-            visitors = TypeUtil.objToInteger(visitorsStr);
+        tenantIdsMap.put(tenantId, tenantId);
+        synchronized (tenantIdsMap.get(tenantId)) {
+            String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
+            String visitorsStr = stringRedisTemplate.opsForValue().get(key);
+            Integer visitors = 0;
+            if (!StringUtils.isEmpty(visitorsStr)) {
+                visitors = TypeUtil.objToInteger(visitorsStr);
+            }
+            visitors = visitors + 1;
+            // 缓存超过100人存数据库
+            if (visitors >= 100) {
+                updateVisitorsForConfig(tenantId, visitors);
+                visitors = 0;
+            }
+            stringRedisTemplate.opsForValue().set(key, visitors.toString());
         }
-        visitors = visitors + 1;
-        // 缓存超过100人存数据库
-        if (visitors >= 100) {
-            updateVisitorsForConfig(tenantId, visitors);
-            visitors = 0;
-        }
-        stringRedisTemplate.opsForValue().set(key, visitors.toString());
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -65,7 +65,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
      * @param tenantId
      */
     public void updateVisitors(Long tenantId) {
-        tenantObjects.put(tenantId, new Object());
+        tenantObjects.computeIfAbsent(tenantId, k -> new Object());
         synchronized (tenantObjects.get(tenantId)) {
             String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
             String visitorsStr = stringRedisTemplate.opsForValue().get(key);

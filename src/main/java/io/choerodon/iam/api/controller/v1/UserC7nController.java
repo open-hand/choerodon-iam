@@ -191,7 +191,7 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.queryProjectsOfDevopsOrOperations(projectName, pageRequest));
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity<Void> checkUserInfo(@RequestBody User user) {
@@ -511,14 +511,14 @@ public class UserC7nController extends BaseController {
     }
 
     @ApiOperation(value = "查询用户是不是平台管理员")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/is_site_administrator")
     public ResponseEntity<Boolean> platformAdministrator() {
         return ResponseEntity.ok(userC7nService.platformAdministrator());
     }
 
     @ApiOperation(value = "查询用户是不是平台管理员")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/admin/org/list")
     public ResponseEntity<List<Tenant>> adminOrgList() {
         return ResponseEntity.ok(userC7nService.adminOrgList());

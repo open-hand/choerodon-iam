@@ -167,7 +167,7 @@ public class TenantC7nController extends BaseController {
     @ApiOperation(value = "导出组织管理")
     @PostMapping("/export_tenant")
     public ResponseEntity<Resource> exportTenant(@RequestParam(value = "isAll", defaultValue = "true") Boolean isAll,
-                                                       @RequestBody @Encrypt List<Long> tenantIds) {
+                                                       @RequestBody List<Long> tenantIds) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");

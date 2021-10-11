@@ -1,9 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -47,7 +45,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     private TenantConfigMapper tenantConfigMapper;
     @Autowired
     private TenantConfigC7nMapper tenantConfigC7nMapper;
-    private Map<Long, Long> tenantIdsMap = new HashMap<>();
+    private Map<Long, Object> tenantObjects = new HashMap<>();
 
     @Override
     public void storeUserTenant(Long tenantId) {
@@ -67,8 +65,8 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
      * @param tenantId
      */
     public void updateVisitors(Long tenantId) {
-        tenantIdsMap.put(tenantId, tenantId);
-        synchronized (tenantIdsMap.get(tenantId)) {
+        tenantObjects.put(tenantId, new Object());
+        synchronized (tenantObjects.get(tenantId)) {
             String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
             String visitorsStr = stringRedisTemplate.opsForValue().get(key);
             Integer visitors = 0;

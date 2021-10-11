@@ -20,7 +20,6 @@
     <service name="hzero_monitor" filename="hzero_monitor" schema="hzero_monitor" description="监控审计服务"/>
 
     <exclusion>
-        iam_user,iam_sys_setting,oauth_ldap,hpfm_tenant,
-        hmsg_email_server
+        iam_user,iam_sys_setting,oauth_ldap,hpfm_tenant,hmsg_email_server
     </exclusion>
 </services>

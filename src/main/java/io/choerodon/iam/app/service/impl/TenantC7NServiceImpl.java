@@ -244,17 +244,19 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
         Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-        setInfoToTenant(tenantVOPage.getContent(), refIds);
+        setInfoToTenant(tenantVOPage.getContent(), refIds, false);
         return tenantVOPage;
     }
 
     /**
      * 设置tenantVO参数信息
      */
-    private void setInfoToTenant(List<TenantVO> tenantVOList, List<String> refIds) {
+    private void setInfoToTenant(List<TenantVO> tenantVOList, List<String> refIds, Boolean isExport) {
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
-        if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
-            stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
+        if (Boolean.FALSE.equals(isExport)) {
+            if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
+                stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
+            }
         }
         Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
         tenantVOList.forEach(
@@ -279,8 +281,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                         tenantVO.setOwnerLoginName(user.getLoginName());
                     }
                 }
-                //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-                tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                if (Boolean.FALSE.equals(isExport)) {
+                    //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
+                    tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
+                }
                 // 统计当前组织人数 组织人数+角色
                 tenantVO.setUserCount(TypeUtil.objToInteger(tenantC7nMapper.queryCurrentUserNum(tenantVO.getTenantId())));
             }
@@ -391,7 +395,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             return null;
         }
         List<String> refIds = tenantVOList.stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-        setInfoToTenant(tenantVOList, refIds);
+        setInfoToTenant(tenantVOList, refIds, true);
         try {
             InputStream inputStream = writeInfoToInputStream(tenantVOList);
             return new InputStreamResource(inputStream);

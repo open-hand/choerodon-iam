@@ -3,21 +3,20 @@ package io.choerodon.iam.app.service.impl;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -31,11 +30,12 @@ import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -47,6 +47,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ExportTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
@@ -59,6 +60,8 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.enums.EnableFlagEnum;
 import io.choerodon.iam.infra.enums.OrganizationTypeEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
@@ -84,6 +87,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private static final String REF_TYPE = "createOrg";
     private static final String ORG_CREATE = "org-create-organization";
     private static final String NAME_REGULAR_EXPRESSION = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
+    public static final String TENANT = "tenant";
+    public static final String EXCEL_NAME = "组织管理-%s.xlsx";
+    public static final String SHEET_NAME = "组织管理";
+    public static final String BUCKET_NAME = "export-tenant";
+    private static final Logger LOGGER = LoggerFactory.getLogger(TenantC7NServiceImpl.class);
 
 
     @Autowired
@@ -123,6 +131,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private UploadHistoryMapper uploadHistoryMapper;
+    @Autowired
+    private FileClient fileClient;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -382,27 +394,38 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Resource exportTenant(Boolean isAll, List<Long> tenantIds) {
-        List<TenantVO> tenantVOList = tenantC7nMapper.fulltextSearch(null, null, null, null, null, null, null);
-        if (Boolean.FALSE.equals(isAll)) {
-            if (!org.springframework.util.CollectionUtils.isEmpty(tenantIds)) {
-                tenantVOList = tenantVOList.stream().filter(t -> tenantIds.contains(t.getTenantId())).collect(Collectors.toList());
-            } else {
-                tenantVOList.clear();
+    public void exportTenant(Boolean isAll, List<Long> tenantIds) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        generacionExeclAndUpdate(initUploadHistoryDTO(new UploadHistoryDTO(), userId), tenantIds, isAll);
+    }
+
+    @Async("excel-executor")
+    @Override
+    public void generacionExeclAndUpdate(UploadHistoryDTO uploadHistoryDTO, List<Long> tenantIds, Boolean isAll) {
+        List<TenantVO> tenantVOList = getTenantVOList(isAll, tenantIds);
+        if (!CollectionUtils.isEmpty(tenantVOList)) {
+            List<ExportTenantVO> exportTenantVOList = convertTenantVOToExportTenantVO(tenantVOList);
+            if (!CollectionUtils.isEmpty(exportTenantVOList)) {
+                Map<String, String> propertyMap = getPropertyMap();
+                DataSheet dataSheet = new DataSheet(SHEET_NAME, exportTenantVOList, ExportTenantVO.class, propertyMap);
+                try (XSSFWorkbook sheets = ExcelExportHelper.exportExcel2007(Collections.singletonList(dataSheet))) {
+                    String date = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString();
+                    String url = upload(sheets, String.format(String.format(EXCEL_NAME, date), date));
+                    uploadHistoryDTO.setSuccessfulCount(0);
+                    uploadHistoryDTO.setFailedCount(0);
+                    uploadHistoryDTO.setUrl(url);
+                    uploadHistoryDTO.setEndTime(new Date(System.currentTimeMillis()));
+                    uploadHistoryDTO.setFinished(Boolean.TRUE);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                if (uploadHistoryMapper.updateByPrimaryKeySelective(uploadHistoryDTO) != 1) {
+                    throw new CommonException("error.uploadHistory.update");
+                }
             }
         }
-        if (org.springframework.util.CollectionUtils.isEmpty(tenantVOList)) {
-            return null;
-        }
-        List<String> refIds = tenantVOList.stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-        setInfoToTenant(tenantVOList, refIds, true);
-        try {
-            InputStream inputStream = writeInfoToInputStream(tenantVOList);
-            return new InputStreamResource(inputStream);
-        } catch (Exception e) {
-            throw new CommonException("error.export.saas.tenant", e);
-        }
     }
+
 
     @Override
     public Page<Tenant> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageable) {
@@ -644,31 +667,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         defaultTenant.setTenantConfigs(tenantConfigs);
     }
 
-    private InputStream writeInfoToInputStream(List<TenantVO> tenantVOList) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ByteArrayInputStream bis = null;
-        List<ExportTenantVO> exportTenantVOList = convertTenantVOToExportTenantVO(tenantVOList);
-        try {
-            XSSFWorkbook workbook = ExcelExportHelper.exportExcel2007(
-                    Collections.singletonList(new DataSheet("组织管理",
-                            exportTenantVOList,
-                            ExportTenantVO.class,
-                            getPropertyMap())));
-            workbook.write(bos);
-            bis = new ByteArrayInputStream(bos.toByteArray());
-            return bis;
-        } catch (Exception e) {
-            throw new CommonException("error.write.info.to.inputStream");
-        } finally {
-            if (bos != null) {
-                bos.close();
-            }
-            if (bis != null) {
-                bis.close();
-            }
-        }
-    }
-
     private List<ExportTenantVO> convertTenantVOToExportTenantVO(List<TenantVO> tenantVOList) {
         List<ExportTenantVO> exportTenantVOList = new ArrayList<>();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -686,7 +684,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             exportTenantVO.setVisitors(tenantVO.getTenantConfigVO().getVisitors());
             exportTenantVO.setHomePage(tenantVO.getTenantConfigVO().getHomePage());
             exportTenantVO.setCreationDate(ObjectUtils.isEmpty(tenantVO) ? null : formatter.format(tenantVO.getCreationDate()));
-            exportTenantVO.setEnabledFlag(tenantVO.getEnabledFlag() == 1 ? "启用" : "停用");
+            exportTenantVO.setEnabledFlag(tenantVO.getEnabledFlag() == null ? null : EnableFlagEnum.forEnableFlag(tenantVO.getEnabledFlag()).getStatus());
             exportTenantVOList.add(exportTenantVO);
         });
         return exportTenantVOList;
@@ -709,4 +707,59 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         map.put("enabledFlag", "状态");
         return map;
     }
+
+    private UploadHistoryDTO initUploadHistoryDTO(UploadHistoryDTO uploadHistoryDTO, Long userId) {
+        uploadHistoryDTO.setBeginTime(new Date(System.currentTimeMillis()));
+        uploadHistoryDTO.setType(TENANT);
+        uploadHistoryDTO.setUserId(userId);
+        uploadHistoryDTO.setSourceId(BaseConstants.DEFAULT_TENANT_ID);
+        uploadHistoryDTO.setFinished(Boolean.FALSE);
+        uploadHistoryDTO.setSourceType(ResourceLevel.ORGANIZATION.value());
+        if (uploadHistoryMapper.insertSelective(uploadHistoryDTO) != 1) {
+            throw new CommonException("error.uploadHistory.insert");
+        }
+        return uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDTO);
+    }
+
+    private List<TenantVO> getTenantVOList(Boolean isAll, List<Long> tenantIds) {
+        List<TenantVO> tenantVOList = tenantC7nMapper.fulltextSearch(null, null, null, null, null, null, null);
+        if (Boolean.FALSE.equals(isAll)) {
+            if (!org.springframework.util.CollectionUtils.isEmpty(tenantIds)) {
+                tenantVOList = tenantVOList.stream().filter(t -> tenantIds.contains(t.getTenantId())).collect(Collectors.toList());
+            } else {
+                tenantVOList.clear();
+            }
+        }
+        if (org.springframework.util.CollectionUtils.isEmpty(tenantVOList)) {
+            return Collections.emptyList();
+        }
+        List<String> refIds = tenantVOList.stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
+        setInfoToTenant(tenantVOList, refIds, true);
+        return tenantVOList;
+    }
+
+    private String upload(XSSFWorkbook xssfWorkbook, String originalFilename) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        String url;
+        try {
+            xssfWorkbook.write(bos);
+            MockMultipartFile multipartFile =
+                    new MockMultipartFile("file", originalFilename, "application/vnd.ms-excel", bos.toByteArray());
+            url = fileClient.uploadFile(0L, BUCKET_NAME, null, multipartFile);
+        } catch (IOException e) {
+            LOGGER.error("XSSFWorkbook to ByteArrayOutputStream failed, exception: {}", e.getMessage());
+            throw new CommonException("error.byteArrayOutputStream", e);
+        } catch (Exception e) {
+            LOGGER.error("feign invoke exception : {}", e.getMessage());
+            throw new CommonException("error.feign.invoke", e);
+        } finally {
+            try {
+                bos.close();
+            } catch (IOException e) {
+                LOGGER.info("byteArrayOutputStream close failed, exception: {}", e.getMessage());
+            }
+        }
+        return url;
+    }
+
 }

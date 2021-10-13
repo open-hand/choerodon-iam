@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
+import static io.choerodon.iam.app.service.impl.TenantC7NServiceImpl.TENANT;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -11,7 +12,9 @@ import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.DemoRegisterService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
+import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -20,23 +23,17 @@ import io.choerodon.swagger.annotation.Permission;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -53,13 +50,16 @@ public class TenantC7nController extends BaseController {
     private TenantC7nService tenantC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;
     private DemoRegisterService demoRegisterService;
+    private UploadHistoryService uploadHistoryService;
 
     public TenantC7nController(TenantC7nService tenantC7nService,
                                DemoRegisterService demoRegisterService,
-                               OrganizationResourceLimitService organizationResourceLimitService) {
+                               OrganizationResourceLimitService organizationResourceLimitService,
+                               UploadHistoryService uploadHistoryService) {
         this.tenantC7nService = tenantC7nService;
         this.demoRegisterService = demoRegisterService;
         this.organizationResourceLimitService = organizationResourceLimitService;
+        this.uploadHistoryService = uploadHistoryService;
     }
 
     @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")
@@ -163,30 +163,28 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin), HttpStatus.OK);
     }
 
+    /**
+     * 导出组织管理
+     *
+     * @return
+     */
+    @ApiOperation("导出组织管理")
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "导出组织管理")
-    @PostMapping("/export_tenant")
-    public ResponseEntity<Resource> exportTenant(@RequestParam(value = "isAll", defaultValue = "true") Boolean isAll,
-                                                       @RequestBody List<Long> tenantIds) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-        headers.add("Pragma", "no-cache");
-        headers.add("Expires", "0");
-        headers.add("charset", "utf-8");
-        //设置下载文件名
-        String filename = null;
-        String date = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString();
-        try {
-            filename = URLEncoder.encode("组织管理-" + date + ".xlsx", "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new CommonException("error.encode.url");
-        }
-        headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
-
-        Resource resource = tenantC7nService.exportTenant(isAll, tenantIds);
-        //excel2007
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
+    @PostMapping(value = "/export/tenant")
+    @CustomPageRequest
+    public ResponseEntity<Void> exportTenant(@RequestParam(value = "isAll", defaultValue = "true") Boolean isAll,
+                                             @RequestBody List<Long> tenantIds) {
+        tenantC7nService.exportTenant(isAll, tenantIds);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("查询最新的导出组织管理的历史")
+    @GetMapping("/export/upload/{user_id}/history")
+    public ResponseEntity<UploadHistoryDTO> latestHistory(@Encrypt @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, TENANT, BaseConstants.DEFAULT_TENANT_ID, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")

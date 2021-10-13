@@ -12,6 +12,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -100,6 +101,19 @@ public interface TenantC7nService {
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
 
-    Resource exportTenant(Boolean isAll, List<Long> tenantIds);
+    /**
+     * 导出组织管理
+     * @param isAll
+     * @param tenantIds
+     */
+    void exportTenant(Boolean isAll, List<Long> tenantIds);
+
+    /**
+     * 查询最新的导出组织管理的历史
+     * @param uploadHistoryDTO
+     * @param tenantIds
+     * @param isAll
+     */
+    void generacionExeclAndUpdate(UploadHistoryDTO uploadHistoryDTO, List<Long> tenantIds, Boolean isAll);
 
 }

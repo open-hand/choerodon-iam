@@ -6,13 +6,11 @@ import java.util.Set;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
-import org.springframework.core.io.Resource;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -100,20 +98,5 @@ public interface TenantC7nService {
     Page<User> pagingQueryUsersOnOrganizationAgile(Long id, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
-
-    /**
-     * 导出组织管理
-     * @param isAll
-     * @param tenantIds
-     */
-    void exportTenant(Boolean isAll, List<Long> tenantIds);
-
-    /**
-     * 查询最新的导出组织管理的历史
-     * @param uploadHistoryDTO
-     * @param tenantIds
-     * @param isAll
-     */
-    void generacionExeclAndUpdate(UploadHistoryDTO uploadHistoryDTO, List<Long> tenantIds, Boolean isAll);
 
 }

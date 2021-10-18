@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -632,15 +633,37 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         int size = pageRequest.getSize();
         boolean doPage = (size != 0);
         String sortString = pageRequest.getSort() == null ? null : getSortStringForPageQuery(pageRequest.getSort());
+        Page<ProjectDTO> result;
         if (doPage) {
-            return PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
-
+            result = PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
         } else {
-            Page<ProjectDTO> result = new Page<>();
+            result = new Page<>();
             result.getContent().addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
             result.setSize(result.size());
-            return result;
         }
+        addProjectCategories(result.getContent());
+        return result;
+    }
+
+    private void addProjectCategories(List<ProjectDTO> result) {
+        if (ObjectUtils.isEmpty(result)) {
+            return;
+        }
+        Set<Long> projectIds = result.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        List<ProjectMapCategoryVO> projectMapCategories = projectMapper.listProjectCategory(projectIds);
+        Map<Long, List<ProjectMapCategoryVO>> projectCategoryMap =
+                projectMapCategories
+                        .stream()
+                        .filter(v ->
+                                ProjectCategoryEnum.listNewCategories().contains(v.getProjectCategoryDTO().getCode()))
+                        .collect(Collectors.groupingBy(ProjectMapCategoryVO::getProjectId));
+        result.forEach(x -> {
+            List<ProjectMapCategoryVO> categories = projectCategoryMap.get(x.getId());
+            if (ObjectUtils.isEmpty(categories)) {
+                return;
+            }
+            x.setCategories(categories.stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList()));
+        });
     }
 
     @Override

@@ -1,7 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import static io.choerodon.iam.app.service.impl.TenantC7NServiceImpl.TENANT;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -14,7 +12,6 @@ import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -23,7 +20,6 @@ import io.choerodon.swagger.annotation.Permission;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
@@ -162,29 +158,6 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) String orgOrigin) {
         return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin), HttpStatus.OK);
     }
-
-    /**
-     * 导出组织管理
-     *
-     * @return
-     */
-    @ApiOperation("导出组织管理")
-    @Permission(level = ResourceLevel.SITE)
-    @PostMapping(value = "/export/tenant")
-    @CustomPageRequest
-    public ResponseEntity<Void> exportTenant(@RequestParam(value = "isAll", defaultValue = "true") Boolean isAll,
-                                             @RequestBody List<Long> tenantIds) {
-        tenantC7nService.exportTenant(isAll, tenantIds);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("查询最新的导出组织管理的历史")
-    @GetMapping("/export/upload/{user_id}/history")
-    public ResponseEntity<UploadHistoryDTO> latestHistory(@Encrypt @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, TENANT, BaseConstants.DEFAULT_TENANT_ID, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
-    }
-
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")

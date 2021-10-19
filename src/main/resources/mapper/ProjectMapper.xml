@@ -320,7 +320,7 @@
                 </if>
                 <if test="projectDTO.category != null">
 <!--                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')-->
-                    fpc.CODE = #{projectDTO.category}
+                   AND fpc.CODE = #{projectDTO.category}
                 </if>
                 <if test="projectDTO.enabled != null">
                     AND fp.is_enabled = #{projectDTO.enabled}

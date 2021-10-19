@@ -48,7 +48,6 @@ public class IamCheckLogServiceImpl implements IamCheckLogService {
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
-        executorService.submit(new UpgradeTask(version),)
         executorService.execute(new UpgradeTask(version));
     }
 

@@ -62,6 +62,13 @@ public class UserSelfC7nController extends BaseController {
     }
 
     @Permission(permissionLogin = true)
+    @ApiOperation(value = "登录用户 - 查询")
+    @GetMapping(value = "/users/phone_bind")
+    public ResponseEntity<Boolean> selectUserPhoneBind() {
+        return Results.success(userC7nService.selectUserPhoneBind());
+    }
+
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "个人信息页面 - 查询个人信息")
     @GetMapping(value = "/users/personal")
     public ResponseEntity<UserDTO> queryPersonalInfo() {

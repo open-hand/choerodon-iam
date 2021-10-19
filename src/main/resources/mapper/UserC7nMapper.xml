@@ -1424,4 +1424,12 @@
             JOIN iam_member_role imr ON imr.member_id = iu.id
                                         AND imr.role_id = ir.id
     </select>
+
+    <select id="queryPhoneBind" resultType="java.lang.Boolean">
+         SELECT
+            iu.phone_bind
+        FROM
+            iam_user iu
+        where iu.id=#{userId}
+    </select>
 </mapper>

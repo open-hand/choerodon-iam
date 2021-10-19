@@ -363,4 +363,6 @@ public interface UserC7nService {
     List<Tenant> adminOrgList();
 
     List<User> listSiteAdministrator();
+
+    Boolean selectUserPhoneBind();
 }

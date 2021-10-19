@@ -449,5 +449,7 @@ public interface UserC7nMapper {
     List<Tenant> adminOrgList(@Param("userId") Long userId);
 
     List<User> listSiteAdministrator();
+
+    Boolean queryPhoneBind(@Param("userId") Long userId);
 }
 

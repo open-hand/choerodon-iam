@@ -1537,4 +1537,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     public List<User> listSiteAdministrator() {
         return userC7nMapper.listSiteAdministrator();
     }
+
+    @Override
+    public Boolean selectUserPhoneBind() {
+        return userC7nMapper.queryPhoneBind(DetailsHelper.getUserDetails().getUserId());
+    }
 }

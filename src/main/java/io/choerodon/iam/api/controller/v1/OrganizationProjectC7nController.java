@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.iam.api.dto.MenuSearchDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -214,6 +213,15 @@ public class OrganizationProjectC7nController extends BaseController {
                                                                             @PathVariable(name = "organization_id") Long organizationId,
                                                                             @RequestBody ProjectSearchVO projectSearchVO) {
         return new ResponseEntity<>(organizationProjectC7nService.listProjectsWithCategoryByOrgId(organizationId, projectSearchVO, pageRequest), HttpStatus.OK);
+    }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据项目类型，查询组织下项目列表")
+    @GetMapping(value = "/list_by_category")
+    public ResponseEntity<List<ProjectDTO>> listProjectsByCategory(@PathVariable(name = "organization_id") Long organizationId,
+                                                                   @RequestParam(name = "category_code") String categoryCode) {
+        return ResponseEntity.ok(organizationProjectC7nService.listProjectsByCategoryAndOrgId(organizationId, categoryCode));
     }
 
 }

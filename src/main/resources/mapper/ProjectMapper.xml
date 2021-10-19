@@ -752,4 +752,11 @@
         WHERE
             fp.ORGANIZATION_ID = #{tenantId}
     </select>
+    <select id="listProjectsByCategoryAndOrgId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT *
+        FROM fd_project fp
+        LEFT JOIN fd_project_map_category fpmc ON fp.id = fpmc.PROJECT_ID
+        LEFT JOIN fd_project_category fpc  ON fpc.ID = fpmc.CATEGORY_ID
+        WHERE fpc.CODE = #{categoryCode} and fp.ORGANIZATION_ID = #{organizationId}
+    </select>
 </mapper>

@@ -776,4 +776,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         Page<ProjectDTO> pageAndSort = PageHelper.doPageAndSort(pageRequest, () -> projectMapper.selectWithCategory(organizationId, projectSearchVO));
         return pageAndSort;
     }
+
+    @Override
+    public List<ProjectDTO> listProjectsByCategoryAndOrgId(Long organizationId, String categoryCode) {
+
+        return projectMapper.listProjectsByCategoryAndOrgId(organizationId, categoryCode);
+    }
 }

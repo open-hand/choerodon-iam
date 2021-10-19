@@ -216,7 +216,7 @@ public class OrganizationProjectC7nController extends BaseController {
     }
 
 
-    @Permission(permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据项目类型，查询组织下项目列表")
     @GetMapping(value = "/list_by_category")
     public ResponseEntity<List<ProjectDTO>> listProjectsByCategory(@PathVariable(name = "organization_id") Long organizationId,

@@ -226,8 +226,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String isRegister) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap), () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
+    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled,
+                                      String homePage, String params, String orgOrigin, String remark) {
+        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap),
+                () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
         List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
         setInfoToTenant(tenantVOPage.getContent(), refIds);
         return tenantVOPage;

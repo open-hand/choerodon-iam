@@ -1,5 +1,20 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+import javax.validation.Valid;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -17,21 +32,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai
@@ -155,8 +155,10 @@ public class TenantC7nController extends BaseController {
                                                       @RequestParam(required = false) Boolean enabledFlag,
                                                       @RequestParam(required = false) String homePage,
                                                       @RequestParam(required = false) String params,
-                                                      @RequestParam(required = false) String orgOrigin) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName, tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin), HttpStatus.OK);
+                                                      @RequestParam(required = false) String orgOrigin,
+                                                      @RequestParam(required = false) String remark) {
+        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName,
+                tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin, remark), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})

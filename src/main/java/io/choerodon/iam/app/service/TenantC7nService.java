@@ -27,7 +27,8 @@ public interface TenantC7nService {
 
     TenantVO queryTenantWithRoleById(Long tenantId);
 
-    Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled, String homePage, String params, String orgOrigin);
+    Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName,
+                               Boolean enabled, String homePage, String params, String orgOrigin, String remark);
 
     void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO);
 

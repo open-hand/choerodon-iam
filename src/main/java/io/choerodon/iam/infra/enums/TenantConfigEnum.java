@@ -22,7 +22,11 @@ public enum TenantConfigEnum {
      * 组织访问量
      */
     VISITORS("visitors"),
-    USER_WIZARD("userWizard");
+    USER_WIZARD("userWizard"),
+    /**
+     * 组织过期时间
+     */
+    DUE_TIME("dueTime");
 
     private final String value;
 

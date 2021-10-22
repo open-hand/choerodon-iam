@@ -22,10 +22,12 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.UserWizardService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
 
 /**
@@ -49,6 +51,9 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     private TenantMapper tenantMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    @Lazy
+    private UserWizardService userWizardService;
 
 
     @Override
@@ -62,10 +67,15 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                     Map<Long, Set<String>> userOldRoleLabelsMap = getUserOldRoleLabelsMap(sourceMemberList);
                     assignUsersRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap, userOldRoleLabelsMap);
                     sendTenantAssignMessage(sourceId, sourceMemberList, operatorId);
+                    sourceMemberList.forEach(memberRole ->
+                            userWizardService.updateUserWizardCompleted(memberRole.getUser().getOrganizationId(), UserWizardStepEnum.OPEN_SPRINT.value()));
                 });
             }
         } else if (isHzeroMemberSiteRole(memberRoleList)) {
             sendSiteAssignMessage(memberRoleList);
+        } else if (Boolean.TRUE.equals(isHzeroMemberProjectRole(memberRoleList))) {
+            memberRoleList.forEach(memberRole ->
+                    userWizardService.updateUserWizardCompleted(memberRole.getUser().getOrganizationId(), UserWizardStepEnum.CREATE_PROJECT.value()));
         }
     }
 
@@ -109,6 +119,15 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                 || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
                 && (memberRoleList.get(0).getMemberType() == null || memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
                 && (memberRoleList.get(0).getSourceType().contains(ResourceLevel.SITE.value()));
+    }
+
+    private Boolean isHzeroMemberProjectRole(List<MemberRole> memberRoleList) {
+        Map<String, Object> objectMap = memberRoleList.get(0).getAdditionalParams();
+        return (CollectionUtils.isEmpty(objectMap)
+                || ObjectUtils.isEmpty(objectMap.get(MemberRoleConstants.MEMBER_TYPE))
+                || !MemberRoleConstants.MEMBER_TYPE_CHOERODON.equals(objectMap.get(MemberRoleConstants.MEMBER_TYPE)))
+                && (memberRoleList.get(0).getMemberType() == null || memberRoleList.get(0).getMemberType().equals(MemberType.USER.value()))
+                && (StringUtils.isEmpty(memberRoleList.get(0).getSourceType()) || memberRoleList.get(0).getSourceType().contains(ResourceLevel.PROJECT.value()));
     }
 
     private Map<Long, Set<String>> getUserRoleLabelsMap(List<MemberRole> memberRoleList) {

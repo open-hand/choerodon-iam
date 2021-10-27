@@ -20,15 +20,17 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.UserWizardService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.iam.infra.mapper.LabelC7nMapper;
+import io.choerodon.iam.infra.mapper.TenantConfigC7nMapper;
+import io.choerodon.iam.infra.utils.TypeUtil;
 
 /**
  * @author scp
@@ -54,6 +56,8 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
     @Autowired
     @Lazy
     private UserWizardService userWizardService;
+    @Autowired
+    private TenantConfigC7nMapper tenantConfigC7nMapper;
 
 
     @Override
@@ -67,12 +71,13 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                     Map<Long, Set<String>> userOldRoleLabelsMap = getUserOldRoleLabelsMap(sourceMemberList);
                     assignUsersRolesEvent(sourceId, ResourceLevel.ORGANIZATION, userRoleLabelsMap, userOldRoleLabelsMap);
                     sendTenantAssignMessage(sourceId, sourceMemberList, operatorId);
-               });
+                });
             }
         } else if (isHzeroMemberSiteRole(memberRoleList)) {
             sendSiteAssignMessage(memberRoleList);
         }
-        memberRoleList.forEach(memberRole -> userWizardService.updateUserWizardCompleted(memberRole.getRole().getTenantId(), UserWizardStepEnum.CREATE_USER.value()));
+        // 用户指引完成状态更新
+        updateUserWizardStatus(memberRoleList);
     }
 
     @Override
@@ -96,6 +101,24 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
                     roleMemberService.deleteMemberRoleForSaga(userId, userMemberEventPayloads, ResourceLevel.ORGANIZATION, sourceId);
                 });
             });
+        }
+    }
+
+    /**
+     * 更新用户指引状态
+     * @param memberRoleList
+     */
+    private void updateUserWizardStatus(List<MemberRole> memberRoleList) {
+        // 用户指引完成状态更新
+        for (MemberRole memberRole : memberRoleList) {
+            // 跳过给自己分项目所有者的情况
+            if (memberRole.getMemberType() == null || memberRole.getMemberType().equals(MemberType.USER.value())) {
+                TenantConfig tenantConfig = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(memberRole.getRole().getTenantId(), TenantConfigEnum.USER_ID.value());
+                if (tenantConfig != null && memberRole.getMemberId().equals(TypeUtil.objToLong(tenantConfig.getConfigValue()))) {
+                    continue;
+                }
+                userWizardService.updateUserWizardCompleted(memberRole.getRole().getTenantId(), UserWizardStepEnum.CREATE_USER.value());
+            }
         }
     }
 

@@ -113,10 +113,6 @@ public class RoleAssignC7nObserver implements RoleAssignObserver {
         for (MemberRole memberRole : memberRoleList) {
             // 跳过给自己分项目所有者的情况
             if (memberRole.getMemberType() == null || memberRole.getMemberType().equals(MemberType.USER.value())) {
-                TenantConfig tenantConfig = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(memberRole.getRole().getTenantId(), TenantConfigEnum.USER_ID.value());
-                if (tenantConfig != null && memberRole.getMemberId().equals(TypeUtil.objToLong(tenantConfig.getConfigValue()))) {
-                    continue;
-                }
                 userWizardService.updateUserWizardCompleted(memberRole.getRole().getTenantId(), UserWizardStepEnum.CREATE_USER.value());
             }
         }

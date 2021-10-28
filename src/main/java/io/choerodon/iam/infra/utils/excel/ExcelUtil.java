@@ -423,8 +423,9 @@ public class ExcelUtil {
         Pattern p = Pattern.compile("^//d+(//.//d+)?$");
         Matcher matcher = p.matcher(cellValue);
 
-        //设置单元格宽度，是文字能够全部显示
-        sheet.setColumnWidth(column, (cellValue.length() + 6) * 256);
+        //设置单元格宽度，使文字能够全部显示，但是如果超出255 * 256，则取最大能显示的长度，即255 * 256
+        int width = (cellValue.length() + 6) * 256;
+        sheet.setColumnWidth(column, Math.min(width, 255 * 256));
         row.setHeightInPoints((short) (20));   //设置单元格高度
         if (matcher.matches()) {
             // 是数字当作double处理

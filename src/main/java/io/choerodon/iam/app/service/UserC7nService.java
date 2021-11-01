@@ -312,7 +312,7 @@ public interface UserC7nService {
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 
-    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed);
 
     int getDisableProjectByProjectMember(Long tenantId, Long userId);
 

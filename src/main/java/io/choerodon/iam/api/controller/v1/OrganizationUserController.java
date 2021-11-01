@@ -237,13 +237,14 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-                                                                   @RequestParam(value = "project_id",required = false) Long projectId,
+                                                                   @RequestParam(value = "project_id", required = false) Long projectId,
                                                                    @RequestParam(required = false) String name,
                                                                    @RequestParam(required = false) String code,
                                                                    @RequestParam(required = false) String category,
                                                                    @RequestParam(required = false) Boolean enabled,
                                                                    @RequestParam(required = false) Long createdBy,
-                                                                   @RequestParam(required = false) String params) {
+                                                                   @RequestParam(required = false) String params,
+                                                                   @RequestParam(required = false, defaultValue = "false") Boolean onlySucceed) {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setId(projectId);
         projectDTO.setName(name);
@@ -251,7 +252,7 @@ public class OrganizationUserController extends BaseController {
         projectDTO.setCategory(category);
         projectDTO.setEnabled(enabled);
         projectDTO.setCreatedBy(createdBy);
-        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable), HttpStatus.OK);
+        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable, onlySucceed), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})

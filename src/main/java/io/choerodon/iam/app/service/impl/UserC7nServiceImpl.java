@@ -1404,7 +1404,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed) {
         Page<ProjectDTO> page = new Page<>();
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
@@ -1441,6 +1441,12 @@ public class UserC7nServiceImpl implements UserC7nService {
             return new Page<>();
         }
         page.setContent(projectDTOS);
+        // 添加额外信息
+        addExtraInformation(projectDTOS, isAdmin, isOrgAdmin, organizationId, userId);
+        if (onlySucceed) {
+            List<ProjectDTO> dtos = projectDTOS.stream().filter(projectDTO1 -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO1.getProjectStatus(), ProjectStatusEnum.SUCCESS.value())).collect(Collectors.toList());
+            page.setContent(dtos);
+        }
         //TotalElements=page.getTotal-组织下停用且用户是项目成员角色的项目数量
         if (!isAdmin && !isOrgAdmin) {
             page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, currentUserId));
@@ -1452,9 +1458,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         } else {
             page.setTotalPages(1);
         }
-
-        // 添加额外信息
-        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
     }
 

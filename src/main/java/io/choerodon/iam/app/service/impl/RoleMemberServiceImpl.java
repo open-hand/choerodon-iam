@@ -36,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -265,7 +266,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public void batchDeleteOnProjectLevel(Long projectId, List<Long> userIds, Boolean syncAll) {
-        userIds.forEach(t -> deleteOnProjectLevel(projectId, t, syncAll));
+        RoleMemberService roleMemberService = ApplicationContextHelper.getBean(RoleMemberService.class);
+        userIds.forEach(t -> roleMemberService.deleteOnProjectLevel(projectId, t, syncAll));
     }
 
     @Override

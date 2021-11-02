@@ -2,10 +2,7 @@ package io.choerodon.iam.app.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +42,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     private TenantConfigMapper tenantConfigMapper;
     @Autowired
     private TenantConfigC7nMapper tenantConfigC7nMapper;
-    private Map<Long, Object> tenantObjects = new HashMap<>();
+    private final Map<Long, Object> tenantObjects = new ConcurrentHashMap<>();
 
     @Override
     public void storeUserTenant(Long tenantId) {

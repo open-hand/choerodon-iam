@@ -218,7 +218,7 @@ public class ProjectUserC7nController extends BaseController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层批量移除用户")
-    @PostMapping(value = "/{project_id}/users/{user_id}/role_members/batch_delete")
+    @PostMapping(value = "/{project_id}/users/role_members/batch_delete")
     public ResponseEntity<Void> batchDeleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                      @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                      @Encrypt @RequestBody List<Long> userIds) {

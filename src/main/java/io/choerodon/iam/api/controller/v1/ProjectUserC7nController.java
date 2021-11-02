@@ -214,6 +214,19 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     /**
+     * 在project层根据id删除角色
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层批量移除用户")
+    @PostMapping(value = "/{project_id}/users/{user_id}/role_members/batch_delete")
+    public ResponseEntity<Void> batchDeleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+                                                     @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                     @Encrypt @RequestBody List<Long> userIds) {
+        roleMemberService.batchDeleteOnProjectLevel(sourceId, userIds, syncAll);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
      * 统计项目下活跃成员
      *
      * @param projectId   项目id

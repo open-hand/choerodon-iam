@@ -263,6 +263,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         mgsDeleteUserRoles(projectId, userId);
     }
 
+    @Override
+    public void batchDeleteOnProjectLevel(Long projectId, List<Long> userIds, Boolean syncAll) {
+        userIds.forEach(t -> deleteOnProjectLevel(projectId, t, syncAll));
+    }
 
     @Override
     public MemberRole insertSelective(MemberRole memberRoleDTO) {

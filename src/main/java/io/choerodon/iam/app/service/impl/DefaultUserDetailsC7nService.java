@@ -81,7 +81,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Void updateVisitorsForConfig(Long tenantId, Integer visitors) {
+    public void updateVisitorsForConfig(Long tenantId, Integer visitors) {
         TenantConfig config = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(tenantId, TenantConfigEnum.VISITORS.value());
         if (config == null) {
             config = new TenantConfig();
@@ -97,6 +97,5 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
                 throw new CommonException("error.update.tenant.config");
             }
         }
-        return null;
     }
 }

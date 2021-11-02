@@ -52,7 +52,11 @@ public interface OrganizationProjectC7nService {
 
     List<ProjectDTO> listProjectsByOrgId(Long organizationId);
 
-    Page<ProjectDTO> pagingQuery(Long organizationId, PageRequest Pageable, ProjectDTO projectDTO, String params);
+    Page<ProjectDTO> pagingQuery(Long organizationId,
+                                 PageRequest Pageable,
+                                 ProjectDTO projectDTO,
+                                 String params,
+                                 Boolean withAdditionInfo);
 
     /**
      * 统计项目部署次数

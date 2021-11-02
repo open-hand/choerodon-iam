@@ -143,13 +143,14 @@ public class OrganizationProjectC7nController extends BaseController {
                                                         @RequestParam(required = false) String name,
                                                         @RequestParam(required = false) String code,
                                                         @RequestParam(required = false) Boolean enabled,
+                                                        @RequestParam(required = false, defaultValue = "false") Boolean withAdditionInfo,
                                                         @RequestParam(required = false) String params) {
         ProjectDTO project = new ProjectDTO();
         project.setOrganizationId(organizationId);
         project.setName(name);
         project.setCode(code);
         project.setEnabled(enabled);
-        return new ResponseEntity<>(organizationProjectC7nService.pagingQuery(organizationId, pageRequest, project, params),
+        return new ResponseEntity<>(organizationProjectC7nService.pagingQuery(organizationId, pageRequest, project, params, withAdditionInfo),
                 HttpStatus.OK);
     }
 

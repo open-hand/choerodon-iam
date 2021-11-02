@@ -623,7 +623,12 @@ public class UserC7nServiceImpl implements UserC7nService {
         return projects;
     }
 
-    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin, Long organizationId, Long userId) {
+    @Override
+    public void addExtraInformation(List<ProjectDTO> projects,
+                                    boolean isAdmin,
+                                    boolean isOrgAdmin,
+                                    Long organizationId,
+                                    Long userId) {
         if (!CollectionUtils.isEmpty(projects)) {
 
             Set<Long> projectIdList = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());

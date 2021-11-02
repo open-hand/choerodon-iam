@@ -33,7 +33,9 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
-
+/**
+ * 该controller在上层有覆盖
+ */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/projects")

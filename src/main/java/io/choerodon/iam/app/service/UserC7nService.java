@@ -365,4 +365,10 @@ public interface UserC7nService {
     List<User> listSiteAdministrator();
 
     Boolean selectUserPhoneBind();
+
+    void addExtraInformation(List<ProjectDTO> projects,
+                             boolean isAdmin,
+                             boolean isOrgAdmin,
+                             Long organizationId,
+                             Long userId);
 }

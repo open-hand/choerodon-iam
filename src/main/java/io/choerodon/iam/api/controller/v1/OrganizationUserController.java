@@ -272,6 +272,16 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "判断用户是否是组织管理员(供市场使用，包含root)")
+    @GetMapping(value = "/users/check_is_admin")
+    public ResponseEntity<Boolean> checkIsOrgAdmin(@PathVariable(name = "organization_id") Long organizationId) {
+        return ResponseEntity.ok(userC7nService.checkIsOrgAdmin(organizationId));
+    }
+
+
+
+
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")

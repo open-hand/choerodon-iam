@@ -1532,7 +1532,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean platformAdministrator() {
-        return userC7nMapper.platformAdministrator(DetailsHelper.getUserDetails().getUserId());
+        if (DetailsHelper.getUserDetails().getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.platformAdministrator(DetailsHelper.getUserDetails().getUserId());
+        }
     }
 
     @Override
@@ -1549,5 +1553,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Boolean selectUserPhoneBind() {
         return userC7nMapper.queryPhoneBind(DetailsHelper.getUserDetails().getUserId());
+    }
+
+    @Override
+    public Boolean checkIsOrgAdmin(Long organizationId) {
+        if (DetailsHelper.getUserDetails().getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.isOrgAdministrator(organizationId, DetailsHelper.getUserDetails().getUserId());
+        }
     }
 }

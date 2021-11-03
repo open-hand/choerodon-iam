@@ -366,6 +366,9 @@ public interface UserC7nService {
 
     Boolean selectUserPhoneBind();
 
+    Boolean checkIsOrgAdmin(Long organizationId);
+
+
     void addExtraInformation(List<ProjectDTO> projects,
                              boolean isAdmin,
                              boolean isOrgAdmin,

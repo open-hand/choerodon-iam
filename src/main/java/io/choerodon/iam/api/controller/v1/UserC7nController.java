@@ -510,14 +510,14 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.listAllUserIds());
     }
 
-    @ApiOperation(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/is_site_administrator")
     public ResponseEntity<Boolean> platformAdministrator() {
         return ResponseEntity.ok(userC7nService.platformAdministrator());
     }
 
-    @ApiOperation(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户为组织管理员的组织列表")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/admin/org/list")
     public ResponseEntity<List<Tenant>> adminOrgList() {

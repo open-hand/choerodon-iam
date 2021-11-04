@@ -38,6 +38,7 @@ import org.hzero.iam.domain.service.user.UserCaptchaService;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.feign.OauthAdminFeignClient;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
@@ -1118,7 +1119,19 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public UserVO selectSelf() {
-        UserVO userVO = userRepository.selectSelf();
+        UserVO userVO;
+        try {
+            userVO = userRepository.selectSelf();
+        } catch (CommonException e) {
+            // 组织被禁用 清除token
+            if (e.getCode().equals("hiam.warn.user.selfError")) {
+                CustomUserDetails self = UserUtils.getUserDetails();
+                User user = userRepository.selectByPrimaryKey(self.getUserId());
+                oauthAdminFeignClient.invalidByUsername(user.getLoginName());
+            }
+            throw e;
+        }
+
         User user = userRepository.selectByPrimaryKey(userVO.getId());
         userVO.setObjectVersionNumber(user.getObjectVersionNumber());
         userVO.setAdmin(user.getAdmin());

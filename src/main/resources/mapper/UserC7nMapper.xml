@@ -694,8 +694,6 @@
             iut.attribute14 LIKE concat(concat('%',#{params}),'%')
             )
         </if>
-        ORDER BY
-        imr.creation_date desc
     </select>
 
 

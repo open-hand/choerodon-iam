@@ -37,7 +37,7 @@ public class OrganizationAdminC7nController {
     public ResponseEntity<Page<OrgAdministratorVO>> pagingQueryOrgAdministrator(
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest Pageable,
+            @SortDefault(value = "imr.id", direction = Sort.Direction.DESC) PageRequest Pageable,
             @RequestParam(required = false) String realName,
             @RequestParam(required = false) String loginName,
             @RequestParam(required = false) String params) {

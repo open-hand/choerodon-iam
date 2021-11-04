@@ -49,8 +49,8 @@
         left join iam_member_role imr on iut.id = imr.member_id
         left join fd_project_permission fdu on (imr.id = fdu.MEMBER_ROLE_ID)
         JOIN iam_role ir on ir.id = imr.role_id
-        <if test="roleName != null">
-            left join iam_role ir2 on ir2.id = imr.role_id
+        <if test="roleId != null">
+            and ir.id = #{roleId}
         </if>
         <where>
             fdu.PROJECT_ID = #{sourceId}
@@ -109,8 +109,8 @@
         join iam_member_role imr ON iut.id = imr.member_id
         join fd_project_permission fdu on fdu.MEMBER_ROLE_ID = imr.id
         JOIN iam_role ir2 on ir2.id=imr.role_id
-        <if test="roleName != null">
-            left join iam_role ir on ir.id = imr.role_id
+        <if test="roleId != null">
+            and ir2.id=#{roleId}
         </if>
         <where>
             fdu.PROJECT_ID = #{sourceId}

@@ -69,7 +69,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
-                    UserSearchVO userSearchVO) {
+            @Encrypt       UserSearchVO userSearchVO) {
         return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, userSearchVO), HttpStatus.OK);
     }
 

@@ -120,17 +120,20 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         if (doPage) {
             int start = PageUtils.getBegin(page, size);
             int count = projectPermissionMapper.selectCountUsersOnProjectLevel(ResourceLevel.PROJECT.value(), projectId, userSearchVO.getLoginName(),
-                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnable(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRoles(),
                     userSearchVO.getParams());
             List<UserDTO> users = projectPermissionMapper.selectUserWithRolesOnProjectLevel(
                     start, size, ResourceLevel.PROJECT.value(), projectId, userSearchVO.getLoginName(),
-                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnable(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRoles(),
                     userSearchVO.getParams());
             result = PageUtils.buildPage(page, size, count, users);
         } else {
             List<UserDTO> users = projectPermissionMapper.selectUserWithRolesOnProjectLevel(
                     null, null, ResourceLevel.PROJECT.value(), projectId, userSearchVO.getLoginName(),
-                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnable(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getPhone(), userSearchVO.getEmail(),
+                    userSearchVO.getRoles(),
                     userSearchVO.getParams());
             result = PageUtils.buildPage(page, size, users.size(), users);
         }
@@ -170,7 +173,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
-        List<UserDTO> users = projectPermissionMapper.selectUserWithRolesOnProjectLevel(null, null, ResourceLevel.PROJECT.value(), projectId, loginName, realName, roleName, null, null, null, params);
+        List<UserDTO> users = projectPermissionMapper.selectUserWithRolesOnProjectLevel(null, null, ResourceLevel.PROJECT.value(), projectId, loginName,
+                realName, roleName, null, null, null, null, params);
         return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
     }
 

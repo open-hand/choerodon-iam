@@ -199,6 +199,15 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok().build();
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+    @ApiOperation(value = "校验手机号是不是被其他的用户占用")
+    @GetMapping(value = "/check/user/phone/occupied")
+    public ResponseEntity<Void> checkUserPhoneOccupied(@RequestParam(value = "phone") String phone,
+                                                       @Encrypt @RequestParam(value = "user_id") Long userId) {
+        userC7nService.checkUserPhoneOccupied(phone, userId);
+        return ResponseEntity.ok().build();
+    }
+
 
     /**
      * 分页查询所有的admin用户

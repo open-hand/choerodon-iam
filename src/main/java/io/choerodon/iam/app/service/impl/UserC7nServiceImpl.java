@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -24,6 +25,7 @@ import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -770,6 +772,23 @@ public class UserC7nServiceImpl implements UserC7nService {
             return Boolean.TRUE;
         } else {
             return userC7nMapper.platformAdministrator(userId);
+        }
+    }
+
+    @Override
+    public void checkUserPhoneOccupied(String phone, Long userId) {
+        AssertUtils.notNull(phone, "error.user.phone.not.empty");
+        User userDTO = new User();
+        userDTO.setPhone(phone);
+        List<User> users = userMapper.select(userDTO);
+        boolean existed = users != null && users.size() != 0;
+        if (existed) {
+            users.forEach(user -> {
+                if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(phone, user.getPhone())
+                        && userId.longValue() != user.getId().longValue()) {
+                    throw new CommonException("error.user.phone.exist");
+                }
+            });
         }
     }
 

@@ -513,8 +513,8 @@ public class UserC7nController extends BaseController {
     @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/is_site_administrator")
-    public ResponseEntity<Boolean> platformAdministrator() {
-        return ResponseEntity.ok(userC7nService.platformAdministrator());
+    public ResponseEntity<Boolean> platformAdministratorOrAuditor(@Encrypt @RequestParam(value = "user_id", required = false) Long userId) {
+        return ResponseEntity.ok(userC7nService.platformAdministratorOrAuditor(userId));
     }
 
     @ApiOperation(value = "查询用户为组织管理员的组织列表")

@@ -374,4 +374,6 @@ public interface UserC7nService {
                              boolean isOrgAdmin,
                              Long organizationId,
                              Long userId);
+
+    Boolean platformAdministratorOrAuditor(Long userId);
 }

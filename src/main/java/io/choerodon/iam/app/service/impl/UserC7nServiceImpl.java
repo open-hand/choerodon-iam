@@ -759,6 +759,18 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     }
 
+    @Override
+    public Boolean platformAdministratorOrAuditor(Long userId) {
+        if (userId == null) {
+            userId = DetailsHelper.getUserDetails().getUserId();
+        }
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user.getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.platformAdministrator(userId);
+        }
+    }
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {

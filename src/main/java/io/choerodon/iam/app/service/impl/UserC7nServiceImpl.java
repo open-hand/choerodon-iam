@@ -789,7 +789,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public void checkUserPhoneOccupied(String phone) {
+    public void checkUserPhoneOccupied(String phone, Long userId) {
         AssertUtils.notNull(phone, "error.user.phone.not.empty");
         User userDTO = new User();
         userDTO.setPhone(phone);
@@ -798,7 +798,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (existed) {
             users.forEach(user -> {
                 if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(phone, user.getPhone())
-                        && DetailsHelper.getUserDetails().getUserId().longValue() != user.getId().longValue()) {
+                        && userId.longValue() != user.getId().longValue()) {
                     throw new CommonException("error.user.phone.exist");
                 }
             });

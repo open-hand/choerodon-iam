@@ -377,5 +377,5 @@ public interface UserC7nService {
 
     Boolean platformAdministratorOrAuditor(Long userId);
 
-    void checkUserPhoneOccupied(String phone, Long userId);
+    void checkUserPhoneOccupied(String phone);
 }

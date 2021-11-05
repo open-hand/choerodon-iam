@@ -199,12 +199,11 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok().build();
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "校验手机号是不是被其他的用户占用")
     @GetMapping(value = "/check/user/phone/occupied")
-    public ResponseEntity<Void> checkUserPhoneOccupied(@RequestParam(value = "phone") String phone,
-                                                       @Encrypt @RequestParam(value = "user_id") Long userId) {
-        userC7nService.checkUserPhoneOccupied(phone, userId);
+    public ResponseEntity<Void> checkUserPhoneOccupied(@RequestParam(value = "phone") String phone) {
+        userC7nService.checkUserPhoneOccupied(phone);
         return ResponseEntity.ok().build();
     }
 

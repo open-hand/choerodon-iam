@@ -191,6 +191,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private OauthAdminFeignClient oauthAdminFeignClient;
     @Autowired
     protected UserCaptchaService userCaptchaService;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
 
     @Override
     public User queryInfo(Long userId) {
@@ -218,11 +220,22 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (user.isPhoneChanged()) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
         }
+        keepEmailCheckFlag(user.getId());
         dto = userRepository.selectByPrimaryKey(user.getId());
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         return dto;
+    }
+
+    private void keepEmailCheckFlag(Long userId) {
+        UserInfo record = new UserInfo();
+        record.setUserId(userId);
+        UserInfo userInfo = userInfoMapper.selectOne(record);
+        if (userInfo != null) {
+            userInfo.setEmailCheckFlag(BaseConstants.Flag.YES);
+            userInfoMapper.updateByPrimaryKey(userInfo);
+        }
     }
 
     @Override
@@ -776,7 +789,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public void checkUserPhoneOccupied(String phone, Long userId) {
+    public void checkUserPhoneOccupied(String phone) {
         AssertUtils.notNull(phone, "error.user.phone.not.empty");
         User userDTO = new User();
         userDTO.setPhone(phone);
@@ -785,7 +798,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (existed) {
             users.forEach(user -> {
                 if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(phone, user.getPhone())
-                        && userId.longValue() != user.getId().longValue()) {
+                        && DetailsHelper.getUserDetails().getUserId().longValue() != user.getId().longValue()) {
                     throw new CommonException("error.user.phone.exist");
                 }
             });

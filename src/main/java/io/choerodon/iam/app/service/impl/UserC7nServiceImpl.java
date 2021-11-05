@@ -210,17 +210,12 @@ public class UserC7nServiceImpl implements UserC7nService {
             checkLoginUser(user.getId());
         }
         User dto;
-        dto = userService.updateUser(user);
-        // hzero update 不更新imageUrl
-        User imageUser = new User();
-        imageUser.setId(dto.getId());
-        imageUser.setImageUrl(user.getImageUrl());
-        imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
-        userMapper.updateByPrimaryKeySelective(imageUser);
-        if (user.isPhoneChanged()) {
-            userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
-        }
-        keepEmailCheckFlag(user.getId());
+        userRepository.updateOptional(user,
+                User.FIELD_REAL_NAME,
+                User.FIELD_EMAIL,
+                User.DEFAULT_LANGUAGE,
+                User.DEFAULT_TIME_ZONE,
+                User.FIELD_IMAGE_URL);
         dto = userRepository.selectByPrimaryKey(user.getId());
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());

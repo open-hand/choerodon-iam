@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -286,5 +287,14 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(userC7nService.listOwnedProjects(organizationId, userId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）(敏捷使用)")
+    @PostMapping(value = "/users/page")
+    public ResponseEntity<Page<UserDTO>> pagingUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                        @ApiIgnore
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+                                                                        @RequestBody(required = false) AgileUserVO agileUserVO) {
+        return new ResponseEntity<>(organizationUserService.pagingUsersOnOrganizationLevel(organizationId, pageable, agileUserVO), HttpStatus.OK);
+    }
 
 }

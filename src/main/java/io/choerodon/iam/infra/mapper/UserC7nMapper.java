@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.UserProjectLabelVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -451,5 +452,8 @@ public interface UserC7nMapper {
     List<User> listSiteAdministrator();
 
     Boolean queryPhoneBind(@Param("userId") Long userId);
+
+    List<User> listAgileUserOnOrganizationLevel(@Param("organizationId") Long organizationId,
+                                                @Param("agileUserVO") AgileUserVO agileUserVO);
 }
 

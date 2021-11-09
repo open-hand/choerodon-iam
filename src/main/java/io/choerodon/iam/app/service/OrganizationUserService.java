@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
@@ -69,4 +70,6 @@ public interface OrganizationUserService {
      * @return
      */
     String queryDefaultPassword(Long organizationId);
+
+    Page<UserDTO> pagingUsersOnOrganizationLevel(Long organizationId, PageRequest pageable, AgileUserVO agileUserVO);
 }

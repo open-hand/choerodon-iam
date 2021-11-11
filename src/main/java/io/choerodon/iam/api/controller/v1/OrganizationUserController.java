@@ -280,8 +280,6 @@ public class OrganizationUserController extends BaseController {
     }
 
 
-
-
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")
     @GetMapping("/users/check_enable_create")
@@ -297,5 +295,15 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok(userC7nService.listOwnedProjects(organizationId, userId));
     }
 
-
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询用户有权限的项目，用户当前所处项目放在第一页第一条")
+    @GetMapping("/users/{user_id}/page_owned_projects")
+    public ResponseEntity<Page<ProjectDTO>> pageOwnedProjects(@PathVariable(name = "organization_id") Long organizationId,
+                                                              @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                              @ApiIgnore PageRequest pageRequest,
+                                                              @ApiParam(value = "搜索参数")
+                                                              @RequestParam(name = "param", required = false) String param,
+                                                              @RequestParam("current_project_id") Long currentProjectId) {
+        return ResponseEntity.ok(userC7nService.pageOwnedProjects(organizationId, currentProjectId, userId, pageRequest, param));
+    }
 }

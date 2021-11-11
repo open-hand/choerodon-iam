@@ -327,6 +327,8 @@ public interface UserC7nService {
 
     List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId);
 
+    Page<ProjectDTO> pageOwnedProjects(Long organizationId, Long currentProjectId, Long userId, PageRequest pageRequest, String param);
+
     void checkEmail(User user);
 
     List<User> listMarketAuditor();

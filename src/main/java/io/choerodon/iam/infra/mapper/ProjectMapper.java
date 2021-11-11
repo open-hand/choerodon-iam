@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ImmutableProjectInfoVO;
 import io.choerodon.iam.api.vo.ProjectMapCategoryVO;
 import io.choerodon.iam.api.vo.ProjectSearchVO;
@@ -138,6 +139,8 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                                                       @Param("params") String params);
 
     List<ProjectDTO> listOwnedProjects(@Param("organizationId") Long organizationId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin, @Param("isOrgAdmin") boolean isOrgAdmin);
+
+    Page<ProjectDTO> pageOwnedProjects(@Param("organizationId") Long organizationId, @Param("currentProjectId") Long currentProjectId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin, @Param("isOrgAdmin") boolean isOrgAdmin, @Param("param") String param);
 
     Integer checkPermissionByProjectId(@Param("organizationId") Long organizationId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 

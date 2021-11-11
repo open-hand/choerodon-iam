@@ -172,10 +172,14 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
 
     @Override
-    public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params) {
+    public List<UserDTO> listUsersWithRolesOnProjectLevel(Long projectId, String loginName, String realName, String roleName, String params, Boolean excludeSelf) {
         List<UserDTO> users = projectPermissionMapper.selectUserWithRolesOnProjectLevel(null, null, ResourceLevel.PROJECT.value(), projectId, loginName,
                 realName, roleName, null, null, null, null, params);
-        return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
+        if (excludeSelf != null && excludeSelf) {
+            return users.size() == 0 ? null : users.stream().filter(t -> !t.getId().equals(DetailsHelper.getUserDetails().getUserId())).collect(Collectors.toList());
+        } else {
+            return users;
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @Author: scp
@@ -22,7 +23,10 @@ public class UserSearchVO {
     @ApiModelProperty("模糊搜索参数")
     private String params;
     @ApiModelProperty("用户状态")
-    private Boolean enable;
+    private Boolean enabled;
+    @ApiModelProperty("角色Id")
+    @Encrypt
+    private Long roles;
 
     public String getLoginName() {
         return loginName;
@@ -72,11 +76,19 @@ public class UserSearchVO {
         this.params = params;
     }
 
-    public Boolean getEnable() {
-        return enable;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
-    public void setEnable(Boolean enable) {
-        this.enable = enable;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Long getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Long roles) {
+        this.roles = roles;
     }
 }

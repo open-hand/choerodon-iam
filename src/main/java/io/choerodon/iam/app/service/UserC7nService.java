@@ -312,7 +312,7 @@ public interface UserC7nService {
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 
-    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable);
+    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed);
 
     int getDisableProjectByProjectMember(Long tenantId, Long userId);
 
@@ -365,4 +365,17 @@ public interface UserC7nService {
     List<User> listSiteAdministrator();
 
     Boolean selectUserPhoneBind();
+
+    Boolean checkIsOrgAdmin(Long organizationId);
+
+
+    void addExtraInformation(List<ProjectDTO> projects,
+                             boolean isAdmin,
+                             boolean isOrgAdmin,
+                             Long organizationId,
+                             Long userId);
+
+    Boolean platformAdministratorOrAuditor(Long userId);
+
+    void checkUserPhoneOccupied(String phone, Long userId);
 }

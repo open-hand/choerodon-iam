@@ -238,13 +238,14 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-                                                                   @RequestParam(value = "project_id",required = false) Long projectId,
+                                                                   @RequestParam(value = "project_id", required = false) Long projectId,
                                                                    @RequestParam(required = false) String name,
                                                                    @RequestParam(required = false) String code,
                                                                    @RequestParam(required = false) String category,
                                                                    @RequestParam(required = false) Boolean enabled,
                                                                    @RequestParam(required = false) Long createdBy,
-                                                                   @RequestParam(required = false) String params) {
+                                                                   @RequestParam(required = false) String params,
+                                                                   @RequestParam(required = false, defaultValue = "false") Boolean onlySucceed) {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setId(projectId);
         projectDTO.setName(name);
@@ -252,7 +253,7 @@ public class OrganizationUserController extends BaseController {
         projectDTO.setCategory(category);
         projectDTO.setEnabled(enabled);
         projectDTO.setCreatedBy(createdBy);
-        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable), HttpStatus.OK);
+        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable, onlySucceed), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
@@ -271,6 +272,16 @@ public class OrganizationUserController extends BaseController {
                                                   @Encrypt @PathVariable(name = "user_id") Long userId) {
         return ResponseEntity.ok(userC7nService.checkIsOrgRoot(organizationId, userId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "判断用户是否是组织管理员(供市场使用，包含root)")
+    @GetMapping(value = "/users/check_is_admin/or_root")
+    public ResponseEntity<Boolean> checkIsOrgAdmin(@PathVariable(name = "organization_id") Long organizationId) {
+        return ResponseEntity.ok(userC7nService.checkIsOrgAdmin(organizationId));
+    }
+
+
+
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "检查是否还能创建用户")

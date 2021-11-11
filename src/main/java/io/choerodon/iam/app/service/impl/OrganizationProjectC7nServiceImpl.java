@@ -629,7 +629,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     }
 
     @Override
-    public Page<ProjectDTO> pagingQuery(Long organizationId, PageRequest pageRequest, ProjectDTO projectDTO, String params) {
+    public Page<ProjectDTO> pagingQuery(Long organizationId,
+                                        PageRequest pageRequest,
+                                        ProjectDTO projectDTO,
+                                        String params,
+                                        Boolean withAdditionInfo) {
         int size = pageRequest.getSize();
         boolean doPage = (size != 0);
         String sortString = pageRequest.getSort() == null ? null : getSortStringForPageQuery(pageRequest.getSort());
@@ -641,29 +645,17 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             result.getContent().addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
             result.setSize(result.size());
         }
-        addProjectCategories(result.getContent());
-        return result;
-    }
-
-    private void addProjectCategories(List<ProjectDTO> result) {
-        if (ObjectUtils.isEmpty(result)) {
-            return;
-        }
-        Set<Long> projectIds = result.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
-        List<ProjectMapCategoryVO> projectMapCategories = projectMapper.listProjectCategory(projectIds);
-        Map<Long, List<ProjectMapCategoryVO>> projectCategoryMap =
-                projectMapCategories
-                        .stream()
-                        .filter(v ->
-                                ProjectCategoryEnum.listNewCategories().contains(v.getProjectCategoryDTO().getCode()))
-                        .collect(Collectors.groupingBy(ProjectMapCategoryVO::getProjectId));
-        result.forEach(x -> {
-            List<ProjectMapCategoryVO> categories = projectCategoryMap.get(x.getId());
-            if (ObjectUtils.isEmpty(categories)) {
-                return;
+        if (Boolean.TRUE.equals(withAdditionInfo)) {
+            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+            if (ObjectUtils.isEmpty(userDetails)) {
+                throw new CommonException("error.user.not.login");
             }
-            x.setCategories(categories.stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList()));
-        });
+            Long userId = userDetails.getUserId();
+            boolean isOrgAdmin = userC7nService.checkIsOrgRoot(organizationId, userId);
+            boolean isAdmin = userC7nService.isRoot(userId);
+            userC7nService.addExtraInformation(result.getContent(), isAdmin, isOrgAdmin, organizationId, userId);
+        }
+        return result;
     }
 
     @Override

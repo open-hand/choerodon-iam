@@ -2,10 +2,7 @@ package io.choerodon.iam.app.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +42,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     private TenantConfigMapper tenantConfigMapper;
     @Autowired
     private TenantConfigC7nMapper tenantConfigC7nMapper;
-    private Map<Long, Object> tenantObjects = new HashMap<>();
+    private final Map<Long, Object> tenantObjects = new ConcurrentHashMap<>();
 
     @Override
     public void storeUserTenant(Long tenantId) {
@@ -84,7 +81,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Void updateVisitorsForConfig(Long tenantId, Integer visitors) {
+    public void updateVisitorsForConfig(Long tenantId, Integer visitors) {
         TenantConfig config = tenantConfigC7nMapper.queryTenantConfigByTenantIdAndKey(tenantId, TenantConfigEnum.VISITORS.value());
         if (config == null) {
             config = new TenantConfig();
@@ -100,6 +97,5 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
                 throw new CommonException("error.update.tenant.config");
             }
         }
-        return null;
     }
 }

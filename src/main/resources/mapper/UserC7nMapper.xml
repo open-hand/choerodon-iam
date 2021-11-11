@@ -1391,7 +1391,7 @@
 	       imr.source_type = 'site'
 	    AND imr.member_type = 'user'
 	    AND imr.source_id = 0
-	    AND ir.CODE = 'role/site/default/administrator'
+	    AND (ir.CODE = 'role/site/default/administrator' OR ir.CODE = 'role/site/default/auditor')
 	    AND imr.member_id = #{userId,jdbcType=BIGINT}
     </select>
 

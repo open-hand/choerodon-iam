@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -24,6 +25,7 @@ import org.hzero.boot.oauth.domain.service.UserPasswordService;
 import org.hzero.boot.oauth.policy.PasswordPolicyManager;
 import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.api.dto.UserPasswordDTO;
@@ -38,6 +40,7 @@ import org.hzero.iam.domain.service.user.UserCaptchaService;
 import org.hzero.iam.domain.service.user.UserDetailsService;
 import org.hzero.iam.domain.vo.RoleVO;
 import org.hzero.iam.domain.vo.UserVO;
+import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.feign.OauthAdminFeignClient;
 import org.hzero.iam.infra.mapper.*;
 import org.slf4j.Logger;
@@ -188,6 +191,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private OauthAdminFeignClient oauthAdminFeignClient;
     @Autowired
     protected UserCaptchaService userCaptchaService;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
 
     @Override
     public User queryInfo(Long userId) {
@@ -205,21 +210,27 @@ public class UserC7nServiceImpl implements UserC7nService {
             checkLoginUser(user.getId());
         }
         User dto;
-        dto = userService.updateUser(user);
-        // hzero update 不更新imageUrl
-        User imageUser = new User();
-        imageUser.setId(dto.getId());
-        imageUser.setImageUrl(user.getImageUrl());
-        imageUser.setObjectVersionNumber(dto.getObjectVersionNumber());
-        userMapper.updateByPrimaryKeySelective(imageUser);
-        if (user.isPhoneChanged()) {
-            userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
-        }
+        userRepository.updateOptional(user,
+                User.FIELD_REAL_NAME,
+                User.FIELD_EMAIL,
+                User.DEFAULT_LANGUAGE,
+                User.DEFAULT_TIME_ZONE,
+                User.FIELD_IMAGE_URL);
         dto = userRepository.selectByPrimaryKey(user.getId());
         Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
         dto.setTenantName(organizationDTO.getTenantName());
         dto.setTenantNum(organizationDTO.getTenantNum());
         return dto;
+    }
+
+    private void keepEmailCheckFlag(Long userId) {
+        UserInfo record = new UserInfo();
+        record.setUserId(userId);
+        UserInfo userInfo = userInfoMapper.selectOne(record);
+        if (userInfo != null) {
+            userInfo.setEmailCheckFlag(BaseConstants.Flag.YES);
+            userInfoMapper.updateByPrimaryKey(userInfo);
+        }
     }
 
     @Override
@@ -623,7 +634,12 @@ public class UserC7nServiceImpl implements UserC7nService {
         return projects;
     }
 
-    private void addExtraInformation(List<ProjectDTO> projects, boolean isAdmin, boolean isOrgAdmin, Long organizationId, Long userId) {
+    @Override
+    public void addExtraInformation(List<ProjectDTO> projects,
+                                    boolean isAdmin,
+                                    boolean isOrgAdmin,
+                                    Long organizationId,
+                                    Long userId) {
         if (!CollectionUtils.isEmpty(projects)) {
 
             Set<Long> projectIdList = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
@@ -754,6 +770,35 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     }
 
+    @Override
+    public Boolean platformAdministratorOrAuditor(Long userId) {
+        if (userId == null) {
+            userId = DetailsHelper.getUserDetails().getUserId();
+        }
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user.getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.platformAdministrator(userId);
+        }
+    }
+
+    @Override
+    public void checkUserPhoneOccupied(String phone, Long userId) {
+        AssertUtils.notNull(phone, "error.user.phone.not.empty");
+        User userDTO = new User();
+        userDTO.setPhone(phone);
+        List<User> users = userMapper.select(userDTO);
+        boolean existed = users != null && users.size() != 0;
+        if (existed) {
+            users.forEach(user -> {
+                if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(phone, user.getPhone())
+                        && userId.longValue() != user.getId().longValue()) {
+                    throw new CommonException("error.user.phone.exist");
+                }
+            });
+        }
+    }
 
     @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
@@ -1101,7 +1146,19 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public UserVO selectSelf() {
-        UserVO userVO = userRepository.selectSelf();
+        UserVO userVO;
+        try {
+            userVO = userRepository.selectSelf();
+        } catch (CommonException e) {
+            // 组织被禁用 清除token
+            if (e.getCode().equals("hiam.warn.user.selfError")) {
+                CustomUserDetails self = UserUtils.getUserDetails();
+                User user = userRepository.selectByPrimaryKey(self.getUserId());
+                oauthAdminFeignClient.invalidByUsername(user.getLoginName());
+            }
+            throw e;
+        }
+
         User user = userRepository.selectByPrimaryKey(userVO.getId());
         userVO.setObjectVersionNumber(user.getObjectVersionNumber());
         userVO.setAdmin(user.getAdmin());
@@ -1404,7 +1461,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable) {
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed) {
         Page<ProjectDTO> page = new Page<>();
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
@@ -1441,6 +1498,12 @@ public class UserC7nServiceImpl implements UserC7nService {
             return new Page<>();
         }
         page.setContent(projectDTOS);
+        // 添加额外信息
+        addExtraInformation(projectDTOS, isAdmin, isOrgAdmin, organizationId, userId);
+        if (onlySucceed) {
+            List<ProjectDTO> dtos = projectDTOS.stream().filter(projectDTO1 -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO1.getProjectStatus(), ProjectStatusEnum.SUCCESS.value())).collect(Collectors.toList());
+            page.setContent(dtos);
+        }
         //TotalElements=page.getTotal-组织下停用且用户是项目成员角色的项目数量
         if (!isAdmin && !isOrgAdmin) {
             page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, currentUserId));
@@ -1452,9 +1515,6 @@ public class UserC7nServiceImpl implements UserC7nService {
         } else {
             page.setTotalPages(1);
         }
-
-        // 添加额外信息
-        addExtraInformation(projects, isAdmin, isOrgAdmin, organizationId, userId);
         return page;
     }
 
@@ -1524,7 +1584,11 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Boolean platformAdministrator() {
-        return userC7nMapper.platformAdministrator(DetailsHelper.getUserDetails().getUserId());
+        if (DetailsHelper.getUserDetails().getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.platformAdministrator(DetailsHelper.getUserDetails().getUserId());
+        }
     }
 
     @Override
@@ -1541,5 +1605,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public Boolean selectUserPhoneBind() {
         return userC7nMapper.queryPhoneBind(DetailsHelper.getUserDetails().getUserId());
+    }
+
+    @Override
+    public Boolean checkIsOrgAdmin(Long organizationId) {
+        if (DetailsHelper.getUserDetails().getAdmin()) {
+            return Boolean.TRUE;
+        } else {
+            return userC7nMapper.isOrgAdministrator(organizationId, DetailsHelper.getUserDetails().getUserId());
+        }
     }
 }

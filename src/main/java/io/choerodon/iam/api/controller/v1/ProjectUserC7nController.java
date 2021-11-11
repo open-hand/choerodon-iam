@@ -33,7 +33,9 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
-
+/**
+ * 该controller在上层有覆盖
+ */
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_PROJECT_USER)
 @RestController
 @RequestMapping(value = "/choerodon/v1/projects")
@@ -67,7 +69,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
-                    UserSearchVO userSearchVO) {
+            @Encrypt       UserSearchVO userSearchVO) {
         return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, userSearchVO), HttpStatus.OK);
     }
 
@@ -210,6 +212,19 @@ public class ProjectUserC7nController extends BaseController {
                                                      @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                      @Encrypt @PathVariable(name = "user_id") Long userId) {
         roleMemberService.deleteOnProjectLevel(sourceId, userId, syncAll);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 在project层根据id删除角色
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层批量移除用户")
+    @PostMapping(value = "/{project_id}/users/role_members/batch_delete")
+    public ResponseEntity<Void> batchDeleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+                                                     @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                     @Encrypt @RequestBody List<Long> userIds) {
+        roleMemberService.batchDeleteOnProjectLevel(sourceId, userIds, syncAll);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

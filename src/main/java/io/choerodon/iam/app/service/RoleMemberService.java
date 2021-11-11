@@ -35,6 +35,14 @@ public interface RoleMemberService {
      */
     void deleteOnProjectLevel(Long projectId, Long userId, Boolean syncAll);
 
+    /**
+     * 批量移除用户项目下所有角色
+     * @param projectId
+     * @param userIds
+     * @param syncAll
+     */
+    void batchDeleteOnProjectLevel(Long projectId, List<Long> userIds, Boolean syncAll);
+
     void deleteProjectRole(Long projectId, Long userId, List<Long> roleIds, Boolean syncAll);
 
     List<MemberRole> insertOrUpdateRolesOfUserByMemberId(

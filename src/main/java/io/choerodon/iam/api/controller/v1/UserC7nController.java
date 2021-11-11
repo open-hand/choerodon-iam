@@ -199,6 +199,15 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok().build();
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation(value = "校验手机号是不是被其他的用户占用")
+    @GetMapping(value = "/check/user/phone/occupied")
+    public ResponseEntity<Void> checkUserPhoneOccupied(@RequestParam(value = "phone") String phone,
+                                                       @Encrypt @RequestParam(value = "user_id") Long userId) {
+        userC7nService.checkUserPhoneOccupied(phone, userId);
+        return ResponseEntity.ok().build();
+    }
+
 
     /**
      * 分页查询所有的admin用户
@@ -510,14 +519,14 @@ public class UserC7nController extends BaseController {
         return ResponseEntity.ok(userC7nService.listAllUserIds());
     }
 
-    @ApiOperation(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/is_site_administrator")
-    public ResponseEntity<Boolean> platformAdministrator() {
-        return ResponseEntity.ok(userC7nService.platformAdministrator());
+    public ResponseEntity<Boolean> platformAdministratorOrAuditor(@Encrypt @RequestParam(value = "user_id", required = false) Long userId) {
+        return ResponseEntity.ok(userC7nService.platformAdministratorOrAuditor(userId));
     }
 
-    @ApiOperation(value = "查询用户是不是平台管理员")
+    @ApiOperation(value = "查询用户为组织管理员的组织列表")
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping(value = "/self/admin/org/list")
     public ResponseEntity<List<Tenant>> adminOrgList() {

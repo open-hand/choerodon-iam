@@ -764,4 +764,78 @@
         LEFT JOIN fd_project_category fpc  ON fpc.ID = fpmc.CATEGORY_ID
         WHERE fpc.CODE = #{categoryCode} and fp.ORGANIZATION_ID = #{organizationId}
     </select>
+
+    <select id="selectProjectsByOption" resultMap="projectMap">
+        SELECT fp.*,
+        iu.real_name as create_user_name,
+        iu.image_url as create_user_image_url,
+        null as program_name
+        FROM fd_project fp
+        left join iam_user iu on iu.id = fp.created_by
+        <choose>
+            <when test="!isAdmin and !isOrgAdmin">
+                INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+                INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+            </when>
+            <when test="projectDTO != null and projectDTO.category != null">
+                INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+                INNER Join fd_project_category fpc ON  fpmc.CATEGORY_ID = fpc.id
+            </when>
+            <otherwise>
+                LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+                LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+                LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+            </otherwise>
+        </choose>
+        <where>
+            fp.organization_id = #{organizationId}
+
+            <if test="!isAdmin and !isOrgAdmin">
+                AND imr.member_id = #{userId}
+                AND imr.member_type = 'user'
+                AND imr.source_type = 'organization'
+                AND imr.source_id = #{organizationId}
+            </if>
+
+            <if test="projectDTO != null">
+                <if test="projectDTO.filterProjectIds != null and projectDTO.filterProjectIds.size > 0">
+                    AND fp.id not in
+                    <foreach collection="projectDTO.filterProjectIds" item="filterProjectId" open="(" close=")" separator=",">
+                        #{filterProjectId}
+                    </foreach>
+                </if>
+                <if test="projectDTO.name != null">
+                    AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
+                </if>
+                <if test="projectDTO.code != null">
+                    AND fp.code LIKE concat(concat('%',#{projectDTO.code}),'%')
+                </if>
+                <if test="projectDTO.category != null">
+                    <!--                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')-->
+                    AND fpc.CODE = #{projectDTO.category}
+                </if>
+                <if test="projectDTO.enable != null">
+                    AND fp.is_enabled = #{projectDTO.enable}
+                </if>
+                <if test="projectDTO.createdBy != null">
+                    AND fp.created_by = #{userId}
+                </if>
+            </if>
+            <if test="params != null">
+                AND (
+                fp.name LIKE concat(concat('%', #{params}), '%') OR
+                fp.code LIKE concat(concat('%', #{params}), '%')
+                )
+            </if>
+        </where>
+        GROUP BY fp.id
+        order by
+        <if test="projectDTO!=null">
+            <if test="projectDTO.id !=null">
+                fp.id=#{projectDTO.id} desc,
+            </if>
+        </if>
+        fp.is_enabled desc,fp.creation_date desc
+    </select>
 </mapper>

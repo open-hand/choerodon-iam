@@ -378,4 +378,6 @@ public interface UserC7nService {
     Boolean platformAdministratorOrAuditor(Long userId);
 
     void checkUserPhoneOccupied(String phone, Long userId);
+
+    Page<ProjectDTO> pagingProjectsByOptions(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, String params, PageRequest pageable, Boolean onlySucceed);
 }

@@ -801,6 +801,72 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    public Page<ProjectDTO> pagingProjectsByOptions(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, String params, PageRequest pageable, Boolean onlySucceed) {
+        Page<ProjectDTO> page = new Page<>();
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
+        //查询到的项目包括已启用和未启用的
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByOption(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin, params));
+        Page<ProjectDTO> projectDTOS = handlePageProject(page, organizationId, onlySucceed, isAdmin, isOrgAdmin, currentUserId, userId, pageable);
+        // 将忽略的项目放到最前面
+        List<ProjectDTO> result = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(projectSearchVO.getFilterProjectIds())) {
+            result.addAll(projectC7nService.queryByIds(new HashSet<>(projectSearchVO.getFilterProjectIds())));
+        }
+        result.addAll(projectDTOS.getContent());
+        projectDTOS.setContent(result);
+        return projectDTOS;
+    }
+
+    private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,
+                                               Long organizationId,
+                                               Boolean onlySucceed,
+                                               Boolean isAdmin,
+                                               Boolean isOrgAdmin,
+                                               Long currentUserId,
+                                               Long userId,
+                                               PageRequest pageRequest){
+        if (CollectionUtils.isEmpty(page.getContent())) {
+            return page;
+        }
+        //项目成员看不到未启用的
+        List<ProjectDTO> projectDTOS = page.getContent().stream().filter(projectDTOVO -> {
+            //如果是停用的项目
+            if (!projectDTOVO.getEnabled()) {
+                //如果用户的权限是项目成员，则过滤掉
+                if (!isAdmin && !isOrgAdmin && !checkIsProjectOwner(currentUserId, projectDTOVO.getId())) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return new Page<>();
+        }
+        page.setContent(projectDTOS);
+        // 添加额外信息
+        addExtraInformation(projectDTOS, isAdmin, isOrgAdmin, organizationId, userId);
+        if (onlySucceed) {
+            List<ProjectDTO> dtos = projectDTOS.stream().filter(projectDTO1 -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(projectDTO1.getProjectStatus(), ProjectStatusEnum.SUCCESS.value())).collect(Collectors.toList());
+            page.setContent(dtos);
+        }
+        if (!isAdmin && !isOrgAdmin) {
+            page.setTotalElements(page.getTotalElements() - getDisableProjectByProjectMember(organizationId, currentUserId));
+        }
+        if (pageRequest.getSize() != 0) {
+            int rawPage = (int) page.getTotalElements() / pageRequest.getSize();
+            int remains = (int) page.getTotalElements() % pageRequest.getSize();
+            page.setTotalPages(remains == 0 ? rawPage : rawPage + 1);
+        } else {
+            page.setTotalPages(1);
+        }
+        return page;
+    }
+
+    @Override
     public Boolean checkIsGitlabOwner(Long id, Long projectId, String level) {
         List<Role> roleC7nDTOList;
         if (ResourceLevel.PROJECT.value().equals(level)) {

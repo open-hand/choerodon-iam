@@ -15,6 +15,7 @@
         <result property="tenantName" column="user_org_name"/>
         <result property="organizationCode" column="user_org_code"/>
         <result property="objectVersionNumber" column="user_version_number"/>
+        <result property="creationDate" column="creation_date"/>
         <collection property="roles" ofType="org.hzero.iam.domain.entity.Role"
                     autoMapping="true" notNullColumn="role_id">
             <id property="id" column="role_id"/>
@@ -90,6 +91,7 @@
         select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,t2.phone,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
+        t2.creation_date as creation_date,
         fo.tenant_name as user_org_name,
         htc.config_value as user_org_code,
         ir2.id as role_id,ir2.code as role_code,

@@ -1,10 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
-
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,37 +18,31 @@ import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
-import org.springframework.beans.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.SagaInstanceDetails;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.enums.OrganizationTypeEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.RoleC7nMapper;
+import io.choerodon.iam.infra.mapper.TenantC7nMapper;
+import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.utils.ConvertUtils;
+import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -62,6 +52,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class TenantC7NServiceImpl implements TenantC7nService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TenantC7NServiceImpl.class);
+
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
@@ -274,6 +266,17 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         initConfig(defaultTenant);
         tenantService.createTenant(defaultTenant);
         timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());
+    }
+
+    @Override
+    public void syncTenantTl() {
+        LOGGER.info("================start sync tenant tl================");
+        List<Long> tenantIds = tenantC7nMapper.querySingleTl();
+        if (!CollectionUtils.isEmpty(tenantIds)) {
+            List<Tenant> list = tenantC7nMapper.selectByIds(new HashSet<>(tenantIds));
+            list.forEach(t -> tenantC7nMapper.insertTenantTl(t.getTenantId(), "en_US", t.getTenantName()));
+        }
+        LOGGER.info("================end sync tenant tl================");
     }
 
     /**

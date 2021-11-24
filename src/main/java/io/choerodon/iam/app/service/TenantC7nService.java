@@ -82,4 +82,9 @@ public interface TenantC7nService {
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
 
+    /**
+     * 修复部分组织没有多语言问题
+     */
+    void syncTenantTl();
+
 }

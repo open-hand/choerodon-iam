@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.mapper;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.infra.dto.OrganizationSimplifyDTO;
+
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
@@ -96,5 +97,9 @@ public interface TenantC7nMapper {
     List<User> listMemberIds(@Param("tenantId") Long tenantId);
 
     Long queryCurrentUserNum(@Param("tenantId") Long tenantId);
+
+    List<Long> querySingleTl();
+
+    void insertTenantTl(@Param("tenantId") Long tenantId, @Param("lang") String lang, @Param("tenantName") String tenantName);
 
 }

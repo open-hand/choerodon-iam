@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.FixService;
+import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 public class FixController {
     @Autowired
     private FixService fixService;
+    @Autowired
+    private TenantC7nService tenantC7nService;
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "创建ldap自动同步")
@@ -46,6 +49,14 @@ public class FixController {
     public ResponseEntity<Void> fixMenuLevelPath() {
         fixService.fixMenuLevelPath(false);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "同步组织多语言")
+    @GetMapping("/tenant_tl")
+    public ResponseEntity<Void> syncTenantTl() {
+        tenantC7nService.syncTenantTl();
+        return Results.success();
     }
 
 }

@@ -65,11 +65,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
-    private static final Integer PROBATION_TIME = 14;
-    private static final String REF_TYPE = "createOrg";
-    private static final String ORG_CREATE = "org-create-organization";
-    private static final String NAME_REGULAR_EXPRESSION = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
-
 
     @Autowired
     private TenantService tenantService;
@@ -84,12 +79,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     private UserC7nMapper userC7nMapper;
     @Autowired
-    private OrganizationAssertHelper organizationAssertHelper;
-    @Autowired
-    private AsgardFeignClient asgardFeignClient;
-    @Autowired
-    private AsgardServiceClientOperator asgardServiceClientOperator;
-    @Autowired
     private DevopsFeignClientOperator devopsFeignClientOperator;
     // 注入messageClient
     @Autowired
@@ -99,71 +88,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     @Autowired
     private TenantConfigRepository tenantConfigRepository;
     @Autowired
-    private TenantConfigC7nMapper tenantConfigMapper;
-    @Autowired
-    private MessageSendService messageSendService;
-    @Autowired
     private TenantMapper tenantMapper;
     @Autowired
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    /**
-     * 前端传入的排序字段和Mapper文件中的字段名的映射
-     */
-    private static final Map<String, String> orderByFieldMap;
-
-    static {
-        Map<String, String> map = new HashMap<>();
-        map.put("projectCount", "t.project_count");
-        map.put("userCount", "f.user_count");
-        map.put("id", "org.tenant_id");
-        map.put("tenant_id", "org.tenant_id");
-        orderByFieldMap = Collections.unmodifiableMap(map);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void updateTenant(Long tenantId, TenantVO tenantVO) {
-        validateTenant(tenantVO);
-        List<TenantConfig> tenantConfigs = TenantConfigConvertUtils.tenantConfigVOToTenantConfigList(tenantId, tenantVO.getTenantConfigVO());
-        Tenant tenant = getTenant(tenantVO);
-        tenant.setTenantId(tenantId);
-        if (tenantRepository.updateByPrimaryKeySelective(tenant) != 1) {
-            throw new CommonException("error.tenant.update");
-        }
-        if (CollectionUtils.isEmpty(tenantConfigs)) {
-            return;
-        }
-        for (TenantConfig tenantConfig : tenantConfigs) {
-            TenantConfig record = new TenantConfig();
-            record.setTenantId(tenantId);
-            record.setConfigKey(tenantConfig.getConfigKey());
-            TenantConfig selectOne = tenantConfigRepository.selectOne(record);
-            if (Objects.isNull(selectOne)) {
-                if (tenantConfigRepository.insert(tenantConfig) != 1) {
-                    throw new CommonException("error.tenant.update");
-                }
-            } else {
-                selectOne.setConfigValue(tenantConfig.getConfigValue());
-                tenantConfigRepository.updateByPrimaryKeySelective(selectOne);
-            }
-        }
-    }
-
-    private void validateTenant(TenantVO tenantVO) {
-        if (StringUtils.isEmpty(tenantVO.getTenantName())) {
-            throw new CommonException("error.organization.name.empty");
-        }
-        if (!(tenantVO.getTenantName().length() >= 1 && tenantVO.getTenantName().length() <= 32)) {
-            throw new CommonException("error.organization.name.size");
-        }
-        if (!Pattern.matches(NAME_REGULAR_EXPRESSION, tenantVO.getTenantName())) {
-            throw new CommonException("error.organization.name.illegal");
-        }
-    }
-
 
     @Override
     public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
@@ -225,128 +152,10 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         return dto;
     }
 
-    @Override
-    public Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName, Boolean enabled,
-                                      String homePage, String params, String orgOrigin, String remark) {
-        Page<TenantVO> tenantVOPage = PageHelper.doPageAndSort(PageUtils.getMappedPage(pageRequest, orderByFieldMap),
-                () -> tenantC7nMapper.fulltextSearch(name, code, ownerRealName, enabled, homePage, params, null));
-        List<String> refIds = tenantVOPage.getContent().stream().map(tenantVO -> String.valueOf(tenantVO.getTenantId())).collect(Collectors.toList());
-        setInfoToTenant(tenantVOPage.getContent(), refIds);
-        return tenantVOPage;
-    }
-
-    /**
-     * 设置tenantVO参数信息
-     */
-    private void setInfoToTenant(List<TenantVO> tenantVOList, List<String> refIds) {
-        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = new HashMap<>();
-        if (!org.springframework.util.CollectionUtils.isEmpty(refIds)) {
-            stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(REF_TYPE, refIds, ORG_CREATE));
-        }
-        Map<String, SagaInstanceDetails> finalStringSagaInstanceDetailsMap = stringSagaInstanceDetailsMap;
-        tenantVOList.forEach(
-            tenantVO -> {
-                List<TenantConfig> tenantConfigList = tenantConfigRepository.selectByCondition(Condition.builder(TenantConfig.class)
-                        .where(Sqls.custom()
-                                .andEqualTo(TenantConfig.FIELD_TENANT_ID, tenantVO.getTenantId())
-                        )
-                        .build());
-                TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenantConfigList);
-                tenantVO.setTenantConfigVO(tenantConfigVO);
-                // 设置 组织访问人数
-                setVisitor(tenantVO.getTenantId(), tenantConfigVO);
-                // 只有平台类型
-                tenantConfigVO.setOrgOrigin(OrganizationTypeEnum.PLATFORM.value());
-                if (tenantConfigVO.getUserId() != null) {
-                    User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
-                    if (user != null) {
-                        tenantVO.setOwnerRealName(user.getRealName());
-                        tenantVO.setOwnerEmail(user.getEmail());
-                        tenantVO.setOwnerPhone(user.getPhone());
-                        tenantVO.setOwnerLoginName(user.getLoginName());
-                    }
-                }
-                //通过业务id和业务类型，查询组织是否创建成功，如果失败返回事务实例id
-                tenantVO.setSagaInstanceId(SagaInstanceUtils.fillFailedInstanceId(finalStringSagaInstanceDetailsMap, String.valueOf(tenantVO.getTenantId())));
-                // 统计当前组织人数 组织人数+角色
-                tenantVO.setUserCount(TypeUtil.objToInteger(tenantC7nMapper.queryCurrentUserNum(tenantVO.getTenantId())));
-            }
-        );
-    }
-
-    /**
-     * 设置组织访问量
-     *
-     * @param tenantId
-     * @param tenantConfigVO
-     */
-    @Override
-    public void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO) {
-        String key = String.format(RedisCacheKeyConstants.TENANT_VISITORS_FORMAT, tenantId);
-        String redisVisitorsStr = stringRedisTemplate.opsForValue().get(key);
-        Long redisVisitors = 0L;
-        if (!StringUtils.isEmpty(redisVisitorsStr)) {
-            redisVisitors = TypeUtil.objToLong(redisVisitorsStr);
-        }
-        if (tenantConfigVO.getVisitors() == null) {
-            tenantConfigVO.setVisitors(redisVisitors);
-        } else {
-            tenantConfigVO.setVisitors(redisVisitors + tenantConfigVO.getVisitors());
-        }
-    }
-
-    private List<TenantVO> fillTenant(List<TenantVO> content) {
-        if (CollectionUtils.isEmpty(content)) {
-            return null;
-        }
-        content.forEach(tenantVO -> {
-            Tenant tenant = tenantRepository.selectTenantDetails(tenantVO.getTenantId());
-            TenantConfigVO tenantConfigVO = TenantConfigConvertUtils.configDTOToVO(tenant.getTenantConfigs());
-            if (Objects.isNull(tenantConfigVO)) {
-                return;
-            }
-            tenantVO.setTenantConfigVO(tenantConfigVO);
-            if (Objects.isNull(tenantConfigVO.getUserId())) {
-                return;
-            }
-            User user = userMapper.selectByPrimaryKey(tenantConfigVO.getUserId());
-            if (!Objects.isNull(user)) {
-                tenantVO.setOwnerEmail(user.getEmail());
-                tenantVO.setOwnerLoginName(user.getLoginName());
-                tenantVO.setOwnerPhone(user.getPhone());
-                tenantVO.setOwnerRealName(user.getRealName());
-            }
-        });
-        return content;
-    }
 
     @Override
     public Page<TenantVO> getAllTenants(PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest, () -> tenantRepository.selectAll());
-    }
-
-    @Override
-    public Tenant enableOrganization(Long organizationId, Long userId) {
-        Tenant organization = organizationAssertHelper.notExisted(organizationId);
-        organization.setEnabledFlag(1);
-        return updateAndSendEvent(organization, ORG_ENABLE, userId);
-    }
-
-    @Override
-    public Tenant disableOrganization(Long organizationId, Long userId) {
-        Tenant organizationDTO = organizationAssertHelper.notExisted(organizationId);
-        organizationDTO.setEnabledFlag(0);
-        return updateAndSendEvent(organizationDTO, ORG_DISABLE, userId);
-    }
-
-    @Override
-    public Boolean check(TenantVO tenantVO) {
-        Boolean checkCode = !StringUtils.isEmpty(tenantVO.getTenantNum());
-        if (!checkCode) {
-            return false;
-        } else {
-            return checkCode(tenantVO);
-        }
     }
 
     @Override
@@ -449,20 +258,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     }
 
     @Override
-    public int countUserNum(Long organizationId) {
-        User example = new User();
-        example.setOrganizationId(organizationId);
-        return userMapper.selectCount(example);
-    }
-
-    @Override
-    public int countProjectNum(Long organizationId) {
-        ProjectDTO example = new ProjectDTO();
-        example.setOrganizationId(organizationId);
-        return projectMapper.selectCount(example);
-    }
-
-    @Override
     public Tenant queryDefault() {
         return tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);
     }
@@ -536,47 +331,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
         }
         return tenantVOS;
-    }
-
-    private Boolean checkCode(TenantVO tenantVO) {
-        Boolean createCheck = StringUtils.isEmpty(tenantVO.getTenantId());
-        Tenant tenant = getTenant(tenantVO);
-        if (createCheck) {
-            Boolean existed = tenantRepository.selectOne(tenant) != null;
-            if (existed) {
-                return false;
-            }
-        } else {
-            Long id = tenantVO.getTenantId();
-            Tenant dto = tenantRepository.selectOne(tenant);
-            Boolean existed = dto != null && !id.equals(dto.getTenantId());
-            if (existed) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Tenant updateAndSendEvent(Tenant tenant, String consumerType, Long userId) {
-        Tenant organizationDTO = doUpdate(tenant);
-        //给asgard发送禁用定时任务通知
-        asgardFeignClient.disableOrg(tenant.getTenantId());
-        messageSendService.sendDisableOrEnableTenant(tenant, consumerType, userId);
-        return organizationDTO;
-    }
-
-
-    private Tenant doUpdate(Tenant tenant) {
-        if (tenantRepository.updateByPrimaryKeySelective(tenant) != 1) {
-            throw new UpdateException("error.organization.update");
-        }
-        return tenantRepository.selectByPrimaryKey(tenant);
-    }
-
-    private Tenant getTenant(TenantVO tenantVO) {
-        Tenant tenant = new Tenant();
-        BeanUtils.copyProperties(tenantVO, tenant);
-        return tenant;
     }
 
     private void initConfig(Tenant defaultTenant) {

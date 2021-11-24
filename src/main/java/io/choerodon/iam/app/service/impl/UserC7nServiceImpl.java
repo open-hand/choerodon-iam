@@ -1681,4 +1681,11 @@ public class UserC7nServiceImpl implements UserC7nService {
             return userC7nMapper.isOrgAdministrator(organizationId, DetailsHelper.getUserDetails().getUserId());
         }
     }
+
+    @Override
+    public Page<ProjectDTO> pageOwnedProjects(Long organizationId, Long currentProjectId, Long userId, PageRequest pageRequest, String param) {
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        return PageHelper.doPage(pageRequest, () -> projectMapper.pageOwnedProjects(organizationId, currentProjectId, userId, isAdmin, isOrgAdmin, param));
+    }
 }

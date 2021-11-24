@@ -330,6 +330,4 @@ public class OrganizationUserController extends BaseController {
                                                                    @RequestBody ProjectSearchVO projectSearchVO) {
         return new ResponseEntity<>(userC7nService.pagingProjectsByOptions(organizationId, userId, projectSearchVO, params, pageable, onlySucceed), HttpStatus.OK);
     }
-
->>>>>>> src/main/java/io/choerodon/iam/api/controller/v1/OrganizationUserController.java
 }

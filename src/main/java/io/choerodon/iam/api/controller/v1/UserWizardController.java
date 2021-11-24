@@ -5,10 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.UserWizardService;
@@ -32,8 +29,9 @@ public class UserWizardController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询组织下向导完成情况")
     @GetMapping(value = "/completed")
-    public ResponseEntity<Void> updateUserWizardCompleted(@PathVariable("organization_id") Long organizationId) {
-        userWizardService.updateUserWizardCompleted(organizationId, UserWizardStepEnum.OPEN_SPRINT.value());
+    public ResponseEntity<Void> updateUserWizardCompleted(@PathVariable("organization_id") Long organizationId,
+                                                          @RequestParam(value = "step", defaultValue = "openSprint", required = false) String step) {
+        userWizardService.updateUserWizardCompleted(organizationId, step);
         return Results.success();
     }
 }

@@ -272,4 +272,20 @@
           imr.source_id = #{tenantId}
 	    AND imr.source_type = 'organization'
     </select>
+
+    <select id="querySingleTl" resultType="java.lang.Long">
+        SELECT
+            htl.tenant_id
+        FROM
+            hpfm_tenant_tl htl
+        GROUP BY
+            htl.tenant_id
+        HAVING
+            count( * ) =1
+    </select>
+
+    <insert id="insertTenantTl">
+        INSERT INTO hpfm_tenant_tl
+        VALUES (#{tenantId}, #{lang}, #{tenantName})
+    </insert>
 </mapper>

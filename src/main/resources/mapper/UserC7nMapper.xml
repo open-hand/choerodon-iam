@@ -1432,4 +1432,67 @@
             iam_user iu
         where iu.id=#{userId}
     </select>
+
+    <select id="listAgileUserOnOrganizationLevel" resultType="org.hzero.iam.domain.entity.User">
+        SELECT *
+        FROM (
+        SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
+        iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked,
+        iu.object_version_number,iu.attribute15,iu.attribute14,
+        CASE
+        WHEN iu.is_ldap = 1 THEN
+        iu.login_name
+        ELSE
+        iu.email
+        end as login_name
+        FROM iam_user iu
+        LEFT JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.source_id = #{organizationId} AND imr.source_type = 'organization'
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        <where>
+            (iu.organization_id = #{organizationId} OR (imr.id IS NOT NULL))
+            <if test="agileUserVO != null">
+                <if test="agileUserVO.userIds != null and agileUserVO.userIds.size > 0">
+                    AND iu.id in
+                    <foreach collection="agileUserVO.userIds" item="userId" open="(" close=")" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+                <if test="agileUserVO.ignoredUserIds != null and agileUserVO.ignoredUserIds.size > 0">
+                    AND iu.id not in
+                    <foreach collection="agileUserVO.ignoredUserIds" item="ignoredUserId" open="(" close=")" separator=",">
+                        #{ignoredUserId}
+                    </foreach>
+                </if>
+                <if test="agileUserVO.roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{agileUserVO.roleName}),'%')
+                </if>
+                <if test="agileUserVO.realName != null">
+                    AND iu.real_name LIKE concat(concat('%',#{agileUserVO.realName}),'%')
+                </if>
+                <if test="agileUserVO.enabled != null">
+                    AND iu.is_enabled = #{agileUserVO.enabled}
+                </if>
+                <if test="agileUserVO.locked != null">
+                    AND iu.is_locked = #{agileUserVO.locked}
+                </if>
+            </if>
+        </where>
+        GROUP BY iu.id
+        ) iut
+        <where>
+        <if test="agileUserVO != null">
+            <if test="agileUserVO.loginName != null">
+                AND iut.login_name LIKE concat(concat('%',#{agileUserVO.loginName}),'%')
+            </if>
+            <if test="agileUserVO.param != null">
+                and (
+                iut.login_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iut.real_name LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iut.attribute15 LIKE concat(concat('%',#{agileUserVO.param}),'%') OR
+                iut.attribute14 LIKE concat(concat('%',#{agileUserVO.param}),'%')
+                )
+            </if>
+        </if>
+        </where>
+    </select>
 </mapper>

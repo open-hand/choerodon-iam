@@ -69,7 +69,7 @@ public class ProjectUserC7nController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "登录名")
-            @Encrypt       UserSearchVO userSearchVO) {
+            @Encrypt UserSearchVO userSearchVO) {
         return new ResponseEntity<>(projectPermissionService.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest, userSearchVO), HttpStatus.OK);
     }
 
@@ -83,7 +83,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "项目层查询用户列表（包括用户信息以及所分配的项目角色信息）排除自己")
+    @ApiOperation(value = "项目层查询用户列表（包括用户信息以及所分配的项目角色信息）默认排除自己")
     @GetMapping(value = "/{project_id}/users/search/list")
     public ResponseEntity<List<UserDTO>> listUsersWithRolesOnProjectLevel(
             @ApiParam(value = "项目id", required = true)
@@ -94,9 +94,11 @@ public class ProjectUserC7nController extends BaseController {
             @RequestParam(required = false) String realName,
             @ApiParam(value = "角色名")
             @RequestParam(required = false) String roleName,
+            @ApiParam(value = "排除自己")
+            @RequestParam(required = false, name = "exclude_self", defaultValue = "true") Boolean excludeSelf,
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(projectPermissionService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params), HttpStatus.OK);
+        return new ResponseEntity<>(projectPermissionService.listUsersWithRolesOnProjectLevel(projectId, loginName, realName, roleName, params, excludeSelf), HttpStatus.OK);
     }
 
 
@@ -222,8 +224,8 @@ public class ProjectUserC7nController extends BaseController {
     @ApiOperation(value = "项目层批量移除用户")
     @PostMapping(value = "/{project_id}/users/role_members/batch_delete")
     public ResponseEntity<Void> batchDeleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
-                                                     @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
-                                                     @Encrypt @RequestBody List<Long> userIds) {
+                                                          @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
+                                                          @Encrypt @RequestBody List<Long> userIds) {
         roleMemberService.batchDeleteOnProjectLevel(sourceId, userIds, syncAll);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

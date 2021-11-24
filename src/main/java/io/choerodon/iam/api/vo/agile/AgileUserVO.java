@@ -19,6 +19,16 @@ public class AgileUserVO {
 
     private Set<Long> ignoredUserIds;
 
+    private String loginName;
+
+    private String realName;
+
+    private Boolean enabled;
+
+    private String roleName;
+
+    private Boolean locked;
+
     public Long getOrganizationId() {
         return organizationId;
     }
@@ -57,5 +67,45 @@ public class AgileUserVO {
 
     public void setIgnoredUserIds(Set<Long> ignoredUserIds) {
         this.ignoredUserIds = ignoredUserIds;
+    }
+
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 }

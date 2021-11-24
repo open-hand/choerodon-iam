@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -229,6 +230,28 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public String queryDefaultPassword(Long organizationId) {
         String defaultPassword = this.userPasswordService.getTenantDefaultPassword(organizationId);
         return encryptClient.encrypt(defaultPassword);
+    }
+
+    @Override
+    public Page<UserDTO> pagingUsersOnOrganizationLevel(Long organizationId, PageRequest pageable, AgileUserVO agileUserVO) {
+        Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listAgileUserOnOrganizationLevel(organizationId, agileUserVO));
+        Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
+        List<UserDTO> userList = userDTOSPage.getContent();
+        // 添加用户角色
+        if (!CollectionUtils.isEmpty(userList)) {
+            Set<Long> userIds = userList.stream().map(User::getId).collect(Collectors.toSet());
+            List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIds(organizationId, userIds, agileUserVO.getRoleName(), RoleLabelEnum.TENANT_ROLE.value());
+            if (!CollectionUtils.isEmpty(memberRoles)) {
+                Map<Long, List<MemberRole>> roleMap = memberRoles.stream().collect(Collectors.groupingBy(MemberRole::getMemberId));
+                userList.forEach(user -> {
+                    List<MemberRole> memberRoleList = roleMap.get(user.getId());
+                    if (!CollectionUtils.isEmpty(memberRoleList)) {
+                        user.setRoles(memberRoleList.stream().map(MemberRole::getRole).collect(Collectors.toList()));
+                    }
+                });
+            }
+        }
+        return userDTOSPage;
     }
 
     @Override

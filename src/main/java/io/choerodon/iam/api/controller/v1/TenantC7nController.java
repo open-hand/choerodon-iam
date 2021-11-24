@@ -34,10 +34,12 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
- * @author wuguokai
- * @author superlee
+ * @Author: scp
+ * @Description: 组织查询相关接口
+ * 重要接口已经迁移至business OrganizationProController
+ * @Date: Created in 2021/11/9
+ * @Modified By:
  */
-
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_TENANT)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations")
@@ -66,35 +68,6 @@ public class TenantC7nController extends BaseController {
         demoRegisterService.checkEmail(email);
         return ResponseEntity.ok().build();
     }
-
-    /**
-     * 修改组织信息
-     *
-     * @return 修改成功后的组织信息
-     */
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层修改组织")
-    @PutMapping(value = "/{tenant_id}")
-    public ResponseEntity<Void> update(@PathVariable(name = "tenant_id") Long id,
-                                       @RequestBody @Valid TenantVO tenantVO) {
-        tenantC7nService.updateTenant(id, tenantVO);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * 组织层修改组织信息
-     *
-     * @return 修改成功后的组织信息
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "组织层修改组织")
-    @PutMapping(value = "/{tenant_id}/organization_level")
-    public ResponseEntity<Void> updateOnOrganizationLevel(@PathVariable(name = "tenant_id") Long id,
-                                                          @RequestBody @Valid TenantVO tenantVO) {
-        tenantC7nService.updateTenant(id, tenantVO);
-        return ResponseEntity.noContent().build();
-    }
-
 
     /**
      * 根据组织id查询组织
@@ -143,24 +116,6 @@ public class TenantC7nController extends BaseController {
         return new ResponseEntity<>(tenantC7nService.queryTenantWithRoleById(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询组织")
-    @GetMapping
-    @CustomPageRequest
-    public ResponseEntity<Page<TenantVO>> pagingQuery(@ApiIgnore
-                                                      @SortDefault(value = "tenant_id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                      @RequestParam(required = false) String tenantName,
-                                                      @RequestParam(required = false) String tenantNum,
-                                                      @RequestParam(required = false) String ownerRealName,
-                                                      @RequestParam(required = false) Boolean enabledFlag,
-                                                      @RequestParam(required = false) String homePage,
-                                                      @RequestParam(required = false) String params,
-                                                      @RequestParam(required = false) String orgOrigin,
-                                                      @RequestParam(required = false) String remark) {
-        return new ResponseEntity<>(tenantC7nService.pagingQuery(pageRequest, tenantName,
-                tenantNum, ownerRealName, enabledFlag, homePage, params, orgOrigin, remark), HttpStatus.OK);
-    }
-
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
     @GetMapping(value = "/all")
@@ -181,30 +136,6 @@ public class TenantC7nController extends BaseController {
     @PostMapping("/ids")
     public ResponseEntity<List<Tenant>> queryByIds(@Encrypt @RequestBody Set<Long> ids) {
         return Results.success(tenantC7nService.queryTenantsByIds(ids));
-    }
-
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "启用组织")
-    @PutMapping(value = "/{tenant_id}/enable")
-    public ResponseEntity<Tenant> enableOrganization(@PathVariable(name = "tenant_id") Long id) {
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        return new ResponseEntity<>(tenantC7nService.enableOrganization(id, userId), HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "禁用组织")
-    @PutMapping(value = "/{tenant_id}/disable")
-    public ResponseEntity<Tenant> disableOrganization(@PathVariable(name = "tenant_id") Long id) {
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        return new ResponseEntity<>(tenantC7nService.disableOrganization(id, userId), HttpStatus.OK);
-    }
-
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "组织信息校验")
-    @PostMapping(value = "/check")
-    public ResponseEntity<Boolean> check(@RequestBody TenantVO organization) {
-        return ResponseEntity.ok(tenantC7nService.check(organization));
     }
 
     /**

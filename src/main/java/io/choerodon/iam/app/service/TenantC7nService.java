@@ -19,26 +19,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface TenantC7nService {
 
-    void updateTenant(Long tenantId, TenantVO tenantVO);
-
     TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo);
 
     List<TenantVO> queryTenantByName(String tenantName);
 
     TenantVO queryTenantWithRoleById(Long tenantId);
 
-    Page<TenantVO> pagingQuery(PageRequest pageRequest, String name, String code, String ownerRealName,
-                               Boolean enabled, String homePage, String params, String orgOrigin, String remark);
-
-    void setVisitor(Long tenantId, TenantConfigVO tenantConfigVO);
-
     Page<TenantVO> getAllTenants(PageRequest pageable);
-
-    Tenant enableOrganization(Long organizationId, Long userId);
-
-    Tenant disableOrganization(Long organizationId, Long userId);
-
-    Boolean check(TenantVO tenantVO);
 
     Page<User> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param);
 
@@ -79,25 +66,25 @@ public interface TenantC7nService {
     List<TenantVO> listOwnedOrganizationByUserId(Long userId);
 
     /**
-     * 统计组织下的用户数量
-     *
-     * @param organizationId 组织id
+     * 查询默认组织
+     * @return
      */
-    int countUserNum(Long organizationId);
-
-    /**
-     * 统计组织下的项目数量
-     *
-     * @param organizationId 组织id
-     */
-    int countProjectNum(Long organizationId);
-
     Tenant queryDefault();
 
+    /**
+     * 创建默认组织
+     * @param tenantName
+     * @param tenantNum
+     */
     void createDefaultTenant(String tenantName, String tenantNum);
 
     Page<User> pagingQueryUsersOnOrganizationAgile(Long id, Long userId, String email, PageRequest pageRequest, String param, List<Long> notSelectUserIds);
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
+
+    /**
+     * 修复部分组织没有多语言问题
+     */
+    void syncTenantTl();
 
 }

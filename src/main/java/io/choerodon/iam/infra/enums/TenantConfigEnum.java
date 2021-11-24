@@ -26,7 +26,15 @@ public enum TenantConfigEnum {
     /**
      * 组织过期时间
      */
-    DUE_TIME("dueTime");
+    DUE_TIME("dueTime"),
+    /**
+     * 客户成功经理
+     */
+    SUCCESS_MANAGER("successManager"),
+    /**
+     * 销售
+     */
+    MARKETING_MANAGER("marketingManager");
 
     private final String value;
 

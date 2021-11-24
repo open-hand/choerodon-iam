@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.vo.ProjectSearchVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -306,4 +308,28 @@ public class OrganizationUserController extends BaseController {
                                                               @RequestParam("current_project_id") Long currentProjectId) {
         return ResponseEntity.ok(userC7nService.pageOwnedProjects(organizationId, currentProjectId, userId, pageRequest, param));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "组织层分页查询用户列表（包括用户信息以及所分配的组织角色信息）(敏捷使用)")
+    @PostMapping(value = "/users/page")
+    public ResponseEntity<Page<UserDTO>> pagingUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
+                                                                        @ApiIgnore
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+                                                                        @RequestBody(required = false) AgileUserVO agileUserVO) {
+        return new ResponseEntity<>(organizationUserService.pagingUsersOnOrganizationLevel(organizationId, pageable, agileUserVO), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "查询当前组织下用户的项目列表(敏捷使用)")
+    @PostMapping(value = "/users/{user_id}/projects/paging_option")
+    public ResponseEntity<Page<ProjectDTO>> pagingProjectsByOptions(@PathVariable(name = "organization_id") Long organizationId,
+                                                                   @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+                                                                   @RequestParam(required = false) String params,
+                                                                   @RequestParam(required = false, defaultValue = "false") Boolean onlySucceed,
+                                                                   @RequestBody ProjectSearchVO projectSearchVO) {
+        return new ResponseEntity<>(userC7nService.pagingProjectsByOptions(organizationId, userId, projectSearchVO, params, pageable, onlySucceed), HttpStatus.OK);
+    }
+
+>>>>>>> src/main/java/io/choerodon/iam/api/controller/v1/OrganizationUserController.java
 }

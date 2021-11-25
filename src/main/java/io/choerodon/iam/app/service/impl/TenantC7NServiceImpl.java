@@ -50,7 +50,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author scp
  * @since 2020/4/21
  */
-@Service
 public class TenantC7NServiceImpl implements TenantC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantC7NServiceImpl.class);
 

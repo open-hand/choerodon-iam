@@ -1,22 +1,21 @@
 package io.choerodon.iam.infra.utils;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import org.hzero.iam.domain.entity.TenantConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 
 public class TenantConfigConvertUtils {
+    public static final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private static final Integer CONSTANT_ONE = 1;
-    private static final String DEFAULT = "DEFAULT";
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantConfigConvertUtils.class);
 
 
@@ -64,6 +63,11 @@ public class TenantConfigConvertUtils {
                     case MARKETING_MANAGER:
                         tenantConfigVO.setMarketingManager(TypeUtil.objToLong(t.getConfigValue()));
                         break;
+                    case DUE_TIME:
+                        if (tenantConfigVO.getDueDate() != null) {
+                            tenantConfigVO.setDueDate(stringToDate(t.getConfigValue()));
+                        }
+                        break;
                     case VISITORS:
                         Long visitors = 0L;
                         if (!StringUtils.isEmpty(t.getConfigValue())) {
@@ -77,5 +81,18 @@ public class TenantConfigConvertUtils {
             LOGGER.warn("Compatible dirty data:{}", e.getMessage());
         }
         return tenantConfigVO;
+    }
+
+
+    /**
+     * 将yyyy-MM-dd HH:mm:ss类型字符串转换为Date类型
+     */
+    public static Date stringToDate(String dateStr) {
+        SimpleDateFormat formatter = new SimpleDateFormat(SIMPLE_DATE_FORMAT);
+        try {
+            return formatter.parse(dateStr);
+        } catch (Exception e) {
+            throw new CommonException("error.time.conversion");
+        }
     }
 }

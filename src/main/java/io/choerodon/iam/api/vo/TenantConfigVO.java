@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.vo;
 
+import java.util.Date;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -52,7 +54,10 @@ public class TenantConfigVO {
     @ApiModelProperty("销售")
     private Long marketingManager;
     private User marketingManagerUserVO;
-
+    @ApiModelProperty("剩余时间")
+    private Integer daysRemaining;
+    @ApiModelProperty("到期日期")
+    private Date dueDate;
 
 
     public String getCategory() {
@@ -189,5 +194,21 @@ public class TenantConfigVO {
 
     public void setMarketingManagerUserVO(User marketingManagerUserVO) {
         this.marketingManagerUserVO = marketingManagerUserVO;
+    }
+
+    public Integer getDaysRemaining() {
+        return daysRemaining;
+    }
+
+    public void setDaysRemaining(Integer daysRemaining) {
+        this.daysRemaining = daysRemaining;
+    }
+
+    public Date getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
     }
 }

@@ -159,4 +159,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
     Set<Long> listProjectIdsForUserId(@Param("tenantId") Long tenantId, @Param("userId") Long userId);
 
     List<ProjectDTO> listProjectsByCategoryAndOrgId(@Param("organizationId") Long organizationId, @Param("categoryCode") String categoryCode);
+
+    List<ProjectDTO> listProjectsByOrgId(@Param("tenantId") Long tenantId,@Param("category") String category, @Param("enabled") Boolean enabled);
+
 }

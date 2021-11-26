@@ -47,8 +47,11 @@ public class TenantConfigVO {
     private Long visitors;
     @ApiModelProperty("客户成功经理")
     private Long successManager;
+    private UserVO successManagerUserVO;
     @ApiModelProperty("销售")
     private Long marketingManager;
+    private UserVO marketingManagerUserVO;
+
 
 
     public String getCategory() {
@@ -169,5 +172,21 @@ public class TenantConfigVO {
 
     public void setMarketingManager(Long marketingManager) {
         this.marketingManager = marketingManager;
+    }
+
+    public UserVO getSuccessManagerUserVO() {
+        return successManagerUserVO;
+    }
+
+    public void setSuccessManagerUserVO(UserVO successManagerUserVO) {
+        this.successManagerUserVO = successManagerUserVO;
+    }
+
+    public UserVO getMarketingManagerUserVO() {
+        return marketingManagerUserVO;
+    }
+
+    public void setMarketingManagerUserVO(UserVO marketingManagerUserVO) {
+        this.marketingManagerUserVO = marketingManagerUserVO;
     }
 }

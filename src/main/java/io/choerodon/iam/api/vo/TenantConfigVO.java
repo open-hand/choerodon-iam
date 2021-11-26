@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -47,10 +48,10 @@ public class TenantConfigVO {
     private Long visitors;
     @ApiModelProperty("客户成功经理")
     private Long successManager;
-    private UserVO successManagerUserVO;
+    private User successManagerUserVO;
     @ApiModelProperty("销售")
     private Long marketingManager;
-    private UserVO marketingManagerUserVO;
+    private User marketingManagerUserVO;
 
 
 
@@ -174,19 +175,19 @@ public class TenantConfigVO {
         this.marketingManager = marketingManager;
     }
 
-    public UserVO getSuccessManagerUserVO() {
+    public User getSuccessManagerUserVO() {
         return successManagerUserVO;
     }
 
-    public void setSuccessManagerUserVO(UserVO successManagerUserVO) {
+    public void setSuccessManagerUserVO(User successManagerUserVO) {
         this.successManagerUserVO = successManagerUserVO;
     }
 
-    public UserVO getMarketingManagerUserVO() {
+    public User getMarketingManagerUserVO() {
         return marketingManagerUserVO;
     }
 
-    public void setMarketingManagerUserVO(UserVO marketingManagerUserVO) {
+    public void setMarketingManagerUserVO(User marketingManagerUserVO) {
         this.marketingManagerUserVO = marketingManagerUserVO;
     }
 }

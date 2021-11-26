@@ -222,7 +222,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 user = userC7nService.queryInfo(DetailsHelper.getUserDetails().getUserId());
             } else {
                 user = userAssertHelper.queryAnonymousUser();
-                DetailsHelper.setCustomUserDetails(user.getId(),user.getLanguage());
+                DetailsHelper.setCustomUserDetails(user.getId(), user.getLanguage());
                 DetailsHelper.getUserDetails().setOrganizationId(user.getOrganizationId());
             }
             //创建项目成功发送webhook
@@ -742,6 +742,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         //按照visit date 时间排序
         result = result.stream().sorted(Comparator.comparing(ProjectVisitInfoVO::getLastVisitTime).reversed()).collect(Collectors.toList());
         return result;
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsByOrgId(Long organizationId, String category, Boolean enabled) {
+       return projectMapper.listProjectsByOrgId(organizationId, category, enabled);
     }
 
     @Override

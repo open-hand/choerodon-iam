@@ -35,8 +35,10 @@ public class ProdController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "查询组织下所有项目")
     @GetMapping(value = "/organizations/{organization_id}/projects/all")
-    public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId) {
-        return new ResponseEntity<>(organizationProjectC7nService.listProjectsByOrgId(organizationId), HttpStatus.OK);
+    public ResponseEntity<List<ProjectDTO>> listProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
+                                                                @RequestParam(required = false) String category,
+                                                                @RequestParam(required = false) Boolean enabled) {
+        return new ResponseEntity<>(organizationProjectC7nService.listProjectsByOrgId(organizationId, category, enabled), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

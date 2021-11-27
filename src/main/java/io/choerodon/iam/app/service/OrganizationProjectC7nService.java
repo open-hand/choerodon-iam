@@ -84,4 +84,5 @@ public interface OrganizationProjectC7nService {
     List<ProjectDTO> listProjectsByCategoryAndOrgId(Long organizationId, String categoryCode);
 
     List<ProjectDTO> listProjectsByOrgId(Long organizationId, String category, Boolean enabled);
+
 }

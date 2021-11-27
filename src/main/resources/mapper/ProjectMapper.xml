@@ -882,7 +882,7 @@
         where
         fp.organization_id = #{tenantId}
         <if test="category != null and category != ''">
-            AND fpc.`CODE`="N_DEVOPS"
+            AND fpc.`CODE`= #{category}
         </if>
         <if test="enabled != null and enabled">
             AND fp.IS_ENABLED=1

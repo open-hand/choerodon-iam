@@ -872,4 +872,25 @@
         </if>
         fp.is_enabled desc,fp.creation_date desc
     </select>
+
+    <select id="listProjectsByOrgId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT fp.*
+
+        FROM fd_project fp
+        inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+        inner join fd_project_category fpc on fpc.id = fpmc.category_id
+        where
+        fp.organization_id = #{tenantId}
+        <if test="category != null and category != ''">
+            AND fpc.`CODE`="N_DEVOPS"
+        </if>
+        <if test="enabled != null and enabled">
+            AND fp.IS_ENABLED=1
+        </if>
+        <if test="enabled != null and !enabled">
+            AND fp.IS_ENABLED=0
+        </if>
+        GROUP BY fp.ID
+
+    </select>
 </mapper>

@@ -893,5 +893,5 @@
         GROUP BY fp.ID
 
     </select>
-    
+
 </mapper>

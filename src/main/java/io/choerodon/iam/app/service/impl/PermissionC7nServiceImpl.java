@@ -1,8 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.app.service.MenuService;
@@ -14,27 +21,16 @@ import org.hzero.iam.domain.repository.PermissionRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.constant.Constants;
 import org.hzero.iam.infra.constant.RolePermissionType;
-import org.hzero.lock.annotation.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.common.ApplicationContextHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.PermissionC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.constant.RedisCacheKeyConstants;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.C7nCollectionUtils;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author scp
@@ -74,6 +70,8 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     private RoleC7nMapper roleC7nMapper;
     @Autowired
     private MenuService menuService;
+    @Autowired
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
 
 
     @Override
@@ -90,9 +88,11 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId) {
         CustomUserDetails self = UserUtils.getUserDetails();
         Boolean isOrgRoot = false;
+        Set<String> labels = new HashSet<>();
         if (projectId != null) {
             ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
             isOrgRoot = userC7nService.checkIsOrgRoot(projectDTO.getOrganizationId(), self.getUserId());
+            labels.addAll(getProjectLabels(projectId));
         }
         Boolean finalIsOrgRoot = isOrgRoot;
         LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
@@ -105,13 +105,21 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
             currentRoleIds = self.roleMergeIds();
         }
         List<Long> finalCurrentRoleIds = currentRoleIds;
-        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(finalCurrentRoleIds, projectId, self.getUserId(), finalIsOrgRoot, c));
+        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(finalCurrentRoleIds, projectId, labels, self.getUserId(), finalIsOrgRoot, c));
     }
 
     @Override
     public List<Permission> getPermission(String[] codes) {
         List<Permission> permissions = permissionRepository.selectByCodes(codes);
         return permissions;
+    }
+
+    public Set<String> getProjectLabels(Long projectId) {
+        List<ProjectCategoryDTO> list = projectMapCategoryMapper.selectProjectCategoryNames(projectId);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new CommonException("error.project.category");
+        }
+        return list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
     }
 
     @Override
@@ -155,10 +163,10 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
                     delPsIds = childPsIds;
                 } else {
                     addPsIds = tplPsIds.stream().filter(id -> !childPsIds.contains(id)
-                            && StringUtils.equals(Constants.YesNoFlag.YES, tplPsMap.get(id).getCreateFlag()))
+                                    && StringUtils.equals(Constants.YesNoFlag.YES, tplPsMap.get(id).getCreateFlag()))
                             .collect(Collectors.toSet());
                     delPsIds = childPsIds.stream().filter(id -> !tplPsIds.contains(id)
-                            || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
+                                    || StringUtils.equals(Constants.YesNoFlag.DELETE, tplPsMap.get(id).getCreateFlag()))
                             .collect(Collectors.toSet());
 //                    updateRolePsList = childPs.stream()
 //                            .filter(ps -> !StringUtils.equals(ps.getInheritFlag(), tplPsMap.get(ps.getPermissionSetId()).getCreateFlag()))

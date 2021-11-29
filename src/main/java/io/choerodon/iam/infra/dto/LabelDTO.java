@@ -11,6 +11,9 @@ public class LabelDTO extends Label {
     @ApiModelProperty(value = "是否获取gitlab相关标签")
     private Boolean gitlabLabel;
 
+    @ApiModelProperty(value = "roleId")
+    private Long roleId;
+
     public LabelDTO() {
     }
 
@@ -20,5 +23,13 @@ public class LabelDTO extends Label {
 
     public void setGitlabLabel(Boolean gitlabLabel) {
         this.gitlabLabel = gitlabLabel;
+    }
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
     }
 }

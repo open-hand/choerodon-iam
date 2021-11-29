@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
@@ -171,6 +172,16 @@ public interface UserC7nMapper {
      * @return RoleC7nDTO列表
      */
     List<RoleC7nDTO> selectRolesByUidAndProjectId(@Param("id") Long id, @Param("projectId") Long projectId);
+
+    /**
+     * 查询用户在项目下拥有的角色
+     *
+     * @param uids
+     * @param projectId
+     * @return RoleC7nDTO列表
+     */
+    List<RoleVO> selectRolesByUidsAndProjectId(@Param("ids") Set<Long> uids, @Param("projectId") Long projectId);
+
 
     List<User> listOrgAdministrator(@Param("organizationId") Long organizationId,
                                     @Param("realName") String realName,

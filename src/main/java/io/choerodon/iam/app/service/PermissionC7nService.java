@@ -23,7 +23,14 @@ public interface PermissionC7nService {
      */
     List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId);
 
-    List<org.hzero.iam.domain.entity.Permission> getPermission(String[] codes);
+    List<Permission> getPermission(String[] codes);
+
+    /**
+     * 根据项目id查询项目标签
+     * @param projectId
+     * @return
+     */
+    Set<String> getProjectLabels(Long projectId);
 
     void asyncRolePermission();
 

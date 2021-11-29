@@ -7,6 +7,7 @@ import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
@@ -119,7 +120,10 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
         if (CollectionUtils.isEmpty(list)) {
             throw new CommonException("error.project.category");
         }
-        return list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
+        // 添加所有项目类型都能看到的菜单标签
+        Set<String> labels = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet())
+        labels.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
+        return labels;
     }
 
     @Override

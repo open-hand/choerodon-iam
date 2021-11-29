@@ -780,9 +780,5 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return projectMapper.listProjectsByCategoryAndOrgId(organizationId, categoryCode);
     }
 
-    @Override
-    public List<ProjectDTO> listProjectsByOrgId(Long organizationId, String category, Boolean enabled) {
-        return projectMapper.listProjectsByOrgId(organizationId, category, enabled);
-    }
 
 }

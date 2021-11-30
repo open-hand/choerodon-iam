@@ -29,5 +29,7 @@
         FROM fd_dashboard_user fdu
         JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
         WHERE fdu.user_id = #{userId} AND fd.dashboard_type = 'CUSTOMIZE'
+        ORDER BY
+        fdu.rank ASC
     </select>
 </mapper>

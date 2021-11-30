@@ -22,11 +22,19 @@ public interface DashboardMapper extends BaseMapper<DashboardDTO> {
     List<DashboardDTO> queryDashboard(@Param("userId") Long userId);
 
     /**
-     *
-     *
      * @param userId
      * @param filterFlag
      * @return
      */
     List queryInternalDashboard(@Param("userId") Long userId, @Param("filterFlag") Integer filterFlag);
+
+    /**
+     * 根据code查询
+     *
+     * @param names
+     * @param type
+     * @return
+     */
+    List<DashboardDTO> queryDashboardByNames(@Param("names") List<String> names, @Param("type") String type);
+
 }

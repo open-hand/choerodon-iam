@@ -3,7 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.app.service.DashboardService;
+import io.choerodon.iam.app.service.DashboardUserService;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
@@ -12,14 +12,11 @@ import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
 import org.hzero.core.base.BaseConstants;
 import org.springframework.stereotype.Service;
-import io.choerodon.iam.app.service.DashboardUserService;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 应用服务默认实现
@@ -76,7 +73,7 @@ public class DashboardUserServiceImpl implements DashboardUserService {
         dashboardUser.setRank(rank);
         dashboardUserMapper.insert(dashboardUser);
         for (DashboardUserDTO customizeDashboardUser : customizeDashboardUserDTOS) {
-            customizeDashboardUser.setRank(++rank);
+            customizeDashboardUser.setRank(customizeDashboardUser.getRank() + 1);
         }
         customizeDashboardUserDTOS.forEach(customizeDashboardUser ->
                 dashboardUserMapper.updateOptional(customizeDashboardUser, DashboardUserDTO.FIELD_RANK));
@@ -104,6 +101,25 @@ public class DashboardUserServiceImpl implements DashboardUserService {
             dashboardUserMapper.updateOptional(dashboardUserS.get(i), DashboardUserDTO.FIELD_RANK);
         }
         return dashboardUserMapper.select(new DashboardUserDTO().setUserId(obtainUserId()));
+    }
+
+    @Override
+    public void syncOfficialDashboard(List<String> dashboardNames) {
+        // 查询准备数据
+        Set<Long> userIds = dashboardUserMapper.selectAll().stream().map(DashboardUserDTO::getUserId).collect(Collectors.toSet());
+        List<DashboardDTO> dashboardDTOList = dashboardMapper.queryDashboardByNames(dashboardNames, DashboardType.INTERNAL.getValue());
+        Map<String, Long> dashboardMap = dashboardDTOList.stream().collect(Collectors.toMap(DashboardDTO::getDashboardName, DashboardDTO::getDashboardId));
+
+        userIds.forEach(userId -> {
+            dashboardNames.forEach(dashboardName -> {
+                DashboardUserDTO dashboardUserDTO = new DashboardUserDTO().setDashboardId(dashboardMap.get(dashboardName)).setUserId(userId);
+                DashboardUserDTO resultDTO = dashboardUserMapper.selectOne(dashboardUserDTO);
+                if (resultDTO == null) {
+                    // 不存在创建数据
+                    createInternalDashboardUser(dashboardUserDTO);
+                }
+            });
+        });
     }
 
     private Long obtainUserId() {

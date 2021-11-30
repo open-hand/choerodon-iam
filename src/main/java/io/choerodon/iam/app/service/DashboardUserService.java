@@ -33,4 +33,10 @@ public interface DashboardUserService {
      * @return
      */
     List<DashboardUserDTO> batchUpdateDashboardUserRank(List<DashboardUserDTO> dashboardUserS);
+
+    /**
+     * 自动同步官网视图给用户
+     * @param dashboardCodes 官方视图code
+     */
+    void syncOfficialDashboard(List<String> dashboardCodes);
 }

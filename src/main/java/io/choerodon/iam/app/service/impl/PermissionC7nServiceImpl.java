@@ -121,7 +121,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
             throw new CommonException("error.project.category");
         }
         // 添加所有项目类型都能看到的菜单标签
-        Set<String> labels = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet())
+        Set<String> labels = list.stream().map(ProjectCategoryDTO::getLabelCode).collect(Collectors.toSet());
         labels.add(MenuLabelEnum.N_GENERAL_PROJECT_MENU.value());
         return labels;
     }

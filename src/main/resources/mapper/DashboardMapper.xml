@@ -46,4 +46,22 @@
             )
         </if>
     </select>
+
+    <select id="queryDashboardByNames" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        SELECT
+        fd.dashboard_id,
+        fd.dashboard_type,
+        fd.dashboard_name,
+        fd.default_flag,
+        fd.created_by,
+        fd.object_version_number
+        FROM
+        fd_dashboard fd
+        WHERE
+        fd.dashboard_type = #{type}
+        AND fd.dashboard_name in
+        <foreach item="name"  collection="names" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
 </mapper>

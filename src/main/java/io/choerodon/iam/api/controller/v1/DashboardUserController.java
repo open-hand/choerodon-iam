@@ -42,4 +42,12 @@ public class DashboardUserController extends BaseController {
     public ResponseEntity<List<DashboardUserDTO>> batchUpdateDashboardUserRank(@Encrypt @RequestBody List<DashboardUserDTO> dashboardUserS) {
         return Results.success(dashboardUserService.batchUpdateDashboardUserRank(dashboardUserS));
     }
+
+    @ApiOperation(value = "自动分配官方视图给用户")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/sync_official_dashboard")
+    public ResponseEntity<Void> syncOfficialDashboard(@RequestBody List<String> dashboardNames) {
+        dashboardUserService.syncOfficialDashboard(dashboardNames);
+        return Results.success();
+    }
 }

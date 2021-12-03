@@ -63,6 +63,15 @@
         </collection>
     </resultMap>
 
+    <resultMap id="RoleVOMap" type="io.choerodon.iam.api.vo.RoleVO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="h_parent_role_id" property="parentRoleId"/>
+        <result column="h_inherit_role_id" property="inheritRoleId"/>
+        <result column="user_id" property="userId"/>
+    </resultMap>
+
     <resultMap id="simplifiedUserDTO" type="io.choerodon.iam.api.vo.SimplifiedUserVO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="loginName" column="login_name"/>
@@ -387,6 +396,22 @@
         WHERE imr.member_id = #{id}
           AND fpu.project_id = #{projectId}
           AND hlr.data_type = 'ROLE'
+    </select>
+
+    <select id="selectRolesByUidsAndProjectId" resultMap="RoleVOMap">
+        SELECT ir.*,
+        imr.member_id AS user_id
+        FROM fd_project_permission fpu
+        INNER JOIN iam_member_role imr on fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        left JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        Left JOIN iam_label il on il.id = hlr.label_id
+        WHERE fpu.project_id = #{projectId}
+        AND hlr.data_type = 'ROLE'
+        AND imr.member_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
     <resultMap id="userWithRoleAndImage" type="io.choerodon.iam.infra.dto.UserDTO" autoMapping="true"

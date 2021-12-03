@@ -2,13 +2,13 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -102,6 +102,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private static final String PROJECT = "project";
+    private static final String ORGANIZATION = "organization";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserC7nServiceImpl.class);
 
     @Autowired
@@ -886,6 +887,42 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         }
         return false;
+    }
+
+    @Override
+    public Map<Long, Boolean> checkUsersAreGitlabProjectOwner(Set<Long> ids, Long projectId, String level) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new HashMap<>();
+        }
+        Map<Long, List<io.choerodon.iam.api.vo.RoleVO>> c7nRoleMap;
+        if (ResourceLevel.PROJECT.value().equals(level)) {
+            c7nRoleMap = userC7nMapper.selectRolesByUidsAndProjectId(ids, projectId).stream().collect(Collectors.groupingBy(io.choerodon.iam.api.vo.RoleVO::getUserId));
+        } else {
+            ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
+            c7nRoleMap = roleC7nMapper.queryRolesInfoByUserIds(level, projectDTO.getOrganizationId(), ids).stream().collect(Collectors.groupingBy(io.choerodon.iam.api.vo.RoleVO::getUserId));
+        }
+        Set<Long> roleIds = c7nRoleMap.values().stream().flatMap(Collection::stream)
+                .map(io.choerodon.iam.api.vo.RoleVO::getId)
+                .collect(Collectors.toSet());
+        Map<Long, List<String>> roleLabelsMap = labelC7nMapper.selectLabelNamesMapInRoleIds(roleIds).stream().collect(Collectors.groupingBy(LabelDTO::getRoleId, mapping(LabelDTO::getName, Collectors.toList())));
+        Map<Long, Boolean> result = new HashMap<>();
+        if (!CollectionUtils.isEmpty(c7nRoleMap)) {
+            Set<Map.Entry<Long, List<io.choerodon.iam.api.vo.RoleVO>>> entries = c7nRoleMap.entrySet();
+            for (Map.Entry<Long, List<io.choerodon.iam.api.vo.RoleVO>> entry : entries) {
+                Set<Long> userRelatedRoleIds = entry.getValue().stream().map(io.choerodon.iam.api.vo.RoleVO::getId).collect(Collectors.toSet());
+                List<String> labels = new ArrayList<>();
+                userRelatedRoleIds.forEach(roleId -> labels.addAll(roleLabelsMap.get(roleId)));
+                switch (level) {
+                    case PROJECT:
+                        result.put(entry.getKey(), labels.contains(RoleLabelEnum.GITLAB_OWNER.value()));
+                        break;
+                    case ORGANIZATION:
+                        result.put(entry.getKey(), labels.contains(RoleLabelEnum.TENANT_ADMIN.value()));
+                        break;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

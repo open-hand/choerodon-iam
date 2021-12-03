@@ -1,5 +1,25 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.*;
+import javax.validation.Valid;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserService;
+import org.hzero.iam.domain.entity.PasswordPolicy;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -19,55 +39,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
-import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.Results;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.PasswordPolicy;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.PasswordPolicy;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.*;
 
 /**
  * @author superlee
@@ -404,6 +375,15 @@ public class UserC7nController extends BaseController {
             @Encrypt @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId) {
         return ResponseEntity.ok(userC7nService.checkIsGitlabOwner(id, projectId, ResourceLevel.PROJECT.value()));
+    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("校验所有用户是否是gitlab项目的所有者")
+    @PostMapping("/projects/{project_id}/check_users_are_gitlab_owner")
+    public ResponseEntity<Map<Long, Boolean>> checkUsersAreGitlabProjectOwner(
+            @Encrypt @RequestBody Set<Long> ids,
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(userC7nService.checkUsersAreGitlabProjectOwner(ids, projectId, ResourceLevel.PROJECT.value()));
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)

@@ -27,7 +27,6 @@
         <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
-
     </resultMap>
 
     <resultMap id="UserRoleVO" type="io.choerodon.iam.api.vo.UserRoleVO" autoMapping="true">
@@ -52,6 +51,24 @@
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
     </select>
+
+    <select id="queryRolesInfoByUserIds" resultMap="RoleDTO">
+        SELECT role.*,
+        imr.member_id AS user_id
+        FROM
+        iam_role role
+        LEFT JOIN iam_member_role imr ON role.id = imr.role_id
+        WHERE
+        imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+        AND imr.member_id IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+
     <select id="getByTenantIdAndLabel" resultMap="RoleMap">
         <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT ir.*

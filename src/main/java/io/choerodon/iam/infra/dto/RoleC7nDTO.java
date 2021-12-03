@@ -17,6 +17,7 @@ public class RoleC7nDTO extends Role {
     private List<Label> labels;
     private String projName;
     private Integer userCount;
+    private Long userId;
 
     public Integer getUserCount() {
         return userCount;
@@ -51,5 +52,13 @@ public class RoleC7nDTO extends Role {
 
     public void setProjName(String projName) {
         this.projName = projName;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

@@ -26,6 +26,10 @@ public interface RoleC7nMapper {
                                     @Param("sourceId") Long sourceId,
                                     @Param("userId") Long userId);
 
+    List<io.choerodon.iam.api.vo.RoleVO> queryRolesInfoByUserIds(@Param("sourceType") String sourceType,
+                                                                 @Param("sourceId") Long sourceId,
+                                                                 @Param("userIds") Set<Long> userIds);
+
     /**
      * 根据标签查询组织下角色
      *

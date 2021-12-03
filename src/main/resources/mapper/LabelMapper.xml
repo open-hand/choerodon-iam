@@ -72,6 +72,18 @@
             #{roleId}
         </foreach>
     </select>
+
+    <select id="selectLabelNamesMapInRoleIds" resultMap="labelDTO">
+        SELECT il.name,ir.id AS role_id
+        FROM iam_role ir
+        INNER JOIN hiam_label_rel hlr ON (hlr.data_id = ir.id AND hlr.data_type = 'ROLE')
+        INNER JOIN iam_label il ON il.id = hlr.label_id
+        WHERE ir.id IN
+        <foreach item="roleId" index="index" collection="roleIds" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </select>
+
     <select id="listByNames" resultType="org.hzero.iam.domain.entity.Label">
         SELECT *
         FROM iam_label il

@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -18,6 +19,8 @@ public interface LabelC7nMapper {
     List<LabelDTO> selectByUserId(Long id);
 
     Set<String> selectLabelNamesInRoleIds(@Param("roleIds") Set<Long> roleIds);
+
+    List<LabelDTO> selectLabelNamesMapInRoleIds(@Param("roleIds") Set<Long> roleIds);
 
     /**
      * 查出用户在项目层和组织层的所有角色标签

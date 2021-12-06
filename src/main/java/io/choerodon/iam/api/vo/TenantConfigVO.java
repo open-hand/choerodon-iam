@@ -49,9 +49,11 @@ public class TenantConfigVO {
     @ApiModelProperty("访问人数")
     private Long visitors;
     @ApiModelProperty("客户成功经理")
+    @Encrypt
     private Long successManager;
     private User successManagerUserVO;
     @ApiModelProperty("销售")
+    @Encrypt
     private Long marketingManager;
     private User marketingManagerUserVO;
     @ApiModelProperty("剩余时间")

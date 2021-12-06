@@ -18,7 +18,7 @@
             left join FD_REPORT_Tl frt on (frt.lang =#{lang} and frt.id = fr.id)
             AND frpc.PROJECT_CATEGORY = fpc.`CODE`
             AND fr.MODULE= #{module}
-        GROUP BY fr.ID
+        GROUP BY fr.ID,frt.TITLE, frt.DESCRIPTION
     </select>
 
 </mapper>

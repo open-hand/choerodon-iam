@@ -8,6 +8,8 @@ import javax.validation.constraints.NotNull;
 
 import javax.validation.constraints.NotBlank;
 
+import io.choerodon.mybatis.annotation.MultiLanguage;
+import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -21,6 +23,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 @ApiModel("")
 @VersionAudit
 @ModifyAudit
+@MultiLanguage
 @Table(name = "fd_dashboard")
 public class DashboardDTO extends AuditDomain {
 
@@ -42,11 +45,13 @@ public class DashboardDTO extends AuditDomain {
     @Id
     @GeneratedValue
     @Encrypt
+    @MultiLanguageField
     private Long dashboardId;
     @ApiModelProperty(value = "面板类型(CUSTOMIZE/自定义;INTERNAL/内置)")
     private String dashboardType;
     @ApiModelProperty(value = "面板名称", required = true)
     @NotBlank
+    @MultiLanguageField
     private String dashboardName;
     @ApiModelProperty(value = "默认面板")
     private Integer defaultFlag;

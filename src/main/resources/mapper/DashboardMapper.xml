@@ -16,13 +16,15 @@
 
     <select id="queryDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT fdu.dashboard_user_id,
-               fd.dashboard_id,
-               fd.dashboard_type,
-        IF ( fdt.dashboard_name IS NULL, fd.dashboard_name, fdt.dashboard_name ) AS dashboard_name,
-               fd.default_flag,
-               fd.created_by,
-               fdu.object_version_number
+        SELECT
+            fdu.dashboard_user_id,
+            fd.dashboard_id,
+            fd.dashboard_type,
+            IFNULL(fdt.dashboard_name, fd.dashboard_name) AS dashboard_name,
+            fd.dashboard_name as source_dashboard_name,
+            fd.default_flag,
+            fd.created_by,
+            fdu.object_version_number
         FROM fd_dashboard_user fdu
                  JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
         LEFT JOIN fd_dashboard_tl fdt ON fdt.dashboard_id = fd.dashboard_id

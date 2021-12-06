@@ -15,28 +15,34 @@
     </resultMap>
 
     <select id="queryDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT fdu.dashboard_user_id,
                fd.dashboard_id,
                fd.dashboard_type,
-               fd.dashboard_name,
+        IF ( fdt.dashboard_name IS NULL, fd.dashboard_name, fdt.dashboard_name ) AS dashboard_name,
                fd.default_flag,
                fd.created_by,
                fdu.object_version_number
         FROM fd_dashboard_user fdu
                  JOIN fd_dashboard fd ON fd.dashboard_id = fdu.dashboard_id
+        LEFT JOIN fd_dashboard_tl fdt ON fdt.dashboard_id = fd.dashboard_id
+        AND fdt.lang = #{lang}
         WHERE fdu.user_id = #{userId}
         ORDER BY fdu.rank ASC
     </select>
 
     <select id="queryInternalDashboard" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         fd.dashboard_id,
         fd.dashboard_type,
-        fd.dashboard_name,
+        IF ( fdt.dashboard_name IS NULL, fd.dashboard_name, fdt.dashboard_name ) AS dashboard_name,
         fd.default_flag,
         fd.created_by,
         fd.object_version_number
         FROM fd_dashboard fd
+        LEFT JOIN fd_dashboard_tl fdt ON fdt.dashboard_id = fd.dashboard_id
+        AND fdt.lang = #{lang}
         WHERE fd.dashboard_type = 'INTERNAL'
         <if test="filterFlag == 1">
             AND NOT EXISTS(
@@ -48,15 +54,18 @@
     </select>
 
     <select id="queryDashboardByNames" resultType="io.choerodon.iam.infra.dto.DashboardDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         fd.dashboard_id,
         fd.dashboard_type,
-        fd.dashboard_name,
+        IF ( fdt.dashboard_name IS NULL, fd.dashboard_name, fdt.dashboard_name ) AS dashboard_name,
         fd.default_flag,
         fd.created_by,
         fd.object_version_number
         FROM
         fd_dashboard fd
+        LEFT JOIN fd_dashboard_tl fdt ON fdt.dashboard_id = fd.dashboard_id
+        AND fdt.lang = #{lang}
         WHERE
         fd.dashboard_type = #{type}
         AND fd.dashboard_name in

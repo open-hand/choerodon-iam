@@ -4,6 +4,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.ReportMapper">
 
     <select id="selectByProjectId" resultType="io.choerodon.iam.infra.dto.ReportDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
             fr.ID, fr.REPORT_TYPE, fr.ICON,
                 frt.TITLE, frt.DESCRIPTION,

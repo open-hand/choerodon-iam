@@ -14,6 +14,5 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface ReportMapper extends BaseMapper<ReportDTO> {
 
     List<ReportDTO> selectByProjectId(@Param("projectId") Long projectId,
-                                      @Param("module") String module,
-                                      @Param("lang") String language);
+                                      @Param("module") String module);
 }

@@ -27,6 +27,6 @@ public class ReportC7nServiceImpl implements ReportC7nService {
     @Override
     public List<ReportDTO> queryReportList(Long projectId, String module) {
         AssertUtils.isTrue(StringUtils.isNotBlank(module),"error.module.is.null");
-        return reportMapper.selectByProjectId(projectId, module, LanguageHelper.language());
+        return reportMapper.selectByProjectId(projectId, module);
     }
 }

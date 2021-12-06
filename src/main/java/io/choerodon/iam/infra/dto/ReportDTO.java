@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
@@ -22,7 +23,9 @@ public class ReportDTO extends AuditDomain {
     private Long id;
     private String reportType;
     private String icon;
+    @MultiLanguageField
     private String title;
+    @MultiLanguageField
     private String description;
     private String path;
     private Long sort;

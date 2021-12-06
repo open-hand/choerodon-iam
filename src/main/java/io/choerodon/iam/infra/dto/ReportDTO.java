@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -15,6 +16,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @VersionAudit
 @ModifyAudit
+@MultiLanguage
 @Table(name = "FD_REPORT")
 public class ReportDTO extends AuditDomain {
 

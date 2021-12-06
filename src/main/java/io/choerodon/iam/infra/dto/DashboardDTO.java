@@ -55,6 +55,8 @@ public class DashboardDTO extends AuditDomain {
     @Transient
     @Encrypt
     private Long dashboardUserId;
+    @Transient
+    private String sourceDashboardName;
 
     //
     // 非数据库字段
@@ -117,6 +119,14 @@ public class DashboardDTO extends AuditDomain {
 
     public void setDashboardUserId(Long dashboardUserId) {
         this.dashboardUserId = dashboardUserId;
+    }
+
+    public String getSourceDashboardName() {
+        return sourceDashboardName;
+    }
+
+    public void setSourceDashboardName(String sourceDashboardName) {
+        this.sourceDashboardName = sourceDashboardName;
     }
 }
 

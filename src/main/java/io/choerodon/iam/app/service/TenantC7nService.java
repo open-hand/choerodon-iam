@@ -8,6 +8,7 @@ import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
@@ -82,6 +83,7 @@ public interface TenantC7nService {
 
     List<Tenant> queryTenants(Set<Long> tenantIds);
 
+    ExternalTenantVO queryTenantByIdWithExternalInfo(Long organizationId);
     /**
      * 修复部分组织没有多语言问题
      */

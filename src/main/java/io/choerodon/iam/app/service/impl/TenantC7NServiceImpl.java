@@ -35,10 +35,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ext.UpdateException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.SagaInstanceDetails;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
@@ -479,6 +476,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         initConfig(defaultTenant);
         tenantService.createTenant(defaultTenant);
         timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());
+    }
+
+    @Override
+    public ExternalTenantVO queryTenantByIdWithExternalInfo(Long organizationId) {
+        TenantVO tenantVO = queryTenantById(organizationId, false);
+        ExternalTenantVO externalTenantVO = ConvertUtils.convertObject(tenantVO, ExternalTenantVO.class);
+        return externalTenantVO;
     }
 
     /**

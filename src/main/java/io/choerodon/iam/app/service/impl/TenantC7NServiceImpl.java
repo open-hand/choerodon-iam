@@ -31,6 +31,8 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
+import io.choerodon.iam.api.vo.*;
+import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.constant.TenantConstants;
@@ -276,6 +278,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             list.forEach(t -> tenantC7nMapper.insertTenantTl(t.getTenantId(), "en_US", t.getTenantName()));
         }
         LOGGER.info("================end sync tenant tl================");
+    }
+
+    @Override
+    public ExternalTenantVO queryTenantByIdWithExternalInfo(Long organizationId) {
+        TenantVO tenantVO = queryTenantById(organizationId, false);
+        ExternalTenantVO externalTenantVO = ConvertUtils.convertObject(tenantVO, ExternalTenantVO.class);
+        return externalTenantVO;
     }
 
     /**

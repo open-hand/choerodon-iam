@@ -4,12 +4,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 
 import javax.validation.constraints.NotBlank;
 
-import io.choerodon.mybatis.annotation.MultiLanguage;
-import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -55,8 +52,8 @@ public class DashboardDTO extends AuditDomain {
     @Transient
     @Encrypt
     private Long dashboardUserId;
-    @Transient
-    private String sourceDashboardName;
+
+    private String dashboardCode;
 
     //
     // 非数据库字段
@@ -121,12 +118,12 @@ public class DashboardDTO extends AuditDomain {
         this.dashboardUserId = dashboardUserId;
     }
 
-    public String getSourceDashboardName() {
-        return sourceDashboardName;
+    public String getDashboardCode() {
+        return dashboardCode;
     }
 
-    public void setSourceDashboardName(String sourceDashboardName) {
-        this.sourceDashboardName = sourceDashboardName;
+    public void setDashboardCode(String dashboardCode) {
+        this.dashboardCode = dashboardCode;
     }
 }
 

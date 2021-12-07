@@ -54,5 +54,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
     changeSet(author: 'wanghao', id: '2021-12-07-fd_report-drop-column') {
         sql("DELETE FROM fd_report")
     }
-
+    changeSet(author: 'wanghao', id: '2021-12-07-updateDataType') {
+        modifyDataType(tableName: 'fd_report', columnName: 'TITLE', newDataType: 'VARCHAR(512)')
+        modifyDataType(tableName: 'fd_report', columnName: 'DESCRIPTION', newDataType: 'VARCHAR(2048)')
+    }
 }

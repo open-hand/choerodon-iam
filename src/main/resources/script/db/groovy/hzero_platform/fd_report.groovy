@@ -50,4 +50,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
         }
         addUniqueConstraint(tableName: 'fd_report', columnNames: 'REPORT_TYPE,code', constraintName: 'uk_type_code')
     }
+    // 新增多语言，数据结构调整，需要重新初始化
+    changeSet(author: 'wanghao', id: '2021-12-07-fd_report-drop-column') {
+        sql("DELETE FROM fd_report")
+    }
+
 }

@@ -281,4 +281,12 @@ public class TenantC7nController extends BaseController {
             @RequestBody Set<Long> tenantIds) {
         return ResponseEntity.ok(tenantC7nService.queryTenants(tenantIds));
     }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation("查询组织包括他的外部信息的开源实现")
+    @GetMapping("/external/tenants")
+    public ResponseEntity<TenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId) {
+        return new ResponseEntity<>(tenantC7nService.queryTenantById(organizationId, false), HttpStatus.OK);
+    }
 }

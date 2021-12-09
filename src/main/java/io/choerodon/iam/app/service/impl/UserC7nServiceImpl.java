@@ -1177,8 +1177,8 @@ public class UserC7nServiceImpl implements UserC7nService {
         BeanUtils.copyProperties(user, baseUser);
         baseUser.setPassword(decryptPassword);
         passwordPolicyManager.passwordValidate(decryptPassword, tenantId, baseUser);
-        // 处理强制使用手机验证码校验
-        userCaptchaService.validateForceCodeVerify(passwordPolicy, user, userPasswordDTO);
+        // 处理强制使用手机验证码校验 todo 先暂时跳过
+//        userCaptchaService.validateForceCodeVerify(passwordPolicy, user, userPasswordDTO);
         userPasswordService.updateUserPassword(userId, userPasswordDTO.getPassword(), false);
         userSelfRepository.clearErrorTimes(user.getId());
 

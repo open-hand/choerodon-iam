@@ -42,4 +42,20 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report.groovy') {
             column(name: 'MODULE', type: "VARCHAR(32)", remarks: '图表所属的菜单模块', afterColumn: 'type_sequence')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2021-12-06-fd_report-add-column') {
+        dropIndex(tableName: "fd_report", indexName: "uk_TITLE")
+        addColumn(tableName: 'fd_report') {
+            column(name: 'code', type: "VARCHAR(32)", remarks: '图表编码', afterColumn: 'type_sequence')
+        }
+        addUniqueConstraint(tableName: 'fd_report', columnNames: 'REPORT_TYPE,code', constraintName: 'uk_type_code')
+    }
+    // 新增多语言，数据结构调整，需要重新初始化
+    changeSet(author: 'wanghao', id: '2021-12-07-fd_report-drop-column') {
+        sql("DELETE FROM fd_report")
+    }
+    changeSet(author: 'wanghao', id: '2021-12-07-updateDataType') {
+        modifyDataType(tableName: 'fd_report', columnName: 'TITLE', newDataType: 'VARCHAR(512)')
+        modifyDataType(tableName: 'fd_report', columnName: 'DESCRIPTION', newDataType: 'VARCHAR(2048)')
+    }
 }

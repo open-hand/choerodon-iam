@@ -17,4 +17,13 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard.groovy') {
            column(name: "dashboard_name")
        }
     }
+    changeSet(author: "changping.shi@hand-china.com", id: "fd_dashboard-2021-12-06-version-2") {
+        addColumn(tableName: "fd_dashboard") {
+            column(name: "dashboard_code", type: "VARCHAR(64)", remarks: "code 预定义视图初始化使用", afterColumn: "dashboard_name")
+        }
+    }
+    changeSet(author: 'scp', id: '2021-12-06-2021-12-06-version-3') {
+        sql("UPDATE fd_dashboard SET dashboard_code='project' where dashboard_name='项目管理'")
+        sql("UPDATE fd_dashboard SET dashboard_code='resource' where dashboard_name='资源管理'")
+    }
 }

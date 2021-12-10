@@ -16,4 +16,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_report_project_category.groovy'
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    // 新增多语言，数据结构调整，需要重新初始化
+    changeSet(author: 'wanghao', id: '2021-12-07-fd_report-drop-column') {
+        sql("DELETE FROM FD_REPORT_PROJECT_CATEGORY")
+    }
 }

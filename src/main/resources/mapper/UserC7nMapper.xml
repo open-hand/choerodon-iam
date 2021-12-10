@@ -1215,9 +1215,8 @@
         <if test="params != null">
             AND (
             login_name = #{params} OR
-            real_name = #{params}) OR
-            attribute15 =#{params} OR
-            attribute14 =#{params}
+            real_name = #{params} OR
+            email = #{params})
         </if>
     </select>
 
@@ -1230,6 +1229,7 @@
             AND (
             login_name LIKE concat(concat('%',#{params}),'%') OR
             real_name LIKE concat(concat('%',#{params}),'%') OR
+            email LIKE concat(concat('%',#{params}),'%') OR
             attribute15 LIKE concat(concat('%',#{params}),'%') OR
             attribute14 LIKE concat(concat('%',#{params}),'%')
             )
@@ -1243,6 +1243,7 @@
             AND (
             login_name = #{params} OR
             real_name = #{params} OR
+            email = #{params} OR
             attribute15 = #{params} OR
             attribute14 = #{params}
             )

@@ -4,16 +4,21 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.ReportMapper">
 
     <select id="selectByProjectId" resultType="io.choerodon.iam.infra.dto.ReportDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
-            fr.*
+            fr.ID, fr.REPORT_TYPE, fr.ICON,
+                frt.TITLE, frt.DESCRIPTION,
+               fr.PATH, fr.SORT, fr.type_sequence,
+               fr.MODULE, fr.VISIBILITY
         FROM
             FD_REPORT fr
             JOIN FD_PROJECT_MAP_CATEGORY fpmc ON fpmc.PROJECT_ID = #{projectId}
             JOIN FD_PROJECT_CATEGORY fpc ON fpc.id = fpmc.CATEGORY_ID
             JOIN FD_REPORT_PROJECT_CATEGORY frpc ON frpc.REPORT_ID = fr.id
+            join FD_REPORT_Tl frt on (frt.lang =#{lang} and frt.id = fr.id)
             AND frpc.PROJECT_CATEGORY = fpc.`CODE`
             AND fr.MODULE= #{module}
-        GROUP BY fr.ID
+        GROUP BY fr.ID,frt.TITLE, frt.DESCRIPTION
     </select>
 
 </mapper>

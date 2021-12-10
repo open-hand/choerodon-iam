@@ -1,17 +1,16 @@
 package io.choerodon.iam.infra.utils;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.vo.TenantConfigVO;
+import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import org.hzero.iam.domain.entity.TenantConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.vo.TenantConfigVO;
-import io.choerodon.iam.infra.enums.TenantConfigEnum;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public class TenantConfigConvertUtils {
     public static final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -64,7 +63,7 @@ public class TenantConfigConvertUtils {
                         tenantConfigVO.setMarketingManager(TypeUtil.objToLong(t.getConfigValue()));
                         break;
                     case DUE_TIME:
-                        if (tenantConfigVO.getDueDate() != null) {
+                        if (!StringUtils.isEmpty(t.getConfigValue())) {
                             tenantConfigVO.setDueDate(stringToDate(t.getConfigValue()));
                         }
                         break;

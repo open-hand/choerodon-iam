@@ -18,7 +18,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -143,7 +142,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "项目层查询角色列表")
     @GetMapping(value = "/projects/{project_id}/roles")
     public ResponseEntity<List<io.choerodon.iam.api.vo.RoleVO>> listRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
-                                                                                        @RequestParam(name = "role_name") String roleName,
+                                                                                        @RequestParam(name = "role_name", required = false) String roleName,
                                                                                         @RequestParam(name = "only_select_enable", required = false, defaultValue = "true")
                                                                                                 Boolean onlySelectEnable) {
         return new ResponseEntity<>(projectPermissionService.listRolesByName(projectId, roleName, onlySelectEnable), HttpStatus.OK);

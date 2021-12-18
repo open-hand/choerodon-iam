@@ -115,24 +115,10 @@ env:
     # 等待连接池分配连接的最大时长（毫秒）
     SPRING_DATASOURCE_CONNECTION_TIMEOUT: 30000
 
-    # 执行命令线程池的核心线程数，也是命令执行的最大并发量
-    HYSTRIX_THREADPOOL_DEFAULT_CORE_SIZE: 128
-    # hystrix最大执行线程数
-    HYSTRIX_THREADPOOL_DEFAULT_MAXIMUM_SIZE: 256
-    # Hystrix 熔断超时时间
-    HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS: 12000
-    # Ribbon 读取超时时间
-    RIBBON_READ_TIMEOUT: 5000
-    # Ribbon 连接超时时间
-    RIBBON_CONNECT_TIMEOUT: 5000
-    # Ribbon从DiscoveryClient同步Server的间隔时间
-    RIBBON_SERVER_LIST_REFRESH_INTERVAL: 10000
-    # IO线程数, 它主要执行非阻塞的任务
-    SERVER_UNDERTOW_IO_THREADS: 4
-    # 阻塞任务线程池
-    SERVER_UNDERTOW_WORKER_THREADS: 128
-    # 每块buffer的空间大小，越小空间被利用越充分
-    SERVER_UNDERTOW_BUFFER_SIZE: 1024
+    # 连接超时
+    FEIGN_CLIENT_CONFIG_DEFAULT_CONNECT_TIMEOUT: 2000
+    # 读取超时
+    FEIGN_CLIENT_CONFIG_DEFAULT_READ_TIMEOUT: 5000
     HZERO_ENABLE_CACHE: false
     # 在使用URL激活注册的用户账户时，对ticket加密解密的Aes密钥
     HZERO_REGISTER_URL_ACTIVATE_AES_KEY: RVz3QWIx66c6e-MDhftkIY4UTgqZBia9weaTBJvXt4s=

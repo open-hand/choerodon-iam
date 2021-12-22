@@ -32,7 +32,6 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
@@ -95,8 +94,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Value("${choerodon.category.enabled:false}")
     private Boolean categoryEnable;
 
-    private SagaClient sagaClient;
-
     private UserC7nService userC7nService;
 
     private AsgardFeignClient asgardFeignClient;
@@ -148,8 +145,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Autowired
     private UserWizardService userWizardService;
 
-    public OrganizationProjectC7nServiceImpl(SagaClient sagaClient,
-                                             ProjectMapCategoryMapper projectMapCategoryMapper,
+    public OrganizationProjectC7nServiceImpl(ProjectMapCategoryMapper projectMapCategoryMapper,
                                              ProjectMapper projectMapper,
                                              ProjectAssertHelper projectAssertHelper,
                                              ProjectCategoryMapper projectCategoryMapper,
@@ -173,7 +169,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     ) {
         this.starProjectService = starProjectService;
         this.redisTemplate = redisTemplate;
-        this.sagaClient = sagaClient;
         this.userC7nService = userC7nService;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectMapper = projectMapper;
@@ -420,8 +415,15 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
 
         try {
-            String input = mapper.writeValueAsString(projectEventMsg);
-            sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectDTO.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withSagaCode(PROJECT_UPDATE)
+                            .withPayloadAndSerialize(projectEventMsg)
+                            .withRefType("updateProject")
+                            .withRefId(newProjectDTO.getId().toString())
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(newProjectDTO.getId()),
+                    builder -> {
+                    });
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.updateProject.event", e);
         }
@@ -513,8 +515,15 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         payload.setProgramId(programId);
         //saga
         try {
-            String input = mapper.writeValueAsString(payload);
-            sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDTO.getOrganizationId()));
+            producer.apply(StartSagaBuilder.newBuilder()
+                            .withSagaCode(consumerType)
+                            .withPayloadAndSerialize(payload)
+                            .withRefType("updateProject")
+                            .withRefId(payload.getProjectId().toString())
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(payload.getProjectId()),
+                    builder -> {
+                    });
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
         }

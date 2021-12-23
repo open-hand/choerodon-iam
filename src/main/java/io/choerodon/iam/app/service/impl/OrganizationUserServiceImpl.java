@@ -381,8 +381,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
-            userService.updateUserInternal(user);
         }
+        userService.updateUserInternal(user);
         //如果修改了手机号，则用户手机号绑定状态变为未绑定
         if (phoneChange) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);

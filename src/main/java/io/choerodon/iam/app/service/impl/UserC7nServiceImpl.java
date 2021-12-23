@@ -215,6 +215,10 @@ public class UserC7nServiceImpl implements UserC7nService {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
         }
+        // hzero没有用户名变化参数 用phone参数代替
+        if (!userDetails.getRealName().equals(user.getRealName())) {
+            user.setPhoneChanged(true);
+        }
         userService.updateUserInternal(user);
         return userDetails;
     }

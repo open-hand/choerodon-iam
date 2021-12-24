@@ -344,29 +344,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
 
-    private void sendBatchUserCreateEvent(List<UserEventPayload> payloads, Long orgId) {
-        if (!payloads.isEmpty()) {
-            try {
-                String input = mapper.writeValueAsString(payloads);
-                String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_CREATE_BATCH)
-                                .withJson(input)
-                                .withRefType("user")
-                                .withRefId(refIds)
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(orgId),
-                        build -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
-            } finally {
-                payloads.clear();
-            }
-        }
-    }
-
-
     @Override
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     @Transactional(rollbackFor = Exception.class)

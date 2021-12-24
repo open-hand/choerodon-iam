@@ -351,6 +351,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        // hzero没有用户名变化参数 用phone参数代替
+        if (!userDetails.getRealName().equals(user.getRealName())) {
+            user.setPhoneChanged(true);
+        }
         boolean phoneChange = false;
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;

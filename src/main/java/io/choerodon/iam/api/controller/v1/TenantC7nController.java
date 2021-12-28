@@ -2,7 +2,6 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 import java.util.Set;
-import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,11 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
@@ -44,7 +41,7 @@ import io.choerodon.swagger.annotation.Permission;
 @Api(tags = C7nSwaggerApiConfig.CHOERODON_TENANT)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations")
-public class TenantC7nController extends BaseController {
+public class TenantC7nController {
 
     private TenantC7nService tenantC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;

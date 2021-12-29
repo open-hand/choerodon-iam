@@ -32,6 +32,10 @@ public enum TenantConfigEnum {
      */
     SUCCESS_MANAGER("successManager"),
     /**
+     * 燕千云同步
+     */
+    YQSYNC_COMPLETED("yqSyncCompleted"),
+    /**
      * 销售
      */
     MARKETING_MANAGER("marketingManager");

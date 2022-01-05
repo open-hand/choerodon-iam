@@ -47,7 +47,7 @@ public class PermissionAndMenuFixRunner implements CommandLineRunner {
 
     @Value("${choerodon.fix.data.page.sleep.time: 500}")
     private Integer sleepTime;
-    @Value("${choerodon.fix.data.flag.runner: true}")
+    @Value("${choerodon.fix.data.flag: true}")
     private Boolean fixDataFlag;
     @Autowired
     private PermissionC7nService permissionC7nService;

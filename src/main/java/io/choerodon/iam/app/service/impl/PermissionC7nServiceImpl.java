@@ -1,16 +1,8 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.PermissionC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
-import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.enums.MenuLabelEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
-import io.choerodon.iam.infra.mapper.*;
-import io.choerodon.iam.infra.utils.C7nCollectionUtils;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.api.dto.PermissionCheckDTO;
 import org.hzero.iam.app.service.MenuService;
@@ -30,8 +22,17 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.PermissionC7nService;
+import io.choerodon.iam.app.service.UserC7nService;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.mapper.*;
+import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 
 /**
  * @author scp
@@ -131,11 +132,9 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     public void asyncRolePermission() {
         try {
             // 修复子角色权限（保持和模板角色权限一致）
-            if (Boolean.TRUE.equals(fixDataFlag)) {
-                LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");
-                fixChildPermission();
-                LOGGER.info(">>>>>>>>>>>>>>>>>>> end fix role permission >>>>>>>>>>>>>>>>>>>>>>");
-            }
+            LOGGER.info(">>>>>>>>>>>>>>> start fix role permission >>>>>>>>>>>>>>");
+            fixChildPermission();
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> end fix role permission >>>>>>>>>>>>>>>>>>>>>>");
         } catch (Exception e) {
             throw new CommonException("error.fix.role.permission.data", e);
         }

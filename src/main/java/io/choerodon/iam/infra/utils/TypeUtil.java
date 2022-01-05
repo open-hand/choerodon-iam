@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +107,7 @@ public class TypeUtil {
         mapParams.put(TypeUtil.SEARCH_PARAM, null);
         mapParams.put(TypeUtil.PARAMS, null);
 
-        if (!StringUtils.isEmpty(params)) {
+        if (!ObjectUtils.isEmpty(params)) {
             Map<String, Object> maps = gson.fromJson(params, Map.class);
             mapParams.put(TypeUtil.SEARCH_PARAM, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
             mapParams.put(TypeUtil.PARAMS, TypeUtil.cast(maps.get(TypeUtil.PARAMS)));

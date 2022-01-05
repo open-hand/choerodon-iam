@@ -461,7 +461,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     private List<Receiver> constructUsersByIds(List<Long> userIds) {
-        List<User> users = userRepository.selectByIds(org.apache.commons.lang.StringUtils.join(userIds, ","));
+        List<User> users = userRepository.selectByIds(org.apache.commons.lang3.StringUtils.join(userIds, ","));
         if (!CollectionUtils.isEmpty(users)) {
             return users.stream().map(u -> {
                 Receiver receiver = new Receiver();

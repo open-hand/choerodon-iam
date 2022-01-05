@@ -5,7 +5,7 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.DELETE_CLIENT;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.app.service.MemberRoleService;

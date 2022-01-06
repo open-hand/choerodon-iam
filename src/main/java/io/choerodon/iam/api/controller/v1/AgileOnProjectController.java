@@ -35,8 +35,6 @@ import springfox.documentation.annotations.ApiIgnore;
 public class AgileOnProjectController {
 
     private final ProjectC7nService projectC7nService;
-    @Autowired
-    private UserC7nService userC7nService;
 
     public AgileOnProjectController(ProjectC7nService projectC7nService) {
         this.projectC7nService = projectC7nService;
@@ -67,22 +65,5 @@ public class AgileOnProjectController {
         return new ResponseEntity<>(projectC7nService.checkPermissionByProjectId(projectId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前组织下用户的项目列表")
-    @GetMapping(value = "/users/{user_id}/projects_simple")
-    public ResponseEntity<List<ProjectDTO>> listProjectsByUserIdForSimple(@PathVariable(name = "organization_id") Long organizationId,
-                                                                          @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                                          @RequestParam(required = false) String name,
-                                                                          @RequestParam(required = false) String code,
-                                                                          @RequestParam(required = false) String category,
-                                                                          @RequestParam(required = false) Boolean enabled,
-                                                                          @RequestParam(required = false) String params) {
-        ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setName(name);
-        projectDTO.setCode(code);
-        projectDTO.setCategory(category);
-        projectDTO.setEnabled(enabled);
-        return new ResponseEntity<>(userC7nService.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, params), HttpStatus.OK);
-    }
 
 }

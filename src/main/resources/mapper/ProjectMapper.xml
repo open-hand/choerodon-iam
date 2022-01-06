@@ -571,7 +571,12 @@
     </select>
 
     <select id="listProjectsByUserIdForSimple" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        SELECT fp.*
+        SELECT
+        DISTINCT fp.id,
+        fp.`CODE`,
+        fp.`NAME`,
+        fp.IS_ENABLED,
+        fp.IMAGE_URL
         FROM fd_project fp
         <if test="!isAdmin and !isOrgAdmin">
             INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id

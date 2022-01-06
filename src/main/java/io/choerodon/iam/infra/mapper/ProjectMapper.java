@@ -138,6 +138,13 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                                                       @Param("isOrgAdmin") Boolean isOrgAdmin,
                                                                       @Param("params") String params);
 
+    List<ProjectDTO> listProjectsByUserIdForSimple(@Param("organizationId") Long organizationId,
+                                                   @Param("userId") Long userId,
+                                                   @Param("projectDTO") ProjectDTO projectDTO,
+                                                   @Param("isAdmin") Boolean isAdmin,
+                                                   @Param("isOrgAdmin") Boolean isOrgAdmin,
+                                                   @Param("params") String params);
+
     List<ProjectDTO> listOwnedProjects(@Param("organizationId") Long organizationId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin, @Param("isOrgAdmin") boolean isOrgAdmin);
 
     Page<ProjectDTO> pageOwnedProjects(@Param("organizationId") Long organizationId, @Param("currentProjectId") Long currentProjectId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin, @Param("isOrgAdmin") boolean isOrgAdmin, @Param("param") String param);
@@ -167,6 +174,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                             @Param("isOrgAdmin") Boolean isOrgAdmin,
                                             @Param("params") String params);
 
-    List<ProjectDTO> listProjectsByOrgId(@Param("tenantId") Long tenantId,@Param("category") String category, @Param("enabled") Boolean enabled);
+    List<ProjectDTO> listProjectsByOrgId(@Param("tenantId") Long tenantId, @Param("category") String category, @Param("enabled") Boolean enabled);
 
 }

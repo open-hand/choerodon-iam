@@ -233,23 +233,7 @@ public class OrganizationUserController extends BaseController {
         return new ResponseEntity<>(userC7nService.listProjectsByUserId(organizationId, userId, projectDTO, params), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前组织下用户的项目列表")
-    @GetMapping(value = "/users/{user_id}/projects_simple")
-    public ResponseEntity<List<ProjectDTO>> listProjectsByUserIdForSimple(@PathVariable(name = "organization_id") Long organizationId,
-                                                                          @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                                          @RequestParam(required = false) String name,
-                                                                          @RequestParam(required = false) String code,
-                                                                          @RequestParam(required = false) String category,
-                                                                          @RequestParam(required = false) Boolean enabled,
-                                                                          @RequestParam(required = false) String params) {
-        ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setName(name);
-        projectDTO.setCode(code);
-        projectDTO.setCategory(category);
-        projectDTO.setEnabled(enabled);
-        return new ResponseEntity<>(userC7nService.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, params), HttpStatus.OK);
-    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")

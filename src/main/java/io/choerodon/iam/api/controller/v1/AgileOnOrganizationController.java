@@ -26,8 +26,8 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
- * @author superlee
- * @since 2020-10-14
+ * @author scp
+ * @since 2022-1-06
  */
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations")

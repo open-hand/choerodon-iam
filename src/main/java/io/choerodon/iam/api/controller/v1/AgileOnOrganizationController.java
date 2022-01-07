@@ -38,7 +38,7 @@ public class AgileOnOrganizationController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
-    @GetMapping(value = "/users/{user_id}/projects_simple")
+    @GetMapping(value = "/{organization_id}/users/{user_id}/projects_simple")
     public ResponseEntity<List<ProjectDTO>> listProjectsByUserIdForSimple(@PathVariable(name = "organization_id") Long organizationId,
                                                                           @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                           @RequestParam(required = false) String name,

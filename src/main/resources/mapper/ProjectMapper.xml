@@ -576,7 +576,8 @@
         fp.`CODE`,
         fp.`NAME`,
         fp.IS_ENABLED,
-        fp.IMAGE_URL
+        fp.IMAGE_URL,
+        fp.creation_date
         FROM fd_project fp
         <if test="!isAdmin and !isOrgAdmin">
             INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id

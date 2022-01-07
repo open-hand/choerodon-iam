@@ -237,6 +237,14 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     }
 
     @Override
+    public List<UserDTO> listUsersWithRoles(Long projectId, Set<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        return projectPermissionMapper.listUserWithRolesOnProjectLevelByIds(projectId, userIds);
+    }
+
+    @Override
     public List<UserDTO> listUsersByNameWithLimit(Long projectId, String param) {
         return projectPermissionMapper.listUsersByNameWithLimit(projectId, param);
     }

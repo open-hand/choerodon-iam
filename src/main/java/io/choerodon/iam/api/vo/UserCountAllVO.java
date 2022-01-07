@@ -6,14 +6,14 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 2020/12/30
  */
-public class UserCountVO {
+public class UserCountAllVO {
     @ApiModelProperty("用户的数量")
     private Integer count;
 
-    public UserCountVO() {
+    public UserCountAllVO() {
     }
 
-    public UserCountVO(Integer count) {
+    public UserCountAllVO(Integer count) {
         this.count = count;
     }
 

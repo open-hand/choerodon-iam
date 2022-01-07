@@ -359,7 +359,7 @@ public interface UserC7nService {
      *
      * @return 用户数量
      */
-    UserCountVO countAllUsers();
+    UserCountAllVO countAllUsers();
 
     /**
      * 获取所有用户id

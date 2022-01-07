@@ -1670,9 +1670,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public UserCountVO countAllUsers() {
+    public UserCountAllVO countAllUsers() {
         int count = userMapper.selectCount(new UserDTO());
-        return new UserCountVO(count);
+        return new UserCountAllVO(count);
     }
 
     @Override

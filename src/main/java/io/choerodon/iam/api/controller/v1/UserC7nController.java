@@ -214,7 +214,7 @@ public class UserC7nController extends BaseController {
     }
 
 
-    @Permission(permissionWithin = true)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<User>> listUsersByIds(@Encrypt @RequestBody Long[] ids,

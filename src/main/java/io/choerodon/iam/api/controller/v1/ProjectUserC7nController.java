@@ -252,7 +252,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     @ApiOperation("校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @GetMapping("/{project_id}/check_admin_permission")
     public ResponseEntity<Boolean> checkAdminPermission(
             @ApiParam(value = "项目id", required = true)

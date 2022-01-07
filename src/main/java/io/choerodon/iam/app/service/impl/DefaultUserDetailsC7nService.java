@@ -1,11 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.TenantConfig;
 import org.hzero.iam.domain.service.user.impl.DefaultUserDetailsService;

@@ -1,13 +1,10 @@
 package io.choerodon.iam;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
@@ -39,11 +36,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author allen 2018/6/29
@@ -307,7 +306,7 @@ public class TestMenuRepositoryImpl extends BaseRepositoryImpl<Menu> implements 
         // 查询有权限的
         List<PermissionCheckDTO> results = null;
         if (checkSupplier == null) {
-            results = menuMapper.checkPermissionSets(self.roleMergeIds(), codes, self.getUserId());
+            results = menuMapper.checkPermissionSets(self.roleMergeIds(), null, codes, self.getUserId());
         } else {
             results = checkSupplier.apply(codes);
         }

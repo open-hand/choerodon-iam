@@ -20,6 +20,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.iam.app.service.DemoRegisterService;
@@ -211,5 +212,13 @@ public class TenantC7nController extends BaseController {
     public ResponseEntity<List<Tenant>> queryTenants(
             @RequestBody Set<Long> tenantIds) {
         return ResponseEntity.ok(tenantC7nService.queryTenants(tenantIds));
+    }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation("查询组织包括他的外部信息的开源实现")
+    @GetMapping("/external/tenants")
+    public ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId) {
+        return new ResponseEntity<>(tenantC7nService.queryTenantByIdWithExternalInfo(organizationId), HttpStatus.OK);
     }
 }

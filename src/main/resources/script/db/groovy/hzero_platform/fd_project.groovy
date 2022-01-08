@@ -83,4 +83,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             column(name: 'DESCRIPTION', type: 'VARCHAR(120)', remarks: '项目描述',afterColumn: 'BEFORE_CATEGORY')
         }
     }
+
+    changeSet(author: 'scp', id: '2022-01-06-add-index') {
+        createIndex(indexName: 'U1_PROJECT_ID', tableName: 'fd_project') {
+            column(name: 'ORGANIZATION_ID')
+        }
+    }
 }

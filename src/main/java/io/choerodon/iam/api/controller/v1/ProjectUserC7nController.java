@@ -113,6 +113,17 @@ public class ProjectUserC7nController extends BaseController {
         return new ResponseEntity<>(projectPermissionService.listUsersWithRolesAndGitlabUserIdByIdsInProject(projectId, userIds), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据多个id查询用户（包括用户信息以及所分配的项目角色信息以及GitlabUserId）")
+    @PostMapping(value = "/{project_id}/users/ids")
+    public ResponseEntity<List<UserDTO>> listUsersWithRoles(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(name = "project_id") Long projectId,
+            @ApiParam(value = "多个用户id", required = true)
+            @Encrypt @RequestBody Set<Long> userIds) {
+        return new ResponseEntity<>(projectPermissionService.listUsersWithRoles(projectId, userIds), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下指定角色的用户列表")
@@ -252,7 +263,7 @@ public class ProjectUserC7nController extends BaseController {
     }
 
     @ApiOperation("校验用户是否拥有项目管理权限 - 是否时项目所有者、组织管理员、root用户")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @GetMapping("/{project_id}/check_admin_permission")
     public ResponseEntity<Boolean> checkAdminPermission(
             @ApiParam(value = "项目id", required = true)

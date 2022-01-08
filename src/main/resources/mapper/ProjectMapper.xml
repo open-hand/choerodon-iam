@@ -293,7 +293,7 @@
             </when>
             <when test="projectDTO != null and projectDTO.category != null">
                 INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-                INNER Join fd_project_category fpc ON  fpmc.CATEGORY_ID = fpc.id
+                INNER Join fd_project_category fpc ON fpmc.CATEGORY_ID = fpc.id
             </when>
             <otherwise>
                 LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
@@ -319,8 +319,8 @@
                     AND fp.code LIKE concat(concat('%',#{projectDTO.code}),'%')
                 </if>
                 <if test="projectDTO.category != null">
-<!--                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')-->
-                   AND fpc.CODE = #{projectDTO.category}
+                    <!--                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')-->
+                    AND fpc.CODE = #{projectDTO.category}
                 </if>
                 <if test="projectDTO.enabled != null">
                     AND fp.is_enabled = #{projectDTO.enabled}
@@ -569,6 +569,49 @@
         </where>
         order by fp.is_enabled desc,fp.creation_date desc, fpmc.id asc
     </select>
+
+    <select id="listProjectsByUserIdForSimple" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT
+        DISTINCT fp.id,
+        fp.`CODE`,
+        fp.`NAME`,
+        fp.IS_ENABLED,
+        fp.IMAGE_URL,
+        fp.creation_date
+        FROM fd_project fp
+        <if test="!isAdmin and !isOrgAdmin">
+            INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+            INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+            AND imr.member_id = #{userId}
+            AND imr.member_type = 'user'
+            AND imr.source_type = 'organization'
+            AND imr.source_id = #{organizationId}
+            INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
+        </if>
+        <if test="projectDTO.category != null">
+            inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
+            inner join fd_project_category fpc on fpc.id = fpmc.category_id and fpc.code=#{projectDTO.category}
+        </if>
+        where fp.organization_id = #{organizationId}
+            <if test="projectDTO != null">
+                <if test="projectDTO.name != null">
+                    AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
+                </if>
+                <if test="projectDTO.code != null">
+                    AND fp.code LIKE concat(concat('%',#{projectDTO.code}),'%')
+                </if>
+                <if test="projectDTO.enabled != null">
+                    AND fp.is_enabled = #{projectDTO.enabled}
+                </if>
+            </if>
+            <if test="params != null">
+                AND (
+                fp.name LIKE concat(concat('%', #{params}), '%') OR
+                fp.code LIKE concat(concat('%', #{params}), '%')
+                )
+            </if>
+    </select>
+
     <select id="listOwnedProjects" resultMap="projectDTO">
         SELECT fp.*
         FROM fd_project fp
@@ -653,29 +696,29 @@
 
     <select id="checkPermissionByProjectId" resultType="java.lang.Integer">
         SELECT
-            COUNT(*)
+        COUNT(*)
         FROM
-            fd_project_permission fpp
-            JOIN iam_member_role imr ON imr.id = fpp.MEMBER_ROLE_ID
-                AND imr.member_id = #{userId}
-                AND imr.member_type = 'user'
-                AND imr.source_id = #{organizationId}
-                AND imr.source_type = 'organization'
-            JOIN fd_project fp ON fp.ID = fpp.PROJECT_ID
-                AND fp.IS_ENABLED = 1
+        fd_project_permission fpp
+        JOIN iam_member_role imr ON imr.id = fpp.MEMBER_ROLE_ID
+        AND imr.member_id = #{userId}
+        AND imr.member_type = 'user'
+        AND imr.source_id = #{organizationId}
+        AND imr.source_type = 'organization'
+        JOIN fd_project fp ON fp.ID = fpp.PROJECT_ID
+        AND fp.IS_ENABLED = 1
         WHERE
-            fpp.PROJECT_ID = #{projectId}
+        fpp.PROJECT_ID = #{projectId}
     </select>
 
 
     <select id="listCategoryByProjectId" resultType="java.lang.String">
         SELECT
-            fdc.`CODE`
+        fdc.`CODE`
         FROM
-            fd_project_map_category fpmc
-                LEFT JOIN fd_project_category fdc ON fdc.id = fpmc.CATEGORY_ID
+        fd_project_map_category fpmc
+        LEFT JOIN fd_project_category fdc ON fdc.id = fpmc.CATEGORY_ID
         WHERE
-            fpmc.PROJECT_ID = #{projectId}
+        fpmc.PROJECT_ID = #{projectId}
     </select>
     <select id="selectWithCategory" resultMap="projectWithCategoryMap">
         select fp.*,
@@ -692,20 +735,20 @@
         fp.ORGANIZATION_ID = #{organizationId}
         <if test="projectSearchVO != null">
 
-            <if test="projectSearchVO.categoryIds !=null and projectSearchVO.categoryIds.size>0" >
+            <if test="projectSearchVO.categoryIds !=null and projectSearchVO.categoryIds.size>0">
                 AND fpc.id IN
-                <foreach collection="projectSearchVO.categoryIds" item="id" open="(" separator="," close=")" >
+                <foreach collection="projectSearchVO.categoryIds" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
-            <if test="projectSearchVO.categoryCodes !=null and projectSearchVO.categoryCodes.size>0" >
+            <if test="projectSearchVO.categoryCodes !=null and projectSearchVO.categoryCodes.size>0">
                 AND fpc.code IN
-                <foreach collection="projectSearchVO.categoryCodes" item="code" open="(" separator="," close=")" >
+                <foreach collection="projectSearchVO.categoryCodes" item="code" open="(" separator="," close=")">
                     #{code}
                 </foreach>
             </if>
 
-            <if test="projectSearchVO.enable !=null" >
+            <if test="projectSearchVO.enable !=null">
                 AND fp.is_enabled = #{projectSearchVO.enable}
             </if>
         </if>
@@ -720,7 +763,8 @@
         FROM fd_project fp
         inner join hpfm_tenant ht on fp.organization_id=ht.tenant_id
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
-        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'N_DEVOPS' or fpc.code = 'N_OPERATIONS'))
+        inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'N_DEVOPS' or fpc.code =
+        'N_OPERATIONS'))
         <if test="!isAdmin">
             INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
@@ -741,7 +785,7 @@
     <select id="queryImmutableProjectInfo" resultType="io.choerodon.iam.api.vo.ImmutableProjectInfoVO">
         SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num
         FROM fd_project fd
-                 INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
+        INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};
     </select>
 
@@ -753,49 +797,49 @@
 
     <select id="selectDisableProjectByProjectMember" resultType="java.lang.Integer">
         SELECT
-          count(1)
+        count(1)
         FROM
-	      fd_project fp
-	      LEFT JOIN iam_user iu ON iu.id = fp.created_by
-	      INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
-	      INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
-	      INNER JOIN iam_role ir ON ( ir.is_enabled = 1 AND ir.id = imr.role_id )
-	      JOIN hiam_label_rel hlr on hlr.data_id = ir.id
-	      Left JOIN iam_label il on il.id = hlr.label_id
+        fd_project fp
+        LEFT JOIN iam_user iu ON iu.id = fp.created_by
+        INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
+        INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
+        INNER JOIN iam_role ir ON ( ir.is_enabled = 1 AND ir.id = imr.role_id )
+        JOIN hiam_label_rel hlr on hlr.data_id = ir.id
+        Left JOIN iam_label il on il.id = hlr.label_id
         WHERE
-	      fp.organization_id = #{tenantId}
-	      AND imr.member_id = #{userId}
-	      AND imr.member_type = 'user'
-	      AND imr.source_type = 'organization'
-	      AND imr.source_id = #{tenantId}
-	      AND fp.is_enabled= 0
-	      AND hlr.data_type = 'ROLE'
+        fp.organization_id = #{tenantId}
+        AND imr.member_id = #{userId}
+        AND imr.member_type = 'user'
+        AND imr.source_type = 'organization'
+        AND imr.source_id = #{tenantId}
+        AND fp.is_enabled= 0
+        AND hlr.data_type = 'ROLE'
         AND il.name = 'PROJECT_MEMBER'
         ORDER BY
-	      fp.is_enabled DESC,
-	      fp.creation_date DESC
+        fp.is_enabled DESC,
+        fp.creation_date DESC
 
     </select>
 
     <select id="listProjectIdsForUserId" resultType="java.lang.Long">
         SELECT
-            fp.id
+        fp.id
         FROM
-            fd_project fp
-                JOIN iam_member_role imr ON imr.member_id = #{userId}
-                AND imr.member_type = 'user'
-                AND imr.source_id = #{tenantId}
-                AND imr.source_type = 'organization'
-                JOIN fd_project_permission fpp ON fpp.PROJECT_ID = fp.id
-                AND fpp.MEMBER_ROLE_ID = imr.id
+        fd_project fp
+        JOIN iam_member_role imr ON imr.member_id = #{userId}
+        AND imr.member_type = 'user'
+        AND imr.source_id = #{tenantId}
+        AND imr.source_type = 'organization'
+        JOIN fd_project_permission fpp ON fpp.PROJECT_ID = fp.id
+        AND fpp.MEMBER_ROLE_ID = imr.id
         WHERE
-            fp.ORGANIZATION_ID = #{tenantId}
+        fp.ORGANIZATION_ID = #{tenantId}
     </select>
     <select id="listProjectsByCategoryAndOrgId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
         SELECT *
         FROM fd_project fp
         LEFT JOIN fd_project_map_category fpmc ON fp.id = fpmc.PROJECT_ID
-        LEFT JOIN fd_project_category fpc  ON fpc.ID = fpmc.CATEGORY_ID
+        LEFT JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
         WHERE fpc.CODE = #{categoryCode} and fp.ORGANIZATION_ID = #{organizationId}
     </select>
 
@@ -814,7 +858,7 @@
             </when>
             <when test="projectDTO != null and projectDTO.category != null">
                 INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-                INNER Join fd_project_category fpc ON  fpmc.CATEGORY_ID = fpc.id
+                INNER Join fd_project_category fpc ON fpmc.CATEGORY_ID = fpc.id
             </when>
             <otherwise>
                 LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
@@ -835,7 +879,8 @@
             <if test="projectDTO != null">
                 <if test="projectDTO.filterProjectIds != null and projectDTO.filterProjectIds.size > 0">
                     AND fp.id not in
-                    <foreach collection="projectDTO.filterProjectIds" item="filterProjectId" open="(" close=")" separator=",">
+                    <foreach collection="projectDTO.filterProjectIds" item="filterProjectId" open="(" close=")"
+                             separator=",">
                         #{filterProjectId}
                     </foreach>
                 </if>

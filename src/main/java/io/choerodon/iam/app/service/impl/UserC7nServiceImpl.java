@@ -460,7 +460,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     private List<Receiver> constructUsersByIds(List<Long> userIds) {
-        List<User> users = userRepository.selectByIds(org.apache.commons.lang.StringUtils.join(userIds, ","));
+        List<User> users = userRepository.selectByIds(org.apache.commons.lang3.StringUtils.join(userIds, ","));
         if (!CollectionUtils.isEmpty(users)) {
             return users.stream().map(u -> {
                 Receiver receiver = new Receiver();
@@ -632,6 +632,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         Set<Long> pids = projectMapper.listUserManagedProjectInOrg(organizationId, userId);
         setProjectsIntoAndEditFlag(projects, isAdmin, isOrgAdmin, pids);
         return projects;
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+        List<ProjectDTO> projects = new ArrayList<>();
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        // 普通用户只能查到启用的项目
+        return projectMapper.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
     }
 
     @Override
@@ -1660,9 +1669,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public UserCountVO countAllUsers() {
+    public UserCountAllVO countAllUsers() {
         int count = userMapper.selectCount(new UserDTO());
-        return new UserCountVO(count);
+        return new UserCountAllVO(count);
     }
 
     @Override

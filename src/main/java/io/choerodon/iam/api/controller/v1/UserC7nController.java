@@ -488,7 +488,7 @@ public class UserC7nController extends BaseController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询平台中所有用户的数量")
     @GetMapping(value = "/all_user_count")
-    public ResponseEntity<UserCountVO> countAllUsers() {
+    public ResponseEntity<UserCountAllVO> countAllUsers() {
         return ResponseEntity.ok(userC7nService.countAllUsers());
     }
 

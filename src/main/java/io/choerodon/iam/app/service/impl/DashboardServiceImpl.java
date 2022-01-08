@@ -1,11 +1,23 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.DashboardVO;
 import io.choerodon.iam.app.service.DashboardLayoutService;
+import io.choerodon.iam.app.service.DashboardService;
 import io.choerodon.iam.app.service.DashboardUserService;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardDTO;
@@ -15,16 +27,6 @@ import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.springframework.stereotype.Service;
-import io.choerodon.iam.app.service.DashboardService;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 应用服务默认实现
@@ -67,7 +69,7 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardDTO updateDashboard(DashboardVO dashboard) {
         DashboardDTO dashboardDTO = dashboardMapper.selectByPrimaryKey(dashboard.getDashboardId());
         check(dashboardDTO);
-        if (StringUtils.isNotBlank(dashboard.getDashboardName()) &&
+        if (ObjectUtils.isNotEmpty(dashboard.getDashboardName()) &&
                 !StringUtils.equals(dashboard.getDashboardName(), dashboardDTO.getDashboardName())) {
             dashboardDTO.setDashboardName(dashboard.getDashboardName());
             dashboardMapper.updateOptional(dashboardDTO, DashboardDTO.FIELD_DASHBOARD_NAME);
@@ -88,7 +90,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
         deleteDashboard(dashboard);
         dashboardUserService.deleteDashboardUser(dashboardId);
-        if (StringUtils.equals(dashboard.getDashboardType(), DashboardType.INTERNAL.getValue())) {
+        if (DashboardType.INTERNAL.getValue().equals(dashboard.getDashboardType())) {
             return dashboard;
         }
         dashboardLayoutService.deleteDashboardLayout(dashboardId);

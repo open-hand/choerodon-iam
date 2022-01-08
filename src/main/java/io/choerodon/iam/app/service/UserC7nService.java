@@ -110,6 +110,16 @@ public interface UserC7nService {
      */
     List<ProjectDTO> listProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
 
+    /**
+     * 写给agile 简易版查询
+     * @param organizationId
+     * @param userId
+     * @param projectDTO
+     * @param params
+     * @return
+     */
+    List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 
     void addAdminUsers(Long[] ids);
@@ -349,7 +359,7 @@ public interface UserC7nService {
      *
      * @return 用户数量
      */
-    UserCountVO countAllUsers();
+    UserCountAllVO countAllUsers();
 
     /**
      * 获取所有用户id

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.stereotype.Component;

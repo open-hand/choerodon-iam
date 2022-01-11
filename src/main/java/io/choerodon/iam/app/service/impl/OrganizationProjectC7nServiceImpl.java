@@ -235,10 +235,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             params.put("loginName", user.getLoginName());
             params.put("userName", user.getRealName());
             userC7nService.sendNotice(Arrays.asList(res.getCreatedBy()), SendSettingBaseEnum.CREATE_PROJECT.value(), params, res.getOrganizationId(), ResourceLevel.ORGANIZATION);
+            userWizardService.updateUserWizardCompleted(organizationId, UserWizardStepEnum.CREATE_PROJECT.value());
         } catch (Exception e) {
             LOGGER.error("error.send.message", e);
         }
-        userWizardService.updateUserWizardCompleted(organizationId, UserWizardStepEnum.CREATE_PROJECT.value());
         return res;
     }
 

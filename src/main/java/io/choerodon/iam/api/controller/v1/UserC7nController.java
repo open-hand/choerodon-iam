@@ -8,12 +8,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
+import org.hzero.iam.app.service.UserSelfService;
 import org.hzero.iam.app.service.UserService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.PasswordPolicyMapper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +55,9 @@ public class UserC7nController extends BaseController {
     private UserC7nService userC7nService;
     private PasswordPolicyMapper passwordPolicyMapper;
     private TenantC7nService tenantC7nService;
+    @Autowired
+    @Lazy
+    private UserSelfService userSelfService;
 
     public UserC7nController(UserService userService,
                              UserC7nService userC7nService,
@@ -511,5 +517,14 @@ public class UserC7nController extends BaseController {
     @GetMapping(value = "/self/admin/org/list")
     public ResponseEntity<List<Tenant>> adminOrgList() {
         return ResponseEntity.ok(userC7nService.adminOrgList());
+    }
+
+    @ApiOperation("登录用户 - 更改语言(个人中心全局修改)")
+    @Permission(permissionLogin = true)
+    @PutMapping("/default-user-language")
+    public ResponseEntity updateUserLanguage(@RequestParam(name = "language", required = false) String language) {
+        userSelfService.updateUserDefaultLanguage(language);
+        userSelfService.switchUserLanguage(language);
+        return Results.success();
     }
 }

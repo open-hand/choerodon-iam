@@ -52,7 +52,7 @@ public class C7nMenuConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean(TenantC7nService.class)
+    @ConditionalOnMissingBean(ReportC7nService.class)
     public ReportC7nService reportC7nService() {
         return new ReportC7nServiceImpl();
     }

@@ -22,6 +22,7 @@ import org.hzero.iam.domain.repository.MenuRepository;
 import org.hzero.iam.domain.repository.UserRepository;
 import org.hzero.iam.infra.common.utils.HiamMenuUtils;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.constant.HiamResourceLevel;
 import org.hzero.iam.infra.mapper.MenuMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
@@ -191,7 +192,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             List<Long> finalRoleIds = roleIds;
             CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
                 SecurityTokenHelper.close();
-                List<Menu> menus = this.menuMapper.selectRoleMenus(finalRoleIds, projectDTO.getOrganizationId(), finalLang, finalLabels1, true, userDetails.getUserId());
+                List<Menu> menus = this.menuMapper.selectLevelMenus(projectDTO.getOrganizationId(), finalLang, HiamResourceLevel.ORGANIZATION.value(), finalLabels1, true);
                 SecurityTokenHelper.clear();
                 return menus;
             }, SELECT_MENU_POOL);

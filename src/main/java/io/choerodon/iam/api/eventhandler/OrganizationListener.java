@@ -2,17 +2,17 @@ package io.choerodon.iam.api.eventhandler;
 
 
 import static io.choerodon.iam.infra.utils.SagaTopic.Organization.*;
-import static io.choerodon.iam.infra.utils.SagaTopic.Project.*;
-import static io.choerodon.iam.infra.utils.SagaTopic.User.ORG_USER_CREAT;
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.ADD_PROJECT_CATEGORY;
+import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 import static io.choerodon.iam.infra.utils.SagaTopic.User.PROJECT_IMPORT_USER;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -79,11 +79,12 @@ public class OrganizationListener {
      * @throws IOException
      */
     @SagaTask(code = ADD_PROJECT_CATEGORY, sagaCode = PROJECT_UPDATE, seq = 3, description = "修改项目类型")
-    public void addProjectCategory(String message) throws IOException {
+    public String addProjectCategory(String message) throws IOException {
         ProjectEventPayload projectEventPayload = mapper.readValue(message, ProjectEventPayload.class);
-        if (CollectionUtils.isEmpty(projectEventPayload.getProjectCategoryVOS())){
-            return;
+        if (CollectionUtils.isEmpty(projectEventPayload.getProjectCategoryVOS())) {
+            return message;
         }
         projectC7nService.addProjectCategory(projectEventPayload.getProjectId(), projectEventPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getId).collect(Collectors.toList()));
+        return message;
     }
 }

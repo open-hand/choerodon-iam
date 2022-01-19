@@ -210,18 +210,17 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (checkLogin) {
             checkLoginUser(user.getId());
         }
-        User dto;
-        userRepository.updateOptional(user,
-                User.FIELD_REAL_NAME,
-                User.FIELD_EMAIL,
-                User.DEFAULT_LANGUAGE,
-                User.DEFAULT_TIME_ZONE,
-                User.FIELD_IMAGE_URL);
-        dto = userRepository.selectByPrimaryKey(user.getId());
-        Tenant organizationDTO = organizationAssertHelper.notExisted(dto.getOrganizationId());
-        dto.setTenantName(organizationDTO.getTenantName());
-        dto.setTenantNum(organizationDTO.getTenantNum());
-        return dto;
+        User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        if (Boolean.FALSE.equals(userDetails.ldapUser())) {
+            user.setEmailCheckFlag(BaseConstants.Flag.YES);
+            user.setPhoneCheckFlag(BaseConstants.Flag.YES);
+        }
+        // hzero没有用户名变化参数 用phone参数代替
+        if (!userDetails.getRealName().equals(user.getRealName())) {
+            user.setPhoneChanged(true);
+        }
+        userService.updateUserInternal(user);
+        return userDetails;
     }
 
     private void keepEmailCheckFlag(Long userId) {

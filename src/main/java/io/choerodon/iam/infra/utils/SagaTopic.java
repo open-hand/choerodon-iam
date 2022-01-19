@@ -19,10 +19,6 @@ public final class SagaTopic {
          */
         public static final String DELETE_ADMIN = "base-delete-admin";
 
-        /**
-         * 创建用户
-         */
-        public static final String USER_CREATE = "iam-create-user";
 
         /**
          * 组织层创建用户
@@ -38,10 +34,6 @@ public final class SagaTopic {
          * iam接收创建组织事件的SagaTaskCode
          */
         public static final String TASK_USER_CREATE = "task-create-user";
-        /**
-         * 批量创建用户
-         */
-        public static final String USER_CREATE_BATCH = "iam-create-user";
         /**
          * 更新用户
          */

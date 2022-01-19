@@ -344,29 +344,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
 
-    private void sendBatchUserCreateEvent(List<UserEventPayload> payloads, Long orgId) {
-        if (!payloads.isEmpty()) {
-            try {
-                String input = mapper.writeValueAsString(payloads);
-                String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
-                producer.apply(StartSagaBuilder.newBuilder()
-                                .withSagaCode(USER_CREATE_BATCH)
-                                .withJson(input)
-                                .withRefType("user")
-                                .withRefId(refIds)
-                                .withLevel(ResourceLevel.ORGANIZATION)
-                                .withSourceId(orgId),
-                        build -> {
-                        });
-            } catch (Exception e) {
-                throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
-            } finally {
-                payloads.clear();
-            }
-        }
-    }
-
-
     @Override
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
@@ -374,6 +351,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        // hzero没有用户名变化参数 用phone参数代替
+        if (!userDetails.getRealName().equals(user.getRealName())) {
+            user.setPhoneChanged(true);
+        }
         boolean phoneChange = false;
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
@@ -381,8 +362,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
-            userService.updateUserInternal(user);
         }
+        userService.updateUserInternal(user);
         //如果修改了手机号，则用户手机号绑定状态变为未绑定
         if (phoneChange) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);

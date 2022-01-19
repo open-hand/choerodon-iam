@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import groovy.lang.Lazy;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.redis.RedisHelper;
+import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.SocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,12 +66,18 @@ public class StarProjectServiceImpl implements StarProjectService {
     @Override
     @Transactional
     public void create(Long organizationId, StarProjectUserRelDTO starProjectUserRelDTO) {
+        AssertUtils.notNull(starProjectUserRelDTO.getProjectId(), "project.id.is.null");
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(starProjectUserRelDTO.getProjectId());
         CommonExAssertUtil.assertTrue(organizationId.equals(projectDTO.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         // 数据校验
         projectC7nService.checkNotExistAndGet(starProjectUserRelDTO.getProjectId());
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Assert.notNull(userId, ERROR_NOT_LOGIN);
+        insertData(organizationId, starProjectUserRelDTO, userId);
+        socketSendHelper.sendByUserId(userId, "star-projects", JsonHelper.marshalByJackson(query(organizationId, null)));
+    }
+
+    private synchronized void insertData(Long organizationId, StarProjectUserRelDTO starProjectUserRelDTO, Long userId) {
         starProjectUserRelDTO.setUserId(userId);
         starProjectUserRelDTO.setOrganizationId(organizationId);
         Long sort = getstarProjectSort(organizationId, userId);
@@ -80,7 +87,6 @@ public class StarProjectServiceImpl implements StarProjectService {
                 throw new CommonException(ERROR_SAVE_STAR_PROJECT_FAILED);
             }
         }
-        socketSendHelper.sendByUserId(userId, "star-projects", JsonHelper.marshalByJackson(query(organizationId, null)));
     }
 
     @Override

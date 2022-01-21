@@ -33,6 +33,32 @@ public class ProjectEventPayload {
 
     private Boolean useTemplate;
 
+    /**
+     * 项目之前的类型
+     */
+    private List<ProjectCategoryVO> beforeProjectCategoryVOS;
+
+    /**
+     * 现在项目具有的项目类型
+     */
+    private List<ProjectCategoryVO> newProjectCategoryVOS;
+
+    public List<ProjectCategoryVO> getNewProjectCategoryVOS() {
+        return newProjectCategoryVOS;
+    }
+
+    public void setNewProjectCategoryVOS(List<ProjectCategoryVO> newProjectCategoryVOS) {
+        this.newProjectCategoryVOS = newProjectCategoryVOS;
+    }
+
+    public List<ProjectCategoryVO> getBeforeProjectCategoryVOS() {
+        return beforeProjectCategoryVOS;
+    }
+
+    public void setBeforeProjectCategoryVOS(List<ProjectCategoryVO> beforeProjectCategoryVOS) {
+        this.beforeProjectCategoryVOS = beforeProjectCategoryVOS;
+    }
+
     public List<ProjectCategoryVO> getProjectCategoryVOS() {
         return projectCategoryVOS;
     }

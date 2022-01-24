@@ -201,9 +201,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         projectMapCategoryDTO.setProjectId(projectDTO.getId());
         List<ProjectMapCategoryDTO> projectMapCategoryDTOS = projectMapCategoryMapper.select(projectMapCategoryDTO);
         List<Long> dbProjectCategoryIds = projectMapCategoryDTOS.stream().map(ProjectMapCategoryDTO::getCategoryId).collect(Collectors.toList());
-        projectEventMsg.setBeforeProjectCategoryVOS(ConvertUtils.convertList(projectMapCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(dbProjectCategoryIds, ",")), ProjectCategoryVO.class));
+        projectEventMsg.setBeforeProjectCategoryVOS(ConvertUtils.convertList(projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(dbProjectCategoryIds, ",")), ProjectCategoryVO.class));
         List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
-        projectEventMsg.setNewProjectCategoryVOS(ConvertUtils.convertList(projectMapCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(projectCategoryIds, ",")), ProjectCategoryVO.class));
+        projectEventMsg.setNewProjectCategoryVOS(ConvertUtils.convertList(projectCategoryMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(projectCategoryIds, ",")), ProjectCategoryVO.class));
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
         deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);

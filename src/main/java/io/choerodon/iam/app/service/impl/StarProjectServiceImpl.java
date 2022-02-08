@@ -64,7 +64,6 @@ public class StarProjectServiceImpl implements StarProjectService {
     private SocketSendHelper socketSendHelper;
 
     @Override
-    @Transactional
     public void create(Long organizationId, StarProjectUserRelDTO starProjectUserRelDTO) {
         AssertUtils.notNull(starProjectUserRelDTO.getProjectId(), "project.id.is.null");
         ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(starProjectUserRelDTO.getProjectId());

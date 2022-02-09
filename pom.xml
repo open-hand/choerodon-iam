@@ -156,6 +156,10 @@
             <artifactId>modelmapper</artifactId>
             <version>2.3.9</version>
         </dependency>
+        <dependency>
+            <groupId>org.hzero.plugin</groupId>
+            <artifactId>iam-docauth</artifactId>
+        </dependency>
     </dependencies>
 
     <repositories>

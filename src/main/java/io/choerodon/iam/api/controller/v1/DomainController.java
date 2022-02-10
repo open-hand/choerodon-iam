@@ -3,13 +3,13 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.Map;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.DomainC7nService;
 import io.choerodon.swagger.annotation.Permission;

@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.iam.app.service.DomainC7nService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.net.InetAddress;
@@ -20,7 +21,7 @@ public class DomainC7nServiceImpl implements DomainC7nService {
 
     @Override
     public boolean check(String url) {
-        if (StringUtils.isEmpty(url)) {
+        if (ObjectUtils.isEmpty(url)) {
             return false;
         }
         boolean hasProtocol = false;

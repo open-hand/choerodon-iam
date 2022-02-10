@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
@@ -20,6 +19,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;

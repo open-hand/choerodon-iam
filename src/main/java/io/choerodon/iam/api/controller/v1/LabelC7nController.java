@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
 import org.hzero.iam.app.service.LabelService;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.LabelC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;

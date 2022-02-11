@@ -27,7 +27,7 @@ public class ProjectDTO extends AuditDomain {
 
     private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
-    public static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u0800-\\u9fa5]{1,110}$";
+    public static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u3040-\\u309F\\u30A0-\\u30FF\\u4e00-\\u9fa5]{1,110}$";
 
     @Id
     @GeneratedValue

@@ -1,11 +1,11 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.base.BaseController;
 import io.choerodon.iam.app.service.ProjectCategoryC7nService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
+import org.hzero.core.base.BaseController;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

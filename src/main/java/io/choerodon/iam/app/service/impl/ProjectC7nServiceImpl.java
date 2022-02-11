@@ -6,7 +6,6 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_UPDATE;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.annotation.Resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,10 +54,7 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.infra.enums.InstanceStatusEnum;
-import io.choerodon.iam.infra.enums.ProjectOperatorTypeEnum;
-import io.choerodon.iam.infra.enums.ProjectStatusEnum;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
+import io.choerodon.iam.infra.enums.*;
 import io.choerodon.iam.infra.feign.operator.AgileFeignClientOperator;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.*;
@@ -164,7 +160,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
                 dto.setCreateUserImageUrl(createdUser.getImageUrl());
             }
         }
-        if (withAgileInfo) {
+        if (withAgileInfo && projectMapCategoryMapper.selectProjectCategories(projectId).contains(ProjectCategoryEnum.N_AGILE.value())) {
             try {
                 AgileProjectInfoVO agileProjectResponse = agileFeignClientOperator.queryProjectInfoByProjectId(projectId);
                 dto.setAgileProjectId(agileProjectResponse.getInfoId());

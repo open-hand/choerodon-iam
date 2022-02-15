@@ -54,7 +54,7 @@ public class ProjectDTO extends AuditDomain {
     private String imageUrl;
 
     @ApiModelProperty("项目状态Id")
-    private Long status;
+    private Long statusId;
 
     @ApiModelProperty(value = "是否启用/非必填")
     @Column(name = "is_enabled")
@@ -425,11 +425,11 @@ public class ProjectDTO extends AuditDomain {
         this.useTemplate = useTemplate;
     }
 
-    public Long getStatus() {
-        return status;
+    public Long getStatusId() {
+        return statusId;
     }
 
-    public void setStatus(Long status) {
-        this.status = status;
+    public void setStatusId(Long statusId) {
+        this.statusId = statusId;
     }
 }

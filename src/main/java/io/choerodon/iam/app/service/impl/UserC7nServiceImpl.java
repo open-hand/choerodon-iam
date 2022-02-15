@@ -219,8 +219,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (!userDetails.getRealName().equals(user.getRealName())) {
             user.setPhoneChanged(true);
         }
+        // 因为hzero的方法不更新头像
+        userRepository.updateOptional(user,
+                User.FIELD_REAL_NAME,
+                User.FIELD_EMAIL,
+                User.DEFAULT_LANGUAGE,
+                User.DEFAULT_TIME_ZONE,
+                User.FIELD_IMAGE_URL);
         userService.updateUserInternal(user);
-        return userDetails;
+        return userRepository.selectByPrimaryKey(user.getId());
     }
 
     private void keepEmailCheckFlag(Long userId) {
@@ -836,7 +843,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                                                Boolean isOrgAdmin,
                                                Long currentUserId,
                                                Long userId,
-                                               PageRequest pageRequest){
+                                               PageRequest pageRequest) {
         if (CollectionUtils.isEmpty(page.getContent())) {
             return page;
         }

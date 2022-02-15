@@ -91,7 +91,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     }
     changeSet(author: 'scp', id: '2021-02-15-fd-project-add-status') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'STATUS', type: 'BIGINT UNSIGNED', remarks: '项目状态Id',afterColumn: 'BEFORE_CATEGORY')
+            column(name: 'STATUS_ID', type: 'BIGINT UNSIGNED', remarks: '项目状态Id',afterColumn: 'BEFORE_CATEGORY')
         }
     }
 }

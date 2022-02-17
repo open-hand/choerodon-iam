@@ -104,7 +104,9 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "项目所在项目群名称")
     private String programName;
-
+    @Transient
+    @ApiModelProperty(value = "瀑布敏捷")
+    private Boolean agileWaterfall;
     private Long createdBy;
 
     private Date creationDate;
@@ -431,5 +433,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setStatusId(Long statusId) {
         this.statusId = statusId;
+    }
+
+    public Boolean getAgileWaterfall() {
+        return agileWaterfall;
+    }
+
+    public void setAgileWaterfall(Boolean agileWaterfall) {
+        this.agileWaterfall = agileWaterfall;
     }
 }

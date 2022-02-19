@@ -54,6 +54,7 @@ public class ProjectDTO extends AuditDomain {
     private String imageUrl;
 
     @ApiModelProperty("项目状态Id")
+    @Encrypt
     private Long statusId;
     @ApiModelProperty("项目状态名称")
     @Transient

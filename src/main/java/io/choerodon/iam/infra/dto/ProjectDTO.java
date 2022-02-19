@@ -57,7 +57,7 @@ public class ProjectDTO extends AuditDomain {
     private Long statusId;
     @ApiModelProperty("项目状态名称")
     @Transient
-    private Long statusName;
+    private String statusName;
 
     @ApiModelProperty(value = "是否启用/非必填")
     @Column(name = "is_enabled")
@@ -446,11 +446,11 @@ public class ProjectDTO extends AuditDomain {
         this.agileWaterfall = agileWaterfall;
     }
 
-    public Long getStatusName() {
+    public String getStatusName() {
         return statusName;
     }
 
-    public void setStatusName(Long statusName) {
+    public void setStatusName(String statusName) {
         this.statusName = statusName;
     }
 }

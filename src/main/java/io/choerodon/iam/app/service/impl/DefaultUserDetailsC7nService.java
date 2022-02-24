@@ -91,7 +91,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
                 throw new CommonException("error.insert.tenant.config");
             }
         } else {
-            config.setConfigValue(visitors.toString());
+            config.setConfigValue(TypeUtil.objToString(TypeUtil.objToLong(config.getConfigValue()) + TypeUtil.objToLong(visitors.toString())));
             if (tenantConfigMapper.updateByPrimaryKeySelective(config) != 1) {
                 throw new CommonException("error.update.tenant.config");
             }

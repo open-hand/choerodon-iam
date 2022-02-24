@@ -53,6 +53,13 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目图标url/非必填")
     private String imageUrl;
 
+    @ApiModelProperty("项目状态Id")
+    @Encrypt
+    private Long statusId;
+    @ApiModelProperty("项目状态名称")
+    @Transient
+    private String statusName;
+
     @ApiModelProperty(value = "是否启用/非必填")
     @Column(name = "is_enabled")
     private Boolean enabled;
@@ -101,7 +108,9 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "项目所在项目群名称")
     private String programName;
-
+    @Transient
+    @ApiModelProperty(value = "瀑布敏捷")
+    private Boolean agileWaterfall;
     private Long createdBy;
 
     private Date creationDate;
@@ -420,5 +429,29 @@ public class ProjectDTO extends AuditDomain {
 
     public void setUseTemplate(Boolean useTemplate) {
         this.useTemplate = useTemplate;
+    }
+
+    public Long getStatusId() {
+        return statusId;
+    }
+
+    public void setStatusId(Long statusId) {
+        this.statusId = statusId;
+    }
+
+    public Boolean getAgileWaterfall() {
+        return agileWaterfall;
+    }
+
+    public void setAgileWaterfall(Boolean agileWaterfall) {
+        this.agileWaterfall = agileWaterfall;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 }

@@ -38,7 +38,6 @@ import io.choerodon.iam.infra.utils.JsonHelper;
  * @author wanghao
  * @since 2020/6/11 10:25
  */
-@Service
 public class StarProjectServiceImpl implements StarProjectService {
 
     private static final String ERROR_NOT_LOGIN = "error.not.login";

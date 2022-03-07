@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.app.service.impl.MenuC7nServiceImpl;
 import io.choerodon.iam.app.service.impl.ReportC7nServiceImpl;
+import io.choerodon.iam.app.service.impl.StarProjectServiceImpl;
 import io.choerodon.iam.app.service.impl.TenantC7NServiceImpl;
 import io.choerodon.iam.infra.mapper.*;
 
@@ -55,5 +56,11 @@ public class C7nMenuConfig {
     @ConditionalOnMissingBean(ReportC7nService.class)
     public ReportC7nService reportC7nService() {
         return new ReportC7nServiceImpl();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StarProjectService.class)
+    public StarProjectService starProjectService() {
+        return new StarProjectServiceImpl();
     }
 }

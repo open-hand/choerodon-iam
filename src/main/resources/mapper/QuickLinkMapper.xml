@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.QuickLinkMapper">
 
     <sql id="sortQuickLink">
-        ORDER BY fspur.sort is not null DESC, fspur.sort ASC, fspur.project_id ASC,  top_flag DESC, last_update_date DESC
+        ORDER BY fspur.sort DESC, fspur.project_id ASC,  top_flag DESC, last_update_date DESC
     </sql>
 
     <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO">

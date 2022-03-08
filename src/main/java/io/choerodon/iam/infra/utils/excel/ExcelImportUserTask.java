@@ -1,5 +1,7 @@
 package io.choerodon.iam.infra.utils.excel;
 
+import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -564,14 +566,14 @@ public class ExcelImportUserTask {
         return upload(hssfWorkbook, "errorUser.xls", "error-user");
     }
 
-    private String upload(HSSFWorkbook hssfWorkbook, String originalFilename, String bucketName) {
+    private String upload(HSSFWorkbook hssfWorkbook, String originalFilename, String pathName) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         String url;
         try {
             hssfWorkbook.write(bos);
             MockMultipartFile multipartFile =
                     new MockMultipartFile("file", originalFilename, "application/vnd.ms-excel", bos.toByteArray());
-            url = fileClient.uploadFile(0L, bucketName, null, multipartFile);
+            url = fileClient.uploadFile(0L, BACKETNAME, pathName, multipartFile);
         } catch (IOException e) {
             logger.error("HSSFWorkbook to ByteArrayOutputStream failed, exception: {}", e.getMessage());
             throw new CommonException("error.byteArrayOutputStream", e);

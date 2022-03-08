@@ -48,7 +48,7 @@
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
-        LEFT JOIN fd_star_project_user_rel fspur on fp.id = fspur.PROJECT_ID
+        LEFT JOIN fd_star_project_user_rel fspur on fp.id = fspur.PROJECT_ID and fspur.USER_ID = #{userId}
         <where>
             fql.scope = 'project'
             <if test="projectId == null and pIds != null and pIds.size() != 0">
@@ -71,7 +71,7 @@
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
-        LEFT JOIN fd_star_project_user_rel fspur on fp.id = fspur.PROJECT_ID
+        LEFT JOIN fd_star_project_user_rel fspur on fp.id = fspur.PROJECT_ID and fspur.USER_ID = #{userId}
         <where>
             fql.scope = 'project'
             <if test="projectId == null">

@@ -2,6 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.QuickLinkMapper">
 
+    <sql id="sortQuickLink">
+        ORDER BY fspur.sort is not null DESC, fspur.sort ASC, fspur.project_id ASC,  top_flag DESC, last_update_date DESC
+    </sql>
+
     <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -57,7 +61,7 @@
                 AND fql.project_id = #{projectId}
             </if>
         </where>
-        ORDER BY fspur.sort is not null DESC, fspur.sort ASC, fspur.project_id ASC,  top_flag DESC, last_update_date DESC
+        <include refid="sortQuickLink"/>
     </select>
     <select id="queryAllProject" resultMap="quickLinkMap">
         SELECT
@@ -67,6 +71,7 @@
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
+        LEFT JOIN fd_star_project_user_rel fspur on fp.id = fspur.PROJECT_ID
         <where>
             fql.scope = 'project'
             <if test="projectId == null">
@@ -76,7 +81,8 @@
                 AND fql.project_id = #{projectId}
             </if>
         </where>
-        ORDER BY top_flag DESC, last_update_date DESC
+        <include refid="sortQuickLink"/>
     </select>
+
 
 </mapper>

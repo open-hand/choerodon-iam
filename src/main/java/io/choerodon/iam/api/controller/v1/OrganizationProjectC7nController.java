@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -60,13 +57,6 @@ public class OrganizationProjectC7nController extends BaseController {
     public ResponseEntity<ProjectDTO> create(
             @PathVariable(name = "organization_id") Long organizationId,
             @RequestBody @Valid ProjectDTO projectDTO) {
-        // 转义字符会通过正则匹配 先单独校验
-        Pattern p = Pattern.compile("[\t\n\b\f\r]");
-        Matcher m = p.matcher(projectDTO.getName());
-        boolean match = m.find();
-        if (match) {
-            throw new CommonException("error.project.name.regex");
-        }
         projectDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationProjectC7nService.createProject(organizationId, projectDTO), HttpStatus.OK);
     }

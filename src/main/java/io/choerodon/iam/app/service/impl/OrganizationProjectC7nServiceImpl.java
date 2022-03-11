@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,7 +33,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
@@ -193,6 +194,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
+        cheryNamePattern(projectDTO.getName());
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
 
@@ -241,7 +243,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
         return res;
     }
-
 
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
@@ -338,6 +339,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
+        cheryNamePattern(projectDTO.getName());
         ProjectDTO projectToUpdate = projectMapper.selectByPrimaryKey(projectDTO.getId());
         CommonExAssertUtil.assertTrue(organizationId.equals(projectToUpdate.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         updateCheck(projectDTO);
@@ -774,7 +776,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     @Override
     public List<ProjectDTO> listProjectsByOrgId(Long organizationId, String category, Boolean enabled) {
-       return projectMapper.listProjectsByOrgId(organizationId, category, enabled);
+        return projectMapper.listProjectsByOrgId(organizationId, category, enabled);
     }
 
     @Override
@@ -789,5 +791,14 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return projectMapper.listProjectsByCategoryAndOrgId(organizationId, categoryCode);
     }
 
-
+    @Override
+    public void cheryNamePattern(String name) {
+        // 转义字符会通过正则匹配 先单独校验
+        Pattern p = Pattern.compile("[\t\n\b\f\r]");
+        Matcher m = p.matcher(name);
+        boolean match = m.find();
+        if (match) {
+            throw new CommonException("error.project.name.regex");
+        }
+    }
 }

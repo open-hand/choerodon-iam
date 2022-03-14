@@ -55,6 +55,16 @@ public class QuickLinkVO extends AuditDomain {
 
     private String projectName;
 
+    private String projectImage;
+
+    public String getProjectImage() {
+        return projectImage;
+    }
+
+    public void setProjectImage(String projectImage) {
+        this.projectImage = projectImage;
+    }
+
     public Long getId() {
         return id;
     }

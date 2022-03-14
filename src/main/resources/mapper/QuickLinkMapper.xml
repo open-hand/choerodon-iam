@@ -6,7 +6,7 @@
         ORDER BY fspur.sort DESC, fspur.project_id ASC,  top_flag DESC, last_update_date DESC
     </sql>
 
-    <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO">
+    <resultMap id="quickLinkMap" type="io.choerodon.iam.api.vo.QuickLinkVO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="projectName" column="project_name"/>
@@ -45,7 +45,7 @@
         fql.*,
         iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
         fp.name AS project_name,
-        fp.IMAGE_URL AS project_image,
+        fp.IMAGE_URL AS project_image
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id
@@ -69,7 +69,7 @@
         fql.*,
         iu.id as user_id, iu.login_name, iu.real_name, iu.image_url,
         fp.name AS project_name,
-        fp.IMAGE_URL AS project_image,
+        fp.IMAGE_URL AS project_image
         FROM fd_quick_link fql
         LEFT JOIN fd_project fp ON fp.id = fql.project_id
         INNER JOIN iam_user iu ON iu.id = fql.create_user_id

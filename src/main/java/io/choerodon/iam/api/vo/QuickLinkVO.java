@@ -57,6 +57,16 @@ public class QuickLinkVO extends AuditDomain {
 
     private String projectImage;
 
+    private String projectCreationDate;
+
+    public String getProjectCreationDate() {
+        return projectCreationDate;
+    }
+
+    public void setProjectCreationDate(String projectCreationDate) {
+        this.projectCreationDate = projectCreationDate;
+    }
+
     public String getProjectImage() {
         return projectImage;
     }

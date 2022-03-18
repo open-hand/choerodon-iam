@@ -46,7 +46,7 @@ public class ExcelUtil {
 
     private static final String DEFAULT_SHEET_NAME = "sheet";
 
-    private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH24mmss";
+    private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     private static final String ERROR_IO_WORKBOOK_WRITE_OUTPUTSTREAM = "error.io.workbook.write.output.stream";
 

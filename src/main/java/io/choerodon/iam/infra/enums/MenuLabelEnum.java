@@ -1,8 +1,5 @@
 package io.choerodon.iam.infra.enums;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * 〈功能简述〉
  * 〈〉
@@ -61,6 +58,8 @@ public enum MenuLabelEnum {
     N_PROGRAM_MENU("N_PROGRAM_MENU"),
     N_TEST_MENU("N_TEST_MENU"),
     N_DEVOPS_MENU("N_DEVOPS_MENU"),
+    N_WATERFALL_MENU("N_WATERFALL_MENU"),
+    N_WATERFALL_AGILE_MENU("N_WATERFALL_AGILE_MENU"),
     N_OPERATIONS_MENU("N_OPERATIONS_MENU");
     private final String value;
 

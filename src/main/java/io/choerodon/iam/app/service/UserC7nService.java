@@ -112,6 +112,7 @@ public interface UserC7nService {
 
     /**
      * 写给agile 简易版查询
+     *
      * @param organizationId
      * @param userId
      * @param projectDTO
@@ -401,4 +402,6 @@ public interface UserC7nService {
     void checkUserPhoneOccupied(String phone, Long userId);
 
     Page<ProjectDTO> pagingProjectsByOptions(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, String params, PageRequest pageable, Boolean onlySucceed);
+
+    CheckEmailVO checkUserEmail(Long organizationId, String email);
 }

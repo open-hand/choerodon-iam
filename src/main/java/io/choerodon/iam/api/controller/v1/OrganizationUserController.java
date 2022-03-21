@@ -26,6 +26,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.CheckEmailVO;
 import io.choerodon.iam.api.vo.ProjectSearchVO;
 import io.choerodon.iam.api.vo.UserNumberVO;
 import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
@@ -185,6 +186,15 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "添加组织层用户的时候的邮箱校验")
+    @GetMapping(value = "/users/check/email")
+    public ResponseEntity<CheckEmailVO> checkEmail(@PathVariable(name = "organization_id") Long organizationId,
+                                                   @RequestParam(value = "email") String email) {
+
+        return new ResponseEntity<>(userC7nService.checkUserEmail(organizationId, email), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("从excel里面批量导入用户")
     @PostMapping("/users/batch_import")
     public ResponseEntity<Void> importUsersFromExcel(
@@ -232,7 +242,6 @@ public class OrganizationUserController extends BaseController {
         projectDTO.setCreatedBy(createdBy);
         return new ResponseEntity<>(userC7nService.listProjectsByUserId(organizationId, userId, projectDTO, params), HttpStatus.OK);
     }
-
 
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)

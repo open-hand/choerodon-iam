@@ -131,6 +131,8 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             labels.add(MenuLabelEnum.N_DEVOPS_MENU.value());
             labels.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
             labels.add(MenuLabelEnum.N_PROGRAM_MENU.value());
+            labels.add(MenuLabelEnum.N_WATERFALL_MENU.value());
+            labels.add(MenuLabelEnum.N_WATERFALL_AGILE_MENU.value());
         }
         SecurityTokenHelper.close();
         Set<String> typeNames = new HashSet<>();

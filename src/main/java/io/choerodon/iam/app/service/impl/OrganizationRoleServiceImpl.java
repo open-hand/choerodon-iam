@@ -185,6 +185,8 @@ public class OrganizationRoleServiceImpl implements OrganizationRoleC7nService {
                 labelNames.add(MenuLabelEnum.N_DEVOPS_MENU.value());
                 labelNames.add(MenuLabelEnum.N_OPERATIONS_MENU.value());
                 labelNames.add(MenuLabelEnum.N_PROGRAM_MENU.value());
+                labelNames.add(MenuLabelEnum.N_WATERFALL_MENU.value());
+                labelNames.add(MenuLabelEnum.N_WATERFALL_AGILE_MENU.value());
             }
             if (RoleLabelEnum.GITLAB_OWNER.value().equals(label.getName())
                     || RoleLabelEnum.GITLAB_DEVELOPER.value().equals(label.getName())) {

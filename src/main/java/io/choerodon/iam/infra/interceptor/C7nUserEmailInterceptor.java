@@ -36,18 +36,6 @@ public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
         UserValidator.validateEmail(user.getEmail());
         userC7nService.checkEmail(user);
 
-        boolean checkPhone = !StringUtils.isEmpty(user.getPhone());
-        if (checkPhone) {
-            checkPhone(user.getPhone());
-        }
     }
 
-    private void checkPhone(String phone) {
-        UserDTO queryDTO = new UserDTO();
-        queryDTO.setPhone(phone);
-        List<UserDTO> select = userC7nMapper.select(queryDTO);
-        if (!CollectionUtils.isEmpty(select)) {
-            throw new CommonException("error.user.phone.exist");
-        }
-    }
 }

@@ -23,7 +23,7 @@ import java.util.Set;
  * @author scp
  * @since 2020/4/15
  */
-public interface UserC7nMapper extends BaseMapper<UserDTO> {
+public interface UserC7nMapper {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listMarketAuditor();

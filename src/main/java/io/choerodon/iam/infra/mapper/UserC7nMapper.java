@@ -6,7 +6,9 @@ import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Tenant;
@@ -21,7 +23,7 @@ import java.util.Set;
  * @author scp
  * @since 2020/4/15
  */
-public interface UserC7nMapper {
+public interface UserC7nMapper extends BaseMapper<UserDTO> {
     List<User> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<User> listMarketAuditor();

@@ -45,8 +45,6 @@ public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
     private void checkPhone(String phone) {
         UserDTO queryDTO = new UserDTO();
         queryDTO.setPhone(phone);
-        queryDTO.setEnabled(true);
-        queryDTO.setPhoneBind(true);
         List<UserDTO> select = userC7nMapper.select(queryDTO);
         if (!CollectionUtils.isEmpty(select)) {
             throw new CommonException("error.user.phone.exist");

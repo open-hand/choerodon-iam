@@ -391,7 +391,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return user;
     }
 
-    private String getDefaultPassword(Long organizationId) {
+    @Override
+    public String getDefaultPassword(Long organizationId) {
         // 组织层启用密码策略用组织层的 否则用平台层的
         String newPassword = null;
         BasePasswordPolicy passwordPolicy = basePasswordPolicyRepository.selectPasswordPolicy(organizationId);

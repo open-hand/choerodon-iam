@@ -53,6 +53,8 @@ public interface OrganizationUserService {
 
     User resetUserPassword(Long organizationId, Long userId);
 
+    String getDefaultPassword(Long organizationId);
+
     User query(Long organizationId, Long id);
 
     User unlock(Long organizationId, Long userId);

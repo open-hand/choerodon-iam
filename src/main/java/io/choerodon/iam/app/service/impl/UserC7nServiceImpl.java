@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -194,6 +195,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     protected UserCaptchaService userCaptchaService;
     @Autowired
     private UserInfoMapper userInfoMapper;
+    @Autowired
+    private TenantC7nService tenantC7nService;
 
     @Override
     public User queryInfo(Long userId) {
@@ -834,6 +837,30 @@ public class UserC7nServiceImpl implements UserC7nService {
         result.addAll(projectDTOS.getContent());
         projectDTOS.setContent(result);
         return projectDTOS;
+    }
+
+    @Override
+    public CheckEmailVO checkUserEmail(Long organizationId, String email) {
+        CheckEmailVO result = new CheckEmailVO();
+        if (org.apache.commons.lang3.StringUtils.isEmpty(email)) {
+            result.setExist(false);
+            result.setMember(false);
+            return result;
+        }
+        User userDTO = new User();
+        userDTO.setEmail(email);
+        boolean existed = userMapper.selectOne(userDTO) != null;
+        if (existed) {
+            result.setExist(true);
+        }
+        //判断是不是在组织下
+        Page<User> userPage = tenantC7nService.pagingQueryUsersInOrganization(organizationId, null, email, new PageRequest(0, 0), null);
+        if (userPage != null && !CollectionUtils.isEmpty(userPage.getContent())) {
+            result.setMember(true);
+        } else {
+            result.setMember(false);
+        }
+        return result;
     }
 
     private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,

@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +15,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @since 20-4-23
  */
 @JsonInclude(JsonInclude.Include.ALWAYS)
+@Table(name = "iam_user")
 public class UserDTO extends User {
 
     public static final String EMAIL_REG = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";

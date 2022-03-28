@@ -6,7 +6,9 @@ import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.Tenant;

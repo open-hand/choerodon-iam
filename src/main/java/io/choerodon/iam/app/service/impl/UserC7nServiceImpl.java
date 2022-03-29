@@ -139,8 +139,10 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private RoleAssertHelper roleAssertHelper;
     @Autowired
+    @Lazy
     private UserPasswordService userPasswordService;
     @Autowired
+    @Lazy
     private UserDetailsService userDetailsService;
     @Autowired
     private RoleRepository roleRepository;
@@ -192,10 +194,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     private OauthAdminFeignClient oauthAdminFeignClient;
     @Autowired
+    @Lazy
     protected UserCaptchaService userCaptchaService;
     @Autowired
     private UserInfoMapper userInfoMapper;
     @Autowired
+    @Lazy
     private TenantC7nService tenantC7nService;
 
     @Override

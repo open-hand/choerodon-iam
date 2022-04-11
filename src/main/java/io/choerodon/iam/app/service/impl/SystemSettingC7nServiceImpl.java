@@ -5,13 +5,15 @@ import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import net.coobird.thumbnailator.Thumbnails;
 import org.hzero.boot.file.FileClient;
-import org.hzero.boot.oauth.domain.entity.BasePasswordPolicy;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.PasswordPolicyService;
 import org.hzero.iam.domain.entity.PasswordPolicy;

@@ -81,13 +81,6 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "是否保留失败的事务记录")
     private Boolean retainFailedSagaInstance;
 
-    @ApiModelProperty(value = "是否开启扫码登录")
-    private Boolean enableDingTalkScanningLogin;
-    @ApiModelProperty(value = "ding appKey")
-    private String dingTalkAppKey;
-    @ApiModelProperty(value = "ding appSecret")
-    private String dingTalkAppSecret;
-
     public Boolean getAutoCleanEmailRecord() {
         return autoCleanEmailRecord;
     }
@@ -238,29 +231,5 @@ public class SysSettingVO extends AuditDomain {
 
     public void setRetainFailedSagaInstance(Boolean retainFailedSagaInstance) {
         this.retainFailedSagaInstance = retainFailedSagaInstance;
-    }
-
-    public Boolean getEnableDingTalkScanningLogin() {
-        return enableDingTalkScanningLogin;
-    }
-
-    public void setEnableDingTalkScanningLogin(Boolean enableDingTalkScanningLogin) {
-        this.enableDingTalkScanningLogin = enableDingTalkScanningLogin;
-    }
-
-    public String getDingTalkAppKey() {
-        return dingTalkAppKey;
-    }
-
-    public void setDingTalkAppKey(String dingTalkAppKey) {
-        this.dingTalkAppKey = dingTalkAppKey;
-    }
-
-    public String getDingTalkAppSecret() {
-        return dingTalkAppSecret;
-    }
-
-    public void setDingTalkAppSecret(String dingTalkAppSecret) {
-        this.dingTalkAppSecret = dingTalkAppSecret;
     }
 }

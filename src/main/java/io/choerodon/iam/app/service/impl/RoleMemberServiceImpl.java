@@ -475,6 +475,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("登录名*", "loginName");
         propertyMap.put("角色编码*", "roleCode");
+        propertyMap.put("计划进场时间", "scheduleEntryTime");
+        propertyMap.put("计划撤场时间", "scheduleExitTime");
         excelReadConfig.setSkipSheetNames(skipSheetNames);
         excelReadConfig.setPropertyMap(propertyMap);
         return excelReadConfig;

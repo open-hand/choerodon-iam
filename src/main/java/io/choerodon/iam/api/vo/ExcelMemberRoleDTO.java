@@ -7,6 +7,10 @@ public class ExcelMemberRoleDTO {
     private String loginName;
     private String roleCode;
     private String cause;
+    //进场时间
+    private String scheduleEntryTime;
+    // 撤场时间
+    private String scheduleExitTime;
 
     public String getLoginName() {
         return loginName;
@@ -30,5 +34,21 @@ public class ExcelMemberRoleDTO {
 
     public void setCause(String cause) {
         this.cause = cause;
+    }
+
+    public String getScheduleEntryTime() {
+        return scheduleEntryTime;
+    }
+
+    public void setScheduleEntryTime(String scheduleEntryTime) {
+        this.scheduleEntryTime = scheduleEntryTime;
+    }
+
+    public String getScheduleExitTime() {
+        return scheduleExitTime;
+    }
+
+    public void setScheduleExitTime(String scheduleExitTime) {
+        this.scheduleExitTime = scheduleExitTime;
     }
 }

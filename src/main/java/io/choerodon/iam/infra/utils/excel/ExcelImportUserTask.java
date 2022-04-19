@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -16,7 +15,10 @@ import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.core.message.MessageAccessor;
-import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.entity.Label;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.MemberRoleRepository;
 import org.hzero.iam.domain.repository.RoleRepository;
 import org.hzero.iam.infra.mapper.UserMapper;
@@ -28,11 +30,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.util.TypeUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
@@ -52,7 +51,10 @@ import io.choerodon.iam.infra.mapper.ProjectPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import io.choerodon.iam.infra.utils.*;
+import io.choerodon.iam.infra.utils.C7nCollectionUtils;
+import io.choerodon.iam.infra.utils.CustomContextUtil;
+import io.choerodon.iam.infra.utils.MockMultipartFile;
+import io.choerodon.iam.infra.utils.RandomInfoGenerator;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 
 
@@ -93,6 +95,8 @@ public class ExcelImportUserTask {
 
     private ProjectAssertHelper projectAssertHelper;
     private MessageClient messageClient;
+    @Autowired(required = false)
+    private PluginService pluginService;
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
 
@@ -293,6 +297,9 @@ public class ExcelImportUserTask {
                 roleIds.add(roleId);
                 try {
                     projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
+                    if (pluginService != null) {
+                        pluginService.setUserProjectDate(uploadHistory.getSourceId(), userId, emr.getScheduleEntryTime(), emr.getScheduleExitTime());
+                    }
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();
                     excelMemberRoleDTO.setLoginName(userDTO.getLoginName());

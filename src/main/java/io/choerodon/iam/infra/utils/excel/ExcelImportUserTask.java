@@ -96,7 +96,7 @@ public class ExcelImportUserTask {
     private ProjectAssertHelper projectAssertHelper;
     private MessageClient messageClient;
     @Autowired(required = false)
-    private PluginService pluginService;
+    private BusinessService pluginService;
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
 

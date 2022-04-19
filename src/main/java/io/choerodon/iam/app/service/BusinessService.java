@@ -4,7 +4,7 @@ package io.choerodon.iam.app.service;
  * @author scp
  * @since 2022/4/19
  */
-public interface PluginService {
+public interface BusinessService {
     /**
      * 设置用户项目下进场时间和撤场时间
      * @param projectId

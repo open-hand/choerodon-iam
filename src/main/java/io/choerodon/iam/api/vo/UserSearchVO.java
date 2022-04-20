@@ -24,9 +24,13 @@ public class UserSearchVO {
     private String params;
     @ApiModelProperty("用户状态")
     private Boolean enabled;
+    @ApiModelProperty("用户锁定状态")
+    private Boolean locked;
     @ApiModelProperty("角色Id")
     @Encrypt
     private Long roles;
+    @ApiModelProperty("用户标签")
+    private String userLabel;
 
     public String getLoginName() {
         return loginName;
@@ -90,5 +94,21 @@ public class UserSearchVO {
 
     public void setRoles(Long roles) {
         this.roles = roles;
+    }
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
+    }
+
+    public String getUserLabel() {
+        return userLabel;
+    }
+
+    public void setUserLabel(String userLabel) {
+        this.userLabel = userLabel;
     }
 }

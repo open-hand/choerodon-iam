@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import io.choerodon.iam.api.vo.*;
-
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.domain.entity.Label;
@@ -19,6 +17,7 @@ import org.hzero.iam.infra.constant.HiamMemberType;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,11 +33,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.devops.UserAttrVO;
-import io.choerodon.iam.app.service.MessageSendService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.ProjectPermissionService;
-import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.dto.*;
@@ -53,6 +50,7 @@ import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.PageUtils;
 import io.choerodon.iam.infra.utils.ParamUtils;
+import io.choerodon.iam.infra.utils.excel.DateUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -78,6 +76,8 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
     private MessageSendService messageSendService;
     private UserMapper userMapper;
     private MessageFeignClient messageFeignClient;
+    @Autowired(required = false)
+    private BusinessService businessService;
 
     public ProjectPermissionServiceImpl(ProjectPermissionMapper projectPermissionMapper,
                                         DevopsFeignClientOperator devopsFeignClientOperator,
@@ -455,14 +455,14 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
 
     @Override
     @Transactional
-    public void updateUserRoles(Long userId, Long projectId, Set<Long> roleIdList, Boolean syncAll) {
+    public void updateUserRoles(Long userId, Long projectId, UserRolesAndTimeVO userRolesAndTimeVO, Boolean syncAll) {
         ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
 
         List<MemberRole> oldMemberRoleList = projectPermissionMapper.listMemberRoleByProjectIdAndUserId(projectId, userId, null);
         Map<Long, Long> oldMemberRoleMap = oldMemberRoleList.stream().collect(Collectors.toMap(MemberRole::getRoleId, MemberRole::getId));
         Set<Long> oldRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
 
-
+        Set<Long> roleIdList = userRolesAndTimeVO.getRoleIds();
         // 要删除的角色
         Set<Long> deleteRoleIds = oldMemberRoleList.stream().map(MemberRole::getRoleId).filter(v -> !roleIdList.contains(v)).collect(Collectors.toSet());
         // 要新增的角色
@@ -498,7 +498,10 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService {
         if (!CollectionUtils.isEmpty(roleIdList)) {
             labelNames = labelC7nMapper.selectLabelNamesInRoleIds(roleIdList);
         }
-
+        // 处理进场时间和撤场时间
+        if (businessService != null) {
+            businessService.setUserProjectDate(projectId, userId, userRolesAndTimeVO.getScheduleEntryTime(), userRolesAndTimeVO.getScheduleExitTime());
+        }
         // 4. 发送saga
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         UserMemberEventPayload userMemberEventPayload = new UserMemberEventPayload();

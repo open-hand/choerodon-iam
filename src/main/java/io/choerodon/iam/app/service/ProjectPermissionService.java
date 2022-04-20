@@ -8,10 +8,7 @@ import org.hzero.iam.api.dto.RoleDTO;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.OnlineUserStatistics;
-import io.choerodon.iam.api.vo.ProjectWithUserVO;
-import io.choerodon.iam.api.vo.RoleVO;
-import io.choerodon.iam.api.vo.UserSearchVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -108,7 +105,7 @@ public interface ProjectPermissionService {
 
     void addProjectRolesForUser(Long projectId, Long userId, Set<Long> roleIds, Long operatorId);
 
-    void updateUserRoles(Long userId, Long sourceId, Set<Long> roleDTOList, Boolean syncAll);
+    void updateUserRoles(Long userId, Long sourceId, UserRolesAndTimeVO userRolesAndTimeVO, Boolean syncAll);
 
     /**
      * 查询项目下活跃成员信息

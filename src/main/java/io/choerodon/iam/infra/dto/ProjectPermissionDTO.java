@@ -43,12 +43,15 @@ public class ProjectPermissionDTO extends AuditDomain {
     private Long roleId;
 
     @Encrypt
+    @Transient
     Set<Long> roleIds;
 
     @ApiModelProperty("进场时间")
+    @Transient
     private Date scheduleEntryTime;
 
     @ApiModelProperty("离场时间")
+    @Transient
     private Date scheduleExitTime;
 
     public ProjectPermissionDTO() {

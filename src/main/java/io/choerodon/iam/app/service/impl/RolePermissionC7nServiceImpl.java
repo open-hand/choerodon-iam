@@ -1,8 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,12 +71,17 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList) {
         Long operatorId = DetailsHelper.getUserDetails().getUserId();
-        projectUserDTOList.forEach(projectPermissionProDTO -> {
-            projectPermissionService.addProjectRolesForUser(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getRoleIds(), operatorId);
-            if (businessService != null) {
-                businessService.setUserProjectDate(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getScheduleEntryTime(), projectPermissionProDTO.getScheduleExitTime());
-            }
-        });
+        if (CollectionUtils.isEmpty(projectUserDTOList.get(0).getRoleIds())) {
+            Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
+            map.forEach((k, v) -> projectPermissionService.addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()), operatorId));
+        } else {
+            projectUserDTOList.forEach(projectPermissionProDTO -> {
+                projectPermissionService.addProjectRolesForUser(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getRoleIds(), operatorId);
+                if (businessService != null) {
+                    businessService.setUserProjectDate(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getScheduleEntryTime(), projectPermissionProDTO.getScheduleExitTime());
+                }
+            });
+        }
     }
 
 }

@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -261,7 +260,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
-            throw new CommonException("error.user.photo.save");
+            throw new CommonException("error.user.photo.save", e);
         }
     }
 

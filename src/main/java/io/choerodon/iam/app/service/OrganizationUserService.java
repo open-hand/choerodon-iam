@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 
+import io.choerodon.iam.api.vo.UserSearchVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
@@ -46,8 +47,9 @@ public interface OrganizationUserService {
      *
      * @return 用户列表（包括用户信息以及所分配的组织角色信息）
      */
-    Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageRequest, String loginName, String realName,
-                                                            String roleName, Boolean enabled, Boolean locked, String params);
+    Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageRequest, UserSearchVO userSearchVO);
+
+    Page<UserDTO> setUserRoleAndSagaInfo(Page<User> userPage, Long organizationId, String roleName);
 
     void updateUser(Long organizationId, User user);
 

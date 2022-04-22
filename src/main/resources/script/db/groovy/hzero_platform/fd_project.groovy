@@ -94,4 +94,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             column(name: 'STATUS_ID', type: 'BIGINT UNSIGNED', remarks: '项目状态Id',afterColumn: 'BEFORE_CATEGORY')
         }
     }
+    changeSet(author: 'scp', id: '2022-04-21-updateDataType') {
+        modifyDataType(tableName: 'fd_project', columnName: 'DESCRIPTION', newDataType: 'text')
+    }
 }

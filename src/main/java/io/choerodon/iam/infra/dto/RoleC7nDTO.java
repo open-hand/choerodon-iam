@@ -18,6 +18,8 @@ public class RoleC7nDTO extends Role {
     private String projName;
     private Integer userCount;
     private Long userId;
+    // 用户组织下标签属性
+    private List<String> userLabels;
 
     public Integer getUserCount() {
         return userCount;
@@ -60,5 +62,13 @@ public class RoleC7nDTO extends Role {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public List<String> getUserLabels() {
+        return userLabels;
+    }
+
+    public void setUserLabels(List<String> userLabels) {
+        this.userLabels = userLabels;
     }
 }

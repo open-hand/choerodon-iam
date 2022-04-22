@@ -20,6 +20,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.OnlineUserStatistics;
+import io.choerodon.iam.api.vo.UserRolesAndTimeVO;
 import io.choerodon.iam.api.vo.UserSearchVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.*;
@@ -201,8 +202,8 @@ public class ProjectUserC7nController extends BaseController {
     public ResponseEntity<Void> updateUserRolesOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                               @RequestParam(name = "sync_all", required = false, defaultValue = "false") Boolean syncAll,
                                                               @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                              @Encrypt @RequestBody Set<Long> roleIds) {
-        projectPermissionService.updateUserRoles(userId, projectId, roleIds, syncAll);
+                                                              @RequestBody UserRolesAndTimeVO userRolesAndTimeVO) {
+        projectPermissionService.updateUserRoles(userId, projectId, userRolesAndTimeVO, syncAll);
         return ResponseEntity.noContent().build();
     }
 

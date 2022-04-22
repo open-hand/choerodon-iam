@@ -96,7 +96,7 @@ public class ExcelImportUserTask {
     private ProjectAssertHelper projectAssertHelper;
     private MessageClient messageClient;
     @Autowired(required = false)
-    private BusinessService pluginService;
+    private BusinessService businessService;
     @Autowired
     private OrganizationResourceLimitService organizationResourceLimitService;
 
@@ -297,8 +297,8 @@ public class ExcelImportUserTask {
                 roleIds.add(roleId);
                 try {
                     projectPermissionService.addProjectRolesForUser(uploadHistory.getSourceId(), userId, roleIds, fromUserId);
-                    if (pluginService != null) {
-                        pluginService.setUserProjectDate(uploadHistory.getSourceId(), userId, emr.getScheduleEntryTime(), emr.getScheduleExitTime());
+                    if (businessService != null) {
+                        businessService.setUserProjectDate(uploadHistory.getSourceId(), userId, emr.getScheduleEntryTime(), emr.getScheduleExitTime());
                     }
                 } catch (Exception e) {
                     ExcelMemberRoleDTO excelMemberRoleDTO = new ExcelMemberRoleDTO();

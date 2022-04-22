@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service;
 
+import java.util.Date;
+
 /**
  * @author scp
  * @since 2022/4/19
@@ -13,4 +15,13 @@ public interface BusinessService {
      * @param scheduleExitTime
      */
     void setUserProjectDate(Long projectId, Long userId, String scheduleEntryTime, String scheduleExitTime);
+
+    /**
+     * 界面上使用
+     * @param projectId
+     * @param userId
+     * @param scheduleEntryTime
+     * @param scheduleExitTime
+     */
+    void setUserProjectDate(Long projectId, Long userId, Date scheduleEntryTime, Date scheduleExitTime);
 }

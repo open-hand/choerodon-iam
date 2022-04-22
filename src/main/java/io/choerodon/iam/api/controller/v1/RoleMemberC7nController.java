@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.HashSet;
 import java.util.List;
 import javax.validation.Valid;
 
@@ -9,7 +10,6 @@ import org.hzero.core.base.BaseController;
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.core.io.Resource;
@@ -32,7 +32,6 @@ import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
-import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -329,8 +328,7 @@ public class RoleMemberC7nController extends BaseController {
     public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @RequestBody @Validated List<RoleC7nDTO> roleC7ns) {
-        List<Role> roles = ConvertUtils.convertList(roleC7ns, Role.class);
-        roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
+        roleMemberService.updateOrganizationMemberRoleIds(organizationId, userId, new HashSet<>(roleC7ns.get(0).getRoleIds()));
         return ResponseEntity.noContent().build();
     }
 

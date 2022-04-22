@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.dto;
 
 import java.util.List;
+import java.util.Set;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Label;
@@ -20,6 +21,8 @@ public class RoleC7nDTO extends Role {
     private Long userId;
     // 用户组织下标签属性
     private List<String> userLabels;
+
+    private Set<Long> roleIds;
 
     public Integer getUserCount() {
         return userCount;
@@ -70,5 +73,13 @@ public class RoleC7nDTO extends Role {
 
     public void setUserLabels(List<String> userLabels) {
         this.userLabels = userLabels;
+    }
+
+    public Set<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(Set<Long> roleIds) {
+        this.roleIds = roleIds;
     }
 }

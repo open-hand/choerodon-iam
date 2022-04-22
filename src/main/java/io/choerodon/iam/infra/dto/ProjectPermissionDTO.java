@@ -54,6 +54,10 @@ public class ProjectPermissionDTO extends AuditDomain {
     @Transient
     private Date scheduleExitTime;
 
+    @ApiModelProperty("是否更改两个时间")
+    @Transient
+    private Boolean timeChange;
+
     public ProjectPermissionDTO() {
     }
 
@@ -126,5 +130,13 @@ public class ProjectPermissionDTO extends AuditDomain {
 
     public void setScheduleExitTime(Date scheduleExitTime) {
         this.scheduleExitTime = scheduleExitTime;
+    }
+
+    public Boolean getTimeChange() {
+        return timeChange;
+    }
+
+    public void setTimeChange(Boolean timeChange) {
+        this.timeChange = timeChange;
     }
 }

@@ -77,7 +77,9 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
         } else {
             projectUserDTOList.forEach(projectPermissionProDTO -> {
                 projectPermissionService.addProjectRolesForUser(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getRoleIds(), operatorId);
-                if (businessService != null) {
+                // 批量添加角色不更改两个时间
+                boolean timeChange = projectPermissionProDTO.getTimeChange() == null || projectPermissionProDTO.getTimeChange();
+                if (businessService != null && timeChange) {
                     businessService.setUserProjectDate(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getScheduleEntryTime(), projectPermissionProDTO.getScheduleExitTime());
                 }
             });

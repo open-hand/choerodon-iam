@@ -6,10 +6,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.iam.api.dto.TenantDTO;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.TenantConfig;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.app.service.MemberRoleService;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
@@ -21,22 +19,26 @@ import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.api.vo.*;
-import io.choerodon.iam.app.service.MessageSendService;
+import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
+import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
@@ -58,6 +60,7 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
+    private static final String LABEL_TYPE_ROLE = "ROLE";
 
     @Autowired
     private TenantService tenantService;
@@ -84,6 +87,9 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private TenantMapper tenantMapper;
     @Autowired
     private TimeZoneWorkCalendarService timeZoneWorkCalendarService;
+
+    @Autowired
+    private MemberRoleService memberRoleService;
 
     @Override
     public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
@@ -267,6 +273,36 @@ public class TenantC7NServiceImpl implements TenantC7nService {
         initConfig(defaultTenant);
         tenantService.createTenant(defaultTenant);
         timeZoneWorkCalendarService.handleOrganizationInitTimeZone(defaultTenant.getTenantId());
+
+        assignOrgAdmins(defaultTenant.getTenantId(), DetailsHelper.getUserDetails().getUserId());
+    }
+
+    private void assignOrgAdmins(Long organizationId, Long userId) {
+        // 查出这个组织下拥有组织管理员标签的角色的id集合
+        List<Long> roleIds = roleC7nMapper.selectRolesByLabelNameAndType(RoleLabelEnum.TENANT_ADMIN.value(), LABEL_TYPE_ROLE, organizationId).stream().map(Role::getId).collect(Collectors.toList());
+        // 不应该为空的
+        if (org.springframework.util.CollectionUtils.isEmpty(roleIds)) {
+            throw new CommonException("error.roleIds.empty.by.label", RoleLabelEnum.TENANT_ADMIN.value());
+        }
+        // 给用户在组织层分配这些角色
+        List<MemberRole> memberRoleList = roleIds.stream().map(roleId -> constructMemberRole(roleId, userId, organizationId, ResourceLevel.ORGANIZATION.value())).collect(Collectors.toList());
+        // 调用hzero接口插入角色分配信息
+        memberRoleService.batchAssignMemberRoleInternal(memberRoleList);
+    }
+
+    private static MemberRole constructMemberRole(Long roleId, Long userId, Long sourceId, String sourceType) {
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MemberRoleConstants.MEMBER_TYPE, MemberRoleConstants.MEMBER_TYPE_CHOERODON);
+        MemberRole memberRole = new MemberRole();
+        memberRole.setAssignLevel(sourceType);
+        memberRole.setAssignLevelValue(sourceId);
+        memberRole.setRoleId(roleId);
+        memberRole.setMemberId(userId);
+        memberRole.setMemberType(MemberType.USER.value());
+        memberRole.setSourceId(sourceId);
+        memberRole.setSourceType(sourceType);
+        memberRole.setAdditionalParams(additionalParams);
+        return memberRole;
     }
 
     @Override

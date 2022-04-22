@@ -1,17 +1,19 @@
 package io.choerodon.iam.infra.utils.excel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author superlee
  */
 public class DateUtil {
+    // excel时间格式
+    public static final String SIMPLE_DATE_FORMAT = "yyyy.MM.dd";
 
     private DateUtil() {
     }

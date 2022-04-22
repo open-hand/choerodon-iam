@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -20,7 +19,10 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.*;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.Role;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -53,6 +55,8 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.api.vo.ErrorUserVO;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
+import io.choerodon.iam.api.vo.UserSearchVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
@@ -173,9 +177,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, String loginName, String realName,
-                                                                      String roleName, Boolean enabled, Boolean locked, String params) {
-        Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, loginName, realName, roleName, enabled, locked, params));
+    public Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, UserSearchVO userSearchVO) {
+        Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, userSearchVO.getLoginName(),
+                userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getLocked(), userSearchVO.getParams()));
+        return setUserRoleAndSagaInfo(userPage, organizationId, userSearchVO.getRoleName());
+    }
+
+    @Override
+    public Page<UserDTO> setUserRoleAndSagaInfo(Page<User> userPage, Long organizationId, String roleName) {
         Page<UserDTO> userDTOSPage = ConvertUtils.convertPage(userPage, UserDTO.class);
         List<UserDTO> userList = userDTOSPage.getContent();
         List<String> refIds = userList.stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList());

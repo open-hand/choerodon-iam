@@ -54,7 +54,6 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.iam.infra.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
@@ -475,6 +474,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("登录名*", "loginName");
         propertyMap.put("角色编码*", "roleCode");
+        propertyMap.put("计划进场时间", "scheduleEntryTime");
+        propertyMap.put("计划撤场时间", "scheduleExitTime");
         excelReadConfig.setSkipSheetNames(skipSheetNames);
         excelReadConfig.setPropertyMap(propertyMap);
         return excelReadConfig;
@@ -715,18 +716,21 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrganizationMemberRole(Long tenantId, Long userId, List<Role> roles) {
+        Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
+        updateOrganizationMemberRoleIds(tenantId, userId, newIds);
+    }
+
+    @Override
+    public void updateOrganizationMemberRoleIds(Long tenantId, Long userId, Set<Long> roleIds) {
         Tenant tenant = tenantMapper.selectByPrimaryKey(tenantId);
         User user = userMapper.selectByPrimaryKey(userId);
-
-
         // 查询用户拥有的组织层角色
         List<MemberRole> memberRoles = memberRoleC7nMapper.listMemberRoleByOrgIdAndUserIdAndRoleLable(tenantId, userId, RoleLabelEnum.TENANT_ROLE.value());
-        Set<Long> newIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
         Set<Long> oldIds = memberRoles.stream().map(MemberRole::getRoleId).collect(Collectors.toSet());
         // 要添加的角色
-        Set<Long> insertIds = newIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
+        Set<Long> insertIds = roleIds.stream().filter(id -> !oldIds.contains(id)).collect(Collectors.toSet());
         // 要删除的角色
-        Set<Long> deleteIds = oldIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
+        Set<Long> deleteIds = oldIds.stream().filter(id -> !roleIds.contains(id)).collect(Collectors.toSet());
         Long operatorId = DetailsHelper.getUserDetailsElseAnonymous().getUserId();
 
         List<MemberRole> insertMemberRoles = insertIds.stream().map(id -> {

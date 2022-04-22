@@ -1,5 +1,25 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.HashSet;
+import java.util.List;
+import javax.validation.Valid;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
+import org.hzero.iam.api.dto.RoleDTO;
+import org.hzero.iam.domain.entity.Client;
+import org.hzero.iam.domain.entity.MemberRole;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
@@ -17,25 +37,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.hzero.core.base.BaseController;
-import org.hzero.iam.api.dto.RoleDTO;
-import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
 
 
 /**
@@ -326,9 +327,8 @@ public class RoleMemberC7nController extends BaseController {
     @PutMapping(value = "/organizations/{organization_id}/users/{user_id}/assign_roles")
     public ResponseEntity<Void> updateUserRolesOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                                   @RequestBody @Validated List<Role> roles) {
-
-        roleMemberService.updateOrganizationMemberRole(organizationId, userId, roles);
+                                                                   @RequestBody @Validated List<RoleC7nDTO> roleC7ns) {
+        roleMemberService.updateOrganizationMemberRoleIds(organizationId, userId, new HashSet<>(roleC7ns.get(0).getRoleIds()));
         return ResponseEntity.noContent().build();
     }
 

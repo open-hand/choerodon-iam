@@ -1,5 +1,8 @@
 package io.choerodon.iam.infra.dto;
 
+import java.util.Date;
+import java.util.Set;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -38,6 +41,22 @@ public class ProjectPermissionDTO extends AuditDomain {
     @ApiModelProperty("角色id")
     @Encrypt
     private Long roleId;
+
+    @Encrypt
+    @Transient
+    Set<Long> roleIds;
+
+    @ApiModelProperty("进场时间")
+    @Transient
+    private Date scheduleEntryTime;
+
+    @ApiModelProperty("离场时间")
+    @Transient
+    private Date scheduleExitTime;
+
+    @ApiModelProperty("是否更改两个时间")
+    @Transient
+    private Boolean timeChange;
 
     public ProjectPermissionDTO() {
     }
@@ -87,5 +106,37 @@ public class ProjectPermissionDTO extends AuditDomain {
     public ProjectPermissionDTO setMemberRoleId(Long memberRoleId) {
         this.memberRoleId = memberRoleId;
         return this;
+    }
+
+    public Set<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(Set<Long> roleIds) {
+        this.roleIds = roleIds;
+    }
+
+    public Date getScheduleEntryTime() {
+        return scheduleEntryTime;
+    }
+
+    public void setScheduleEntryTime(Date scheduleEntryTime) {
+        this.scheduleEntryTime = scheduleEntryTime;
+    }
+
+    public Date getScheduleExitTime() {
+        return scheduleExitTime;
+    }
+
+    public void setScheduleExitTime(Date scheduleExitTime) {
+        this.scheduleExitTime = scheduleExitTime;
+    }
+
+    public Boolean getTimeChange() {
+        return timeChange;
+    }
+
+    public void setTimeChange(Boolean timeChange) {
+        this.timeChange = timeChange;
     }
 }

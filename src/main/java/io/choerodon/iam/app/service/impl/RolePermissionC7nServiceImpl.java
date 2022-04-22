@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.hzero.iam.domain.entity.Menu;
 import org.hzero.iam.domain.entity.RolePermission;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.app.service.BusinessService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
 import io.choerodon.iam.app.service.RolePermissionC7nService;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
@@ -36,6 +38,8 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
     @Autowired
     @Lazy
     private ProjectPermissionService projectPermissionService;
+    @Autowired(required = false)
+    private BusinessService businessService;
 
 
     @Override
@@ -63,11 +67,23 @@ public class RolePermissionC7nServiceImpl implements RolePermissionC7nService {
         rolePermissionC7nMapper.deleteByRoleId(roleId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void assignUsersProjectRoles(Long projectId, List<ProjectPermissionDTO> projectUserDTOList) {
         Long operatorId = DetailsHelper.getUserDetails().getUserId();
-        Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
-        map.forEach((k, v) -> projectPermissionService.addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()), operatorId));
+        if (CollectionUtils.isEmpty(projectUserDTOList.get(0).getRoleIds())) {
+            Map<Long, List<ProjectPermissionDTO>> map = projectUserDTOList.stream().collect(Collectors.groupingBy(ProjectPermissionDTO::getMemberId));
+            map.forEach((k, v) -> projectPermissionService.addProjectRolesForUser(projectId, k, v.stream().map(ProjectPermissionDTO::getRoleId).collect(Collectors.toSet()), operatorId));
+        } else {
+            projectUserDTOList.forEach(projectPermissionProDTO -> {
+                projectPermissionService.addProjectRolesForUser(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getRoleIds(), operatorId);
+                // 批量添加角色不更改两个时间
+                boolean timeChange = projectPermissionProDTO.getTimeChange() == null || projectPermissionProDTO.getTimeChange();
+                if (businessService != null && timeChange) {
+                    businessService.setUserProjectDate(projectId, projectPermissionProDTO.getMemberId(), projectPermissionProDTO.getScheduleEntryTime(), projectPermissionProDTO.getScheduleExitTime());
+                }
+            });
+        }
     }
 
 }

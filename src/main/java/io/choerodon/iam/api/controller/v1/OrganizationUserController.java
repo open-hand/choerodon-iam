@@ -26,10 +26,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.vo.CheckEmailVO;
-import io.choerodon.iam.api.vo.ProjectSearchVO;
-import io.choerodon.iam.api.vo.UserNumberVO;
-import io.choerodon.iam.api.vo.UserWithGitlabIdVO;
+import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
@@ -80,14 +77,8 @@ public class OrganizationUserController extends BaseController {
             @PathVariable(name = "organization_id") Long organizationId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-            @RequestParam(required = false) String loginName,
-            @RequestParam(required = false) String realName,
-            @RequestParam(required = false) String roleName,
-            @RequestParam(required = false) Boolean enabled,
-            @RequestParam(required = false) Boolean locked,
-            @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(organizationUserService.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, pageable, loginName, realName, roleName,
-                enabled, locked, params), HttpStatus.OK);
+            UserSearchVO userSearchVO) {
+        return new ResponseEntity<>(organizationUserService.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, pageable, userSearchVO), HttpStatus.OK);
     }
 
 

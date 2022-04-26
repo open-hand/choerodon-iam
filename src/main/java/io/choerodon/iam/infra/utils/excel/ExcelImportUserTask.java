@@ -66,8 +66,6 @@ import io.choerodon.iam.infra.valitador.RoleValidator;
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
     private static final String ADD_USER = "ADDUSER";
-    private static final String USER_DEFAULT_PWD = "abcd1234";
-
     private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
     private FileClient fileClient;
@@ -619,7 +617,8 @@ public class ExcelImportUserTask {
             user.setOriginalPassword(user.getPassword());
             // 如果excel中用户密码为空，设置默认密码
             if (StringUtils.isEmpty(user.getPassword())) {
-                user.setPassword(USER_DEFAULT_PWD);
+                String newPassword = organizationUserService.getDefaultPassword(orgId);
+                user.setPassword(newPassword);
             }
             // 自动生成登录名
             user.setLoginName(randomInfoGenerator.randomLoginName());

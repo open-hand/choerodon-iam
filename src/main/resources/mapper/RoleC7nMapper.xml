@@ -259,6 +259,7 @@
             <if test="labelName!=null">
                 and il.name=#{labelName}
             </if>
+            and il.name in ('TENANT_ROLE','PROJECT_ROLE')
             <if test="params != null">
                 and (
                 ir.name like concat(concat('%',#{params}), '%') OR

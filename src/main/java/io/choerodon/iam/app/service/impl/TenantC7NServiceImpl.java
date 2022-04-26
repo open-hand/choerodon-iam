@@ -11,6 +11,7 @@ import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.TenantConfigRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.infra.common.utils.UserUtils;
+import org.hzero.iam.infra.mapper.RoleMapper;
 import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
@@ -90,6 +91,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     @Autowired
     private MemberRoleService memberRoleService;
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Override
     public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
@@ -279,7 +282,11 @@ public class TenantC7NServiceImpl implements TenantC7nService {
 
     private void assignOrgAdmins(Long organizationId, Long userId) {
         // 查出这个组织下拥有组织管理员标签的角色的id集合
-        List<Long> roleIds = roleC7nMapper.selectRolesByLabelNameAndType(RoleLabelEnum.TENANT_ADMIN.value(), LABEL_TYPE_ROLE, organizationId).stream().map(Role::getId).collect(Collectors.toList());
+        Role role = new Role();
+        role.setTenantId(organizationId);
+        role.setCode("administrator");
+
+        List<Long> roleIds = roleMapper.select(role).stream().map(Role::getId).collect(Collectors.toList());
         // 不应该为空的
         if (org.springframework.util.CollectionUtils.isEmpty(roleIds)) {
             throw new CommonException("error.roleIds.empty.by.label", RoleLabelEnum.TENANT_ADMIN.value());

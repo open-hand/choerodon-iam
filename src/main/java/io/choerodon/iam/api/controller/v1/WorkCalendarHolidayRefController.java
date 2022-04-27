@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +48,10 @@ public class WorkCalendarHolidayRefController {
     public ResponseEntity<List<WorkCalendarHolidayRefVO>> queryWorkCalendarHolidayRelByYear(@ApiParam(value = "项目id", required = true)
                                                                                             @PathVariable(name = "organization_id") Long organizationId,
                                                                                             @ApiParam(value = "要查询的年份", required = true)
-                                                                                            @RequestParam Integer year) {
-        return Optional.ofNullable(workCalendarHolidayRefService.queryWorkCalendarHolidayRelByYear(year))
+                                                                                            @RequestParam Integer year,
+                                                                                            @RequestParam(required = false) Date startDate,
+                                                                                            @RequestParam(required = false) Date endDate) {
+        return Optional.ofNullable(workCalendarHolidayRefService.queryWorkCalendarHolidayRelByYear(year, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.WorkCalendarHolidayRefController.queryWorkCalendarHolidayRelByYear"));
     }

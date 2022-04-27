@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.iam.api.vo.WorkCalendarHolidayRefVO;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,7 +23,9 @@ public interface WorkCalendarHolidayRefService {
      * @param year year
      * @return WorkCalendarHolidayRefVO
      */
-    List<WorkCalendarHolidayRefVO> queryWorkCalendarHolidayRelByYear(Integer year);
+    List<WorkCalendarHolidayRefVO> queryWorkCalendarHolidayRelByYear(Integer year,
+                                                                     Date startDate,
+                                                                     Date endDate);
 
     /**
      * 根据年份查询工作日历，包含当年、去年、明年

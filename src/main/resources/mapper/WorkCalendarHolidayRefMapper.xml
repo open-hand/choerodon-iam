@@ -13,7 +13,14 @@
 
     <select id="queryWorkCalendarHolidayRelWithNextYearByYear"
             resultType="io.choerodon.iam.infra.dto.WorkCalendarHolidayRefDTO">
-        select * from iam_work_calendar_holiday_ref where (year = #{year} or year = (#{year}+1)) order by calendar_id asc
+        select *
+        from iam_work_calendar_holiday_ref
+        where (year = #{year} or year = (#{year}+1))
+        <if test="startDate != null and endDate != null">
+            and date(holiday) &gt;= #{startDate}
+            and date(holiday) &lt;= #{endDate}
+        </if>
+        order by calendar_id asc
     </select>
 
     <select id="queryByYearIncludeLastAndNext"

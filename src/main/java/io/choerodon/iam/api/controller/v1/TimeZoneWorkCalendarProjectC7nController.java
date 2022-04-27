@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -36,8 +37,10 @@ public class TimeZoneWorkCalendarProjectC7nController {
                                                                                            @ApiParam(value = "组织id", required = true)
                                                                                            @PathVariable(name = "organization_id") Long organizationId,
                                                                                            @ApiParam(value = "时间", required = true)
-                                                                                           @RequestParam(name = "year") Integer year) {
-        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year))
+                                                                                           @RequestParam(name = "year") Integer year,
+                                                                                           @RequestParam(required = false) Date startDate,
+                                                                                           @RequestParam(required = false) Date endDate) {
+        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarProjectController.queryTimeZoneWorkCalendarDetail"));
     }

@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -23,5 +24,8 @@ public interface TimeZoneWorkCalendarRefMapper extends BaseMapper<TimeZoneWorkCa
      * @return TimeZoneWorkCalendarRefDTO
      */
     List<TimeZoneWorkCalendarRefDTO> queryWithNextYearByYear(@Param("organizationId") Long organizationId,
-                                                             @Param("timeZoneId") Long timeZoneId, @Param("year") Integer year);
+                                                             @Param("timeZoneId") Long timeZoneId,
+                                                             @Param("year") Integer year,
+                                                             @Param("startDate") Date startDate,
+                                                             @Param("endDate") Date endDate);
 }

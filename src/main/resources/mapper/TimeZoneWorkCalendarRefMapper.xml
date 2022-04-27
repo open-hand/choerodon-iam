@@ -5,6 +5,10 @@
     <select id="queryWithNextYearByYear" resultType="io.choerodon.iam.infra.dto.TimeZoneWorkCalendarRefDTO">
        select * from iam_time_zone_work_calendar_ref where organization_id = #{organizationId}
        and time_zone_id = #{timeZoneId} and (year = #{year} or year =(#{year}+1))
+       <if test="startDate != null and endDate != null">
+           and date(work_day) &gt;= #{startDate}
+           and date(work_day) &lt;= #{endDate}
+       </if>
     </select>
 
 </mapper>

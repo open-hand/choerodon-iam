@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.utils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.WorkCalendarHolidayRefDTO;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Created by HuangFuqiang@choerodon.io on 2018/5/31.
@@ -64,5 +66,16 @@ public class DateUtil {
     public static boolean isExceedDay(Date min, Date max, Integer maxDay) {
         int days = (int) ((max.getTime() - min.getTime()) / (1000 * 3600 * 24));
         return days > maxDay;
+    }
+
+    public static Date formatDate(Date date, DateFormat formatter) {
+        if (ObjectUtils.isEmpty(date)) {
+            return null;
+        }
+        try {
+            return formatter.parse(formatter.format(date));
+        } catch (ParseException e) {
+            throw new CommonException("error.date.format");
+        }
     }
 }

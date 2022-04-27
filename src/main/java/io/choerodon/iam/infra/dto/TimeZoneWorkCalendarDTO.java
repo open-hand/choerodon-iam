@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.dto;
 
 
+import java.util.Date;
 import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -37,9 +38,30 @@ public class TimeZoneWorkCalendarDTO extends AuditDomain {
 
     private Boolean sundayWork;
 
+    @Transient
+    private Date startDate;
+    @Transient
+    private Date endDate;
+
 
     @Transient
     private List<TimeZoneWorkCalendarRefDTO> timeZoneWorkCalendarRefDTOS;
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
 
     public List<TimeZoneWorkCalendarRefDTO> getTimeZoneWorkCalendarRefDTOS() {
         return timeZoneWorkCalendarRefDTOS;

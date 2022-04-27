@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.infra.dto.TimeZoneWorkCalendarDTO;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,7 +57,11 @@ public interface TimeZoneWorkCalendarService {
      * @param year           year
      * @return TimeZoneWorkCalendarRefVO
      */
-    List<TimeZoneWorkCalendarRefVO> queryTimeZoneWorkCalendarRefByTimeZoneId(Long organizationId, Long timeZoneId, Integer year);
+    List<TimeZoneWorkCalendarRefVO> queryTimeZoneWorkCalendarRefByTimeZoneId(Long organizationId,
+                                                                             Long timeZoneId,
+                                                                             Integer year,
+                                                                             Date startDate,
+                                                                             Date endDate);
 
     /**
      * ¬
@@ -66,7 +71,10 @@ public interface TimeZoneWorkCalendarService {
      * @param year           year
      * @return TimeZoneWorkCalendarRefCreateVO
      */
-    TimeZoneWorkCalendarRefDetailVO queryTimeZoneWorkCalendarDetail(Long organizationId, Integer year);
+    TimeZoneWorkCalendarRefDetailVO queryTimeZoneWorkCalendarDetail(Long organizationId,
+                                                                    Integer year,
+                                                                    Date startDate,
+                                                                    Date endDate);
 
     TimeZoneWorkCalendarDTO create(TimeZoneWorkCalendarDTO timeZoneWorkCalendarDTO);
 

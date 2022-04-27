@@ -16,8 +16,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,9 +53,14 @@ public class WorkCalendarHolidayRefServiceImpl implements WorkCalendarHolidayRef
     }
 
     @Override
-    public List<WorkCalendarHolidayRefVO> queryWorkCalendarHolidayRelByYear(Integer year) {
-        return formatAndSortToDTO(workCalendarHolidayRefMapper.queryWorkCalendarHolidayRelWithNextYearByYear(year));
+    public List<WorkCalendarHolidayRefVO> queryWorkCalendarHolidayRelByYear(Integer year,
+                                                                            Date startDate,
+                                                                            Date endDate) {
 
+        DateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
+        startDate = DateUtil.formatDate(startDate, formatter);
+        endDate = DateUtil.formatDate(endDate, formatter);
+        return formatAndSortToDTO(workCalendarHolidayRefMapper.queryWorkCalendarHolidayRelWithNextYearByYear(year, startDate, endDate));
     }
 
     private List<WorkCalendarHolidayRefVO> formatAndSortToDTO(List<WorkCalendarHolidayRefDTO> workCalendarHolidayRefDTOS) {

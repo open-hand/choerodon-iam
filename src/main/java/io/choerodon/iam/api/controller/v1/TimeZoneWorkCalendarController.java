@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,8 +77,10 @@ public class TimeZoneWorkCalendarController {
                                                                                                     @ApiParam(value = "时区id", required = true)
                                                                                                     @Encrypt @PathVariable(name = "timeZoneId") Long timeZoneId,
                                                                                                     @ApiParam(value = "年份", required = true)
-                                                                                                    @RequestParam(name = "year") Integer year) {
-        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarRefByTimeZoneId(organizationId, timeZoneId, year))
+                                                                                                    @RequestParam(name = "year") Integer year,
+                                                                                                    @RequestParam(required = false) Date startDate,
+                                                                                                    @RequestParam(required = false) Date endDate) {
+        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarRefByTimeZoneId(organizationId, timeZoneId, year, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarController.queryTimeZoneWorkCalendarRefByTimeZoneId"));
     }
@@ -88,8 +91,10 @@ public class TimeZoneWorkCalendarController {
     public ResponseEntity<TimeZoneWorkCalendarRefDetailVO> queryTimeZoneWorkCalendarDetail(@ApiParam(value = "组织id", required = true)
                                                                                            @PathVariable(name = "organization_id") Long organizationId,
                                                                                            @ApiParam(value = "年份", required = true)
-                                                                                           @RequestParam(name = "year") Integer year) {
-        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year))
+                                                                                           @RequestParam(name = "year") Integer year,
+                                                                                           @RequestParam(required = false) Date startDate,
+                                                                                           @RequestParam(required = false) Date endDate) {
+        return Optional.ofNullable(timeZoneWorkCalendarService.queryTimeZoneWorkCalendarDetail(organizationId, year, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.TimeZoneWorkCalendarController.queryTimeZoneWorkCalendarDetail"));
     }

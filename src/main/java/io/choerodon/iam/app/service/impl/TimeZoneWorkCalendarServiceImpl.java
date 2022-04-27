@@ -24,9 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.PostConstruct;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -151,17 +153,26 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
     }
 
     @Override
-    public List<TimeZoneWorkCalendarRefVO> queryTimeZoneWorkCalendarRefByTimeZoneId(Long organizationId, Long timeZoneId, Integer year) {
-        return modelMapper.map(timeZoneWorkCalendarRefMapper.queryWithNextYearByYear(organizationId, timeZoneId, year), new TypeToken<List<TimeZoneWorkCalendarRefVO>>() {
+    public List<TimeZoneWorkCalendarRefVO> queryTimeZoneWorkCalendarRefByTimeZoneId(Long organizationId,
+                                                                                    Long timeZoneId,
+                                                                                    Integer year,
+                                                                                    Date startDate,
+                                                                                    Date endDate) {
+        return modelMapper.map(timeZoneWorkCalendarRefMapper.queryWithNextYearByYear(organizationId, timeZoneId, year, startDate, endDate), new TypeToken<List<TimeZoneWorkCalendarRefVO>>() {
         }.getType());
     }
 
     @Override
-    public TimeZoneWorkCalendarRefDetailVO queryTimeZoneWorkCalendarDetail(Long organizationId, Integer year) {
+    public TimeZoneWorkCalendarRefDetailVO queryTimeZoneWorkCalendarDetail(Long organizationId,
+                                                                           Integer year,
+                                                                           Date startDate,
+                                                                           Date endDate) {
         TimeZoneWorkCalendarDTO query = new TimeZoneWorkCalendarDTO();
         query.setOrganizationId(organizationId);
         TimeZoneWorkCalendarDTO timeZoneWorkCalendarDTO = timeZoneWorkCalendarMapper.selectOne(query);
         if (timeZoneWorkCalendarDTO != null) {
+            timeZoneWorkCalendarDTO.setStartDate(startDate);
+            timeZoneWorkCalendarDTO.setEndDate(endDate);
             return initTimeZoneWorkCalendarRefDetailDTO(timeZoneWorkCalendarDTO, organizationId, year);
         } else {
             timeZoneWorkCalendarDTO = new TimeZoneWorkCalendarDTO();
@@ -172,13 +183,19 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
             timeZoneWorkCalendarDTO.setUseHoliday(true);
             timeZoneWorkCalendarDTO.setOrganizationId(organizationId);
             timeZoneWorkCalendarDTO = modelMapper.map(create(timeZoneWorkCalendarDTO), TimeZoneWorkCalendarDTO.class);
+            timeZoneWorkCalendarDTO.setStartDate(startDate);
+            timeZoneWorkCalendarDTO.setEndDate(endDate);
             return initTimeZoneWorkCalendarRefDetailDTO(timeZoneWorkCalendarDTO, organizationId, year);
         }
     }
 
     private TimeZoneWorkCalendarRefDetailVO initTimeZoneWorkCalendarRefDetailDTO(TimeZoneWorkCalendarDTO timeZoneWorkCalendarDTO, Long organizationId, Integer year) {
+        DateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
+        Date startDate = DateUtil.formatDate(timeZoneWorkCalendarDTO.getStartDate(), formatter);
+        Date endDate = DateUtil.formatDate(timeZoneWorkCalendarDTO.getEndDate(), formatter);
         TimeZoneWorkCalendarRefDetailVO timeZoneWorkCalendarRefDetailVO = timeZoneWorkCalendarAssembler.toTarget(timeZoneWorkCalendarDTO, TimeZoneWorkCalendarRefDetailVO.class);
-        timeZoneWorkCalendarRefDetailVO.setTimeZoneWorkCalendarDTOS(timeZoneWorkCalendarRefMapper.queryWithNextYearByYear(organizationId, timeZoneWorkCalendarDTO.getTimeZoneId(), year)
+        timeZoneWorkCalendarRefDetailVO.setTimeZoneWorkCalendarDTOS(
+                timeZoneWorkCalendarRefMapper.queryWithNextYearByYear(organizationId, timeZoneWorkCalendarDTO.getTimeZoneId(), year, startDate, endDate)
                 .stream().map(d -> {
                     TimeZoneWorkCalendarRefCreateVO timeZoneWorkCalendarRefCreateVO = new TimeZoneWorkCalendarRefCreateVO();
                     timeZoneWorkCalendarRefCreateVO.setWorkDay(d.getWorkDay());
@@ -186,11 +203,10 @@ public class TimeZoneWorkCalendarServiceImpl implements TimeZoneWorkCalendarServ
                     return timeZoneWorkCalendarRefCreateVO;
                 }).collect(Collectors.toSet()));
         if (timeZoneWorkCalendarDTO.getUseHoliday()) {
-            List<WorkCalendarHolidayRefDTO> workCalendarHolidayRefDTOS = workCalendarHolidayRefMapper.queryWorkCalendarHolidayRelWithNextYearByYear(year);
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT);
+            List<WorkCalendarHolidayRefDTO> workCalendarHolidayRefDTOS = workCalendarHolidayRefMapper.queryWorkCalendarHolidayRelWithNextYearByYear(year, startDate, endDate);
             workCalendarHolidayRefDTOS.forEach(workCalendarHolidayRefDO -> {
                 try {
-                    workCalendarHolidayRefDO.setHoliday(simpleDateFormat.format(simpleDateFormat.parse(workCalendarHolidayRefDO.getHoliday())));
+                    workCalendarHolidayRefDO.setHoliday(formatter.format(formatter.parse(workCalendarHolidayRefDO.getHoliday())));
                 } catch (ParseException e) {
                     LOGGER.warn(PARSE_EXCEPTION, e);
                 }

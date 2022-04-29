@@ -866,6 +866,12 @@ public class UserC7nServiceImpl implements UserC7nService {
         return result;
     }
 
+    @Override
+    public Boolean checkLoginName(Long organizationId, Long userId, String loginName) {
+        User user = userRepository.selectByLoginName(loginName);
+        return user == null || !user.getId().equals(userId);
+    }
+
     private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,
                                                Long organizationId,
                                                Boolean onlySucceed,

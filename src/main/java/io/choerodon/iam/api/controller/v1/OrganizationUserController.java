@@ -334,7 +334,7 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前组织下用户的项目列表(敏捷使用)")
+    @ApiOperation(value = "校验用户登录名")
     @GetMapping(value = "/users/{user_id}/check_login_name")
     public ResponseEntity<Boolean> checkLoginName(@PathVariable(name = "organization_id") Long organizationId,
                                                   @Encrypt @PathVariable(name = "user_id") Long userId,

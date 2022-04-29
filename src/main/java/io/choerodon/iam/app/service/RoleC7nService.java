@@ -75,4 +75,8 @@ public interface RoleC7nService {
     List<User> listVindicators();
 
     List<SimpleRoleVO> listRolesByIds(List<Long> roleIds, Long tenantId);
+
+    void syncRolesAndPermission();
+
+    void fixChildPermission();
 }

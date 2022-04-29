@@ -108,4 +108,12 @@ public class RoleC7nController {
         return Results.success(roleC7nService.listRolesByIds(roleIds, tenantId));
     }
 
+    @ApiOperation("同步角色权限与接口")
+    @Permission(level = ResourceLevel.SITE)
+    @PutMapping("/sync_roles_and_permission")
+    public ResponseEntity<Void> syncRolesAndPermission() {
+        roleC7nService.syncRolesAndPermission();
+        return Results.success();
+    }
+
 }

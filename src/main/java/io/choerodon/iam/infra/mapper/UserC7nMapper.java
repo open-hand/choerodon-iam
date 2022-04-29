@@ -1,22 +1,20 @@
 package io.choerodon.iam.infra.mapper;
 
+import java.sql.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+
 import io.choerodon.iam.api.vo.RoleVO;
 import io.choerodon.iam.api.vo.SimplifiedUserVO;
 import io.choerodon.iam.api.vo.UserProjectLabelVO;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
-import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.mybatis.common.BaseMapper;
-
-import org.apache.ibatis.annotations.Param;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-
-import java.sql.Date;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -457,6 +455,10 @@ public interface UserC7nMapper {
     List<String> queryUserRoleLevels(@Param("userId") Long userId);
 
     void updateUserPhoneBind(@Param("userId") Long userId, @Param("false") Integer no);
+
+    void updateUserLoginName(@Param("userId") Long userId, @Param("loginName") String loginName);
+
+    void updateUserLoginNameForOpen(@Param("oldLoginName") String oldLoginName, @Param("loginName") String loginName);
 
     Boolean platformAdministrator(@Param("userId") Long userId);
 

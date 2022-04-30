@@ -3,10 +3,11 @@ package io.choerodon.iam.infra.feign;
 import java.util.List;
 
 import org.hzero.common.HZeroService;
-import org.hzero.iam.infra.feign.fallback.UserDetailsClientImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import io.choerodon.iam.infra.feign.fallback.AdminFeignClientFallback;
 
 /**
  * <p>
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  *
  * @author qingsheng.chen 2018/8/31 星期五 17:09
  */
-@FeignClient(value = HZeroService.Admin.NAME, fallback = UserDetailsClientImpl.class, path = "/hadm")
+@FeignClient(value = HZeroService.Admin.NAME, fallback = AdminFeignClientFallback.class, path = "/hadm")
 public interface AdminFeignClient {
 
 

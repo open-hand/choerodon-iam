@@ -369,14 +369,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
         }
-        // 管理员可更改用户登录名
+        // 界面上登录名为邮箱
         boolean loginNameChange = false;
-        if (!oldLoginName.equals(user.getLoginName())) {
+        if (!oldLoginName.equals(user.getLoginName())
+                && !userDetails.getEmail().equals(user.getLoginName())) {
             loginNameChange = true;
             user.setPhoneChanged(true);
             if (userRepository.selectByLoginName(user.getLoginName()) != null) {
                 throw new CommonException("error.user.login.exist");
             }
+        } else {
+            user.setLoginName(oldLoginName);
         }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);

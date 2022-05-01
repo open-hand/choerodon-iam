@@ -357,6 +357,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void updateUser(Long organizationId, User user) {
+        updateUser(organizationId, user, true);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUser(Long organizationId, User user, Boolean updateRoles) {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
@@ -396,7 +402,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             userC7nMapper.updateUserLoginNameForOpen(oldLoginName, user.getLoginName());
         }
         // 2. 更新用户角色
-        roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        if (updateRoles) {
+            roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        }
     }
 
 

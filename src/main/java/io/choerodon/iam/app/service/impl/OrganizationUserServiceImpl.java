@@ -396,7 +396,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             userC7nMapper.updateUserLoginNameForOpen(oldLoginName, user.getLoginName());
         }
         // 2. 更新用户角色
-        roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        if (CollectionUtils.isEmpty(user.getRoles())) {
+            roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        }
     }
 
 

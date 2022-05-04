@@ -1,6 +1,10 @@
 package io.choerodon.iam.app.task;
 
+import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
+
+import org.hzero.common.HZeroService;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.iam.app.service.IDocumentService;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.infra.mapper.TenantMapper;
@@ -20,7 +24,7 @@ import io.choerodon.iam.infra.constant.TenantConstants;
  * 初始化默认组织
  */
 @Component
-public class DefaultTenantInitRunner implements CommandLineRunner {
+public class DefaultTenantInitRunner<PridocumentService> implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTenantInitRunner.class);
 
 
@@ -31,10 +35,17 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
     @Autowired
     private UserMapper userMapper;
     private static final String ADMIN_LOGIN_NAME = "admin";
+    @Autowired
+    private IDocumentService documentService;
 
     @Override
     public void run(String... strings) {
         try {
+            try {
+                documentService.refreshPermissionAsync(HZeroService.Iam.NAME, NULL_VERSION, true);
+            } catch (Exception e) {
+                LOGGER.error("error.sync.permission.service:{}", HZeroService.Iam.NAME);
+            }
             LOGGER.info(">>>>>>>>>>>>>>>>>> check default tenant is created <<<<<<<<<<<<<<<<<<<<<<<");
             Tenant tenant = tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);
             if (tenant == null) {

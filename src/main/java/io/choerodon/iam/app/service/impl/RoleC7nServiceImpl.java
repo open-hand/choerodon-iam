@@ -1,5 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
+import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +56,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class RoleC7nServiceImpl implements RoleC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleC7nServiceImpl.class);
     private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
-    private static final String NULL_VERSION = "null_version";
 
     @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;

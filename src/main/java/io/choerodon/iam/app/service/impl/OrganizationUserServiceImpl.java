@@ -19,10 +19,7 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -391,6 +388,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
         }
+        //设置用户info信息
+        setUserInfo(user);
         userService.updateUserInternal(user);
         //如果修改了手机号，则用户手机号绑定状态变为未绑定
         if (phoneChange) {
@@ -407,6 +406,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
     }
 
+    private void setUserInfo(User user) {
+        UserInfo existUserInfo = userRepository.selectUserInfoByPrimaryKey(user.getId());
+        if (existUserInfo == null) {
+            throw new CommonException("hiam.warn.user.notFound");
+        }
+        user.setEndDateActive(existUserInfo.getEndDateActive());
+        user.setStartDateActive(existUserInfo.getStartDateActive());
+        user.setBirthday(existUserInfo.getBirthday());
+        user.setNickname(existUserInfo.getNickname());
+        user.setAddressDetail(existUserInfo.getAddressDetail());
+        user.setGender(existUserInfo.getGender());
+        user.setCountryId(existUserInfo.getCountryId());
+        user.setRegionId(existUserInfo.getRegionId());
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

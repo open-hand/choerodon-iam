@@ -5,6 +5,7 @@ import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.exception.NotLoginException;
 import org.hzero.iam.api.dto.RoleDTO;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -58,7 +60,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class RoleC7nServiceImpl implements RoleC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleC7nServiceImpl.class);
     private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
-    private final SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
+    private static final String SYNC_STATUS_REDIS_KEY = "c7n-iam:sync-roles-and-permissions";
+    private final Gson gson = new Gson();
     @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;
 
@@ -79,6 +82,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     private RolePermissionC7nMapper rolePermissionC7nMapper;
     @Autowired
     private AdminFeignClient adminFeignClient;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectPermissionMapper projectPermissionMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
         this.roleC7nMapper = roleC7nMapper;
@@ -257,8 +262,11 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     @Override
     @Async
     public void syncRolesAndPermission() {
+        stringRedisTemplate.delete(SYNC_STATUS_REDIS_KEY);
+        SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
         syncStatusVO.setCompletedStepCount(0);
         syncStatusVO.setAllStepCount(2);
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
             assert serviceCodes != null;
@@ -269,16 +277,16 @@ public class RoleC7nServiceImpl implements RoleC7nService {
                 } catch (Exception e) {
                     LOGGER.error("error.sync.permission.service:{}", serviceName);
                 } finally {
-                    syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
+                    updateCompletedStepCount(syncStatusVO);
                 }
             });
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
         }
         fixService.fixMenuLevelPath(true);
-        syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
+        updateCompletedStepCount(syncStatusVO);
         ApplicationContextHelper.getContext().getBean(RoleC7nService.class).fixChildPermission();
-        syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
+        updateCompletedStepCount(syncStatusVO);
     }
 
     @Override
@@ -363,6 +371,15 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
     @Override
     public SyncStatusVO syncRolesAndPermissionStatus() {
-        return syncStatusVO;
+        String mapRedis = stringRedisTemplate.opsForValue().get(SYNC_STATUS_REDIS_KEY);
+        if (mapRedis != null) {
+            return gson.fromJson(mapRedis, SyncStatusVO.class);
+        }
+        return new SyncStatusVO(0, 0);
+    }
+
+    private void updateCompletedStepCount(SyncStatusVO syncStatusVO) {
+        syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
     }
 }

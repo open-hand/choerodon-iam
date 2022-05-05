@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -57,7 +58,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class RoleC7nServiceImpl implements RoleC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleC7nServiceImpl.class);
     private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
-    private final SyncStatusVO syncStatusVO = new SyncStatusVO();
+    private final SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
     @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;
 
@@ -276,7 +277,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         }
         fixService.fixMenuLevelPath(true);
         syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
-        fixChildPermission();
+        ApplicationContextHelper.getContext().getBean(RoleC7nService.class).fixChildPermission();
         syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
     }
 

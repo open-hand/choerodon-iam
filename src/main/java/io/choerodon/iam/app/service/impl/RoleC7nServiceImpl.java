@@ -56,7 +56,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class RoleC7nServiceImpl implements RoleC7nService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleC7nServiceImpl.class);
     private static final String DEFAULT_HZERO_PLATFORM_CODE = "HZERO-PLATFORM";
-
+    private final SyncStatusVO syncStatusVO = new SyncStatusVO();
     @Value("${choerodon.fix.data.page.size:200}")
     private Integer pageSize;
 
@@ -254,21 +254,28 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
     @Override
     public void syncRolesAndPermission() {
+        syncStatusVO.setCompletedStepCount(0);
+        syncStatusVO.setAllStepCount(2);
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
             assert serviceCodes != null;
+            syncStatusVO.setAllStepCount(serviceCodes.size() + 2);
             serviceCodes.forEach(serviceName -> {
                 try {
                     documentService.refreshPermissionAsync(serviceName, NULL_VERSION, true);
                 } catch (Exception e) {
                     LOGGER.error("error.sync.permission.service:{}", serviceName);
+                } finally {
+                    syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
                 }
             });
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
         }
         fixService.fixMenuLevelPath(true);
+        syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
         fixChildPermission();
+        syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
     }
 
     @Override
@@ -349,5 +356,10 @@ public class RoleC7nServiceImpl implements RoleC7nService {
                 }
             });
         });
+    }
+
+    @Override
+    public SyncStatusVO syncRolesAndPermissionStatus() {
+        return syncStatusVO;
     }
 }

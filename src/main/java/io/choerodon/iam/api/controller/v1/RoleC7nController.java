@@ -15,6 +15,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.vo.SimpleRoleVO;
+import io.choerodon.iam.api.vo.SyncStatusVO;
 import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.app.service.RoleC7nService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -114,6 +115,13 @@ public class RoleC7nController {
     public ResponseEntity<Void> syncRolesAndPermission() {
         roleC7nService.syncRolesAndPermission();
         return Results.success();
+    }
+
+    @ApiOperation("同步角色权限与接口 状态")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping("/sync_roles_and_permission/status")
+    public ResponseEntity<SyncStatusVO> syncRolesAndPermissionStatus() {
+        return Results.success(roleC7nService.syncRolesAndPermissionStatus());
     }
 
 }

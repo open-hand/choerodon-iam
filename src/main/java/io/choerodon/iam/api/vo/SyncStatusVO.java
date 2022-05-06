@@ -7,6 +7,7 @@ package io.choerodon.iam.api.vo;
 public class SyncStatusVO {
     private Integer completedStepCount;
     private Integer allStepCount;
+    private String status;
 
     public SyncStatusVO(Integer completedStepCount, Integer allStepCount) {
         this.completedStepCount = completedStepCount;
@@ -27,5 +28,13 @@ public class SyncStatusVO {
 
     public void setAllStepCount(Integer allStepCount) {
         this.allStepCount = allStepCount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -266,6 +266,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
         syncStatusVO.setCompletedStepCount(0);
         syncStatusVO.setAllStepCount(2);
+        syncStatusVO.setStatus("doing");
         stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
@@ -287,6 +288,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         updateCompletedStepCount(syncStatusVO);
         ApplicationContextHelper.getContext().getBean(RoleC7nService.class).fixChildPermission();
         updateCompletedStepCount(syncStatusVO);
+        syncStatusVO.setStatus("success");
     }
 
     @Override

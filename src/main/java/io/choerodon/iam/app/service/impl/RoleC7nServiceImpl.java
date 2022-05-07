@@ -274,7 +274,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             syncStatusVO.setAllStepCount(serviceCodes.size() + 2);
             serviceCodes.forEach(serviceName -> {
                 try {
-                    documentService.refreshPermissionAsync(serviceName, NULL_VERSION, true);
+                    documentService.refreshPermission(serviceName, NULL_VERSION, true);
                 } catch (Exception e) {
                     LOGGER.error("error.sync.permission.service:{}", serviceName);
                 } finally {
@@ -284,11 +284,21 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
         }
-        fixService.fixMenuLevelPath(true);
-        updateCompletedStepCount(syncStatusVO);
-        ApplicationContextHelper.getContext().getBean(RoleC7nService.class).fixChildPermission();
-        updateCompletedStepCount(syncStatusVO);
-        syncStatusVO.setStatus("success");
+        try {
+            fixService.fixMenuLevelPath(true);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            updateCompletedStepCount(syncStatusVO);
+        }
+        try {
+            ApplicationContextHelper.getContext().getBean(RoleC7nService.class).fixChildPermission();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            updateCompletedStepCount(syncStatusVO);
+            syncStatusVO.setStatus("success");
+        }
     }
 
     @Override

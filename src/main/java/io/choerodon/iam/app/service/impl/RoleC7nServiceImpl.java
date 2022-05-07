@@ -296,8 +296,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         } finally {
-            updateCompletedStepCount(syncStatusVO);
             syncStatusVO.setStatus("success");
+            updateCompletedStepCount(syncStatusVO);
         }
     }
 

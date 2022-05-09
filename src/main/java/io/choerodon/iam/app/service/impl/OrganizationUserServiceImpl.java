@@ -19,10 +19,7 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.MemberRoleService;
 import org.hzero.iam.app.service.RoleService;
 import org.hzero.iam.app.service.UserService;
-import org.hzero.iam.domain.entity.MemberRole;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.entity.*;
 import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -357,9 +354,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void updateUser(Long organizationId, User user) {
+        updateUser(organizationId, user, true);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUser(Long organizationId, User user, Boolean updateRoles) {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
+        String oldLoginName = userDetails.getLoginName();
         // hzero没有用户名变化参数 用phone参数代替
         if (!userDetails.getRealName().equals(user.getRealName())) {
             user.setPhoneChanged(true);
@@ -368,19 +372,54 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
         }
+        // 界面上登录名为邮箱
+        boolean loginNameChange = false;
+        if (!oldLoginName.equals(user.getLoginName())
+                && !userDetails.getEmail().equals(user.getLoginName())) {
+            loginNameChange = true;
+            user.setPhoneChanged(true);
+            if (userRepository.selectByLoginName(user.getLoginName()) != null) {
+                throw new CommonException("error.user.login.exist");
+            }
+        } else {
+            user.setLoginName(oldLoginName);
+        }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
             user.setPhoneCheckFlag(BaseConstants.Flag.YES);
         }
+        //设置用户info信息
+        setUserInfo(user);
         userService.updateUserInternal(user);
         //如果修改了手机号，则用户手机号绑定状态变为未绑定
         if (phoneChange) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
         }
+        // 更改了登录名
+        if (loginNameChange) {
+            userC7nMapper.updateUserLoginName(user.getId(), user.getLoginName());
+            userC7nMapper.updateUserLoginNameForOpen(oldLoginName, user.getLoginName());
+        }
         // 2. 更新用户角色
-        roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        if (updateRoles) {
+            roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
+        }
     }
 
+    private void setUserInfo(User user) {
+        UserInfo existUserInfo = userRepository.selectUserInfoByPrimaryKey(user.getId());
+        if (existUserInfo == null) {
+            throw new CommonException("hiam.warn.user.notFound");
+        }
+        user.setEndDateActive(existUserInfo.getEndDateActive());
+        user.setStartDateActive(existUserInfo.getStartDateActive());
+        user.setBirthday(existUserInfo.getBirthday());
+        user.setNickname(existUserInfo.getNickname());
+        user.setAddressDetail(existUserInfo.getAddressDetail());
+        user.setGender(existUserInfo.getGender());
+        user.setCountryId(existUserInfo.getCountryId());
+        user.setRegionId(existUserInfo.getRegionId());
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

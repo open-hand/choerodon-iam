@@ -332,4 +332,13 @@ public class OrganizationUserController extends BaseController {
                                                                     @RequestBody ProjectSearchVO projectSearchVO) {
         return new ResponseEntity<>(userC7nService.pagingProjectsByOptions(organizationId, userId, projectSearchVO, params, pageable, onlySucceed), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "校验用户登录名")
+    @GetMapping(value = "/users/{user_id}/check_login_name")
+    public ResponseEntity<Boolean> checkLoginName(@PathVariable(name = "organization_id") Long organizationId,
+                                                  @Encrypt @PathVariable(name = "user_id") Long userId,
+                                                  @RequestParam String loginName) {
+        return new ResponseEntity<>(userC7nService.checkLoginName(organizationId, userId, loginName), HttpStatus.OK);
+    }
 }

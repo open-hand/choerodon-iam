@@ -1460,6 +1460,20 @@
         where iu.id=#{userId}
     </select>
 
+    <update id="updateUserLoginName">
+        UPDATE iam_user
+        SET login_name = #{loginName}
+        WHERE
+        id = #{userId}
+    </update>
+
+    <update id="updateUserLoginNameForOpen">
+        UPDATE hiam_user_open_account huoa
+        SET huoa.username = #{loginName}
+        WHERE
+        huoa.username = #{oldLoginName}
+    </update>
+
     <select id="listAgileUserOnOrganizationLevel" resultType="org.hzero.iam.domain.entity.User">
         SELECT *
         FROM (

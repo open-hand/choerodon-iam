@@ -9,6 +9,7 @@ import org.hzero.iam.domain.entity.User;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientRoleQueryVO;
 import io.choerodon.iam.api.vo.SimpleRoleVO;
+import io.choerodon.iam.api.vo.SyncStatusVO;
 import io.choerodon.iam.api.vo.UserPermissionVO;
 import io.choerodon.iam.api.vo.agile.RoleVO;
 import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
@@ -75,4 +76,10 @@ public interface RoleC7nService {
     List<User> listVindicators();
 
     List<SimpleRoleVO> listRolesByIds(List<Long> roleIds, Long tenantId);
+
+    void syncRolesAndPermission();
+
+    void fixChildPermission();
+
+    SyncStatusVO syncRolesAndPermissionStatus();
 }

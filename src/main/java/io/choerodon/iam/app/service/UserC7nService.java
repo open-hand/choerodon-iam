@@ -404,4 +404,6 @@ public interface UserC7nService {
     Page<ProjectDTO> pagingProjectsByOptions(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, String params, PageRequest pageable, Boolean onlySucceed);
 
     CheckEmailVO checkUserEmail(Long organizationId, String email);
+
+    Boolean checkLoginName(Long organizationId, Long userId, String loginName);
 }

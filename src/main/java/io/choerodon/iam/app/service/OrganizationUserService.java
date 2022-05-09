@@ -2,13 +2,13 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 
-import io.choerodon.iam.api.vo.UserSearchVO;
-import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ErrorUserVO;
+import io.choerodon.iam.api.vo.UserSearchVO;
+import io.choerodon.iam.api.vo.agile.AgileUserVO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -52,6 +52,8 @@ public interface OrganizationUserService {
     Page<UserDTO> setUserRoleAndSagaInfo(Page<User> userPage, Long organizationId, String roleName);
 
     void updateUser(Long organizationId, User user);
+
+    void updateUser(Long organizationId, User user, Boolean updateRoles);
 
     User resetUserPassword(Long organizationId, Long userId);
 

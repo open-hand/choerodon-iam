@@ -98,7 +98,8 @@ public interface RoleC7nMapper {
                                 @Param("labelName") String labelName);
 
     Set<Long> listOrgByUserIdAndTenantIds(@Param("userId") Long userId,
-                                          @Param("orgIds") Set<Long> orgIds);
+                                          @Param("orgIds") Set<Long> orgIds,
+                                          @Param("menuIds") Set<Long> menuIds);
 
     List<Role> listByTenantId(@Param("tenantId") Long tenantId);
 

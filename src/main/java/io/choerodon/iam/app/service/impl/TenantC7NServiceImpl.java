@@ -32,20 +32,17 @@ import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
 import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
-import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.TimeZoneWorkCalendarService;
 import io.choerodon.iam.infra.constant.MemberRoleConstants;
 import io.choerodon.iam.infra.constant.TenantConstants;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.enums.MemberType;
+import io.choerodon.iam.infra.enums.MenuLabelEnum;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.TenantConfigEnum;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.RoleC7nMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.ConvertUtils;
 import io.choerodon.iam.infra.utils.TenantConfigConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -93,6 +90,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private MemberRoleService memberRoleService;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private MenuC7nMapper menuC7nMapper;
 
     @Override
     public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
@@ -375,7 +374,12 @@ public class TenantC7NServiceImpl implements TenantC7nService {
                 }
             });
             // 有菜单的角色也能访问
-            Set<Long> hasMenuOrg = roleC7nMapper.listOrgByUserIdAndTenantIds(userId, orgIds);
+            Set<String> lables = new HashSet<>();
+            lables.add(MenuLabelEnum.TENANT_MENU.value());
+
+            List<Menu> menus = menuC7nMapper.listMenuByLabel(lables);
+            Set<Long> menuIds = menus.stream().map(Menu::getId).collect(Collectors.toSet());
+            Set<Long> hasMenuOrg = roleC7nMapper.listOrgByUserIdAndTenantIds(userId, orgIds, menuIds);
             hasMenuOrg.forEach(orgId -> {
                 TenantVO tenantVO = tenantVOMap.get(orgId);
                 if (tenantVO != null) {

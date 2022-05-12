@@ -154,6 +154,18 @@ public class OrganizationProjectC7nController extends BaseController {
                 HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询项目，并将传入的id置前")
+    @PostMapping(value = "/list_and_top")
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> pagingQueryAndTop(@PathVariable(name = "organization_id") Long organizationId,
+                                                              @ApiIgnore
+                                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                              @RequestBody ProjectDTO project) {
+        return new ResponseEntity<>(organizationProjectC7nService.pagingQueryAndTop(organizationId, pageRequest, project),
+                HttpStatus.OK);
+    }
+
     /**
      * 查询组织下项目部署次数
      * 前端传的时间参数格式应为

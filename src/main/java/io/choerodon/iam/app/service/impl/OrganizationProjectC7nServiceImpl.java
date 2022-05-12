@@ -645,17 +645,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                         ProjectDTO projectDTO,
                                         String params,
                                         Boolean withAdditionInfo) {
-        int size = pageRequest.getSize();
-        boolean doPage = (size != 0);
         String sortString = pageRequest.getSort() == null ? null : getSortStringForPageQuery(pageRequest.getSort());
-        Page<ProjectDTO> result;
-        if (doPage) {
-            result = PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
-        } else {
-            result = new Page<>();
-            result.getContent().addAll(projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params));
-            result.setSize(result.size());
-        }
+        Page<ProjectDTO> result = PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, projectDTO, sortString, params, null));
         if (Boolean.TRUE.equals(withAdditionInfo)) {
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
             if (ObjectUtils.isEmpty(userDetails)) {
@@ -668,6 +659,23 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         }
         return result;
     }
+
+    @Override
+    public Page<ProjectDTO> pagingQueryAndTop(Long organizationId,
+                                              PageRequest pageRequest,
+                                              ProjectDTO project) {
+        String sortString = pageRequest.getSort() == null ? null : getSortStringForPageQuery(pageRequest.getSort());
+        Set<Long> topProjectIds = project.getTopProjectIds();
+        Page<ProjectDTO> result =
+                PageHelper.doPage(pageRequest, () -> projectMapper.selectProjectsByOptions(organizationId, project, sortString, project.getParam(), topProjectIds));
+        if (!ObjectUtils.isEmpty(topProjectIds)) {
+            List<ProjectDTO> topProjects = projectMapper.selectByIds(org.apache.commons.lang3.StringUtils.join(topProjectIds, ","));
+            topProjects.addAll(result.getContent());
+            result.setContent(topProjects);
+        }
+        return result;
+    }
+
 
     @Override
     public BarLabelRotationVO countDeployRecords(Set<Long> projectIds, Date startTime, Date endTime) {

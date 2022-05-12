@@ -425,6 +425,12 @@
                 )
             </if>
         </if>
+        <if test="ignoredProjectIds != null and ignoredProjectIds.size() > 0">
+            and fp.id not in
+            <foreach collection="ignoredProjectIds" item="ignoredProjectId" open="(" separator="," close=")" index="i">
+                #{ignoredProjectId}
+            </foreach>
+        </if>
         order by
         <if test="orderBy != null and orderBy != ''">
             ${orderBy},

@@ -87,4 +87,5 @@ public interface OrganizationProjectC7nService {
 
     void cheryNamePattern(String name);
 
+    Page<ProjectDTO> pagingQueryAndTop(Long organizationId, PageRequest pageRequest, ProjectDTO project);
 }

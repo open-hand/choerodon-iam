@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.dto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
@@ -160,6 +161,30 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "是否应用组织层状态机和看板模板")
     private Boolean useTemplate;
+
+    @Transient
+    @ApiModelProperty(value = "模糊搜索参数")
+    private String param;
+
+    @Transient
+    @ApiModelProperty(value = "置顶项目id集")
+    private Set<Long> topProjectIds;
+
+    public Set<Long> getTopProjectIds() {
+        return topProjectIds;
+    }
+
+    public void setTopProjectIds(Set<Long> topProjectIds) {
+        this.topProjectIds = topProjectIds;
+    }
+
+    public String getParam() {
+        return param;
+    }
+
+    public void setParam(String param) {
+        this.param = param;
+    }
 
     public String getTenantName() {
         return tenantName;

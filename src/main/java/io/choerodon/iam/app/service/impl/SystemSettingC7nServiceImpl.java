@@ -21,6 +21,7 @@ import org.hzero.iam.domain.repository.PasswordPolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -62,6 +63,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     protected static final String CLEAN_NUM = "cleanNum";
     protected static final String MESSAGE_TYPE_EMAIL = "EMAIL";
     private static final String MESSAGE_TYPE_WEBHOOK = "WEB_HOOK";
+    public static final String REDIS_KEY_LOGIN = "c7n-iam:settingLogin";
+
     private FileClient fileClient;
 
 
@@ -70,6 +73,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private SysSettingMapper sysSettingMapper;
     @Autowired
     private PlatformFeignClient platformFeignClient;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     private AsgardFeignClient asgardFeignClient;
 
@@ -162,6 +167,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         // 更改默认语言
         if (!oldSysSettingVO.getDefaultLanguage().equals(sysSettingVO.getDefaultLanguage())) {
             platformFeignClient.updateDefaultLanguage(sysSettingVO.getDefaultLanguage());
+            stringRedisTemplate.delete(REDIS_KEY_LOGIN);
         }
         return sysSettingResultVO;
     }

@@ -34,6 +34,7 @@ import io.choerodon.iam.infra.dto.SysSettingDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.enums.SysSettingEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.PlatformFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.utils.ImageUtils;
@@ -67,6 +68,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     private final Boolean enableCategory;
 
     private SysSettingMapper sysSettingMapper;
+    @Autowired
+    private PlatformFeignClient platformFeignClient;
 
     private AsgardFeignClient asgardFeignClient;
 
@@ -156,6 +159,10 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         }
         SysSettingVO sysSettingResultVO = new SysSettingVO();
         SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), sysSettingResultVO);
+        // 更改默认语言
+        if (!oldSysSettingVO.getDefaultLanguage().equals(sysSettingVO.getDefaultLanguage())) {
+            platformFeignClient.updateDefaultLanguage(sysSettingVO.getDefaultLanguage());
+        }
         return sysSettingResultVO;
     }
 

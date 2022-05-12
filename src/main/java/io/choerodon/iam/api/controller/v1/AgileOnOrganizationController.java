@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
-import io.swagger.annotations.Api;
+import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +13,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.agile.AgileUserVO;
-import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -35,6 +31,8 @@ public class AgileOnOrganizationController {
 
     @Autowired
     private UserC7nService userC7nService;
+    @Autowired
+    private OrganizationProjectC7nService organizationProjectC7nService;
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
@@ -52,6 +50,18 @@ public class AgileOnOrganizationController {
         projectDTO.setCategory(category);
         projectDTO.setEnabled(enabled);
         return new ResponseEntity<>(userC7nService.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, params), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询项目，并将传入的id置前")
+    @PostMapping(value = "/{organization_id}/projects/list_and_top")
+    @CustomPageRequest
+    public ResponseEntity<Page<ProjectDTO>> pagingQueryAndTop(@PathVariable(name = "organization_id") Long organizationId,
+                                                              @ApiIgnore
+                                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                              @RequestBody ProjectDTO project) {
+        return new ResponseEntity<>(organizationProjectC7nService.pagingQueryAndTop(organizationId, pageRequest, project),
+                HttpStatus.OK);
     }
 
 }

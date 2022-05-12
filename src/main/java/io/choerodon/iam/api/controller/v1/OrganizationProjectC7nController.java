@@ -34,6 +34,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
+ * 商业版被覆盖
  * @author flyleft
  * @author superlee
  */
@@ -154,17 +155,6 @@ public class OrganizationProjectC7nController extends BaseController {
                 HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "分页查询项目，并将传入的id置前")
-    @PostMapping(value = "/list_and_top")
-    @CustomPageRequest
-    public ResponseEntity<Page<ProjectDTO>> pagingQueryAndTop(@PathVariable(name = "organization_id") Long organizationId,
-                                                              @ApiIgnore
-                                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                              @RequestBody ProjectDTO project) {
-        return new ResponseEntity<>(organizationProjectC7nService.pagingQueryAndTop(organizationId, pageRequest, project),
-                HttpStatus.OK);
-    }
 
     /**
      * 查询组织下项目部署次数

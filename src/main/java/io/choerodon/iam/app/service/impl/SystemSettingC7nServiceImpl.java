@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.PasswordPolicyService;
@@ -24,7 +26,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
@@ -165,11 +166,15 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         SysSettingVO sysSettingResultVO = new SysSettingVO();
         SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), sysSettingResultVO);
         // 更改默认语言
-        if (!oldSysSettingVO.getDefaultLanguage().equals(sysSettingVO.getDefaultLanguage())) {
-            platformFeignClient.updateDefaultLanguage(sysSettingVO.getDefaultLanguage());
-            stringRedisTemplate.delete(REDIS_KEY_LOGIN);
+        if (ObjectUtils.isEmpty(oldSysSettingVO.getDefaultLanguage()) || !oldSysSettingVO.getDefaultLanguage().equals(sysSettingVO.getDefaultLanguage())) {
+            updateDefaultLanguage(sysSettingVO.getDefaultLanguage());
         }
         return sysSettingResultVO;
+    }
+
+    private void updateDefaultLanguage(@NotNull String defaultLanguage) {
+        platformFeignClient.updateDefaultLanguage(defaultLanguage);
+        stringRedisTemplate.delete(REDIS_KEY_LOGIN);
     }
 
     protected void handleScheduleTask(String messageType, Boolean autoClean, Integer cleanNum) {
@@ -257,6 +262,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         if (ObjectUtils.isEmpty(records)) {
             return;
         }
+        records = records.stream().filter(t -> !t.getSettingKey().contains("login")).collect(Collectors.toList());
         records.forEach(record -> {
             String key = record.getSettingKey();
             // 重置跳过密码策略和 Feedback 策略
@@ -275,11 +281,15 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             if (key.equals(SysSettingEnum.REGISTER_ENABLED.value())) {
                 record.setSettingValue(Boolean.FALSE.toString());
             }
+            if (key.equals(SysSettingEnum.DEFAULT_LANGUAGE.value())) {
+                record.setSettingValue("zh_CN");
+            }
             sysSettingMapper.updateByPrimaryKey(record);
         });
         // 删除定时任务
         asgardFeignClient.deleteSiteTask(CLEAN_EMAIL_RECORD);
         asgardFeignClient.deleteSiteTask(CLEAN_WEBHOOK_RECORD);
+        updateDefaultLanguage("zh_CN");
     }
 
     @Override

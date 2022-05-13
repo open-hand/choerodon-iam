@@ -1,13 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ResetPasswordVO;
-import io.choerodon.iam.api.vo.SysSettingVO;
-import io.choerodon.iam.app.service.SystemSettingC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.valitador.SysSettingValidator;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,6 +11,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ResetPasswordVO;
+import io.choerodon.iam.api.vo.SysSettingVO;
+import io.choerodon.iam.app.service.SystemSettingC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.valitador.SysSettingValidator;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zmf
@@ -129,5 +130,12 @@ public class SystemSettingC7nController extends BaseController {
     @ApiOperation("是否开启项目/组织类型控制")
     public ResponseEntity<Boolean> getEnabledStateOfTheCategory() {
         return new ResponseEntity<>(systemSettingService.getEnabledStateOfTheCategory(), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/setting_default_language")
+    @Permission(permissionPublic = true)
+    @ApiOperation("查询默认语言接口")
+    public ResponseEntity<String> getDefaultLanguage() {
+        return new ResponseEntity<>(systemSettingService.getDefaultLanguage(), HttpStatus.OK);
     }
 }

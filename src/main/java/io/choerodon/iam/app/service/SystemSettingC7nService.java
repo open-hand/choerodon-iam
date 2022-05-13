@@ -64,4 +64,10 @@ public interface SystemSettingC7nService {
      * @return 是否启用项目/组织类型控制
      */
     Boolean getEnabledStateOfTheCategory();
+
+    /**
+     * 查询默认语言接口
+     * @return
+     */
+    String getDefaultLanguage();
 }

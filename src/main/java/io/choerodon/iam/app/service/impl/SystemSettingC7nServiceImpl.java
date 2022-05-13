@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
+import com.google.gson.Gson;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.boot.file.FileClient;
@@ -49,6 +50,7 @@ import io.choerodon.iam.infra.utils.SysSettingUtils;
  */
 @Service
 public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
+    private final Gson gson = new Gson();
     protected static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
     protected static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
     protected static final String DEFAULT_CLEAN_NUM = "180";
@@ -64,7 +66,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     protected static final String CLEAN_NUM = "cleanNum";
     protected static final String MESSAGE_TYPE_EMAIL = "EMAIL";
     private static final String MESSAGE_TYPE_WEBHOOK = "WEB_HOOK";
-    public static final String REDIS_KEY_LOGIN = "c7n-iam:settingLogin";
+    public static final String REDIS_KEY_LOGIN_LANGUAGE = "c7n-iam:settingLogin:language";
 
     private FileClient fileClient;
 
@@ -174,7 +176,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
 
     private void updateDefaultLanguage(@NotNull String defaultLanguage) {
         platformFeignClient.updateDefaultLanguage(defaultLanguage);
-        stringRedisTemplate.delete(REDIS_KEY_LOGIN);
+        stringRedisTemplate.delete(REDIS_KEY_LOGIN_LANGUAGE);
     }
 
     protected void handleScheduleTask(String messageType, Boolean autoClean, Integer cleanNum) {
@@ -302,6 +304,18 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     @Override
     public Boolean getEnabledStateOfTheCategory() {
         return enableCategory;
+    }
+
+    @Override
+    public String getDefaultLanguage() {
+        String settingStr = stringRedisTemplate.opsForValue().get(REDIS_KEY_LOGIN_LANGUAGE);
+        if (ObjectUtils.isNotEmpty(settingStr)) {
+            return settingStr;
+        } else {
+            SysSettingDTO language = sysSettingMapper.queryByKey("defaultLanguage");
+            stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN_LANGUAGE, language.getSettingValue());
+            return language.getSettingValue();
+        }
     }
 
     private String uploadFile(MultipartFile file) {

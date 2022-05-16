@@ -1308,7 +1308,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             if (e.getCode().equals("hiam.warn.user.selfError")) {
                 CustomUserDetails self = UserUtils.getUserDetails();
                 User user = userRepository.selectByPrimaryKey(self.getUserId());
-                oauthAdminFeignClient.invalidByUsername(user.getLoginName());
+                oauthAdminFeignClient.invalidByUsername(user.getOrganizationId(), user.getLoginName());
             }
             throw e;
         }

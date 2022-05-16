@@ -1,7 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.impl.UserServiceImpl;
 import org.hzero.iam.domain.entity.User;
 import org.hzero.iam.domain.repository.UserRepository;
@@ -63,7 +62,7 @@ public class C7nUserServiceImpl extends UserServiceImpl {
                 user.setPhone(user.getPhone() + PHONE_SUFFIX);
             }
             userRepository.updateOptional(user, User.FIELD_ENABLED, User.FIELD_PHONE);
-            oauthAdminService.invalidByUsername(user.getLoginName());
+            oauthAdminService.invalidByUsername(user.getOrganizationId(), user.getLoginName());
         }
     }
 

@@ -41,6 +41,7 @@ import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.AdminFeignClient;
+import io.choerodon.iam.infra.feign.PlatformFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 import io.choerodon.iam.infra.utils.ConvertUtils;
@@ -84,6 +85,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     private AdminFeignClient adminFeignClient;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private PlatformFeignClient platformFeignClient;
 
     public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectPermissionMapper projectPermissionMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
         this.roleC7nMapper = roleC7nMapper;
@@ -281,6 +284,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
                     updateCompletedStepCount(syncStatusVO);
                 }
             });
+            platformFeignClient.updateConfig("ROLE_MERGE", "1");
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
         }

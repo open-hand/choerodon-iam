@@ -175,7 +175,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private void updateDefaultLanguage(@NotNull String defaultLanguage) {
-        platformFeignClient.updateDefaultLanguage(defaultLanguage);
+        platformFeignClient.updateConfig("TENANT_DEFAULT_LANGUAGE", defaultLanguage);
         stringRedisTemplate.delete(REDIS_KEY_LOGIN_LANGUAGE);
     }
 

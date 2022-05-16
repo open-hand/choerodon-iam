@@ -1355,6 +1355,38 @@
         INNER JOIN iam_user iu ON iu.id = imr.member_id
         WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND ir.id = #{roleId} and fpu.PROJECT_ID = #{projectId}
     </select>
+
+    <select id="listUsersUnderRoleByIds" resultMap="userWithRolesMap">
+        SELECT
+        distinct
+        iu.id,
+        iu.email,
+        iu.login_name,
+        iu.real_name,
+        iu.organization_id,
+        iu.phone,
+        iu.is_ldap,
+        iu.is_admin,
+        ir.id as role_id,
+        ir.name as role_name,
+        ir.code as role_code,
+        ir.is_enabled as role_is_enabled
+        FROM iam_role ir
+        INNER JOIN iam_member_role imr ON imr.role_id = ir.id
+        INNER JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
+        INNER JOIN iam_user iu ON iu.id = imr.member_id
+        WHERE imr.member_type = 'user'
+        AND imr.source_type = 'organization'
+        and fpu.PROJECT_ID = #{projectId}
+        and iu.is_enabled = 1
+        <if test="roleIds != null and roleIds.size() > 0">
+            and ir.id in
+            <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+                #{roleId}
+            </foreach>
+        </if>
+    </select>
+
     <select id="queryPersonalInfo" resultMap="UserDTOMap">
         SELECT iu.*, ht.tenant_name, ht.tenant_num, hui.phone_check_flag
         FROM iam_user iu

@@ -366,6 +366,14 @@ public class RoleMemberC7nController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层根据角色id集合查询角色下的用户")
+    @PostMapping(value = "/projects/{project_id}/role_members/users/by_role_ids")
+    public ResponseEntity<List<UserDTO>> listUsersUnderRoleByIds(@PathVariable(name = "project_id") Long projectId,
+                                                                 @RequestBody @Encrypt List<Long> roleIds) {
+        return new ResponseEntity<>(userC7nService.listUsersUnderRoleByIds(projectId, roleIds), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检查用户是否是平台管理员或者市场审核员角色")
     @GetMapping(value = "/check_is_administrator_or_auditor")
     public ResponseEntity<Boolean> checkRole(

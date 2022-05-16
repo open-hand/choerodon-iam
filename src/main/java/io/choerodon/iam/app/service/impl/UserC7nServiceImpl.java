@@ -1559,6 +1559,14 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
+    public List<UserDTO> listUsersUnderRoleByIds(Long projectId, List<Long> roleIds) {
+        if (ObjectUtils.isEmpty(roleIds)) {
+            return Collections.emptyList();
+        }
+        return userC7nMapper.listUsersUnderRoleByIds(projectId, roleIds);
+    }
+
+    @Override
     public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
         Tenant record = new Tenant();
         record.setTenantNum(orgCode);

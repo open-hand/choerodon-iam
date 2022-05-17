@@ -317,7 +317,7 @@ public interface UserC7nService {
 
     List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId);
 
-    List<UserDTO> listUsersUnderRoleByIds(Long projectId, List<Long> roleIds);
+    List<UserDTO> listUsersUnderRoleByIds(Long projectId, String roleIdString);
 
 
     RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);

@@ -1,13 +1,13 @@
 package io.choerodon.iam.api.vo;
 
 
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author wanghao
@@ -17,7 +17,7 @@ public class ClientVO {
     private static final String regex = "^[a-z0-9A-Z]+$";
 
     @ApiModelProperty(value = "客户端ID/非必填")
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     private Long id;
 
     @ApiModelProperty(value = "客户端名称/必填")

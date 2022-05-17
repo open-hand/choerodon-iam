@@ -369,7 +369,7 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "项目层根据角色id集合查询角色下的用户")
     @PostMapping(value = "/projects/{project_id}/role_members/users/by_role_ids")
     public ResponseEntity<List<UserDTO>> listUsersUnderRoleByIds(@PathVariable(name = "project_id") Long projectId,
-                                                                 @RequestBody @Encrypt List<Long> roleIds) {
+                                                                 @RequestParam @Encrypt List<Long> roleIds) {
         return new ResponseEntity<>(userC7nService.listUsersUnderRoleByIds(projectId, roleIds), HttpStatus.OK);
     }
 

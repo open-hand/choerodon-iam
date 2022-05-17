@@ -247,6 +247,7 @@
         <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
             #{roleId}
         </foreach>
+        and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
     </select>
     <select id="countPermissionSetByRoleIdsAndLevel" resultType="long">
         SELECT count(*)
@@ -256,5 +257,6 @@
         <foreach collection="roleIds" item="roleId" open="(" close=")" separator="," index="i">
             #{roleId}
         </foreach>
+        and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
     </select>
 </mapper>

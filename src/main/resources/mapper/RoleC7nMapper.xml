@@ -351,7 +351,7 @@
           SELECT imr.source_id
           FROM iam_member_role imr
           inner join iam_role ir on ir.id = imr.role_id
-          INNER JOIN iam_role_permission irp ON imr.role_id = irp.role_id
+          INNER JOIN iam_role_permission irp ON imr.role_id = irp.role_id and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
           INNER JOIN iam_menu im ON im.id = irp.permission_id
           WHERE ir.is_enabled = 1  AND imr.member_type = 'user' AND imr.member_id = #{userId}
           AND imr.source_type = 'organization' AND imr.source_id IN

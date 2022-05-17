@@ -268,13 +268,13 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         stringRedisTemplate.delete(SYNC_STATUS_REDIS_KEY);
         SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
         syncStatusVO.setCompletedStepCount(0);
-        syncStatusVO.setAllStepCount(2);
+        syncStatusVO.setAllStepCount(3);
         syncStatusVO.setStatus("doing");
         stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
             assert serviceCodes != null;
-            syncStatusVO.setAllStepCount(serviceCodes.size() + 2);
+            syncStatusVO.setAllStepCount(serviceCodes.size() + 3);
             serviceCodes.forEach(serviceName -> {
                 try {
                     documentService.refreshPermission(serviceName, NULL_VERSION, true);
@@ -284,9 +284,15 @@ public class RoleC7nServiceImpl implements RoleC7nService {
                     updateCompletedStepCount(syncStatusVO);
                 }
             });
-            platformFeignClient.updateConfig("ROLE_MERGE", "1");
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
+        }
+        try {
+            platformFeignClient.updateConfig("ROLE_MERGE", "1");
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            updateCompletedStepCount(syncStatusVO);
         }
         try {
             fixService.fixMenuLevelPath(true);

@@ -5,6 +5,7 @@ import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.exception.NotLoginException;
@@ -20,6 +21,7 @@ import org.hzero.iam.infra.constant.RolePermissionType;
 import org.hzero.iam.infra.mapper.RoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -398,6 +400,27 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             return gson.fromJson(mapRedis, SyncStatusVO.class);
         }
         return new SyncStatusVO(0, 0);
+    }
+
+    @Override
+    public Page<Map<String, Object>> pagingQueryRoleByOrganizationId(Long organizationId,
+                                                                     RoleVO params,
+                                                                     PageRequest pageRequest) {
+        String name = params.getName();
+        String code = params.getCode();
+        Boolean builtIn = params.getBuiltIn();
+        Boolean enabled = params.getEnabled();
+        Page<io.choerodon.iam.api.vo.RoleVO> page = PageHelper.doPage(pageRequest, () -> roleC7nMapper.fulltextSearch(organizationId, name, code, ResourceLevel.ORGANIZATION.value(), builtIn, enabled, null, null));
+        List<io.choerodon.iam.api.vo.RoleVO> roles = page.getContent();
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        roles.forEach(r -> {
+            RoleVO vo = new RoleVO();
+            BeanUtils.copyProperties(r, vo);
+            Map<String, Object> map = objectMapper.convertValue(vo, Map.class);
+            resultList.add(map);
+        });
+        return PageUtils.copyPropertiesAndResetContent(page, resultList);
     }
 
     private void updateCompletedStepCount(SyncStatusVO syncStatusVO) {

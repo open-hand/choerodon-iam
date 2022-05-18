@@ -1,11 +1,13 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.domain.vo.RoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -122,6 +124,23 @@ public class RoleC7nController {
     @GetMapping("/sync_roles_and_permission/status")
     public ResponseEntity<SyncStatusVO> syncRolesAndPermissionStatus() {
         return Results.success(roleC7nService.syncRolesAndPermissionStatus());
+    }
+
+    /**
+     * lov不加密查询租户下角色接口
+     *
+     * @param organizationId
+     * @param params
+     * @param pageRequest
+     * @return
+     */
+    @ApiOperation("工作流值集查询租户下的角色")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{organizationId}/roles/paging")
+    public ResponseEntity<Page<Map<String, Object>>> pagingQueryRoleByOrganizationId(@PathVariable("organizationId") Long organizationId,
+                                                                                     RoleVO params,
+                                                                                     PageRequest pageRequest) {
+        return Results.success(roleC7nService.pagingQueryRoleByOrganizationId(organizationId, params, pageRequest));
     }
 
 }

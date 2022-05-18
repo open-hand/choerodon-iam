@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hzero.iam.api.dto.RoleDTO;
 import org.hzero.iam.domain.entity.Role;
@@ -82,4 +83,7 @@ public interface RoleC7nService {
     void fixChildPermission();
 
     SyncStatusVO syncRolesAndPermissionStatus();
+
+    Page<Map<String, Object>> pagingQueryRoleByOrganizationId(Long organizationId,
+                                                              org.hzero.iam.domain.vo.RoleVO params, PageRequest pageRequest);
 }

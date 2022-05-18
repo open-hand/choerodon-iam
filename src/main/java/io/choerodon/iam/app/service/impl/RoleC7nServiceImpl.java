@@ -415,10 +415,14 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         List<io.choerodon.iam.api.vo.RoleVO> roles = page.getContent();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> resultList = new ArrayList<>();
+        String idKey = "id";
         roles.forEach(r -> {
             RoleVO vo = new RoleVO();
             BeanUtils.copyProperties(r, vo);
+            Long id = vo.getId();
             Map<String, Object> map = objectMapper.convertValue(vo, Map.class);
+            //处理主键js精度丢失的问题
+            map.put(idKey, id + "");
             resultList.add(map);
         });
         return PageUtils.copyPropertiesAndResetContent(page, resultList);

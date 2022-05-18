@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -270,7 +271,7 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         syncStatusVO.setCompletedStepCount(0);
         syncStatusVO.setAllStepCount(3);
         syncStatusVO.setStatus("doing");
-        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO), 30, TimeUnit.MINUTES);
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
             assert serviceCodes != null;
@@ -402,6 +403,6 @@ public class RoleC7nServiceImpl implements RoleC7nService {
 
     private void updateCompletedStepCount(SyncStatusVO syncStatusVO) {
         syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
-        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO), 30, TimeUnit.MINUTES);
     }
 }

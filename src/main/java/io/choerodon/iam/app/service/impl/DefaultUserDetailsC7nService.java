@@ -75,7 +75,7 @@ public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
                 updateVisitorsForConfig(tenantId, visitors);
                 visitors = 0;
             }
-            stringRedisTemplate.opsForValue().set(key, visitors.toString());
+            stringRedisTemplate.opsForValue().set(key, visitors.toString(), 10, TimeUnit.MINUTES);
         }
     }
 

@@ -170,6 +170,10 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "置顶项目id集")
     private Set<Long> topProjectIds;
 
+    @Transient
+    @ApiModelProperty(value = "个人信息界面能否编辑dt消息")
+    private Boolean dtEditEnable;
+
     public Set<Long> getTopProjectIds() {
         return topProjectIds;
     }
@@ -477,5 +481,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setStatusName(String statusName) {
         this.statusName = statusName;
+    }
+
+    public Boolean getDtEditEnable() {
+        return dtEditEnable;
+    }
+
+    public void setDtEditEnable(Boolean dtEditEnable) {
+        this.dtEditEnable = dtEditEnable;
     }
 }

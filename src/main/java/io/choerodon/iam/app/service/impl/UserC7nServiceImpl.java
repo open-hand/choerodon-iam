@@ -204,6 +204,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     private TenantC7nService tenantC7nService;
     @Autowired
     private IEncryptionService encryptionService;
+    @Autowired(required = false)
+    private BusinessService businessService;
+
 
     @Override
     public User queryInfo(Long userId) {
@@ -604,10 +607,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
-        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        List<ProjectDTO> projectDTOS;
+        if (businessService != null) {
+            projectDTOS = businessService.selectProjectsByUserId(userId, projectDTO);
+        } else {
+            projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        }
         organizationProjectDTO.setProjectList(projectDTOS.stream()
                 .filter(p -> tenants.get(p.getOrganizationId()) != null)
-                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName()))
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName(), p.getDtEditEnable()))
                 .collect(Collectors.toList()));
 
         return organizationProjectDTO;

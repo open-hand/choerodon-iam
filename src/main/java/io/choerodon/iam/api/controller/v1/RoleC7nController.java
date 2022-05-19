@@ -135,7 +135,7 @@ public class RoleC7nController {
      * @return
      */
     @ApiOperation("工作流值集查询租户下的角色")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @GetMapping("/{organizationId}/roles/paging")
     public ResponseEntity<Page<Map<String, Object>>> pagingQueryRoleByOrganizationId(@PathVariable("organizationId") Long organizationId,
                                                                                      RoleVO params,

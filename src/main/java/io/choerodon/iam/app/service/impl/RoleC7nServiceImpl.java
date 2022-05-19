@@ -5,6 +5,7 @@ import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.exception.NotLoginException;
@@ -388,6 +389,26 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             return gson.fromJson(mapRedis, SyncStatusVO.class);
         }
         return new SyncStatusVO(0, 0);
+    }
+
+    @Override
+    public Page<Map<String, Object>> pagingQueryRoleByOrganizationId(Long organizationId,
+                                                                     RoleVO params,
+                                                                     PageRequest pageRequest) {
+        params.setTenantId(organizationId);
+        Page<RoleVO> rolePage =
+                PageHelper.doPage(pageRequest, () -> roleMapper.selectSimpleRoleVos(params));
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        String idKey = "id";
+        rolePage.getContent().forEach(r -> {
+            Long id = r.getId();
+            Map<String, Object> map = objectMapper.convertValue(r, Map.class);
+            //处理主键js精度丢失的问题
+            map.put(idKey, id + "");
+            resultList.add(map);
+        });
+        return PageUtils.copyPropertiesAndResetContent(rolePage, resultList);
     }
 
     private void updateCompletedStepCount(SyncStatusVO syncStatusVO) {

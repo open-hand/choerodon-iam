@@ -470,5 +470,8 @@ public interface UserC7nMapper {
 
     List<User> listAgileUserOnOrganizationLevel(@Param("organizationId") Long organizationId,
                                                 @Param("agileUserVO") AgileUserVO agileUserVO);
+
+    List<UserDTO> listUsersUnderRoleByIds(@Param("projectId") Long projectId,
+                                          @Param("roleIds") List<Long> roleIds);
 }
 

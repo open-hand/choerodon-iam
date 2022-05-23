@@ -43,6 +43,8 @@ import org.hzero.iam.domain.vo.UserVO;
 import org.hzero.iam.infra.common.utils.UserUtils;
 import org.hzero.iam.infra.feign.OauthAdminFeignClient;
 import org.hzero.iam.infra.mapper.*;
+import org.hzero.starter.keyencrypt.core.EncryptContext;
+import org.hzero.starter.keyencrypt.core.IEncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
@@ -200,6 +202,11 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     @Lazy
     private TenantC7nService tenantC7nService;
+    @Autowired
+    private IEncryptionService encryptionService;
+    @Autowired(required = false)
+    private BusinessService businessService;
+
 
     @Override
     public User queryInfo(Long userId) {
@@ -600,10 +607,15 @@ public class UserC7nServiceImpl implements UserC7nService {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setName(projectName);
         projectDTO.setEnabled(true);
-        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        List<ProjectDTO> projectDTOS;
+        if (businessService != null) {
+            projectDTOS = businessService.selectProjectsByUserId(userId, projectDTO);
+        } else {
+            projectDTOS = projectMapper.selectProjectsByUserId(userId, projectDTO);
+        }
         organizationProjectDTO.setProjectList(projectDTOS.stream()
                 .filter(p -> tenants.get(p.getOrganizationId()) != null)
-                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName()))
+                .map(p -> OrganizationProjectVO.newInstanceProject(p.getId(), p.getName(), p.getCode(), tenants.get(p.getOrganizationId()).getTenantName(), p.getDtEditEnable()))
                 .collect(Collectors.toList()));
 
         return organizationProjectDTO;
@@ -1308,7 +1320,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             if (e.getCode().equals("hiam.warn.user.selfError")) {
                 CustomUserDetails self = UserUtils.getUserDetails();
                 User user = userRepository.selectByPrimaryKey(self.getUserId());
-                oauthAdminFeignClient.invalidByUsername(user.getLoginName());
+                oauthAdminFeignClient.invalidByUsername(user.getOrganizationId(), user.getLoginName());
             }
             throw e;
         }
@@ -1556,6 +1568,30 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Override
     public List<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Long roleId, Long sourceId) {
         return userC7nMapper.listProjectUsersByRoleId(roleId, sourceId);
+    }
+
+    @Override
+    public List<UserDTO> listUsersUnderRoleByIds(Long projectId, String roleIdString) {
+        if (ObjectUtils.isEmpty(roleIdString)) {
+            return Collections.emptyList();
+        }
+        String[] ids = roleIdString.split(",");
+        if (ids.length == 0) {
+            return Collections.emptyList();
+        }
+        List<Long> roleIds = new ArrayList<>();
+        for (String str : ids) {
+            if (org.apache.commons.lang3.StringUtils.isNumeric(str)) {
+                roleIds.add(Long.parseLong(str));
+            } else {
+                if (EncryptContext.isEncrypt()) {
+                    roleIds.add(Long.parseLong(encryptionService.decrypt(str, "")));
+                } else {
+                    throw new CommonException("error.illegal.role.id");
+                }
+            }
+        }
+        return userC7nMapper.listUsersUnderRoleByIds(projectId, roleIds);
     }
 
     @Override

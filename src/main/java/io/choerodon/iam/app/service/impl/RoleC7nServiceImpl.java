@@ -3,8 +3,10 @@ package io.choerodon.iam.app.service.impl;
 import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.exception.NotLoginException;
@@ -41,6 +43,7 @@ import io.choerodon.iam.infra.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dto.RoleC7nDTO;
 import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.feign.AdminFeignClient;
+import io.choerodon.iam.infra.feign.PlatformFeignClient;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 import io.choerodon.iam.infra.utils.ConvertUtils;
@@ -84,6 +87,8 @@ public class RoleC7nServiceImpl implements RoleC7nService {
     private AdminFeignClient adminFeignClient;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private PlatformFeignClient platformFeignClient;
 
     public RoleC7nServiceImpl(RoleC7nMapper roleC7nMapper, UserC7nMapper userC7nMapper, ProjectPermissionMapper projectPermissionMapper, ProjectMapper projectMapper, ClientC7nMapper clientC7nMapper, RoleMapper roleMapper) {
         this.roleC7nMapper = roleC7nMapper;
@@ -265,13 +270,13 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         stringRedisTemplate.delete(SYNC_STATUS_REDIS_KEY);
         SyncStatusVO syncStatusVO = new SyncStatusVO(0, 0);
         syncStatusVO.setCompletedStepCount(0);
-        syncStatusVO.setAllStepCount(2);
+        syncStatusVO.setAllStepCount(3);
         syncStatusVO.setStatus("doing");
-        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO), 30, TimeUnit.MINUTES);
         try {
             List<String> serviceCodes = adminFeignClient.listServiceCodes().getBody();
             assert serviceCodes != null;
-            syncStatusVO.setAllStepCount(serviceCodes.size() + 2);
+            syncStatusVO.setAllStepCount(serviceCodes.size() + 3);
             serviceCodes.forEach(serviceName -> {
                 try {
                     documentService.refreshPermission(serviceName, NULL_VERSION, true);
@@ -283,6 +288,13 @@ public class RoleC7nServiceImpl implements RoleC7nService {
             });
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service", e);
+        }
+        try {
+            platformFeignClient.updateConfig("ROLE_MERGE", "1");
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            updateCompletedStepCount(syncStatusVO);
         }
         try {
             fixService.fixMenuLevelPath(true);
@@ -390,8 +402,28 @@ public class RoleC7nServiceImpl implements RoleC7nService {
         return new SyncStatusVO(0, 0);
     }
 
+    @Override
+    public Page<Map<String, Object>> pagingQueryRoleByOrganizationId(Long organizationId,
+                                                                     RoleVO params,
+                                                                     PageRequest pageRequest) {
+        params.setTenantId(organizationId);
+        Page<RoleVO> rolePage =
+                PageHelper.doPage(pageRequest, () -> roleMapper.selectSimpleRoleVos(params));
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        String idKey = "id";
+        rolePage.getContent().forEach(r -> {
+            Long id = r.getId();
+            Map<String, Object> map = objectMapper.convertValue(r, Map.class);
+            //处理主键js精度丢失的问题
+            map.put(idKey, id + "");
+            resultList.add(map);
+        });
+        return PageUtils.copyPropertiesAndResetContent(rolePage, resultList);
+    }
+
     private void updateCompletedStepCount(SyncStatusVO syncStatusVO) {
         syncStatusVO.setCompletedStepCount(syncStatusVO.getCompletedStepCount() + 1);
-        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO));
+        stringRedisTemplate.opsForValue().set(SYNC_STATUS_REDIS_KEY, gson.toJson(syncStatusVO), 30, TimeUnit.MINUTES);
     }
 }

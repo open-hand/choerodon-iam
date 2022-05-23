@@ -83,7 +83,7 @@
         select irp.permission_id
         from iam_member_role imr
         inner join iam_role ir on (ir.id = imr.role_id and ir.is_enabled = true)
-        inner join iam_role_permission irp on (irp.role_id = ir.id and type = 'PS')
+        inner join iam_role_permission irp on (irp.role_id = ir.id and type = 'PS') and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
         where imr.member_type = 'user' and imr.member_id = #{userId}
         and imr.source_id = #{organizationId}
         and irp.permission_id in

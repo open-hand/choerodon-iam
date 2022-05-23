@@ -6,6 +6,7 @@ import java.util.Set;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.iam.domain.entity.Label;
 import org.hzero.iam.domain.entity.Role;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.iam.api.vo.RoleNameAndEnabledVO;
 
@@ -22,6 +23,7 @@ public class RoleC7nDTO extends Role {
     // 用户组织下标签属性
     private List<String> userLabels;
 
+    @Encrypt
     private Set<Long> roleIds;
 
     public Integer getUserCount() {

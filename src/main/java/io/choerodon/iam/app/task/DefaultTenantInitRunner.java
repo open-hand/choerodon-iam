@@ -43,7 +43,7 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            documentService.refreshPermissionAsync(serviceName, NULL_VERSION, true);
+            documentService.refreshPermissionAsync(serviceName, NULL_VERSION, false);
         } catch (Exception e) {
             LOGGER.error("error.sync.permission.service:{}", serviceName);
         }

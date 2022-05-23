@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.feign.fallback;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.feign.PlatformFeignClient;
@@ -14,7 +15,7 @@ import io.choerodon.iam.infra.feign.PlatformFeignClient;
 public class PlatformFeignClientFallback implements PlatformFeignClient {
 
     @Override
-    public ResponseEntity<Void> updateDefaultLanguage(String language) {
-        throw new CommonException("error.update.default.language");
+    public ResponseEntity<Void> updateConfig(@RequestParam String code, @RequestParam String value) {
+        throw new CommonException("error.update.config");
     }
 }

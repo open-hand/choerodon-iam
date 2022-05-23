@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
@@ -175,7 +176,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private void updateDefaultLanguage(@NotNull String defaultLanguage) {
-        platformFeignClient.updateDefaultLanguage(defaultLanguage);
+        platformFeignClient.updateConfig("TENANT_DEFAULT_LANGUAGE", defaultLanguage);
         stringRedisTemplate.delete(REDIS_KEY_LOGIN_LANGUAGE);
     }
 
@@ -313,7 +314,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             return settingStr;
         } else {
             SysSettingDTO language = sysSettingMapper.queryByKey("defaultLanguage");
-            stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN_LANGUAGE, language.getSettingValue());
+            stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN_LANGUAGE, language.getSettingValue(), 30, TimeUnit.MINUTES);
             return language.getSettingValue();
         }
     }

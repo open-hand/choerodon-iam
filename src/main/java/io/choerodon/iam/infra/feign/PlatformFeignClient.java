@@ -22,6 +22,6 @@ public interface PlatformFeignClient {
     /**
      * 查询服务code列表
      */
-    @PutMapping("choerodon/v1/default_language")
-    ResponseEntity<Void> updateDefaultLanguage(@RequestParam String language);
+    @PutMapping("choerodon/v1/config")
+    ResponseEntity<Void> updateConfig(@RequestParam String code, @RequestParam String value);
 }

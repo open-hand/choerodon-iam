@@ -1,5 +1,15 @@
 package io.choerodon.iam.infra.feign.operator;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.iam.api.vo.SagaInstanceDetails;
@@ -8,15 +18,10 @@ import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
 import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
-
 @Component
 public class AsgardServiceClientOperator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsgardServiceClientOperator.class);
+
 
     @Autowired
     private AsgardFeignClient asgardFeignClient;
@@ -89,15 +94,17 @@ public class AsgardServiceClientOperator {
 
     public List<SagaInstanceDetails> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
         ResponseEntity<List<SagaInstanceDetails>> listResponseEntity;
+        // 查询事务状态流程出错 不影响整体查询
         try {
             listResponseEntity = asgardFeignClient.queryByRefTypeAndRefIds(refType, refIds, sagaCode);
-        } catch (FeignException e) {
-            throw new CommonException(e);
+            if (listResponseEntity == null) {
+                throw new CommonException("error.query.saga");
+            }
+            return listResponseEntity.getBody();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            return new ArrayList<>();
         }
-        if (listResponseEntity == null) {
-            throw new CommonException("error.query.saga");
-        }
-        return listResponseEntity.getBody();
     }
 
 }

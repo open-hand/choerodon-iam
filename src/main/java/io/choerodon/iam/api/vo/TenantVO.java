@@ -51,6 +51,9 @@ public class TenantVO extends Tenant {
     @Encrypt
     private Long sagaInstanceId;
 
+    @ApiModelProperty("组织wps配置")
+    private TenantWpsConfigVO tenantWpsConfigVO;
+
     public Long getSagaInstanceId() {
         return sagaInstanceId;
     }
@@ -145,5 +148,13 @@ public class TenantVO extends Tenant {
 
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
+    }
+
+    public TenantWpsConfigVO getTenantWpsConfigVO() {
+        return tenantWpsConfigVO;
+    }
+
+    public void setTenantWpsConfigVO(TenantWpsConfigVO tenantWpsConfigVO) {
+        this.tenantWpsConfigVO = tenantWpsConfigVO;
     }
 }

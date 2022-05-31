@@ -82,7 +82,9 @@ public enum SysSettingEnum {
     /**
      * 平台主题色
      */
-    THEME_COLOR("themeColor");
+    THEME_COLOR("themeColor"),
+    LOGIN_DING_TALK_APP_SECRET("loginDingTalkAppSecret"),
+    LOGIN_WAY("loginWay");// 登录方式
 
     private final String value;
 

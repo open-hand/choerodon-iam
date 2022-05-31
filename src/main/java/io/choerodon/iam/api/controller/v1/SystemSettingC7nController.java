@@ -1,9 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.Map;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
+import org.hzero.core.util.Results;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
@@ -137,5 +140,12 @@ public class SystemSettingC7nController extends BaseController {
     @ApiOperation("查询默认语言接口")
     public ResponseEntity<String> getDefaultLanguage() {
         return new ResponseEntity<>(systemSettingService.getDefaultLanguage(), HttpStatus.OK);
+    }
+
+    @GetMapping("/login")
+    @ApiOperation(value = "登录界面使用——查询登录设置")
+    @Permission(permissionPublic = true)
+    public ResponseEntity<Map<String, String>> queryLogin() {
+        return Results.success(systemSettingService.queryLogin());
     }
 }

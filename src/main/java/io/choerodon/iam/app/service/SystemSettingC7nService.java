@@ -1,11 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.iam.api.vo.SysSettingVO;
-import io.choerodon.iam.infra.dto.SysSettingDTO;
 
 /**
  * 对系统设置进行增删改查
@@ -67,7 +66,16 @@ public interface SystemSettingC7nService {
 
     /**
      * 查询默认语言接口
+     *
      * @return
      */
     String getDefaultLanguage();
+
+    /**
+     * 查询登录界面配置
+     * 不包括secret
+     *
+     * @return
+     */
+    Map<String, String> queryLogin();
 }

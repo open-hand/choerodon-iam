@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.RedisCacheKeyConstants.REDIS_KEY_LOGIN;
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 
 import java.io.ByteArrayOutputStream;
@@ -318,6 +319,25 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             return language.getSettingValue();
         }
     }
+
+    @Override
+    public Map<String, String> queryLogin() {
+        String settingStr = stringRedisTemplate.opsForValue().get(REDIS_KEY_LOGIN);
+        Map<String, String> settingDTOMap;
+        if (ObjectUtils.isNotEmpty(settingStr)) {
+            settingDTOMap = (Map<String, String>) gson.fromJson(settingStr, Map.class);
+        } else {
+            List<SysSettingDTO> settingDTOS = sysSettingMapper.listByLikeCode("login");
+            settingDTOMap = settingDTOS.stream().filter(t -> ObjectUtils.isNotEmpty(t.getSettingValue())).collect(Collectors.toMap(SysSettingDTO::getSettingKey, SysSettingDTO::getSettingValue));
+            settingDTOMap.remove(SysSettingEnum.LOGIN_DING_TALK_APP_SECRET.value());
+            settingStr = gson.toJson(settingDTOMap);
+            stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN, settingStr, 5, TimeUnit.MINUTES);
+        }
+        // 补偿机制 解决前端白屏
+        settingDTOMap.putIfAbsent(SysSettingEnum.LOGIN_WAY.value(), "account,phone");
+        return settingDTOMap;
+    }
+
 
     private String uploadFile(MultipartFile file) {
         return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);

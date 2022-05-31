@@ -207,7 +207,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired(required = false)
     private BusinessService businessService;
 
-
     @Override
     public User queryInfo(Long userId) {
         User user = userAssertHelper.userNotExisted(userId);

@@ -9,7 +9,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>choerodon-iam</artifactId>
-    <version>2.0.0.yqcloud-SNAPSHOT</version>
+    <version>2.0.2.RELEASE</version>
 
     <properties>
         <deploy.classifier/>

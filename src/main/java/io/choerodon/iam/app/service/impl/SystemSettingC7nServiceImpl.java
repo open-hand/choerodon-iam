@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.constant.RedisCacheKeyConstants.REDIS_KEY_LOGIN;
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,7 @@ import com.google.gson.Gson;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.boot.file.FileClient;
+import org.hzero.common.HZeroService;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.app.service.PasswordPolicyService;
 import org.hzero.iam.domain.entity.PasswordPolicy;
@@ -55,7 +57,6 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     protected static final String CLEAN_EMAIL_RECORD = "cleanEmailRecord";
     protected static final String CLEAN_WEBHOOK_RECORD = "cleanWebhookRecord";
     protected static final String DEFAULT_CLEAN_NUM = "180";
-    protected static final String CHOERODON_MESSAGE = "choerodon-message";
     /**
      * 清理消息类型 WEBHOOK/EMAIL
      */
@@ -68,6 +69,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     protected static final String MESSAGE_TYPE_EMAIL = "EMAIL";
     private static final String MESSAGE_TYPE_WEBHOOK = "WEB_HOOK";
     public static final String REDIS_KEY_LOGIN_LANGUAGE = "c7n-iam:settingLogin:language";
+
+    @Value("${choerodon.saga.service:choerodon-asgard}")
+    private String sagaServiceName;
 
     private FileClient fileClient;
 
@@ -160,11 +164,15 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         });
         if (!sysSettingVO.getAutoCleanEmailRecord().equals(oldSysSettingVO.getAutoCleanEmailRecord())
                 || !sysSettingVO.getAutoCleanEmailRecordInterval().equals(oldSysSettingVO.getAutoCleanEmailRecordInterval())) {
-            handleScheduleTask(MESSAGE_TYPE_EMAIL, sysSettingVO.getAutoCleanEmailRecord(), sysSettingVO.getAutoCleanEmailRecordInterval());
+            handleScheduleTaskMessage(MESSAGE_TYPE_EMAIL, sysSettingVO.getAutoCleanEmailRecord(), sysSettingVO.getAutoCleanEmailRecordInterval());
         }
         if (!sysSettingVO.getAutoCleanWebhookRecord().equals(oldSysSettingVO.getAutoCleanWebhookRecord())
                 || !sysSettingVO.getAutoCleanWebhookRecordInterval().equals(oldSysSettingVO.getAutoCleanWebhookRecordInterval())) {
-            handleScheduleTask(MESSAGE_TYPE_WEBHOOK, sysSettingVO.getAutoCleanWebhookRecord(), sysSettingVO.getAutoCleanWebhookRecordInterval());
+            handleScheduleTaskMessage(MESSAGE_TYPE_WEBHOOK, sysSettingVO.getAutoCleanWebhookRecord(), sysSettingVO.getAutoCleanWebhookRecordInterval());
+        }
+        if (!sysSettingVO.getAutoCleanSagaInstanceInterval().equals(oldSysSettingVO.getAutoCleanSagaInstanceInterval())
+                || !sysSettingVO.getAutoCleanSagaInstance().equals(oldSysSettingVO.getAutoCleanSagaInstance())) {
+            handleScheduleTaskAutoClean(oldSysSettingVO.getAutoCleanSagaInstance(), "cleanSagaInstance", new HashMap<>(), "cleanSagaInstance", sagaServiceName);
         }
         SysSettingVO sysSettingResultVO = new SysSettingVO();
         SysSettingUtils.listToSysSettingVo(sysSettingHandlers, sysSettingMapper.selectAll(), sysSettingResultVO);
@@ -180,15 +188,23 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         stringRedisTemplate.delete(REDIS_KEY_LOGIN_LANGUAGE);
     }
 
-    protected void handleScheduleTask(String messageType, Boolean autoClean, Integer cleanNum) {
+    protected void handleScheduleTaskMessage(String messageType, Boolean autoClean, Integer cleanNum) {
         String taskName = messageType.equals(MESSAGE_TYPE_EMAIL) ? CLEAN_EMAIL_RECORD : CLEAN_WEBHOOK_RECORD;
+        Map<String, Object> mapParams = new HashMap<>();
+        mapParams.put(MESSAGE_TYPE, messageType);
+        mapParams.put(CLEAN_NUM, cleanNum);
+        handleScheduleTaskAutoClean(autoClean, taskName, mapParams, "cleanMessageRecord", HZeroService.Message.NAME);
+    }
+
+
+    protected void handleScheduleTaskAutoClean(Boolean autoClean, String taskName, Map<String, Object> mapParams, String methodName, String service) {
         asgardFeignClient.deleteSiteTask(taskName);
         if (autoClean) {
             ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
             scheduleTaskDTO.setName(taskName);
             scheduleTaskDTO.setDescription(taskName);
             Date date = new Date();
-            String cron = "0 0 2 * * ?";
+            String cron = "0 30 1 * * ?";
             scheduleTaskDTO.setCronExpression(cron);
             scheduleTaskDTO.setTriggerType("cron-trigger");
             scheduleTaskDTO.setExecuteStrategy("STOP");
@@ -202,13 +218,8 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             notifyUser.setAssigner(false);
             notifyUser.setCreator(false);
             scheduleTaskDTO.setNotifyUser(notifyUser);
-
-            Map<String, Object> mapParams = new HashMap<>();
-            mapParams.put(MESSAGE_TYPE, messageType);
-            mapParams.put(CLEAN_NUM, cleanNum);
             scheduleTaskDTO.setParams(mapParams);
-
-            scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTOSite("cleanMessageRecord", CHOERODON_MESSAGE).getId());
+            scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTOSite(methodName, service).getId());
             asgardServiceClientOperator.createQuartzTaskSite(scheduleTaskDTO);
         }
     }
@@ -318,6 +329,25 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
             return language.getSettingValue();
         }
     }
+
+    @Override
+    public Map<String, String> queryLogin() {
+        String settingStr = stringRedisTemplate.opsForValue().get(REDIS_KEY_LOGIN);
+        Map<String, String> settingDTOMap;
+        if (ObjectUtils.isNotEmpty(settingStr)) {
+            settingDTOMap = (Map<String, String>) gson.fromJson(settingStr, Map.class);
+        } else {
+            List<SysSettingDTO> settingDTOS = sysSettingMapper.listByLikeCode("login");
+            settingDTOMap = settingDTOS.stream().filter(t -> ObjectUtils.isNotEmpty(t.getSettingValue())).collect(Collectors.toMap(SysSettingDTO::getSettingKey, SysSettingDTO::getSettingValue));
+            settingDTOMap.remove(SysSettingEnum.LOGIN_DING_TALK_APP_SECRET.value());
+            settingStr = gson.toJson(settingDTOMap);
+            stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN, settingStr, 5, TimeUnit.MINUTES);
+        }
+        // 补偿机制 解决前端白屏
+        settingDTOMap.putIfAbsent(SysSettingEnum.LOGIN_WAY.value(), "account,phone");
+        return settingDTOMap;
+    }
+
 
     private String uploadFile(MultipartFile file) {
         return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);

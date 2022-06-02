@@ -6,4 +6,13 @@
         FROM iam_sys_setting
         WHERE SETTING_KEY = #{key}
     </select>
+
+    <select id="listByLikeCode" resultType="io.choerodon.iam.infra.dto.SysSettingDTO">
+        SELECT
+        *
+        FROM
+        iam_sys_setting
+        WHERE
+        SETTING_KEY LIKE concat(concat('%',#{code}),'%')
+    </select>
 </mapper>

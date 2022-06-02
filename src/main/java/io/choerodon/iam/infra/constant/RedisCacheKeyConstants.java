@@ -32,5 +32,9 @@ public final class RedisCacheKeyConstants {
      * 组织访问人数记录
      */
     public static final String TENANT_VISITORS_FORMAT = "tenant-visitors:%s";
+    /**
+     * 登录页面缓存
+     */
+    public static final String REDIS_KEY_LOGIN = "c7n-iam:settingLogin";
 
 }

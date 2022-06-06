@@ -97,4 +97,15 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     changeSet(author: 'scp', id: '2022-04-21-updateDataType') {
         modifyDataType(tableName: 'fd_project', columnName: 'DESCRIPTION', newDataType: 'text')
     }
+
+    changeSet(author: 'wanghao', id: '2022-06-6-add-column') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'devops_component_code', type: 'VARCHAR(255)', remarks: 'devops基础组件中使用的编码', afterColumn: 'CODE')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2022-06-6-fix-data') {
+        sql("""
+            UPDATE FD_PROJECT SET devops_component_code = code
+        """)
+    }
 }

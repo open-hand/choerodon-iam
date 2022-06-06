@@ -77,6 +77,9 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("之前存在的类型")
     private String beforeCategory;
 
+    @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
+    private String devopsComponentCode;
+
     @ApiModelProperty(value = "项目类型")
     @Transient
     private List<Long> categoryIds;
@@ -173,6 +176,14 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "个人信息界面能否编辑dt消息")
     private Boolean dtEditEnable;
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
+    }
 
     public Set<Long> getTopProjectIds() {
         return topProjectIds;

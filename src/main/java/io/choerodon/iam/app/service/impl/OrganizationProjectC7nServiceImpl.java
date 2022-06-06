@@ -310,6 +310,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationName(tenant.getTenantName());
         projectEventMsg.setOrganizationId(tenant.getTenantId());
         projectEventMsg.setUseTemplate(projectDTO.getUseTemplate());
+        projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
         return projectEventMsg;
     }
 

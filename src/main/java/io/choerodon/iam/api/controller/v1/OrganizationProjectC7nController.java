@@ -34,7 +34,8 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
- * 商业版被覆盖
+ * 商业版被覆盖，新增、修改接口需要同步修改商业版代码
+ *
  * @author flyleft
  * @author superlee
  */
@@ -225,6 +226,14 @@ public class OrganizationProjectC7nController extends BaseController {
     public ResponseEntity<List<ProjectDTO>> listProjectsByCategory(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @RequestParam(name = "category_code") String categoryCode) {
         return ResponseEntity.ok(organizationProjectC7nService.listProjectsByCategoryAndOrgId(organizationId, categoryCode));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验devops组件编码在组织下是否存在，true表示存在")
+    @GetMapping(value = "/check_devops_code_exist")
+    public ResponseEntity<Boolean> checkDevopsCodeExist(@PathVariable(name = "organization_id") Long organizationId,
+                                                        @RequestParam(name = "devops_component_code") String devopsComponentCode) {
+        return ResponseEntity.ok(organizationProjectC7nService.checkDevopsCodeExist(organizationId, devopsComponentCode));
     }
 
 }

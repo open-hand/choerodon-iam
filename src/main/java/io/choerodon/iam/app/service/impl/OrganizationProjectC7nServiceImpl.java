@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -29,6 +28,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -678,6 +678,14 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             result.setContent(topProjects);
         }
         return result;
+    }
+
+    @Override
+    public Boolean checkDevopsCodeExist(Long organizationId, String devopsComponentCode) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        projectDTO.setDevopsComponentCode(devopsComponentCode);
+        return CollectionUtils.isEmpty(projectMapper.select(projectDTO));
     }
 
 

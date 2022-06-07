@@ -199,6 +199,7 @@
             </if>
         </where>
         group by im.id
+        ORDER BY im.sort
     </select>
 
     <!-- 返回权限集检查状态 -->

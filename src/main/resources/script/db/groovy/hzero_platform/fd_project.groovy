@@ -108,4 +108,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             UPDATE FD_PROJECT SET devops_component_code = code
         """)
     }
+    changeSet(author: 'wanghao', id: '2022-06-07-add-unique-index') {
+        addUniqueConstraint(tableName: 'FD_PROJECT', columnNames: 'ORGANIZATION_ID, devops_component_code', constraintName: 'UK_FD_DEVOPS_CODE_U2')
+    }
 }

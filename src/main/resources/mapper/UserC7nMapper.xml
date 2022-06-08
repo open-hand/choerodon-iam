@@ -1070,7 +1070,10 @@
             </if>
 
             <if test="sourceType == 'organization'">
-                and iu2.organization_id = #{sourceId}
+                and iu2.organization_id IN
+                <foreach collection="tenantIds" separator="," open="(" close=")" item="tenantId" index="i">
+                    #{tenantId}
+                </foreach>
             </if>
             <if test="sourceType == 'project'">
                 and iu2.organization_id =

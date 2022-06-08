@@ -1047,8 +1047,8 @@
                     OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.attribute15 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} )
                     OR ( iu.attribute14 LIKE concat( '%', concat( #{userName}, '%' ) ) AND iu.organization_id = #{tenantId} ))
-                )
                 </if>
+                )
             </otherwise>
         </choose>
         <if test="sourceType == 'organization' or sourceType == 'project'">

@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -1189,7 +1190,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
 
-    private Long validateSourceNotExisted(String sourceType, Long sourceId) {
+    public Long validateSourceNotExisted(String sourceType, Long sourceId) {
         Long tenantId = null;
         if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
             organizationAssertHelper.notExisted(sourceId);
@@ -1342,9 +1343,11 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag) {
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag, Boolean organizationFlag) {
         Long tenantId = validateSourceNotExisted(sourceType, sourceId);
-        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag, tenantId);
+        List<Long> tenantIds = new ArrayList<>();
+        tenantIds.add(tenantId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag, tenantId, tenantIds);
     }
 
     @Override

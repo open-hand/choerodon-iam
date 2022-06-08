@@ -291,7 +291,7 @@ public interface UserC7nService {
      * @param exactMatchFlag
      * @return 启用状态的用户列表
      */
-    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag);
+    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag, Boolean organizationFlag);
 
     /**
      * 给用户分配组织管理员角色

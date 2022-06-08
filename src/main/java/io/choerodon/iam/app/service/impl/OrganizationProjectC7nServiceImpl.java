@@ -370,6 +370,13 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
         projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
 
+        // 给saga的payload填充devops组件编码字段
+        if (projectToUpdate.getDevopsComponentCode() != null) {
+            projectEventMsg.setDevopsComponentCode(projectToUpdate.getDevopsComponentCode());
+        } else {
+            projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
+        }
+
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();

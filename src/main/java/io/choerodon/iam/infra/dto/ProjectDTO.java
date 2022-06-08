@@ -26,7 +26,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 public class ProjectDTO extends AuditDomain {
 
-    private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
+    private static final String CODE_REGULAR_EXPRESSION = "^[^\\u4e00-\\u9fa5]+$";
 
     public static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u3040-\\u309F\\u30A0-\\u30FF\\u4e00-\\u9fa5]{1,110}$";
 
@@ -43,7 +43,7 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty(value = "项目编码/必填")
     @NotEmpty(message = "error.project.code.empty")
-    @Size(min = 1, max = 14, message = "error.project.code.size")
+    @Size(min = 1, max = 40, message = "error.project.code.size")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
     private String code;
 

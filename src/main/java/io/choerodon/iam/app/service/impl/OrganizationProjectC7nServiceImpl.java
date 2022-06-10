@@ -380,6 +380,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
         cheryNamePattern(projectDTO.getName());
+        correctRequestParam(projectDTO);
+
         ProjectDTO projectToUpdate = projectMapper.selectByPrimaryKey(projectDTO.getId());
         CommonExAssertUtil.assertTrue(organizationId.equals(projectToUpdate.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         updateCheck(projectDTO);

@@ -48,4 +48,11 @@ public interface BusinessService {
      * @param classficationId
      */
     void setProjectClassfication(Long organizationId, Long projectId, Long classficationId);
+
+    /**
+     * 删除项目类别关联关系
+     *
+     * @param projectId
+     */
+    void deleteProjectClassficationRelation(Long projectId);
 }

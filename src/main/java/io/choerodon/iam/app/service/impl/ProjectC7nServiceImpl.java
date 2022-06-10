@@ -41,6 +41,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
+import io.choerodon.iam.app.service.BusinessService;
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
 import io.choerodon.iam.app.service.ProjectC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
@@ -113,6 +114,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+
+    @Autowired(required = false)
+    BusinessService businessService;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  OrganizationAssertHelper organizationAssertHelper,
@@ -516,6 +520,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
             mapCategoryDTO.setProjectId(projectId);
             projectMapCategoryMapper.delete(mapCategoryDTO);
             projectMapper.deleteByPrimaryKey(projectId);
+            if (businessService != null) {
+                businessService.deleteProjectClassficationRelation(projectId);
+            }
         }
     }
 

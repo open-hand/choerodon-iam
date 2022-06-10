@@ -199,6 +199,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         cheryNamePattern(projectDTO.getName());
         additionalCodeCheck(projectDTO.getCode());
+        correctRequestParam(projectDTO);
+
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
 
@@ -246,6 +248,23 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             LOGGER.error("error.send.message", e);
         }
         return res;
+    }
+
+    /**
+     * 处理前端不想处理的逻辑，校正参数
+     * @param projectDTO 项目信息
+     */
+    private void correctRequestParam(ProjectDTO projectDTO) {
+        List<ProjectCategoryDTO> categories = projectDTO.getCategories();
+        if (CollectionUtils.isEmpty(categories)) {
+          throw new CommonException("error.category.is.empty");
+        }
+
+        // 如果不包含N_DEVOPS、N_OPERATIONS则不能填devopsComponentCode字段
+        if (categories.stream().noneMatch(v -> ProjectCategoryEnum.N_DEVOPS.value().equals(v.getCode())
+                || ProjectCategoryEnum.N_OPERATIONS.value().equals(v.getCode()))) {
+            projectDTO.setDevopsComponentCode(null);
+        }
     }
 
     /**

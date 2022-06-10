@@ -135,6 +135,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private StarProjectService starProjectService;
 
+    @Autowired(required = false)
+    private BusinessService businessService;
+
     @Autowired
     @Lazy
     private ProjectC7nService projectC7nService;
@@ -247,6 +250,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     /**
      * 项目编码补充校验
+     *
      * @param code 项目编码
      */
     private void additionalCodeCheck(String code) {
@@ -266,6 +270,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO.setBeforeCategory(projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.joining(",")));
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
+        }
+        if (businessService != null) {
+            businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
     }
@@ -382,6 +389,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
         projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
+        projectEventMsg.setWorkGroupId(projectDTO.getWorkGroupId());
 
         // 给saga的payload填充devops组件编码字段
         if (projectToUpdate.getDevopsComponentCode() != null) {
@@ -401,6 +409,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         //真正插入项目了类型放到saga里面做
 //        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+
+        // 更新项目类别
+        if (businessService != null) {
+            businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
+        }
 
         //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
         Set<String> beforeCode = new HashSet<>();

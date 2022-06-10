@@ -177,6 +177,14 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "个人信息界面能否编辑dt消息")
     private Boolean dtEditEnable;
 
+    @Encrypt
+    @ApiModelProperty("项目类别id")
+    private Long projectClassficationId;
+
+    @Encrypt
+    @ApiModelProperty("工作组id")
+    private Long workGroupId;
+
     public String getDevopsComponentCode() {
         return devopsComponentCode;
     }
@@ -500,5 +508,21 @@ public class ProjectDTO extends AuditDomain {
 
     public void setDtEditEnable(Boolean dtEditEnable) {
         this.dtEditEnable = dtEditEnable;
+    }
+
+    public Long getProjectClassficationId() {
+        return projectClassficationId;
+    }
+
+    public void setProjectClassficationId(Long projectClassficationId) {
+        this.projectClassficationId = projectClassficationId;
+    }
+
+    public Long getWorkGroupId() {
+        return workGroupId;
+    }
+
+    public void setWorkGroupId(Long workGroupId) {
+        this.workGroupId = workGroupId;
     }
 }

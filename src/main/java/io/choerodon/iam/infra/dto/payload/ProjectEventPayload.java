@@ -28,6 +28,7 @@ public class ProjectEventPayload {
     private String oldAgileProjectCode;
     @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
     private String devopsComponentCode;
+    private Long workGroupId;
 
     private Set<String> roleLabels;
     /**
@@ -197,5 +198,13 @@ public class ProjectEventPayload {
 
     public void setUseTemplate(Boolean useTemplate) {
         this.useTemplate = useTemplate;
+    }
+
+    public Long getWorkGroupId() {
+        return workGroupId;
+    }
+
+    public void setWorkGroupId(Long workGroupId) {
+        this.workGroupId = workGroupId;
     }
 }

@@ -33,9 +33,19 @@ public interface BusinessService {
     /**
      * 个人接收配置界面使用
      * 查询个人能看到所有项目
+     *
      * @param userId
      * @param projectDTO
      * @return
      */
     List<ProjectDTO> selectProjectsByUserId(Long userId, ProjectDTO projectDTO);
+
+    /**
+     * 处理项目的工作组和类别
+     *
+     * @param organizationId
+     * @param projectId
+     * @param classficationId
+     */
+    void setProjectClassfication(Long organizationId, Long projectId, Long classficationId);
 }

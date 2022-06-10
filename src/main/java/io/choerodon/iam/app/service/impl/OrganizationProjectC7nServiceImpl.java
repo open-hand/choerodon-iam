@@ -195,6 +195,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         cheryNamePattern(projectDTO.getName());
+        additionalCodeCheck(projectDTO.getCode());
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
 
@@ -242,6 +243,18 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             LOGGER.error("error.send.message", e);
         }
         return res;
+    }
+
+    /**
+     * 项目编码补充校验
+     * @param code 项目编码
+     */
+    private void additionalCodeCheck(String code) {
+        if (code.startsWith(" ")) {
+            throw new CommonException("error.code.start.with.trim");
+        } else if (code.endsWith(" ")) {
+            throw new CommonException("error.code.end.with.trim");
+        }
     }
 
     @Override

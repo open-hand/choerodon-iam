@@ -290,7 +290,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
         }
-        if (businessService != null) {
+        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
             businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
@@ -432,7 +432,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
         // 更新项目类别
-        if (businessService != null) {
+        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
             businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
 

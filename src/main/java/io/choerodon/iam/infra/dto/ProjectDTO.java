@@ -185,6 +185,9 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("工作组id")
     private Long workGroupId;
 
+    @ApiModelProperty("项目状态颜色")
+    private String color;
+
     public String getDevopsComponentCode() {
         return devopsComponentCode;
     }
@@ -524,5 +527,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setWorkGroupId(Long workGroupId) {
         this.workGroupId = workGroupId;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

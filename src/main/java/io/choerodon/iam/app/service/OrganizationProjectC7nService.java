@@ -90,4 +90,10 @@ public interface OrganizationProjectC7nService {
     Page<ProjectDTO> pagingQueryAndTop(Long organizationId, PageRequest pageRequest, ProjectDTO project);
 
     Boolean checkDevopsCodeExist(Long organizationId, String devopsComponentCode);
+
+    /**
+     * 处理前端不想处理的逻辑，校正参数
+     * @param projectDTO 项目信息
+     */
+    void correctRequestParam(ProjectDTO projectDTO);
 }

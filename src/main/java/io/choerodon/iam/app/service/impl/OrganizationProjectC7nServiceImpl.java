@@ -254,7 +254,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
      * 处理前端不想处理的逻辑，校正参数
      * @param projectDTO 项目信息
      */
-    private void correctRequestParam(ProjectDTO projectDTO) {
+    public void correctRequestParam(ProjectDTO projectDTO) {
         List<ProjectCategoryDTO> categories = projectDTO.getCategories();
         if (CollectionUtils.isEmpty(categories)) {
           throw new CommonException("error.category.is.empty");

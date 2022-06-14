@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -207,6 +206,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private IEncryptionService encryptionService;
     @Autowired(required = false)
     private BusinessService businessService;
+    @Autowired
+    private ProjectMapCategoryService projectMapCategoryService;
 
     @Override
     public User queryInfo(Long userId) {
@@ -1659,16 +1660,23 @@ public class UserC7nServiceImpl implements UserC7nService {
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
-        // 普通用户只能查到启用的项目(不包括项目所有者)
-//        if (!isAdmin && !isOrgAdmin) {
-//            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-//                return page;
-//            } else {
-//                projectDTO.setEnabled(true);
-//            }
-//        }
+
+        Map<String, String> searchParamMap = new HashMap<>();
+        List<String> paramList = new ArrayList<>();
+        if (!org.springframework.util.StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = TypeUtil.castMapParams(params);
+            searchParamMap = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), Collections.emptyMap());
+            paramList = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.PARAMS)), Collections.emptyList());
+        }
+
+        List<Long> projectIdsToSearch = new ArrayList<>();
+        Long categoryId = KeyDecryptHelper.decryptValue(searchParamMap.get("categoryId"));
+        if (categoryId != null) {
+            projectIdsToSearch.addAll(projectMapCategoryService.listProjectIdsByCategoryId(categoryId));
+        }
         //查询到的项目包括已启用和未启用的
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        Map<String, String> finalSearchParamMap = searchParamMap;
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, finalSearchParamMap, projectIdsToSearch));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {

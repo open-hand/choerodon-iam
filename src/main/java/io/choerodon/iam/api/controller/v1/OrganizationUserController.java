@@ -247,7 +247,7 @@ public class OrganizationUserController extends BaseController {
                                                                    @RequestParam(required = false) String category,
                                                                    @RequestParam(required = false) Boolean enabled,
                                                                    @RequestParam(required = false) Long createdBy,
-                                                                   @RequestParam(required = false) String params,
+                                                                   @RequestBody String params,
                                                                    @RequestParam(required = false, defaultValue = "false") Boolean onlySucceed) {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setId(projectId);

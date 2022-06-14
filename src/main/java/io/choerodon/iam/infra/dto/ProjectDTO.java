@@ -186,6 +186,7 @@ public class ProjectDTO extends AuditDomain {
     private Long workGroupId;
 
     @ApiModelProperty("项目状态颜色")
+    @Transient
     private String color;
 
     public String getDevopsComponentCode() {

@@ -33,4 +33,5 @@ public interface ProjectMapCategoryMapper extends BaseMapper<ProjectMapCategoryD
 
     List<String> listProjectCategoryById(@Param("projectId") Long projectId);
 
+    List<Long> listProjectIdsByCategoryId(@Param("categoryId") Long categoryId);
 }

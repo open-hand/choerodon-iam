@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -81,7 +82,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
      * @param projectDTO 项目DTO
      * @param isAdmin    是否为admin用户
      * @param isOrgAdmin 是否为组织管理员
-     * @param params     模糊查询字段
      * @return 项目列表
      */
     List<ProjectDTO> selectProjectsByUserIdOrAdmin(@Param("organizationId") Long organizationId,
@@ -89,7 +89,8 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                                    @Param("projectDTO") ProjectDTO projectDTO,
                                                    @Param("isAdmin") Boolean isAdmin,
                                                    @Param("isOrgAdmin") Boolean isOrgAdmin,
-                                                   @Param("params") String params);
+                                                   @Param("searchParamMap") Map<String, String> searchParamMap,
+                                                   @Param("projectIdsToSearch") List<Long> projectIdsToSearch);
 
     /**
      * 查询组织下用户的项目id.

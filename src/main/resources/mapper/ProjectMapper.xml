@@ -329,11 +329,17 @@
                     AND fp.created_by = #{userId}
                 </if>
             </if>
-            <if test="params != null">
+            <if test="searchParamMap.searchContent != null and searchParamMap.searchContent.length > 0">
                 AND (
-                fp.name LIKE concat(concat('%', #{params}), '%') OR
-                fp.code LIKE concat(concat('%', #{params}), '%')
-                )
+                        fp.name LIKE concat(concat('%', #{searchParamMap.searchContent}), '%') OR
+                        fp.code LIKE concat(concat('%', #{searchParamMap.searchContent}), '%')
+                        )
+            </if>
+            <if test="projectIdsToSearch != null and projectIdsToSearch.size() != 0">
+                AND fp.ID IN
+                <foreach collection="projectIdsToSearch" item="projectId" open="(" close=")" separator=",">
+                     #{projectId}
+                </foreach>
             </if>
         </where>
         GROUP BY fp.id

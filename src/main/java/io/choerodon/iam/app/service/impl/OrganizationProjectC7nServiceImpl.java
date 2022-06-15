@@ -252,12 +252,13 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     /**
      * 处理前端不想处理的逻辑，校正参数
+     *
      * @param projectDTO 项目信息
      */
     public void correctRequestParam(ProjectDTO projectDTO) {
         List<ProjectCategoryDTO> categories = projectDTO.getCategories();
         if (CollectionUtils.isEmpty(categories)) {
-          throw new CommonException("error.category.is.empty");
+            throw new CommonException("error.category.is.empty");
         }
 
         // 如果不包含N_DEVOPS、N_OPERATIONS则不能填devopsComponentCode字段
@@ -350,6 +351,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationId(tenant.getTenantId());
         projectEventMsg.setUseTemplate(projectDTO.getUseTemplate());
         projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
+        projectEventMsg.setWorkGroupId(projectDTO.getWorkGroupId());
         return projectEventMsg;
     }
 

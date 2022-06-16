@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -23,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -62,7 +60,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
@@ -84,16 +81,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
-    public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
-    //saga的状态
-    private static final String FAILED = "FAILED";
-    private static final String RUNNING = "RUNNING";
-
-    @Value("${spring.application.name:default}")
-    private String serviceName;
-
-    @Value("${choerodon.category.enabled:false}")
-    private Boolean categoryEnable;
 
     private UserC7nService userC7nService;
 
@@ -117,14 +104,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private UserAssertHelper userAssertHelper;
 
-
-    private final ObjectMapper mapper = new ObjectMapper();
-
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private C7nTenantConfigService c7nTenantConfigService;
-
     private OrganizationResourceLimitService organizationResourceLimitService;
 
     private ProjectPermissionService projectPermissionService;
@@ -141,8 +123,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Autowired
     @Lazy
     private ProjectC7nService projectC7nService;
-    @Autowired
-    private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     @Lazy
     private ProjectCategoryC7nService projectCategoryC7nService;
@@ -162,7 +142,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                                      UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
-                                             C7nTenantConfigService c7nTenantConfigService,
                                              @Lazy ProjectPermissionService projectPermissionService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
@@ -184,7 +163,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.producer = producer;
         this.devopsFeignClientOperator = devopsFeignClientOperator;
         this.organizationResourceLimitService = organizationResourceLimitService;
-        this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
         this.projectPermissionService = projectPermissionService;
         this.roleC7nMapper = roleC7nMapper;
@@ -421,7 +399,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
         }
 
-
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
         projectMapCategoryDTO.setProjectId(projectDTO.getId());
@@ -429,8 +406,10 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
-        //真正插入项目了类型放到saga里面做
-//        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
+
+        // 添加项目类型
+        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
+        // 删除项目类型
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
         // 更新项目类别
@@ -461,7 +440,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setProjectName(newProjectDTO.getName());
         projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
         BeanUtils.copyProperties(newProjectDTO, dto);
-
 
         // 发送修改项目启停用状态消息
         if (updateStatus) {

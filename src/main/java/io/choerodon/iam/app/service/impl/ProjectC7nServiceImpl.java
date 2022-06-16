@@ -427,6 +427,9 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     @Override
     public void addProjectCategory(Long projectId, List<Long> categoryIds) {
 
+        if (CollectionUtils.isEmpty(categoryIds)) {
+            return;
+        }
         //批量插入
         List<ProjectMapCategoryDTO> projectMapCategoryDTOS = new ArrayList<>();
         for (Long categoryId : categoryIds) {

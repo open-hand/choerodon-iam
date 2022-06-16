@@ -121,4 +121,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             column(name: 'work_group_id', type: 'BIGINT UNSIGNED', remarks: '工作组id', afterColumn: 'project_classfication_id')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2022-06-16-modify-column') {
+        modifyDataType(tableName: 'fd_project', columnName: 'code', newDataType: 'VARCHAR(64)')
+    }
 }

@@ -67,12 +67,12 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
 
     changeSet(author: 'wx', id: '2021-01-07-fd-project-add-column') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'OPERATE_TYPE', type: 'VARCHAR(32)', remarks: '该项目当前的操作类型 create:创建，update:修改', afterColumn: 'TYPE', defaultValue: 'create'){
+            column(name: 'OPERATE_TYPE', type: 'VARCHAR(32)', remarks: '该项目当前的操作类型 create:创建，update:修改', afterColumn: 'TYPE', defaultValue: 'create') {
                 constraints(nullable: false)
             }
         }
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'BEFORE_CATEGORY', type: 'VARCHAR(300)', remarks: '项目曾经存在过的项目类型',afterColumn: 'TYPE'){
+            column(name: 'BEFORE_CATEGORY', type: 'VARCHAR(300)', remarks: '项目曾经存在过的项目类型', afterColumn: 'TYPE') {
                 constraints(nullable: true)
             }
         }
@@ -80,7 +80,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
 
     changeSet(author: 'scp', id: '2021-02-04-fd-project-add-description') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'DESCRIPTION', type: 'VARCHAR(120)', remarks: '项目描述',afterColumn: 'BEFORE_CATEGORY')
+            column(name: 'DESCRIPTION', type: 'VARCHAR(120)', remarks: '项目描述', afterColumn: 'BEFORE_CATEGORY')
         }
     }
 
@@ -91,10 +91,34 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     }
     changeSet(author: 'scp', id: '2021-02-15-fd-project-add-status') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'STATUS_ID', type: 'BIGINT UNSIGNED', remarks: '项目状态Id',afterColumn: 'BEFORE_CATEGORY')
+            column(name: 'STATUS_ID', type: 'BIGINT UNSIGNED', remarks: '项目状态Id', afterColumn: 'BEFORE_CATEGORY')
         }
     }
     changeSet(author: 'scp', id: '2022-04-21-updateDataType') {
         modifyDataType(tableName: 'fd_project', columnName: 'DESCRIPTION', newDataType: 'text')
+    }
+
+    changeSet(author: 'wanghao', id: '2022-06-6-add-column') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'devops_component_code', type: 'VARCHAR(255)', remarks: 'devops基础组件中使用的编码', afterColumn: 'CODE')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2022-06-6-fix-data') {
+        sql("""
+            UPDATE FD_PROJECT SET devops_component_code = code
+        """)
+    }
+    changeSet(author: 'wanghao', id: '2022-06-07-add-unique-index') {
+        addUniqueConstraint(tableName: 'FD_PROJECT', columnNames: 'ORGANIZATION_ID, devops_component_code', constraintName: 'UK_FD_DEVOPS_CODE_U2')
+    }
+
+    changeSet(author: 'lihao', id: '2022-06-10-add-column') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'project_classfication_id', type: 'BIGINT UNSIGNED', remarks: '项目分类id', afterColumn: 'CODE')
+        }
+
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'work_group_id', type: 'BIGINT UNSIGNED', remarks: '工作组id', afterColumn: 'project_classfication_id')
+        }
     }
 }

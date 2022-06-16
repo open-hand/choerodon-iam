@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.swagger.annotations.ApiParam;
 import java.util.HashSet;
 import java.util.List;
 import javax.validation.Valid;
@@ -154,9 +155,11 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/organizations/{organization_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnOrganizationLevel(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @RequestParam(name = "user_name") String userName,
+                                                                   @ApiParam(value = "开启组织匹配后,注册与Saas组织不能检索到组织外得用户，平台组织之间可以")
+                                                                   @RequestParam(name = "organization_match_flag", required = false, defaultValue = "false") Boolean organizationMatchFlag,
                                                                    @RequestParam(name = "exact_match_flag", required = false, defaultValue = "true") Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.ORGANIZATION.value(), organizationId, userName, exactMatchFlag), HttpStatus.OK);
+                (ResourceLevel.ORGANIZATION.value(), organizationId, userName, exactMatchFlag, organizationMatchFlag), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -164,9 +167,11 @@ public class RoleMemberC7nController extends BaseController {
     @GetMapping(value = "/projects/{project_id}/enableUsers")
     public ResponseEntity<List<User>> listUsersOnProjectLevel(@PathVariable(name = "project_id") Long projectId,
                                                               @RequestParam(name = "user_name") String userName,
+                                                              @ApiParam(value = "开启组织匹配后,注册与Saas组织不能检索到组织外得用户，平台组织之间可以")
+                                                              @RequestParam(name = "organization_match_flag", required = false, defaultValue = "false") Boolean organizationMatchFlag,
                                                               @RequestParam(name = "exact_match_flag", required = false, defaultValue = "true") Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.PROJECT.value(), projectId, userName, exactMatchFlag), HttpStatus.OK);
+                (ResourceLevel.PROJECT.value(), projectId, userName, exactMatchFlag, organizationMatchFlag), HttpStatus.OK);
     }
 
 
@@ -174,9 +179,11 @@ public class RoleMemberC7nController extends BaseController {
     @ApiOperation(value = "全局层查询启用状态的用户列表")
     @GetMapping(value = "/site/enableUsers")
     public ResponseEntity<List<User>> listUsersOnSiteLevel(@RequestParam(name = "user_name") String userName,
+                                                           @ApiParam(value = "开启组织匹配后,注册与Saas组织不能检索到组织外得用户，平台组织之间可以")
+                                                           @RequestParam(name = "organization_match_flag", required = false, defaultValue = "false") Boolean organizationMatchFlag,
                                                            @RequestParam(name = "exact_match_flag", required = false, defaultValue = "true") Boolean exactMatchFlag) {
         return new ResponseEntity<>(userC7nService.listEnableUsersByName
-                (ResourceLevel.SITE.value(), 0L, userName, exactMatchFlag), HttpStatus.OK);
+                (ResourceLevel.SITE.value(), 0L, userName, exactMatchFlag, organizationMatchFlag), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

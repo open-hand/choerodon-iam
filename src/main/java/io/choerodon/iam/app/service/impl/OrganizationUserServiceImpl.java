@@ -363,7 +363,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
-        String oldLoginName = userDetails.getLoginName();
         // hzero没有用户名变化参数 用phone参数代替
         if (!userDetails.getRealName().equals(user.getRealName())) {
             user.setPhoneChanged(true);
@@ -371,18 +370,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         boolean phoneChange = false;
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
-        }
-        // 界面上登录名为邮箱
-        boolean loginNameChange = false;
-        if (!oldLoginName.equals(user.getLoginName())
-                && !userDetails.getEmail().equals(user.getLoginName())) {
-            loginNameChange = true;
-            user.setPhoneChanged(true);
-            if (userRepository.selectByLoginName(user.getLoginName()) != null) {
-                throw new CommonException("error.user.login.exist");
-            }
-        } else {
-            user.setLoginName(oldLoginName);
         }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
@@ -394,11 +381,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         //如果修改了手机号，则用户手机号绑定状态变为未绑定
         if (phoneChange) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
-        }
-        // 更改了登录名
-        if (loginNameChange) {
-            userC7nMapper.updateUserLoginName(user.getId(), user.getLoginName());
-            userC7nMapper.updateUserLoginNameForOpen(oldLoginName, user.getLoginName());
         }
         // 2. 更新用户角色
         if (updateRoles) {

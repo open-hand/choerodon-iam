@@ -14,8 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
@@ -24,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -62,7 +60,6 @@ import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.enums.SendSettingBaseEnum;
 import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.feign.operator.DevopsFeignClientOperator;
 import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
@@ -84,16 +81,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
-    public static final String ERROR_ORGANIZATION_PROJECT_NUM_MAX = "error.organization.project.num.max";
-    //saga的状态
-    private static final String FAILED = "FAILED";
-    private static final String RUNNING = "RUNNING";
-
-    @Value("${spring.application.name:default}")
-    private String serviceName;
-
-    @Value("${choerodon.category.enabled:false}")
-    private Boolean categoryEnable;
 
     private UserC7nService userC7nService;
 
@@ -117,14 +104,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private UserAssertHelper userAssertHelper;
 
-
-    private final ObjectMapper mapper = new ObjectMapper();
-
     private ProjectValidator projectValidator;
 
     private TransactionalProducer producer;
-    private C7nTenantConfigService c7nTenantConfigService;
-
     private OrganizationResourceLimitService organizationResourceLimitService;
 
     private ProjectPermissionService projectPermissionService;
@@ -135,11 +117,12 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
     private StarProjectService starProjectService;
 
+    @Autowired(required = false)
+    private BusinessService businessService;
+
     @Autowired
     @Lazy
     private ProjectC7nService projectC7nService;
-    @Autowired
-    private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     @Lazy
     private ProjectCategoryC7nService projectCategoryC7nService;
@@ -159,7 +142,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                                                      UserC7nService userC7nService,
                                              LabelC7nMapper labelC7nMapper,
                                              RoleC7nMapper roleC7nMapper,
-                                             C7nTenantConfigService c7nTenantConfigService,
                                              @Lazy ProjectPermissionService projectPermissionService,
                                              OrganizationResourceLimitService organizationResourceLimitService,
                                              AsgardFeignClient asgardFeignClient,
@@ -181,7 +163,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         this.producer = producer;
         this.devopsFeignClientOperator = devopsFeignClientOperator;
         this.organizationResourceLimitService = organizationResourceLimitService;
-        this.c7nTenantConfigService = c7nTenantConfigService;
         this.labelC7nMapper = labelC7nMapper;
         this.projectPermissionService = projectPermissionService;
         this.roleC7nMapper = roleC7nMapper;
@@ -195,6 +176,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
         cheryNamePattern(projectDTO.getName());
+        additionalCodeCheck(projectDTO.getCode());
+        correctRequestParam(projectDTO);
+
         organizationResourceLimitService.checkEnableCreateProjectOrThrowE(organizationId);
         organizationResourceLimitService.checkEnableCreateProjectType(organizationId, projectDTO);
 
@@ -244,6 +228,37 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return res;
     }
 
+    /**
+     * 处理前端不想处理的逻辑，校正参数
+     *
+     * @param projectDTO 项目信息
+     */
+    public void correctRequestParam(ProjectDTO projectDTO) {
+        List<ProjectCategoryDTO> categories = projectDTO.getCategories();
+        if (CollectionUtils.isEmpty(categories)) {
+            throw new CommonException("error.category.is.empty");
+        }
+
+        // 如果不包含N_DEVOPS、N_OPERATIONS则不能填devopsComponentCode字段
+        if (categories.stream().noneMatch(v -> ProjectCategoryEnum.N_DEVOPS.value().equals(v.getCode())
+                || ProjectCategoryEnum.N_OPERATIONS.value().equals(v.getCode()))) {
+            projectDTO.setDevopsComponentCode(null);
+        }
+    }
+
+    /**
+     * 项目编码补充校验
+     *
+     * @param code 项目编码
+     */
+    private void additionalCodeCheck(String code) {
+        if (code.startsWith(" ")) {
+            throw new CommonException("error.code.start.with.trim");
+        } else if (code.endsWith(" ")) {
+            throw new CommonException("error.code.end.with.trim");
+        }
+    }
+
     @Override
     public ProjectDTO create(ProjectDTO projectDTO) {
         Long organizationId = projectDTO.getOrganizationId();
@@ -253,6 +268,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectDTO.setBeforeCategory(projectDTO.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.joining(",")));
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
+        }
+        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
+            businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
     }
@@ -310,6 +328,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationName(tenant.getTenantName());
         projectEventMsg.setOrganizationId(tenant.getTenantId());
         projectEventMsg.setUseTemplate(projectDTO.getUseTemplate());
+        projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
+        projectEventMsg.setWorkGroupId(projectDTO.getWorkGroupId());
         return projectEventMsg;
     }
 
@@ -340,6 +360,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
         cheryNamePattern(projectDTO.getName());
+        correctRequestParam(projectDTO);
+
         ProjectDTO projectToUpdate = projectMapper.selectByPrimaryKey(projectDTO.getId());
         CommonExAssertUtil.assertTrue(organizationId.equals(projectToUpdate.getOrganizationId()), MisConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_ORGANIZATION);
         updateCheck(projectDTO);
@@ -368,7 +390,14 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setOrganizationCode(organizationDTO.getTenantNum());
         projectEventMsg.setOrganizationName(organizationDTO.getTenantName());
         projectEventMsg.setOrganizationId(organizationDTO.getTenantId());
+        projectEventMsg.setWorkGroupId(projectDTO.getWorkGroupId());
 
+        // 给saga的payload填充devops组件编码字段
+        if (projectToUpdate.getDevopsComponentCode() != null) {
+            projectEventMsg.setDevopsComponentCode(projectToUpdate.getDevopsComponentCode());
+        } else {
+            projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
+        }
 
         //修改项目的类型  拿到项目的所有类型，查询已有的，判断是新增项目类型还是删除项目类型
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
@@ -377,9 +406,16 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<Long> projectCategoryIds = projectDTO.getCategories().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
-        //真正插入项目了类型放到saga里面做
-//        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
+
+        // 添加项目类型
+        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
+        // 删除项目类型
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+
+        // 更新项目类别
+        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
+            businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
+        }
 
         //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
         Set<String> beforeCode = new HashSet<>();
@@ -404,7 +440,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectEventMsg.setProjectName(newProjectDTO.getName());
         projectEventMsg.setImageUrl(newProjectDTO.getImageUrl());
         BeanUtils.copyProperties(newProjectDTO, dto);
-
 
         // 发送修改项目启停用状态消息
         if (updateStatus) {
@@ -677,6 +712,14 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             result.setContent(topProjects);
         }
         return result;
+    }
+
+    @Override
+    public Boolean checkDevopsCodeExist(Long organizationId, String devopsComponentCode) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        projectDTO.setDevopsComponentCode(devopsComponentCode);
+        return CollectionUtils.isEmpty(projectMapper.select(projectDTO));
     }
 
 

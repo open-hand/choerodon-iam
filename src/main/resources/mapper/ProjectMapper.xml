@@ -300,10 +300,16 @@
                 LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
-        </choose>
+    </choose>
+        <if test="searchParamMap.categoryId != null">
+            INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+            INNER Join fd_project_category fpc ON fpmc.CATEGORY_ID = fpc.id
+        </if>
         <where>
             fp.organization_id = #{organizationId}
-
+            <if test="categoryId != null">
+                AND fpmc.CATEGORY_ID = #{categoryId}
+            </if>
             <if test="!isAdmin and !isOrgAdmin">
                 AND imr.member_id = #{userId}
                 AND imr.member_type = 'user'
@@ -329,11 +335,17 @@
                     AND fp.created_by = #{userId}
                 </if>
             </if>
-            <if test="params != null">
+            <if test="searchParamMap.searchContent != null and searchParamMap.searchContent.length > 0">
                 AND (
-                fp.name LIKE concat(concat('%', #{params}), '%') OR
-                fp.code LIKE concat(concat('%', #{params}), '%')
-                )
+                        fp.name LIKE concat(concat('%', #{searchParamMap.searchContent}), '%') OR
+                        fp.code LIKE concat(concat('%', #{searchParamMap.searchContent}), '%')
+                        )
+            </if>
+            <if test="projectIdsToSearch != null and projectIdsToSearch.size() != 0">
+                AND fp.ID IN
+                <foreach collection="projectIdsToSearch" item="projectId" open="(" close=")" separator=",">
+                     #{projectId}
+                </foreach>
             </if>
         </where>
         GROUP BY fp.id
@@ -789,7 +801,7 @@
     </select>
 
     <select id="queryImmutableProjectInfo" resultType="io.choerodon.iam.api.vo.ImmutableProjectInfoVO">
-        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num
+        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num, fd.devops_component_code
         FROM fd_project fd
         INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};

@@ -406,7 +406,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
     }
 
-    private void setUserInfo(User user) {
+    /**
+     * 设置用户的昵称等信息
+     * @param user
+     */
+    @Override
+    public void setUserInfo(User user) {
         UserInfo existUserInfo = userRepository.selectUserInfoByPrimaryKey(user.getId());
         if (existUserInfo == null) {
             throw new CommonException("hiam.warn.user.notFound");

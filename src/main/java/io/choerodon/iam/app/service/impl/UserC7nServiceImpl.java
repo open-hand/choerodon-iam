@@ -176,7 +176,9 @@ public class UserC7nServiceImpl implements UserC7nService {
     @Autowired
     @Lazy
     private ProjectCategoryC7nService projectCategoryC7nService;
-
+    @Autowired
+    @Lazy
+    private OrganizationUserService organizationUserService;
     @Autowired
     private StarProjectMapper starProjectMapper;
     @Resource
@@ -231,9 +233,11 @@ public class UserC7nServiceImpl implements UserC7nService {
         if (!userDetails.getRealName().equals(user.getRealName())) {
             user.setPhoneChanged(true);
         }
-        // 因为hzero的方法不更新头像
-        userRepository.updateOptional(user, User.FIELD_IMAGE_URL);
+        //设置用户info信息
+        organizationUserService.setUserInfo(user);
         userService.updateUserInternal(user);
+        // 因为hzero的方法不更新头像 不能在updateUserInternal 更新用户
+        userRepository.updateOptional(user, User.FIELD_IMAGE_URL);
         return userRepository.selectByPrimaryKey(user.getId());
     }
 

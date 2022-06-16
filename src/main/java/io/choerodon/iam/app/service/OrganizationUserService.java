@@ -55,6 +55,8 @@ public interface OrganizationUserService {
 
     void updateUser(Long organizationId, User user, Boolean updateRoles);
 
+    void setUserInfo(User user);
+
     User resetUserPassword(Long organizationId, Long userId);
 
     String getDefaultPassword(Long organizationId);

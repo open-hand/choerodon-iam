@@ -232,12 +232,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             user.setPhoneChanged(true);
         }
         // 因为hzero的方法不更新头像
-        userRepository.updateOptional(user,
-                User.FIELD_REAL_NAME,
-                User.FIELD_EMAIL,
-                User.DEFAULT_LANGUAGE,
-                User.DEFAULT_TIME_ZONE,
-                User.FIELD_IMAGE_URL);
+        userRepository.updateOptional(user, User.FIELD_IMAGE_URL);
         userService.updateUserInternal(user);
         return userRepository.selectByPrimaryKey(user.getId());
     }

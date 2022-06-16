@@ -801,7 +801,7 @@
     </select>
 
     <select id="queryImmutableProjectInfo" resultType="io.choerodon.iam.api.vo.ImmutableProjectInfoVO">
-        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num
+        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num, fd.devops_component_code
         FROM fd_project fd
         INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};

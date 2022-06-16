@@ -34,8 +34,7 @@ public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
     @Override
     public void interceptor(User user) {
         UserValidator.validateEmail(user.getEmail());
-        userC7nService.checkEmail(user);
-
+        userC7nService.check(user);
     }
 
 }

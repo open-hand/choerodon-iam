@@ -24,7 +24,7 @@ import io.choerodon.iam.app.service.MessageSendService;
 @Component
 public class C7nUserServiceImpl extends UserServiceImpl {
 
-    private static final String PHONE_SUFFIX = "*#*";
+    public static final String PHONE_SUFFIX = "*#*";
     private static final Logger LOGGER = LoggerFactory.getLogger(C7nUserServiceImpl.class);
 
 

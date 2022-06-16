@@ -1671,12 +1671,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
         List<Long> projectIdsToSearch = new ArrayList<>();
         Long categoryId = KeyDecryptHelper.decryptValue(searchParamMap.get("categoryId"));
-        if (categoryId != null) {
-            projectIdsToSearch.addAll(projectMapCategoryService.listProjectIdsByCategoryId(categoryId));
-        }
         //查询到的项目包括已启用和未启用的
         Map<String, String> finalSearchParamMap = searchParamMap;
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, finalSearchParamMap, projectIdsToSearch));
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, finalSearchParamMap, projectIdsToSearch, categoryId));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {

@@ -15,6 +15,8 @@ public class ImmutableProjectInfoVO {
     private Long tenantId;
     @ApiModelProperty("组织code")
     private String tenantNum;
+    @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
+    private String devopsComponentCode;
 
     public ImmutableProjectInfoVO() {
     }
@@ -23,6 +25,14 @@ public class ImmutableProjectInfoVO {
         this.projCode = projCode;
         this.tenantId = tenantId;
         this.tenantNum = tenantNum;
+    }
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
     }
 
     public String getProjCode() {

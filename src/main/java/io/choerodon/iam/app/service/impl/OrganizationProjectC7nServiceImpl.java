@@ -474,6 +474,9 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             projectDTO.setDescription("");
         }
         projectMapper.updateByPrimaryKeySelective(projectDTO);
+        if (businessService != null) {
+            businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
+        }
         return projectMapper.selectByPrimaryKey(projectDTO.getId());
     }
 

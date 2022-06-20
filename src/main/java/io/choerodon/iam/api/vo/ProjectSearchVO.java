@@ -1,6 +1,9 @@
 package io.choerodon.iam.api.vo;
 
+import java.util.Date;
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -27,16 +30,43 @@ public class ProjectSearchVO {
 
     private List<Long> filterProjectIds;
 
+    @ApiModelProperty("项目id")
+    private Long id;
+    @ApiModelProperty("项目名称")
     private String name;
-
+    @ApiModelProperty("项目code")
     private String code;
-
+    @ApiModelProperty("项目类型")
+    private String category;
+    @ApiModelProperty("项目是否启用")
+    private Boolean enabled;
+    @ApiModelProperty("创建者")
     @Encrypt
     private Long createdBy;
+    @ApiModelProperty("更新者")
+    @Encrypt
+    private Long lastUpdatedBy;
 
-    private String category;
+    private List<Long> topProjectIds;
+    @ApiModelProperty("模糊搜索参数")
+    private String searchContent;
+    @ApiModelProperty("项目类型id")
+    @Encrypt
+    private Long categoryId;
+    @ApiModelProperty("工作组id")
+    @Encrypt
+    private Long workGroupId;
+    @ApiModelProperty("项目群id")
+    private Long programId;
 
-    private Long id;
+    @ApiModelProperty("创建时间左边界")
+    private Date creationDateStart;
+    @ApiModelProperty("创建时间右边界")
+    private Date creationDateEnd;
+    @ApiModelProperty("更新时间左边界")
+    private Date lastUpdateDateStart;
+    @ApiModelProperty("更新时间右边界")
+    private Date lastUpdateDateEnd;
 
     public List<Long> getCategoryIds() {
         return categoryIds;
@@ -116,5 +146,93 @@ public class ProjectSearchVO {
 
     public void setFilterProjectIds(List<Long> filterProjectIds) {
         this.filterProjectIds = filterProjectIds;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public List<Long> getTopProjectIds() {
+        return topProjectIds;
+    }
+
+    public void setTopProjectIds(List<Long> topProjectIds) {
+        this.topProjectIds = topProjectIds;
+    }
+
+    public String getSearchContent() {
+        return searchContent;
+    }
+
+    public void setSearchContent(String searchContent) {
+        this.searchContent = searchContent;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Long getWorkGroupId() {
+        return workGroupId;
+    }
+
+    public void setWorkGroupId(Long workGroupId) {
+        this.workGroupId = workGroupId;
+    }
+
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
+    }
+
+    public Date getCreationDateStart() {
+        return creationDateStart;
+    }
+
+    public void setCreationDateStart(Date creationDateStart) {
+        this.creationDateStart = creationDateStart;
+    }
+
+    public Date getCreationDateEnd() {
+        return creationDateEnd;
+    }
+
+    public void setCreationDateEnd(Date creationDateEnd) {
+        this.creationDateEnd = creationDateEnd;
+    }
+
+    public Date getLastUpdateDateStart() {
+        return lastUpdateDateStart;
+    }
+
+    public void setLastUpdateDateStart(Date lastUpdateDateStart) {
+        this.lastUpdateDateStart = lastUpdateDateStart;
+    }
+
+    public Date getLastUpdateDateEnd() {
+        return lastUpdateDateEnd;
+    }
+
+    public void setLastUpdateDateEnd(Date lastUpdateDateEnd) {
+        this.lastUpdateDateEnd = lastUpdateDateEnd;
     }
 }

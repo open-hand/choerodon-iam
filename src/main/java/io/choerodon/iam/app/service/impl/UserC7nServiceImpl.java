@@ -1653,26 +1653,15 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed) {
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, PageRequest pageable, Boolean onlySucceed) {
         Page<ProjectDTO> page = new Page<>();
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
 
-        Map<String, String> searchParamMap = new HashMap<>();
-        List<String> paramList = new ArrayList<>();
-        if (!org.springframework.util.StringUtils.isEmpty(params)) {
-            Map<String, Object> maps = TypeUtil.castMapParams(params);
-            searchParamMap = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), Collections.emptyMap());
-            paramList = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.PARAMS)), Collections.emptyList());
-        }
-
-        List<Long> projectIdsToSearch = new ArrayList<>();
-        Long categoryId = KeyDecryptHelper.decryptValue(searchParamMap.get("categoryId"));
         //查询到的项目包括已启用和未启用的
-        Map<String, String> finalSearchParamMap = searchParamMap;
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, finalSearchParamMap, projectIdsToSearch, categoryId));
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {

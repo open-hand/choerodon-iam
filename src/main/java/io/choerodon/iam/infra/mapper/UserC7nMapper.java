@@ -475,5 +475,7 @@ public interface UserC7nMapper {
 
     List<UserDTO> listUsersUnderRoleByIds(@Param("projectId") Long projectId,
                                           @Param("roleIds") List<Long> roleIds);
+
+    List<User> listUsersOnProjectLevelPage(@Param("tenantId") Long tenantId, @Param("userName") String userName);
 }
 

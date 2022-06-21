@@ -1570,4 +1570,20 @@
         </if>
         </where>
     </select>
+
+    <select id="listUsersOnProjectLevelPage" resultType="org.hzero.iam.domain.entity.User">
+        select iu.*
+           from iam_user iu
+           where iu.is_enabled = 1
+
+        AND (
+        (iu.real_name LIKE concat( '%', concat( #{userName}, '%' ) ))
+        OR ( iu.login_name LIKE concat( '%', concat( #{userName}, '%' ) ) )
+        OR ( iu.email LIKE concat( '%', concat( #{userName}, '%' ) ) )
+        OR ( iu.attribute15 LIKE concat( '%', concat( #{userName}, '%' ) ) )
+        OR ( iu.attribute14 LIKE concat( '%', concat( #{userName}, '%' ) ) )
+        )
+        ORDER BY iu.organization_id <![CDATA[ <> ]]> #{tenantId,jdbcType=BIGINT}
+
+    </select>
 </mapper>

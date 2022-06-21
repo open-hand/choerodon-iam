@@ -174,6 +174,17 @@ public class RoleMemberC7nController extends BaseController {
                 (ResourceLevel.PROJECT.value(), projectId, userName, exactMatchFlag, organizationMatchFlag), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询项目层查询启用状态的用户列表")
+    @GetMapping(value = "/projects/{project_id}/enableUsers/page")
+    @CustomPageRequest
+    public ResponseEntity<Page<User>> listUsersOnProjectLevelPage(@PathVariable(name = "project_id") Long projectId,
+                                                                  @RequestParam(name = "user_name", required = false) String userName,
+                                                                  @ApiIgnore
+                                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
+        return new ResponseEntity<>(userC7nService.listUsersOnProjectLevelPage(projectId, userName, pageRequest), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "全局层查询启用状态的用户列表")

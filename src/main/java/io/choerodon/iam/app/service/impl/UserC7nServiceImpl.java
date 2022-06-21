@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -882,6 +883,19 @@ public class UserC7nServiceImpl implements UserC7nService {
     public Boolean checkLoginName(Long organizationId, Long userId, String loginName) {
         User user = userRepository.selectByLoginName(loginName);
         return user == null || !user.getId().equals(userId);
+    }
+
+    @Override
+    public Page<User> listUsersOnProjectLevelPage(Long projectId, String userName, PageRequest pageRequest) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(userName)) {
+            return new Page<>();
+        }
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
+            return new Page<>();
+        }
+        Page<User> userPage = PageHelper.doPage(pageRequest, () -> userC7nMapper.listUsersOnProjectLevelPage(projectDTO.getOrganizationId(), userName));
+        return userPage;
     }
 
     private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,

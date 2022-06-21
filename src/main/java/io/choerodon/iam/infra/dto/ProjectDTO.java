@@ -181,9 +181,17 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty("项目类别id")
     private Long projectClassficationId;
 
+    @ApiModelProperty("项目类别")
+    @Transient
+    private String projectClassification;
+
     @Encrypt
     @ApiModelProperty("工作组id")
     private Long workGroupId;
+
+    @ApiModelProperty("工作组")
+    @Transient
+    private String workGroup;
 
     @ApiModelProperty("项目状态颜色")
     @Transient
@@ -536,5 +544,21 @@ public class ProjectDTO extends AuditDomain {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public String getProjectClassification() {
+        return projectClassification;
+    }
+
+    public void setProjectClassification(String projectClassification) {
+        this.projectClassification = projectClassification;
+    }
+
+    public String getWorkGroup() {
+        return workGroup;
+    }
+
+    public void setWorkGroup(String workGroup) {
+        this.workGroup = workGroup;
     }
 }

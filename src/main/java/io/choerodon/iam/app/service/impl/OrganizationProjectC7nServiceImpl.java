@@ -356,6 +356,13 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         return labelC7nMapper.selectLabelNamesInRoleIds(roles.stream().map(Role::getId).collect(Collectors.toSet()));
     }
 
+    /**
+     * 更新项目信息
+     * 增加项目类型的操作在最后一个sagaTask执行，目的是保证只有各个服务的添加项目类型执行成功后，界面才能查到相关类型
+     * @param organizationId
+     * @param projectDTO
+     * @return
+     */
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
@@ -407,8 +414,6 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
 
-        // 添加项目类型
-        projectC7nService.addProjectCategory(projectDTO.getId(), addProjectCategoryIds);
         // 删除项目类型
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 

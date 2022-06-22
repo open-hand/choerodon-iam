@@ -1835,7 +1835,7 @@ public class UserC7nServiceImpl implements UserC7nService {
             return sortOrderStrings;
         } else {
             for (Sort.Order order : pageSort) {
-                if (order.getProperty().equals("program_id")) {
+                if ("program_id".equals(order.getProperty())) {
                     String orderString = "fp2.id" + " " + order.getDirection().name();
                     sortOrderStrings.add(orderString);
                 } else {

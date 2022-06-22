@@ -1828,7 +1828,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<String> sortOrderStrings = new ArrayList<>();
         Sort pageSort = pageable.getSort();
         if (pageSort == null) {
-            String statusOrder = "is_enable desc";
+            String statusOrder = "is_enabled desc";
             String creationDateOrder = "creation_date desc";
             sortOrderStrings.add(statusOrder);
             sortOrderStrings.add(creationDateOrder);

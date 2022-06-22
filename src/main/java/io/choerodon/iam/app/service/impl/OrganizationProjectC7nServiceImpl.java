@@ -244,6 +244,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
                 || ProjectCategoryEnum.N_OPERATIONS.value().equals(v.getCode()))) {
             projectDTO.setDevopsComponentCode(null);
         }
+        if (categories.stream().anyMatch(v -> ProjectCategoryEnum.N_DEVOPS.value().equals(v.getCode())
+                || ProjectCategoryEnum.N_OPERATIONS.value().equals(v.getCode())) && !StringUtils.hasText(projectDTO.getDevopsComponentCode())) {
+            throw new CommonException("error.devops.component.code.null");
+        }
+
     }
 
     /**

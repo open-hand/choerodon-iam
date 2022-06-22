@@ -68,6 +68,14 @@ public class ProjectSearchVO {
     @ApiModelProperty("更新时间右边界")
     private Date lastUpdateDateEnd;
 
+    @ApiModelProperty("项目状态id")
+    @Encrypt
+    private List<Long> statusIds;
+
+    @ApiModelProperty("项目分类")
+    @Encrypt
+    private Long projectClassificationId;
+
     public List<Long> getCategoryIds() {
         return categoryIds;
     }
@@ -234,5 +242,21 @@ public class ProjectSearchVO {
 
     public void setLastUpdateDateEnd(Date lastUpdateDateEnd) {
         this.lastUpdateDateEnd = lastUpdateDateEnd;
+    }
+
+    public List<Long> getStatusIds() {
+        return statusIds;
+    }
+
+    public void setStatusIds(List<Long> statusIds) {
+        this.statusIds = statusIds;
+    }
+
+    public Long getProjectClassificationId() {
+        return projectClassificationId;
+    }
+
+    public void setProjectClassificationId(Long projectClassificationId) {
+        this.projectClassificationId = projectClassificationId;
     }
 }

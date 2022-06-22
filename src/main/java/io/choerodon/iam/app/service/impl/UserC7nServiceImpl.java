@@ -1668,7 +1668,7 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, PageRequest pageable, Boolean onlySucceed) {
-        Page<ProjectDTO> page = new Page<>();
+        Page<ProjectDTO> page;
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);

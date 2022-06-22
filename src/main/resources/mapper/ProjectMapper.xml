@@ -343,14 +343,12 @@
                 </if>
             </if>
         </where>
-        GROUP BY fp.id
-                order by
-        <if test="projectSearchVO != null">
-            <if test="projectSearchVO.id != null">
-                fp.id = #{projectSearchVO.id} desc,
-            </if>
+        <if test="sortOrderStrings != null and sortOrderStrings.size() != 0">
+            ORDER BY
+            <foreach collection="sortOrderStrings" item="sortOrderString" separator=",">
+                ${sortOrderString}
+            </foreach>
         </if>
-        fp.is_enabled desc,fp.creation_date desc
     </select>
 
     <select id="selectProjectIdsByUserIdOrAdmin" resultType="long">

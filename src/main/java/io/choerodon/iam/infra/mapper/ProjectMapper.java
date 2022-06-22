@@ -87,7 +87,8 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                                    @Param("userId") Long userId,
                                                    @Param("projectSearchVO") ProjectSearchVO projectSearchVO,
                                                    @Param("isAdmin") Boolean isAdmin,
-                                                   @Param("isOrgAdmin") Boolean isOrgAdmin);
+                                                   @Param("isOrgAdmin") Boolean isOrgAdmin,
+                                                   @Param("sortOrderStrings") List<String> sortOrderStrings);
 
     /**
      * 查询组织下用户的项目id.

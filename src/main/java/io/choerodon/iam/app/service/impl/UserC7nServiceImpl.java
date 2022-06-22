@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -93,6 +92,7 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * @author scp
@@ -1674,8 +1674,10 @@ public class UserC7nServiceImpl implements UserC7nService {
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
 
+        List<String> sortOrderStrings = getSortOrderStrings(pageable);
+
         //查询到的项目包括已启用和未启用的
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin));
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin,sortOrderStrings));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {
@@ -1820,5 +1822,28 @@ public class UserC7nServiceImpl implements UserC7nService {
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         return PageHelper.doPage(pageRequest, () -> projectMapper.pageOwnedProjects(organizationId, currentProjectId, userId, isAdmin, isOrgAdmin, param));
+    }
+
+    public static List<String> getSortOrderStrings(PageRequest pageable) {
+        List<String> sortOrderStrings = new ArrayList<>();
+        Sort pageSort = pageable.getSort();
+        if (pageSort == null) {
+            String statusOrder = "is_enable desc";
+            String creationDateOrder = "creation_date desc";
+            sortOrderStrings.add(statusOrder);
+            sortOrderStrings.add(creationDateOrder);
+            return sortOrderStrings;
+        } else {
+            for (Sort.Order order : pageSort) {
+                if (order.getProperty().equals("program_id")) {
+                    String orderString = "fp2.id" + " " + order.getDirection().name();
+                    sortOrderStrings.add(orderString);
+                } else {
+                    String orderString = order.getProperty() + " " + order.getDirection().name();
+                    sortOrderStrings.add(orderString);
+                }
+            }
+            return sortOrderStrings;
+        }
     }
 }

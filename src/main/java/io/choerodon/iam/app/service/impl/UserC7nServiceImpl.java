@@ -789,6 +789,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 // 添加项目类型
                 if (projectMapCategoryMap.get(p.getId()) != null) {
                     p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).filter(v -> ProjectCategoryEnum.listNewCategories().contains(v.getCode())).collect(Collectors.toList()));
+                    p.setCategoryCodes(p.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toList()));
                 }
 
                 // 计算用户是否有编辑权限

@@ -197,6 +197,10 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     private String color;
 
+    @ApiModelProperty("项目类型code list")
+    @Transient
+    private List<String> categoryCodes;
+
     public String getDevopsComponentCode() {
         return devopsComponentCode;
     }
@@ -560,5 +564,13 @@ public class ProjectDTO extends AuditDomain {
 
     public void setWorkGroup(String workGroup) {
         this.workGroup = workGroup;
+    }
+
+    public List<String> getCategoryCodes() {
+        return categoryCodes;
+    }
+
+    public void setCategoryCodes(List<String> categoryCodes) {
+        this.categoryCodes = categoryCodes;
     }
 }

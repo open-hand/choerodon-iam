@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
 
@@ -16,7 +15,7 @@ import io.choerodon.iam.infra.mapper.UserC7nMapper;
  * @description
  */
 @Component
-public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
+public class C7nUserLoginNameInterceptor implements HandlerInterceptor<User> {
     @Lazy
     @Autowired
     private UserC7nService userC7nService;
@@ -26,8 +25,7 @@ public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
 
     @Override
     public void interceptor(User user) {
-        UserValidator.validateEmail(user.getEmail());
-        userC7nService.check(user);
+        userC7nService.checkLoginName(user.getLoginName());
     }
 
 }

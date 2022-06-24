@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -269,7 +270,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         UserValidator.validateCreateUserWithRoles(user, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
         userAssertHelper.emailExisted(user.getEmail());
-        user.setLoginName(randomInfoGenerator.randomLoginName());
+        if (ObjectUtils.isEmpty(user.getLoginName())) {
+            user.setLoginName(randomInfoGenerator.randomLoginName());
+        }
         List<Role> userRoles = user.getRoles();
         user.setRoles(null);
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, userRoles));
@@ -390,6 +393,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     /**
      * 设置用户的昵称等信息
+     *
      * @param user
      */
     @Override

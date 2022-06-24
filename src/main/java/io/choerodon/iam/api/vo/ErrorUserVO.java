@@ -7,6 +7,7 @@ package io.choerodon.iam.api.vo;
  */
 public class ErrorUserVO {
     private String realName;
+    private String loginName;
     private String email;
     private String roleCodes;
     private String roleLabels;
@@ -69,5 +70,13 @@ public class ErrorUserVO {
 
     public void setRoleLabels(String roleLabels) {
         this.roleLabels = roleLabels;
+    }
+
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
     }
 }

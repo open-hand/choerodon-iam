@@ -10,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.message.MessageClient;
@@ -150,8 +151,10 @@ public class ExcelImportUserTask {
         );
         // excel里面根据email去重
         List<UserDTO> distinctEmailUsersOnExcel = distinctEmailOnExcel(validateUsers, errorUsers);
+        // loginName去重
+        List<UserDTO> distinctLoginNameUsersOnExcel = distinctLoginNameOnExcelAndDatabase(distinctEmailUsersOnExcel, errorUsers);
         // excel里面根据手机号去重
-        List<UserDTO> distinctPhoneUsersOnExcel = distinctPhoneOnExcel(distinctEmailUsersOnExcel, errorUsers);
+        List<UserDTO> distinctPhoneUsersOnExcel = distinctPhoneOnExcel(distinctLoginNameUsersOnExcel, errorUsers);
         // 数据库里面根据email去重
         List<UserDTO> distinctEmailUsersOnDatabase = distinctEmailOnDatabase(distinctPhoneUsersOnExcel, errorUsers);
         // 数据库里面根据phone去重
@@ -536,6 +539,52 @@ public class ExcelImportUserTask {
         return returnList.stream().sorted(Comparator.comparing(UserDTO::getRealName)).collect(Collectors.toList());
     }
 
+    /**
+     * 去除excel中与数据库中重复登录的的用户
+     * @param validateUsers
+     * @param errorUsers
+     * @return
+     */
+    private List<UserDTO> distinctLoginNameOnExcelAndDatabase(List<UserDTO> validateUsers, List<ErrorUserVO> errorUsers) {
+        List<UserDTO> returnList = new ArrayList<>();
+        Set<String> loginNames = new HashSet<>();
+        // 没有登录名 不校验
+        Map<String, List<UserDTO>> loginNameMap = validateUsers.stream().filter(t -> {
+            if (ObjectUtils.isNotEmpty(t.getLoginName())) {
+                loginNames.add(t.getLoginName());
+                return true;
+            } else {
+                returnList.add(t);
+                return false;
+            }
+        }).collect(Collectors.groupingBy(UserDTO::getLoginName));
+        // 校验数据库中登录名
+        Set<String> existLoginNames = new HashSet<>();
+        if (!CollectionUtils.isEmpty(loginNames)) {
+            existLoginNames.addAll(userC7nMapper.listUsersByLoginNames(loginNames.toArray(new String[0]),false).stream().map(User::getLoginName).collect(Collectors.toSet()));
+        }
+
+        for (Map.Entry<String, List<UserDTO>> entry : loginNameMap.entrySet()) {
+            List<UserDTO> list = entry.getValue();
+            if (list.size() > 1) {
+                returnList.add(list.get(0));
+                for (int i = 1; i < list.size(); i++) {
+                    ErrorUserVO dto = getErrorUserDTO(list.get(i), "Excel中存在重复的登录名");
+                    errorUsers.add(dto);
+                }
+            } else {
+                if (existLoginNames.contains(list.get(0).getLoginName())) {
+                    ErrorUserVO dto = getErrorUserDTO(list.get(0), "数据库中存在重复的登录名");
+                    errorUsers.add(dto);
+                } else {
+                    returnList.add(list.get(0));
+                }
+            }
+        }
+
+        return returnList.stream().sorted(Comparator.comparing(UserDTO::getRealName)).collect(Collectors.toList());
+    }
+
     private List<UserDTO> distinctPhoneOnExcel(List<UserDTO> validateUsers, List<ErrorUserVO> errorUsers) {
         // 手机号为空的用户 不做校验
         List<UserDTO> returnList = validateUsers.stream().filter(u -> u.getPhone() == null).collect(Collectors.toList());
@@ -621,7 +670,9 @@ public class ExcelImportUserTask {
                 user.setPassword(newPassword);
             }
             // 自动生成登录名
-            user.setLoginName(randomInfoGenerator.randomLoginName());
+            if(ObjectUtils.isEmpty(user.getLoginName())) {
+                user.setLoginName(randomInfoGenerator.randomLoginName());
+            }
             user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
             user.setEnabled(true);
             user.setLocked(false);

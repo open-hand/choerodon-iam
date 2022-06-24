@@ -9,6 +9,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -101,6 +103,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
+    private static final String LOGIN_NAME_REGULAR = "^(?!_)(^[a-zA-Z0-9_]{1,100}$)$";
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -881,9 +884,19 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Boolean checkLoginName(Long organizationId, Long userId, String loginName) {
-        User user = userRepository.selectByLoginName(loginName);
-        return user == null || !user.getId().equals(userId);
+    public void checkLoginName(String loginName) {
+        Pattern p = Pattern.compile(LOGIN_NAME_REGULAR);
+        Matcher m = p.matcher(loginName);
+        boolean match = m.find();
+        if (!match) {
+            throw new CommonException("user.login.name.illegal");
+        }
+        User queryDTO = new User();
+        queryDTO.setLoginName(loginName);
+        User user = userMapper.selectOne(queryDTO);
+        if (user != null) {
+            throw new CommonException("user.login.name.exist");
+        }
     }
 
     @Override
@@ -1678,7 +1691,7 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<String> sortOrderStrings = getSortOrderStrings(pageable);
 
         //查询到的项目包括已启用和未启用的
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin,sortOrderStrings));
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin, sortOrderStrings));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {

@@ -407,7 +407,7 @@ public interface UserC7nService {
 
     CheckEmailVO checkUserEmail(Long organizationId, String email);
 
-    Boolean checkLoginName(Long organizationId, Long userId, String loginName);
+    void checkLoginName(String loginName);
 
     Page<User> listUsersOnProjectLevelPage(Long projectId, String userName, PageRequest pageRequest);
 

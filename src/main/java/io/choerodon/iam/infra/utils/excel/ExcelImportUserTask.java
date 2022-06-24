@@ -159,6 +159,12 @@ public class ExcelImportUserTask {
         List<UserDTO> distinctEmailUsersOnDatabase = distinctEmailOnDatabase(distinctPhoneUsersOnExcel, errorUsers);
         // 数据库里面根据phone去重
         List<UserDTO> usersToBeInserted = distinctPhoneOnDatabase(distinctEmailUsersOnDatabase, errorUsers);
+        usersToBeInserted.forEach(user -> {
+            // 自动生成登录名
+            if (ObjectUtils.isEmpty(user.getLoginName())) {
+                user.setLoginName(randomInfoGenerator.randomLoginName());
+            }
+        });
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
         List<List<UserDTO>> actualUsersToBeInserted = C7nCollectionUtils.fragmentList(usersToBeInserted, 999);
@@ -541,6 +547,7 @@ public class ExcelImportUserTask {
 
     /**
      * 去除excel中与数据库中重复登录的的用户
+     *
      * @param validateUsers
      * @param errorUsers
      * @return
@@ -561,7 +568,7 @@ public class ExcelImportUserTask {
         // 校验数据库中登录名
         Set<String> existLoginNames = new HashSet<>();
         if (!CollectionUtils.isEmpty(loginNames)) {
-            existLoginNames.addAll(userC7nMapper.listUsersByLoginNames(loginNames.toArray(new String[0]),false).stream().map(User::getLoginName).collect(Collectors.toSet()));
+            existLoginNames.addAll(userC7nMapper.listUsersByLoginNames(loginNames.toArray(new String[0]), false).stream().map(User::getLoginName).collect(Collectors.toSet()));
         }
 
         for (Map.Entry<String, List<UserDTO>> entry : loginNameMap.entrySet()) {
@@ -605,6 +612,7 @@ public class ExcelImportUserTask {
     private String exportAndUpload(List<ErrorUserVO> errorUsers) {
         Map<String, String> propertyMap = new LinkedHashMap<>();
         propertyMap.put("realName", "用户名*");
+        propertyMap.put("loginName", "登录名");
         propertyMap.put("email", "邮箱*");
         propertyMap.put("roleCodes", "角色编码*");
         propertyMap.put("password", "密码");
@@ -668,10 +676,6 @@ public class ExcelImportUserTask {
             if (StringUtils.isEmpty(user.getPassword())) {
                 String newPassword = organizationUserService.getDefaultPassword(orgId);
                 user.setPassword(newPassword);
-            }
-            // 自动生成登录名
-            if(ObjectUtils.isEmpty(user.getLoginName())) {
-                user.setLoginName(randomInfoGenerator.randomLoginName());
             }
             user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
             user.setEnabled(true);

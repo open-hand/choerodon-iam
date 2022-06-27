@@ -34,7 +34,6 @@ import io.choerodon.iam.infra.mapper.MenuC7nMapper;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 import io.choerodon.iam.infra.utils.ConvertUtils;
-import io.choerodon.iam.infra.utils.StringUtil;
 
 /**
  * 〈功能简述〉

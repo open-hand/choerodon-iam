@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.app.service.UserC7nService;
-import io.choerodon.iam.infra.mapper.UserC7nMapper;
 
 /**
  * @author scp
@@ -20,9 +19,6 @@ public class C7nUserEmailInterceptor implements HandlerInterceptor<User> {
     @Lazy
     @Autowired
     private UserC7nService userC7nService;
-
-    @Autowired
-    private UserC7nMapper userC7nMapper;
 
     @Override
     public void interceptor(User user) {

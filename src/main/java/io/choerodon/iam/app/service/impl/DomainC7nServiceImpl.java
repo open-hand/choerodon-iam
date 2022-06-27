@@ -1,12 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.iam.app.service.DomainC7nService;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
+import io.choerodon.iam.app.service.DomainC7nService;
 
 /**
  * @author superlee

@@ -28,7 +28,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.IamCheckLogService;
 import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.app.service.StarProjectService;
 import io.choerodon.iam.app.service.impl.LdapC7nServiceImpl;
 import io.choerodon.iam.infra.enums.LdapType;
 

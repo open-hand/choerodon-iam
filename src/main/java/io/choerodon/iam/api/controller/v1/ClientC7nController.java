@@ -1,33 +1,28 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.vo.ClientVO;
-import io.choerodon.iam.app.service.ClientC7nService;
-import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.constant.MisConstants;
-import io.choerodon.iam.infra.utils.CommonExAssertUtil;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.core.base.BaseController;
 import org.hzero.core.util.Results;
-import org.hzero.iam.app.service.ClientService;
 import org.hzero.iam.domain.entity.Client;
-import org.hzero.iam.domain.repository.ClientRepository;
-import org.hzero.iam.domain.repository.TenantRepository;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.List;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.ClientVO;
+import io.choerodon.iam.app.service.ClientC7nService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -38,20 +33,11 @@ import java.util.List;
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/clients")
 public class ClientC7nController extends BaseController {
 
-    private final ClientService clientService;
     private final ClientC7nService clientC7nService;
-    private final ClientRepository clientRepository;
-    private final TenantRepository tenantRepository;
 
 
-    public ClientC7nController(ClientService clientService,
-                               ClientRepository clientRepository,
-                               ClientC7nService clientC7nService,
-                               TenantRepository tenantRepository) {
-        this.clientService = clientService;
+    public ClientC7nController(ClientC7nService clientC7nService) {
         this.clientC7nService = clientC7nService;
-        this.clientRepository = clientRepository;
-        this.tenantRepository = tenantRepository;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

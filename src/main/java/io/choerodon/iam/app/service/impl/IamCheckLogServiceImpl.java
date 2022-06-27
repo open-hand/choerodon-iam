@@ -29,15 +29,11 @@ import io.choerodon.iam.infra.mapper.StarProjectMapper;
  */
 @Service
 public class IamCheckLogServiceImpl implements IamCheckLogService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IamCheckLogService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IamCheckLogServiceImpl.class);
 
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("message-upgrade", false));
-
-
-    @Autowired
-    private StarProjectService starProjectService;
 
     @Autowired
     private StarProjectMapper starProjectMapper;

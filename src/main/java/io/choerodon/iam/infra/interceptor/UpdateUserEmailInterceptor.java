@@ -2,8 +2,6 @@ package io.choerodon.iam.infra.interceptor;
 
 import static io.choerodon.iam.infra.utils.SagaTopic.User.USER_UPDATE;
 
-import java.util.Map;
-
 import org.hzero.core.interceptor.HandlerInterceptor;
 import org.hzero.iam.domain.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;

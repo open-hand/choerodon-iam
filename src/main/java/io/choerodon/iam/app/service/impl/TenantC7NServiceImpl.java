@@ -58,7 +58,6 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     public static final String ERROR_TENANT_PARAM_IS_NULL = "error.tenant.param.is.null";
     public static final String ERROR_TENANT_USERID_IS_NULL = "error.tenant.user.id.is.null";
     public static final Long OPERATION_ORG_ID = 1L;
-    private static final String LABEL_TYPE_ROLE = "ROLE";
 
     @Autowired
     private TenantService tenantService;

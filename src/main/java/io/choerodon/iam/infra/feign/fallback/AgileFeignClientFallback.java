@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.vo.AgileProjectInfoVO;
 import io.choerodon.iam.infra.feign.AgileFeignClient;
 
 /**

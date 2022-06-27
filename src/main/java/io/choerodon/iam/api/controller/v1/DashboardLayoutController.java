@@ -1,18 +1,21 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.iam.api.vo.DashboardLayoutVO;
-import org.hzero.core.util.Results;
-import org.hzero.core.base.BaseController;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import io.choerodon.iam.app.service.DashboardLayoutService;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-
 import java.util.List;
+
+import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.vo.DashboardLayoutVO;
+import io.choerodon.iam.app.service.DashboardLayoutService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  *  管理 API

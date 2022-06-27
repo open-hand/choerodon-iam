@@ -4,8 +4,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.iam.infra.dto.DashboardCardDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
-import java.util.List;
-
 /**
  * 应用服务
  *

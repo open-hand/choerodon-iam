@@ -1,7 +1,5 @@
 package io.choerodon.iam.api.vo;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 /**
  * User: Mr.Wang
  * Date: 2020/2/24

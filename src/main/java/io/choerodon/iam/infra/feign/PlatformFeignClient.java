@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import io.choerodon.iam.infra.feign.fallback.AdminFeignClientFallback;
 import io.choerodon.iam.infra.feign.fallback.PlatformFeignClientFallback;
 
 /**

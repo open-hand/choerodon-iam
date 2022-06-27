@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TypeUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TypeUtil.class);
     public static final String SEARCH_PARAM = "searchParam";
     public static final String PARAMS = "params";
     private static final Gson gson = new Gson();

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.UserWizardService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
-import io.choerodon.iam.infra.enums.UserWizardStepEnum;
 import io.choerodon.swagger.annotation.Permission;
 
 /**

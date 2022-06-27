@@ -885,6 +885,9 @@ public class UserC7nServiceImpl implements UserC7nService {
 
     @Override
     public void checkLoginName(String loginName) {
+        if (ObjectUtils.isEmpty(loginName)) {
+            return;
+        }
         Pattern p = Pattern.compile(LOGIN_NAME_REGULAR);
         Matcher m = p.matcher(loginName);
         boolean match = m.find();

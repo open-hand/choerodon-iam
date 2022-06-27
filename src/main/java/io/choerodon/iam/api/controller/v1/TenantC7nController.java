@@ -46,16 +46,13 @@ public class TenantC7nController {
     private TenantC7nService tenantC7nService;
     private OrganizationResourceLimitService organizationResourceLimitService;
     private DemoRegisterService demoRegisterService;
-    private UploadHistoryService uploadHistoryService;
 
     public TenantC7nController(TenantC7nService tenantC7nService,
                                DemoRegisterService demoRegisterService,
-                               OrganizationResourceLimitService organizationResourceLimitService,
-                               UploadHistoryService uploadHistoryService) {
+                               OrganizationResourceLimitService organizationResourceLimitService) {
         this.tenantC7nService = tenantC7nService;
         this.demoRegisterService = demoRegisterService;
         this.organizationResourceLimitService = organizationResourceLimitService;
-        this.uploadHistoryService = uploadHistoryService;
     }
 
     @ApiOperation(value = "校验用户邮箱是否在iam/gitlab已存在")

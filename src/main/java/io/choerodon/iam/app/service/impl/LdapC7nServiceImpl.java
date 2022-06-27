@@ -1,32 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.asgard.schedule.QuartzDefinition;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.validator.LdapValidator;
-import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.infra.asserts.LdapAssertHelper;
-import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
-import io.choerodon.iam.infra.constant.MisConstants;
-import io.choerodon.iam.infra.dto.LdapAutoDTO;
-import io.choerodon.iam.infra.dto.asgard.QuartzTask;
-import io.choerodon.iam.infra.dto.asgard.ScheduleMethodDTO;
-import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
-import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDetail;
-import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
-import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
-import io.choerodon.iam.infra.enums.LdapType;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
-import io.choerodon.iam.infra.mapper.LdapAutoMapper;
-import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.utils.CommonExAssertUtil;
+import static io.choerodon.iam.infra.utils.SagaTopic.Organization.CREATE_LDAP_AUTO;
 
-import org.hzero.common.HZeroService;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import org.hzero.iam.domain.entity.Ldap;
 import org.hzero.iam.domain.entity.Tenant;
@@ -35,14 +14,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static io.choerodon.iam.infra.utils.SagaTopic.Organization.CREATE_LDAP_AUTO;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.asgard.schedule.QuartzDefinition;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.validator.LdapValidator;
+import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.infra.asserts.LdapAssertHelper;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.constant.MisConstants;
+import io.choerodon.iam.infra.dto.LdapAutoDTO;
+import io.choerodon.iam.infra.dto.asgard.ScheduleTaskDTO;
+import io.choerodon.iam.infra.dto.payload.LdapAutoTaskEventPayload;
+import io.choerodon.iam.infra.enums.LdapAutoFrequencyType;
+import io.choerodon.iam.infra.enums.LdapType;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.iam.infra.mapper.LdapAutoMapper;
+import io.choerodon.iam.infra.utils.CommonExAssertUtil;
 
 /**
  * @author wuguokai
@@ -50,8 +44,6 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.CREATE_LDAP_AU
 @Service
 public class LdapC7nServiceImpl implements LdapC7nService {
 
-    private static final String LDAP_ERROR_USER_MESSAGE_DIR = "classpath:messages/messages";
-    private static final String REGEX = "\\(.*\\)";
     private static final String CRON_FORMAT = "%s %s %s %s %s %s";
     private static final String TASK_FORMAT = "%s组织LDAP自动同步用户任务";
     private static final String TASK_DESCRIPTION = "组织下自动同步LDAP用户任务";
@@ -65,10 +57,8 @@ public class LdapC7nServiceImpl implements LdapC7nService {
 
     public static final String LDAP_TEMPLATE = "ldapTemplate";
 
-    private static final String OBJECT_CLASS = "objectclass";
-
     @Value("${spring.application.name}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     @Autowired
     private LdapAutoMapper ldapAutoMapper;
@@ -206,7 +196,7 @@ public class LdapC7nServiceImpl implements LdapC7nService {
         mapParams.put(SYNC_TYPE, LdapType.AUTO.value());
         scheduleTaskDTO.setParams(mapParams);
 
-        scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId(), EXECUTE_METHOD, APPLICATION_NAME).getId());
+        scheduleTaskDTO.setMethodId(asgardServiceClientOperator.getMethodDTO(ldapAutoTaskEventPayload.getOrganizationId(), EXECUTE_METHOD, applicationName).getId());
 
         ldapAutoDTO.setQuartzTaskId(asgardServiceClientOperator.createQuartzTask(ldapAutoTaskEventPayload.getOrganizationId(), scheduleTaskDTO).getId());
         if (ldapAutoMapper.updateByPrimaryKeySelective(ldapAutoDTO) != 1) {
@@ -235,21 +225,6 @@ public class LdapC7nServiceImpl implements LdapC7nService {
                 throw new CommonException("error.frequency.type");
         }
         return cron;
-    }
-
-
-    private ScheduleTaskDetail getQuartzTaskDetail(Long organizationId, Long quartzTaskId) {
-        ResponseEntity<ScheduleTaskDetail> quartzTaskResponseEntity = null;
-        try {
-            quartzTaskResponseEntity = asgardFeignClient.getTaskDetail(organizationId, quartzTaskId);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-        ScheduleTaskDetail result = quartzTaskResponseEntity.getBody();
-        if (result == null || result.getId() == null) {
-            throw new CommonException("error.query.quartz.task");
-        }
-        return result;
     }
 
 }

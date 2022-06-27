@@ -1,7 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 /**

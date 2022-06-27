@@ -6,7 +6,6 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.iam.domain.entity.MemberRole;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.User;
 
 /**
  * @author carllhw

@@ -2,10 +2,8 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 
-import org.hzero.iam.api.dto.MemberRoleSearchDTO;
 import org.hzero.iam.domain.entity.Client;
 import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.vo.RoleVO;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ClientVO;

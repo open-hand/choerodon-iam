@@ -1,7 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

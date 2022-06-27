@@ -1,8 +1,8 @@
 package io.choerodon.iam.infra.dto.payload;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.util.List;
 import java.util.Set;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author flyleft

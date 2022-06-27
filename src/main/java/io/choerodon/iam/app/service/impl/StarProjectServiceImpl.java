@@ -10,7 +10,6 @@ import org.hzero.core.redis.RedisHelper;
 import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.SocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;

@@ -234,6 +234,14 @@ public class OrganizationUserController extends BaseController {
         return new ResponseEntity<>(userC7nService.listProjectsByUserId(organizationId, userId, projectDTO, params), HttpStatus.OK);
     }
 
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "知识库查询项目列表的轻量级接口")
+    @GetMapping(value = "/users/{user_id}/projects/optional")
+    public ResponseEntity<List<ProjectDTO>> listProjectsByUserIdOptional(@PathVariable(name = "organization_id") Long organizationId,
+                                                                 @Encrypt @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(userC7nService.listProjectsByUserIdOptional(organizationId, userId), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
@@ -341,4 +349,6 @@ public class OrganizationUserController extends BaseController {
                                                   @RequestParam String loginName) {
         return new ResponseEntity<>(userC7nService.checkLoginName(organizationId, userId, loginName), HttpStatus.OK);
     }
+
+
 }

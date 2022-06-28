@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -880,6 +881,15 @@ public class UserC7nServiceImpl implements UserC7nService {
     public Boolean checkLoginName(Long organizationId, Long userId, String loginName) {
         User user = userRepository.selectByLoginName(loginName);
         return user == null || !user.getId().equals(userId);
+    }
+
+    @Override
+    public List<ProjectDTO> listProjectsByUserIdOptional(Long organizationId, Long userId) {
+        List<ProjectDTO> projects = new ArrayList<>();
+        boolean isAdmin = isRoot(userId);
+        boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
+        projects = projectMapper.listProjectsByUserIdOptional(organizationId, userId, isAdmin, isOrgAdmin);
+        return projects;
     }
 
     private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,

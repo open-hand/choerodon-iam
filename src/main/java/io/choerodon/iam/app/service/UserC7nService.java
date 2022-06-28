@@ -408,4 +408,6 @@ public interface UserC7nService {
     CheckEmailVO checkUserEmail(Long organizationId, String email);
 
     Boolean checkLoginName(Long organizationId, Long userId, String loginName);
+
+    List<ProjectDTO> listProjectsByUserIdOptional(Long organizationId, Long userId);
 }

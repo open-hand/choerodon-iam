@@ -79,17 +79,6 @@ public class UserC7nController extends BaseController {
                 .orElseThrow(NotFoundException::new);
     }
 
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "获取组织注册信息")
-    @GetMapping(value = "/registrant")
-    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
-            @RequestParam(value = "org_code") String orgCode) {
-        return Optional.ofNullable(userC7nService.queryRegistrantInfoAndAdmin(orgCode))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(NotFoundException::new);
-    }
-
-
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")

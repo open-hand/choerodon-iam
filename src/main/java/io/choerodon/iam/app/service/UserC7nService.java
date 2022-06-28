@@ -319,8 +319,6 @@ public interface UserC7nService {
 
     List<UserDTO> listUsersUnderRoleByIds(Long projectId, String roleIdString);
 
-    RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
-
     UserDTO queryPersonalInfo();
 
     WebHookUser getWebHookUser(Long userId);

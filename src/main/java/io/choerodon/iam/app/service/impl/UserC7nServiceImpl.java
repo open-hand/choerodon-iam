@@ -1628,36 +1628,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
-        Tenant record = new Tenant();
-        record.setTenantNum(orgCode);
-        Tenant tenant = tenantMapper.selectOne(record);
-
-        TenantConfig confiRecord = new TenantConfig();
-        confiRecord.setTenantId(tenant.getTenantId());
-        Long userId = null;
-        List<TenantConfig> tenantConfigs = tenantConfigMapper.select(confiRecord);
-
-        for (TenantConfig tenantConfig : tenantConfigs) {
-            if ("userId".equalsIgnoreCase(tenantConfig.getConfigKey())) {
-                userId = Long.valueOf(tenantConfig.getConfigValue());
-            }
-        }
-
-        User user = userMapper.selectByPrimaryKey(userId);
-
-        User adminUser = new User();
-        adminUser.setLoginName("admin");
-        adminUser = userMapper.selectOne(adminUser);
-
-        RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
-        registrantInfoDTO.setUser(user);
-        registrantInfoDTO.setOrganizationName(tenant.getTenantName());
-        registrantInfoDTO.setAdminId(adminUser.getId());
-        return registrantInfoDTO;
-    }
-
-    @Override
     public UserDTO queryPersonalInfo() {
         CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = customUserDetails.getUserId();

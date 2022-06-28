@@ -177,7 +177,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     List<ProjectDTO> listProjectsByOrgId(@Param("tenantId") Long tenantId, @Param("category") String category, @Param("enabled") Boolean enabled);
 
-    List<ProjectDTO> listProjectsByUserIdOptional(@Param("organizationId") Long organizationId,
+    Set<ProjectDTO> listProjectsByUserIdOptional(@Param("organizationId") Long organizationId,
                                                   @Param("userId") Long userId,
                                                   @Param("isAdmin") Boolean isAdmin,
                                                   @Param("isOrgAdmin") Boolean isOrgAdmin);

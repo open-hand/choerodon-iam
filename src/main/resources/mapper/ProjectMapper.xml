@@ -975,6 +975,7 @@
             AND imr.source_id = #{organizationId}
         </if>
         </where>
+        GROUP BY fp.ID
     </select>
 
 </mapper>

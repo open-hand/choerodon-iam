@@ -888,8 +888,11 @@ public class UserC7nServiceImpl implements UserC7nService {
         List<ProjectDTO> projects = new ArrayList<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
-        projects = projectMapper.listProjectsByUserIdOptional(organizationId, userId, isAdmin, isOrgAdmin);
-        return projects;
+        Set<ProjectDTO> projectDTOSet = projectMapper.listProjectsByUserIdOptional(organizationId, userId, isAdmin, isOrgAdmin);
+        if (CollectionUtils.isEmpty(projectDTOSet)) {
+            return projects;
+        }
+        return new ArrayList<ProjectDTO>(projectDTOSet);
     }
 
     private Page<ProjectDTO> handlePageProject(Page<ProjectDTO> page,

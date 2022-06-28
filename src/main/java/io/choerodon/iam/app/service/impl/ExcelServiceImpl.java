@@ -88,6 +88,7 @@ public class ExcelServiceImpl implements ExcelService {
         String[] skipSheetNames = {"readme"};
         Map<String, String> propertyMap = new HashMap<>();
         propertyMap.put("用户名*", "realName");
+        propertyMap.put("登录名", "loginName");
         propertyMap.put("邮箱*", "email");
         propertyMap.put("角色编码*", "roleCodes");
         propertyMap.put("密码", "password");

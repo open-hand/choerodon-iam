@@ -79,7 +79,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private static final String DOT_SEPARATOR = ".";
     private static final String SITE_ROOT = "role/site/default/administrator";
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
-    private static final String USER_BUSINESS_TYPE_CODE = "SITEADDUSER";
     private static final String BUSINESS_TYPE_CODE = "ADDMEMBER";
     private static final String PROJECT_ADD_USER = "PROJECTADDUSER";
 
@@ -525,7 +524,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     private void snedMsg(String sourceType, Long fromUserId, MemberRole memberRoleDTO, Long sourceId, List<MemberRole> memberRoleDTOS) {
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         Role roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
         Map<String, String> params = new HashMap<>();
         if (ResourceLevel.SITE.value().equals(sourceType)) {
@@ -620,38 +618,6 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
         projectPermissionMapper.deleteByIds(sourceId, projectMemberRoles.stream().map(MemberRole::getId).collect(Collectors.toSet()));
 
-    }
-
-    /**
-     * 根据数据批量删除 member-role 记录
-     *
-     * @param data   数据
-     * @param isRole data的键是否是 roleId
-     */
-    private void deleteFromMap(Map<Long, List<Long>> data, boolean isRole, String memberType, Long sourceId, String sourceType, boolean doSendEvent, List<UserMemberEventPayload> userMemberEventPayloads, Boolean syncAll) {
-        for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
-            Long key = entry.getKey();
-            List<Long> values = entry.getValue();
-            if (values != null && !values.isEmpty()) {
-                values.forEach(id -> {
-                    Long roleId;
-                    Long memberId;
-                    if (isRole) {
-                        roleId = key;
-                        memberId = id;
-                    } else {
-                        roleId = id;
-                        memberId = key;
-                    }
-                    UserMemberEventPayload userMemberEventPayload =
-                            delete(roleId, memberId, memberType, sourceId, sourceType, doSendEvent);
-                    if (userMemberEventPayload != null) {
-                        userMemberEventPayload.setSyncAll(syncAll);
-                        userMemberEventPayloads.add(userMemberEventPayload);
-                    }
-                });
-            }
-        }
     }
 
     private UserMemberEventPayload delete(Long roleId, Long memberId, String memberType,

@@ -26,7 +26,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 public class ProjectDTO extends AuditDomain {
 
-    private static final String CODE_REGULAR_EXPRESSION = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
+    private static final String CODE_REGULAR_EXPRESSION = "^[^\\u4e00-\\u9fa5]+$";
 
     public static final String PROJECT_NAME_REG = "^[-—.\\w\\s\\u3040-\\u309F\\u30A0-\\u30FF\\u4e00-\\u9fa5]{1,110}$";
 
@@ -43,7 +43,7 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty(value = "项目编码/必填")
     @NotEmpty(message = "error.project.code.empty")
-    @Size(min = 1, max = 14, message = "error.project.code.size")
+    @Size(min = 1, max = 40, message = "error.project.code.size")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
     private String code;
 
@@ -76,6 +76,9 @@ public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty("之前存在的类型")
     private String beforeCategory;
+
+    @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
+    private String devopsComponentCode;
 
     @ApiModelProperty(value = "项目类型")
     @Transient
@@ -173,6 +176,38 @@ public class ProjectDTO extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "个人信息界面能否编辑dt消息")
     private Boolean dtEditEnable;
+
+    @Encrypt
+    @ApiModelProperty("项目类别id")
+    private Long projectClassficationId;
+
+    @ApiModelProperty("项目类别")
+    @Transient
+    private String projectClassfication;
+
+    @Encrypt
+    @ApiModelProperty("工作组id")
+    private Long workGroupId;
+
+    @ApiModelProperty("工作组")
+    @Transient
+    private String workGroup;
+
+    @ApiModelProperty("项目状态颜色")
+    @Transient
+    private String color;
+
+    @ApiModelProperty("项目类型code list")
+    @Transient
+    private List<String> categoryCodes;
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
+    }
 
     public Set<Long> getTopProjectIds() {
         return topProjectIds;
@@ -489,5 +524,53 @@ public class ProjectDTO extends AuditDomain {
 
     public void setDtEditEnable(Boolean dtEditEnable) {
         this.dtEditEnable = dtEditEnable;
+    }
+
+    public Long getProjectClassficationId() {
+        return projectClassficationId;
+    }
+
+    public void setProjectClassficationId(Long projectClassficationId) {
+        this.projectClassficationId = projectClassficationId;
+    }
+
+    public Long getWorkGroupId() {
+        return workGroupId;
+    }
+
+    public void setWorkGroupId(Long workGroupId) {
+        this.workGroupId = workGroupId;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProjectClassfication() {
+        return projectClassfication;
+    }
+
+    public void setProjectClassfication(String projectClassfication) {
+        this.projectClassfication = projectClassfication;
+    }
+
+    public String getWorkGroup() {
+        return workGroup;
+    }
+
+    public void setWorkGroup(String workGroup) {
+        this.workGroup = workGroup;
+    }
+
+    public List<String> getCategoryCodes() {
+        return categoryCodes;
+    }
+
+    public void setCategoryCodes(List<String> categoryCodes) {
+        this.categoryCodes = categoryCodes;
     }
 }

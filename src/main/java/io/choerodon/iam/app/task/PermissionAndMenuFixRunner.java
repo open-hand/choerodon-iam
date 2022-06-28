@@ -1,13 +1,8 @@
 package io.choerodon.iam.app.task;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import static org.hzero.iam.app.service.IDocumentService.NULL_VERSION;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.iam.domain.entity.Role;
-import org.hzero.iam.domain.entity.RolePermission;
-import org.hzero.iam.infra.constant.Constants;
-import org.hzero.iam.infra.constant.RolePermissionType;
+import org.hzero.iam.app.service.IDocumentService;
 import org.hzero.iam.infra.mapper.RolePermissionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,16 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.FixService;
-import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.app.service.RoleC7nService;
-import io.choerodon.iam.infra.enums.RoleLabelEnum;
 import io.choerodon.iam.infra.mapper.RoleC7nMapper;
 import io.choerodon.iam.infra.mapper.RolePermissionC7nMapper;
-import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 
 
 /**
@@ -36,23 +27,12 @@ import io.choerodon.iam.infra.utils.C7nCollectionUtils;
 @Component
 public class PermissionAndMenuFixRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionAndMenuFixRunner.class);
-
-    @Autowired
-    private RoleC7nMapper roleC7nMapper;
-    @Autowired
-    private RolePermissionC7nMapper rolePermissionC7nMapper;
-    @Autowired
-    private RolePermissionMapper rolePermissionMapper;
-
-    @Value("${choerodon.fix.data.page.size:200}")
-    private Integer pageSize;
-
-    @Value("${choerodon.fix.data.page.sleep.time: 500}")
-    private Integer sleepTime;
     @Value("${choerodon.fix.data.flag: true}")
     private Boolean fixDataFlag;
+    @Value("${hzero.service.iam.name:choerodon-iam}")
+    private String serviceName;
     @Autowired
-    private PermissionC7nService permissionC7nService;
+    private IDocumentService documentService;
     @Autowired
     @Lazy
     private FixService fixService;
@@ -62,8 +42,15 @@ public class PermissionAndMenuFixRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
+
         try {
             if (Boolean.TRUE.equals(fixDataFlag)) {
+                // 补偿iam接口刷新不进去的情况
+                try {
+                    documentService.refreshPermissionAsync(serviceName, NULL_VERSION, false);
+                } catch (Exception e) {
+                    LOGGER.error("error.sync.permission.service:{}", serviceName);
+                }
                 // 修复菜单层级
                 fixService.fixMenuLevelPath(true);
                 // 修复子角色权限（保持和模板角色权限一致）

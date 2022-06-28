@@ -1,22 +1,22 @@
 package io.choerodon.iam.api.controller.v1;
 
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.app.service.LdapC7nService;
-import io.choerodon.iam.infra.dto.LdapAutoDTO;
-import io.choerodon.swagger.annotation.Permission;
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
 import org.hzero.iam.config.SwaggerApiConfig;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.app.service.LdapC7nService;
+import io.choerodon.iam.infra.dto.LdapAutoDTO;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai

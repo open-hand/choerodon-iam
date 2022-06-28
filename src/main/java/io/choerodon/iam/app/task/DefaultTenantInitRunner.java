@@ -35,18 +35,9 @@ public class DefaultTenantInitRunner implements CommandLineRunner {
     @Autowired
     private UserMapper userMapper;
     private static final String ADMIN_LOGIN_NAME = "admin";
-    @Autowired
-    private IDocumentService documentService;
-    @Value("${hzero.service.iam.name:choerodon-iam}")
-    private String serviceName;
 
     @Override
     public void run(String... strings) {
-        try {
-            documentService.refreshPermissionAsync(serviceName, NULL_VERSION, false);
-        } catch (Exception e) {
-            LOGGER.error("error.sync.permission.service:{}", serviceName);
-        }
         try {
             LOGGER.info(">>>>>>>>>>>>>>>>>> check default tenant is created <<<<<<<<<<<<<<<<<<<<<<<");
             Tenant tenant = tenantMapper.selectByPrimaryKey(TenantConstants.DEFAULT_C7N_TENANT_TD);

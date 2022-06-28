@@ -21,7 +21,6 @@ import io.choerodon.iam.api.vo.ClientVO;
 import io.choerodon.iam.app.service.ClientC7nService;
 import io.choerodon.iam.app.service.ClientProjectC7nService;
 import io.choerodon.iam.app.service.ProjectPermissionService;
-import io.choerodon.iam.infra.dto.OauthClientResourceDTO;
 import io.choerodon.iam.infra.dto.ProjectPermissionDTO;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.ClientC7nMapper;
@@ -134,13 +133,6 @@ public class ClientProjectC7nServiceImpl implements ClientProjectC7nService {
     @Override
     public List<Role> selectMemberRoles(Long organizationId, Long projectId, Long clientId, String roleName) {
         return roleC7nMapper.listMemberRolesForProjectClient(organizationId, clientId, projectId, roleName);
-    }
-
-    private void checkPermission(Long projectId, Long clientId) {
-        OauthClientResourceDTO oauthClientResourceDTO = oauthClientResourceMapper.selectOne(new OauthClientResourceDTO().setClientId(clientId).setSourceId(projectId).setSourceType(ResourceLevel.PROJECT.value()));
-        if (oauthClientResourceDTO == null) {
-            throw new CommonException("no.permission.project.client");
-        }
     }
 
 }

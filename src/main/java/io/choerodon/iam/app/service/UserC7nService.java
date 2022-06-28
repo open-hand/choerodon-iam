@@ -291,7 +291,7 @@ public interface UserC7nService {
      * @param exactMatchFlag
      * @return 启用状态的用户列表
      */
-    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag);
+    List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag, Boolean organizationFlag);
 
     /**
      * 给用户分配组织管理员角色
@@ -319,8 +319,6 @@ public interface UserC7nService {
 
     List<UserDTO> listUsersUnderRoleByIds(Long projectId, String roleIdString);
 
-    RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
-
     UserDTO queryPersonalInfo();
 
     WebHookUser getWebHookUser(Long userId);
@@ -334,7 +332,7 @@ public interface UserC7nService {
      */
     List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds);
 
-    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed);
+    Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, PageRequest pageable, Boolean onlySucceed);
 
     int getDisableProjectByProjectMember(Long tenantId, Long userId);
 
@@ -407,7 +405,8 @@ public interface UserC7nService {
 
     CheckEmailVO checkUserEmail(Long organizationId, String email);
 
-    Boolean checkLoginName(Long organizationId, Long userId, String loginName);
+    void checkLoginName(String loginName);
 
-    List<ProjectDTO> listProjectsByUserIdOptional(Long organizationId, Long userId);
+    Page<User> listUsersOnProjectLevelPage(Long projectId, String userName, PageRequest pageRequest);
+
 }

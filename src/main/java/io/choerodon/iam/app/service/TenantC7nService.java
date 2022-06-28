@@ -10,7 +10,6 @@ import org.hzero.iam.domain.entity.User;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ExternalTenantVO;
 import io.choerodon.iam.api.vo.ProjectOverViewVO;
-import io.choerodon.iam.api.vo.TenantConfigVO;
 import io.choerodon.iam.api.vo.TenantVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 

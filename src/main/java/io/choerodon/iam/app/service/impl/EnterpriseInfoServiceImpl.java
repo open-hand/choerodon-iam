@@ -43,10 +43,9 @@ import io.choerodon.iam.infra.utils.ConvertUtils;
 @Service
 public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ExcelServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnterpriseInfoServiceImpl.class);
 
 
-    private static final String OPERATION_TENANT_CODE = "operation";
     private static final String ADMIN_LOGIN_NAME = "admin";
 
     @Value("${choerodon.url: https://api.choerodon.com.cn}")
@@ -68,7 +67,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     public Boolean checkEnterpriseInfoComplete() {
         // 只校验admin账户,不是默认的admin账户直接返回true
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        if (!userDetails.getUsername().equals("admin")) {
+        if (!userDetails.getUsername().equals(ADMIN_LOGIN_NAME)) {
             return true;
         }
         // 没有初始化默认组织，则初始化默认组织
@@ -95,7 +94,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             newTenant.setTenantId(tenant.getTenantId());
             newTenant.setTenantName(enterpriseInfoVO.getOrganizationName());
             newTenant.setObjectVersionNumber(tenant.getObjectVersionNumber());
-            if (checkEnableUpdateTenantNum()) {
+            if (Boolean.TRUE.equals(checkEnableUpdateTenantNum())) {
                 newTenant.setTenantNum(enterpriseInfoVO.getTenantNum());
             }
             if (tenantMapper.updateByPrimaryKeySelective(newTenant) != 1) {

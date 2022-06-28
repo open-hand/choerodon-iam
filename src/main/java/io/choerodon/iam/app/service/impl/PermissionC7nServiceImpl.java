@@ -112,8 +112,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
 
     @Override
     public List<Permission> getPermission(String[] codes) {
-        List<Permission> permissions = permissionRepository.selectByCodes(codes);
-        return permissions;
+        return permissionRepository.selectByCodes(codes);
     }
 
     public Set<String> getProjectLabels(Long projectId) {

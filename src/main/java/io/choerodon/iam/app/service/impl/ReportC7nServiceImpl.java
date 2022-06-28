@@ -3,10 +3,8 @@ package io.choerodon.iam.app.service.impl;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.util.AssertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.iam.app.service.ReportC7nService;
 import io.choerodon.iam.infra.dto.ReportDTO;

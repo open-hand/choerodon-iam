@@ -265,7 +265,9 @@ public interface UserC7nMapper {
                                      @Param("sourceId") Long sourceId,
                                      @Param("userName") String userName,
                                      @Param("exactMatchFlag") Boolean exactMatchFlag,
-                                     @Param("tenantId") Long tenantId);
+                                     @Param("tenantId") Long tenantId,
+                                     @Param("tenantIds") List<Long> tenantIds
+                                     );
 
     /**
      * 根据组织Id和用户Id查询该用户是否分配了组织管理员角色.
@@ -473,5 +475,7 @@ public interface UserC7nMapper {
 
     List<UserDTO> listUsersUnderRoleByIds(@Param("projectId") Long projectId,
                                           @Param("roleIds") List<Long> roleIds);
+
+    List<User> listUsersOnProjectLevelPage(@Param("tenantId") Long tenantId, @Param("userName") String userName);
 }
 

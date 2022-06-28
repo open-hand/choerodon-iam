@@ -77,19 +77,18 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
      * 查询组织下用户的项目列表.
      * 特殊处理: admin用户或组织管理员可查看组织下所有项目
      *
-     * @param userId     用户Id
-     * @param projectDTO 项目DTO
-     * @param isAdmin    是否为admin用户
-     * @param isOrgAdmin 是否为组织管理员
-     * @param params     模糊查询字段
+     * @param userId          用户Id
+     * @param projectSearchVO 项目projectSearchVO
+     * @param isAdmin         是否为admin用户
+     * @param isOrgAdmin      是否为组织管理员
      * @return 项目列表
      */
     List<ProjectDTO> selectProjectsByUserIdOrAdmin(@Param("organizationId") Long organizationId,
                                                    @Param("userId") Long userId,
-                                                   @Param("projectDTO") ProjectDTO projectDTO,
+                                                   @Param("projectSearchVO") ProjectSearchVO projectSearchVO,
                                                    @Param("isAdmin") Boolean isAdmin,
                                                    @Param("isOrgAdmin") Boolean isOrgAdmin,
-                                                   @Param("params") String params);
+                                                   @Param("sortOrderStrings") List<String> sortOrderStrings);
 
     /**
      * 查询组织下用户的项目id.

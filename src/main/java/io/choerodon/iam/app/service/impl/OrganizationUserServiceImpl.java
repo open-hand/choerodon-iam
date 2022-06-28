@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -269,7 +270,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         UserValidator.validateCreateUserWithRoles(user, checkRoles);
         organizationAssertHelper.notExisted(organizationId);
         userAssertHelper.emailExisted(user.getEmail());
-        user.setLoginName(randomInfoGenerator.randomLoginName());
+        if (ObjectUtils.isEmpty(user.getLoginName())) {
+            user.setLoginName(randomInfoGenerator.randomLoginName());
+        }
         List<Role> userRoles = user.getRoles();
         user.setRoles(null);
         user.setMemberRoleList(role2MemberRole(user.getOrganizationId(), null, userRoles));
@@ -363,7 +366,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         // 1. 更新用户信息
         // ldap用户不能更新用户信息，只更新角色关系
         User userDetails = userRepository.selectByPrimaryKey(user.getId());
-        String oldLoginName = userDetails.getLoginName();
         // hzero没有用户名变化参数 用phone参数代替
         if (!userDetails.getRealName().equals(user.getRealName())) {
             user.setPhoneChanged(true);
@@ -371,18 +373,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         boolean phoneChange = false;
         if (!StringUtils.equalsIgnoreCase(user.getPhone(), userDetails.getPhone())) {
             phoneChange = true;
-        }
-        // 界面上登录名为邮箱
-        boolean loginNameChange = false;
-        if (!oldLoginName.equals(user.getLoginName())
-                && !userDetails.getEmail().equals(user.getLoginName())) {
-            loginNameChange = true;
-            user.setPhoneChanged(true);
-            if (userRepository.selectByLoginName(user.getLoginName()) != null) {
-                throw new CommonException("error.user.login.exist");
-            }
-        } else {
-            user.setLoginName(oldLoginName);
         }
         if (Boolean.FALSE.equals(userDetails.ldapUser())) {
             user.setEmailCheckFlag(BaseConstants.Flag.YES);
@@ -395,11 +385,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (phoneChange) {
             userC7nMapper.updateUserPhoneBind(user.getId(), BaseConstants.Flag.NO);
         }
-        // 更改了登录名
-        if (loginNameChange) {
-            userC7nMapper.updateUserLoginName(user.getId(), user.getLoginName());
-            userC7nMapper.updateUserLoginNameForOpen(oldLoginName, user.getLoginName());
-        }
         // 2. 更新用户角色
         if (updateRoles) {
             roleMemberService.updateOrganizationMemberRole(organizationId, user.getId(), user.getRoles());
@@ -408,6 +393,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     /**
      * 设置用户的昵称等信息
+     *
      * @param user
      */
     @Override

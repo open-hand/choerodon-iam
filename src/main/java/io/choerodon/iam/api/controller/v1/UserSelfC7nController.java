@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
-import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

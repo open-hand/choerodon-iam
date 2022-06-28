@@ -10,6 +10,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -93,6 +95,7 @@ import io.choerodon.iam.infra.utils.*;
 import io.choerodon.iam.infra.valitador.RoleValidator;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * @author scp
@@ -101,6 +104,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
+    private static final String LOGIN_NAME_REGULAR = "^(?!_)(^[a-zA-Z0-9_]{1,100}$)$";
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -209,6 +213,8 @@ public class UserC7nServiceImpl implements UserC7nService {
     private IEncryptionService encryptionService;
     @Autowired(required = false)
     private BusinessService businessService;
+    @Autowired
+    private ProjectMapCategoryService projectMapCategoryService;
 
     @Override
     public User queryInfo(Long userId) {
@@ -787,6 +793,7 @@ public class UserC7nServiceImpl implements UserC7nService {
                 // 添加项目类型
                 if (projectMapCategoryMap.get(p.getId()) != null) {
                     p.setCategories(projectMapCategoryMap.get(p.getId()).stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).filter(v -> ProjectCategoryEnum.listNewCategories().contains(v.getCode())).collect(Collectors.toList()));
+                    p.setCategoryCodes(p.getCategories().stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toList()));
                 }
 
                 // 计算用户是否有编辑权限
@@ -878,9 +885,35 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Boolean checkLoginName(Long organizationId, Long userId, String loginName) {
-        User user = userRepository.selectByLoginName(loginName);
-        return user == null || !user.getId().equals(userId);
+    public void checkLoginName(String loginName) {
+        if (ObjectUtils.isEmpty(loginName)) {
+            return;
+        }
+        Pattern p = Pattern.compile(LOGIN_NAME_REGULAR);
+        Matcher m = p.matcher(loginName);
+        boolean match = m.find();
+        if (!match) {
+            throw new CommonException("user.login.name.illegal");
+        }
+        User queryDTO = new User();
+        queryDTO.setLoginName(loginName);
+        User user = userMapper.selectOne(queryDTO);
+        if (user != null) {
+            throw new CommonException("user.login.name.exist");
+        }
+    }
+
+    @Override
+    public Page<User> listUsersOnProjectLevelPage(Long projectId, String userName, PageRequest pageRequest) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(userName)) {
+            return new Page<>();
+        }
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
+            return new Page<>();
+        }
+        Page<User> userPage = PageHelper.doPage(pageRequest, () -> userC7nMapper.listUsersOnProjectLevelPage(projectDTO.getOrganizationId(), userName));
+        return userPage;
     }
 
     @Override
@@ -1201,7 +1234,7 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
 
-    private Long validateSourceNotExisted(String sourceType, Long sourceId) {
+    public Long validateSourceNotExisted(String sourceType, Long sourceId) {
         Long tenantId = null;
         if (ResourceLevel.ORGANIZATION.value().equals(sourceType)) {
             organizationAssertHelper.notExisted(sourceId);
@@ -1354,9 +1387,11 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag) {
+    public List<User> listEnableUsersByName(String sourceType, Long sourceId, String userName, Boolean exactMatchFlag, Boolean organizationFlag) {
         Long tenantId = validateSourceNotExisted(sourceType, sourceId);
-        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag, tenantId);
+        List<Long> tenantIds = new ArrayList<>();
+        tenantIds.add(tenantId);
+        return userC7nMapper.listEnableUsersByName(sourceType, sourceId, userName, exactMatchFlag, tenantId, tenantIds);
     }
 
     @Override
@@ -1606,36 +1641,6 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
-        Tenant record = new Tenant();
-        record.setTenantNum(orgCode);
-        Tenant tenant = tenantMapper.selectOne(record);
-
-        TenantConfig confiRecord = new TenantConfig();
-        confiRecord.setTenantId(tenant.getTenantId());
-        Long userId = null;
-        List<TenantConfig> tenantConfigs = tenantConfigMapper.select(confiRecord);
-
-        for (TenantConfig tenantConfig : tenantConfigs) {
-            if ("userId".equalsIgnoreCase(tenantConfig.getConfigKey())) {
-                userId = Long.valueOf(tenantConfig.getConfigValue());
-            }
-        }
-
-        User user = userMapper.selectByPrimaryKey(userId);
-
-        User adminUser = new User();
-        adminUser.setLoginName("admin");
-        adminUser = userMapper.selectOne(adminUser);
-
-        RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
-        registrantInfoDTO.setUser(user);
-        registrantInfoDTO.setOrganizationName(tenant.getTenantName());
-        registrantInfoDTO.setAdminId(adminUser.getId());
-        return registrantInfoDTO;
-    }
-
-    @Override
     public UserDTO queryPersonalInfo() {
         CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = customUserDetails.getUserId();
@@ -1662,22 +1667,17 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectDTO projectDTO, String params, PageRequest pageable, Boolean onlySucceed) {
-        Page<ProjectDTO> page = new Page<>();
+    public Page<ProjectDTO> pagingProjectsByUserId(Long organizationId, Long userId, ProjectSearchVO projectSearchVO, PageRequest pageable, Boolean onlySucceed) {
+        Page<ProjectDTO> page;
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         boolean isAdmin = userDetails == null ? isRoot(userId) : Boolean.TRUE.equals(userDetails.getAdmin());
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         Long currentUserId = userDetails == null ? userId : userDetails.getUserId();
-        // 普通用户只能查到启用的项目(不包括项目所有者)
-//        if (!isAdmin && !isOrgAdmin) {
-//            if (projectDTO.getEnabled() != null && !projectDTO.getEnabled()) {
-//                return page;
-//            } else {
-//                projectDTO.setEnabled(true);
-//            }
-//        }
+
+        List<String> sortOrderStrings = getSortOrderStrings(pageable);
+
         //查询到的项目包括已启用和未启用的
-        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params));
+        page = PageHelper.doPage(pageable, () -> projectMapper.selectProjectsByUserIdOrAdmin(organizationId, userId, projectSearchVO, isAdmin, isOrgAdmin, sortOrderStrings));
         // 过滤项目类型
         List<ProjectDTO> projects = page.getContent();
         if (CollectionUtils.isEmpty(projects)) {
@@ -1822,5 +1822,28 @@ public class UserC7nServiceImpl implements UserC7nService {
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         return PageHelper.doPage(pageRequest, () -> projectMapper.pageOwnedProjects(organizationId, currentProjectId, userId, isAdmin, isOrgAdmin, param));
+    }
+
+    public static List<String> getSortOrderStrings(PageRequest pageable) {
+        List<String> sortOrderStrings = new ArrayList<>();
+        Sort pageSort = pageable.getSort();
+        if (pageSort == null) {
+            String statusOrder = "is_enabled desc";
+            String creationDateOrder = "creation_date desc";
+            sortOrderStrings.add(statusOrder);
+            sortOrderStrings.add(creationDateOrder);
+            return sortOrderStrings;
+        } else {
+            for (Sort.Order order : pageSort) {
+                if ("program_id".equals(order.getProperty())) {
+                    String orderString = "fp2.id" + " " + order.getDirection().name();
+                    sortOrderStrings.add(orderString);
+                } else {
+                    String orderString = order.getProperty() + " " + order.getDirection().name();
+                    sortOrderStrings.add(orderString);
+                }
+            }
+            return sortOrderStrings;
+        }
     }
 }

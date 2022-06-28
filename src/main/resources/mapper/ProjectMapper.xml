@@ -291,19 +291,20 @@
                 INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 INNER JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </when>
-            <when test="projectDTO != null and projectDTO.category != null">
+            <when test="(projectSearchVO != null and projectSearchVO.category != null)
+                  or (projectSearchVO != null and projectSearchVO.categoryId!=null)
+                  or (projectSearchVO != null and projectSearchVO.categoryCodes!=null)" >
                 INNER JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-                INNER Join fd_project_category fpc ON fpmc.CATEGORY_ID = fpc.id
+                INNER Join fd_project_category fpc ON  fpmc.CATEGORY_ID = fpc.id
             </when>
             <otherwise>
                 LEFT JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
                 LEFT JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
                 LEFT JOIN iam_role ir ON (ir.is_enabled = 1 and ir.id = imr.role_id)
             </otherwise>
-        </choose>
+    </choose>
         <where>
             fp.organization_id = #{organizationId}
-
             <if test="!isAdmin and !isOrgAdmin">
                 AND imr.member_id = #{userId}
                 AND imr.member_type = 'user'
@@ -311,39 +312,46 @@
                 AND imr.source_id = #{organizationId}
             </if>
 
-            <if test="projectDTO != null">
-                <if test="projectDTO.name != null">
-                    AND fp.name LIKE concat(concat('%',#{projectDTO.name}),'%')
+            <if test="projectSearchVO != null">
+                <if test="projectSearchVO.categoryId != null">
+                    AND fpmc.CATEGORY_ID = #{projectSearchVO.categoryId}
                 </if>
-                <if test="projectDTO.code != null">
-                    AND fp.code LIKE concat(concat('%',#{projectDTO.code}),'%')
+                <if test="projectSearchVO.categoryCodes!=null">
+                    AND fpc.CODE in
+                    <foreach collection="projectSearchVO.categoryCodes" item="categoryCode" open="(" close=")" separator=",">
+                        #{categoryCode}
+                    </foreach>
                 </if>
-                <if test="projectDTO.category != null">
-                    <!--                    AND fp.category LIKE concat(concat('%',#{projectDTO.category}),'%')-->
-                    AND fpc.CODE = #{projectDTO.category}
+                <if test="projectSearchVO.name != null">
+                    AND fp.name LIKE concat(concat('%',#{projectSearchVO.name}),'%')
                 </if>
-                <if test="projectDTO.enabled != null">
-                    AND fp.is_enabled = #{projectDTO.enabled}
+                <if test="projectSearchVO.code != null">
+                    AND fp.code LIKE concat(concat('%',#{projectSearchVO.code}),'%')
                 </if>
-                <if test="projectDTO.createdBy != null">
+                <if test="projectSearchVO.category != null">
+                    AND fpc.CODE = #{projectSearchVO.category}
+                </if>
+                <if test="projectSearchVO.enabled != null">
+                    AND fp.is_enabled = #{projectSearchVO.enabled}
+                </if>
+                <if test="projectSearchVO.createdBy != null">
                     AND fp.created_by = #{userId}
                 </if>
-            </if>
-            <if test="params != null">
-                AND (
-                fp.name LIKE concat(concat('%', #{params}), '%') OR
-                fp.code LIKE concat(concat('%', #{params}), '%')
-                )
+                <if test="projectSearchVO.searchContent != null and projectSearchVO.searchContent.length > 0">
+                    AND (
+                    fp.name LIKE concat(concat('%', #{projectSearchVO.searchContent}), '%') OR
+                    fp.code LIKE concat(concat('%', #{projectSearchVO.searchContent}), '%') OR
+                    fp.DESCRIPTION LIKE concat(concat('%', #{projectSearchVO.searchContent}), '%')
+                    )
+                </if>
             </if>
         </where>
-        GROUP BY fp.id
-        order by
-        <if test="projectDTO!=null">
-            <if test="projectDTO.id !=null">
-                fp.id=#{projectDTO.id} desc,
-            </if>
+        <if test="sortOrderStrings != null and sortOrderStrings.size() != 0">
+            ORDER BY
+            <foreach collection="sortOrderStrings" item="sortOrderString" separator=",">
+                ${sortOrderString}
+            </foreach>
         </if>
-        fp.is_enabled desc,fp.creation_date desc
     </select>
 
     <select id="selectProjectIdsByUserIdOrAdmin" resultType="long">
@@ -789,7 +797,7 @@
     </select>
 
     <select id="queryImmutableProjectInfo" resultType="io.choerodon.iam.api.vo.ImmutableProjectInfoVO">
-        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num
+        SELECT fd.CODE AS proj_code, ht.tenant_id, ht.tenant_num, fd.devops_component_code
         FROM fd_project fd
         INNER JOIN hpfm_tenant ht ON fd.ORGANIZATION_ID = ht.tenant_id
         WHERE fd.ID = #{projectId};

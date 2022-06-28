@@ -5,10 +5,12 @@ import static io.choerodon.iam.infra.utils.SagaTopic.Organization.ORG_ENABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_DISABLE;
 import static io.choerodon.iam.infra.utils.SagaTopic.Project.PROJECT_ENABLE;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
-import java.util.stream.Collectors;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
@@ -28,7 +30,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.SysSettingVO;
 import io.choerodon.iam.app.service.MessageSendService;
 import io.choerodon.iam.app.service.SystemSettingC7nService;
@@ -38,7 +39,6 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.payload.WebHookUser;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.TenantC7nMapper;
-import io.choerodon.iam.infra.utils.StringUtil;
 
 @Service
 public class MessageSendServiceImpl implements MessageSendService {

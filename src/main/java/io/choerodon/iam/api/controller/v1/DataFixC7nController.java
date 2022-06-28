@@ -25,15 +25,6 @@ public class DataFixC7nController {
         this.projectService = projectService;
     }
 
-//    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
-//    @ApiOperation(value = "分页查询所有组织基本信息（修数据用）")
-//    @GetMapping(value = "/organizations/all")
-//    @CustomPageRequest
-//    public ResponseEntity<List<OrganizationSimplifyDTO>> getAllOrgsList() {
-//        return new ResponseEntity<>(dataFixService.getAllOrgsList(), HttpStatus.OK);
-//    }
-
-
     /**
      * 不要删除
      * @return

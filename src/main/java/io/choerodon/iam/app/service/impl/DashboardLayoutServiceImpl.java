@@ -1,22 +1,22 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import org.hzero.core.base.BaseConstants;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.vo.DashboardLayoutVO;
+import io.choerodon.iam.app.service.DashboardLayoutService;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardLayoutDTO;
 import io.choerodon.iam.infra.mapper.DashboardLayoutMapper;
 import io.choerodon.iam.infra.mapper.UserC7nMapper;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.iam.infra.mapper.UserMapper;
-import org.springframework.stereotype.Service;
-import io.choerodon.iam.app.service.DashboardLayoutService;
-import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 应用服务默认实现

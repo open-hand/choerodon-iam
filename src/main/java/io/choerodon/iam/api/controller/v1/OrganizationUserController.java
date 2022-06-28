@@ -245,26 +245,13 @@ public class OrganizationUserController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询当前组织下用户的项目列表")
-    @GetMapping(value = "/users/{user_id}/projects/paging")
+    @PostMapping(value = "/users/{user_id}/projects/paging")
     public ResponseEntity<Page<ProjectDTO>> pagingProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                    @Encrypt @PathVariable(name = "user_id") Long userId,
                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-                                                                   @RequestParam(value = "project_id", required = false) Long projectId,
-                                                                   @RequestParam(required = false) String name,
-                                                                   @RequestParam(required = false) String code,
-                                                                   @RequestParam(required = false) String category,
-                                                                   @RequestParam(required = false) Boolean enabled,
-                                                                   @RequestParam(required = false) Long createdBy,
-                                                                   @RequestParam(required = false) String params,
+                                                                   @RequestBody ProjectSearchVO projectSearchVO,
                                                                    @RequestParam(required = false, defaultValue = "false") Boolean onlySucceed) {
-        ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setId(projectId);
-        projectDTO.setName(name);
-        projectDTO.setCode(code);
-        projectDTO.setCategory(category);
-        projectDTO.setEnabled(enabled);
-        projectDTO.setCreatedBy(createdBy);
-        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectDTO, params, pageable, onlySucceed), HttpStatus.OK);
+        return new ResponseEntity<>(userC7nService.pagingProjectsByUserId(organizationId, userId, projectSearchVO, pageable, onlySucceed), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
@@ -341,13 +328,13 @@ public class OrganizationUserController extends BaseController {
         return new ResponseEntity<>(userC7nService.pagingProjectsByOptions(organizationId, userId, projectSearchVO, params, pageable, onlySucceed), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验用户登录名")
-    @GetMapping(value = "/users/{user_id}/check_login_name")
-    public ResponseEntity<Boolean> checkLoginName(@PathVariable(name = "organization_id") Long organizationId,
-                                                  @Encrypt @PathVariable(name = "user_id") Long userId,
-                                                  @RequestParam String loginName) {
-        return new ResponseEntity<>(userC7nService.checkLoginName(organizationId, userId, loginName), HttpStatus.OK);
+    @GetMapping(value = "/check_login_name")
+    public ResponseEntity<Void> checkLoginName(@PathVariable(name = "organization_id") Long organizationId,
+                                               @RequestParam String loginName) {
+        userC7nService.checkLoginName(loginName);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

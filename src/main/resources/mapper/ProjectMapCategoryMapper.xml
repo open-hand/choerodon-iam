@@ -55,4 +55,10 @@
         WHERE
             fpmc.PROJECT_ID = #{projectId}
     </select>
+
+    <select id="listProjectIdsByCategoryId" resultType="java.lang.Long">
+        SELECT PROJECT_ID
+        from fd_project_map_category fpmc
+        WHERE fpmc.CATEGORY_ID = #{categoryId}
+    </select>
 </mapper>

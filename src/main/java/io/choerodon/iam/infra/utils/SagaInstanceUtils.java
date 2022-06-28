@@ -101,9 +101,7 @@ public class SagaInstanceUtils {
             if (!CollectionUtils.isEmpty(instanceDetails.getSagaTaskInstanceDTOS())) {
                 instanceDetails.getSagaTaskInstanceDTOS().stream()
                         .filter(sagaTaskInstanceDTO -> StringUtils.equalsIgnoreCase(sagaTaskInstanceDTO.getStatus(), InstanceStatusEnum.FAILED.getValue()))
-                        .forEach(sagaTaskInstanceDTO -> {
-                            sagaTaskInstanceDTOS.add(sagaTaskInstanceDTO);
-                        });
+                        .forEach(sagaTaskInstanceDTO -> sagaTaskInstanceDTOS.add(sagaTaskInstanceDTO));
             }
         });
         if (CollectionUtils.isEmpty(sagaTaskInstanceDTOS)) {

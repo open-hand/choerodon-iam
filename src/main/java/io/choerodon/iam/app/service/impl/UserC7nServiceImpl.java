@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
 import static io.choerodon.iam.infra.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
-
 import static java.util.stream.Collectors.mapping;
 
 import java.time.LocalDate;
@@ -1837,6 +1836,9 @@ public class UserC7nServiceImpl implements UserC7nService {
             for (Sort.Order order : pageSort) {
                 if ("program_id".equals(order.getProperty())) {
                     String orderString = "fp2.id" + " " + order.getDirection().name();
+                    sortOrderStrings.add(orderString);
+                } else if ("enabled".equals(order.getProperty())) {
+                    String orderString = "status_id" + " " + order.getDirection().name();
                     sortOrderStrings.add(orderString);
                 } else {
                     String orderString = order.getProperty() + " " + order.getDirection().name();

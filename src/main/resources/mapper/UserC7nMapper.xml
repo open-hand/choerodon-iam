@@ -228,24 +228,20 @@
     </select>
 
     <select id="selectAdminUserPage" resultMap="userDTO">
-        select iut.id,iut.target_login_name as login_name,iut.real_name,
+        select iut.id,iut.login_name,iut.real_name,
         iut.is_enabled,iut.is_locked,iut.is_ldap,iut.is_admin,iut.object_version_number
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         where iut.is_admin = 1
         <if test="loginName!= null">
-            AND iut.target_login_name LIKE concat(concat('%', #{loginName}), '%')
+            AND iut.login_name LIKE concat(concat('%', #{loginName}), '%')
         </if>
         <if test="realName != null">
             AND iut.real_name LIKE concat(concat('%', #{realName}), '%')
         </if>
         <if test="params != null">
             AND (
-            iut.target_login_name LIKE concat(concat('%',#{params}),'%') OR
+            iut.login_name LIKE concat(concat('%',#{params}),'%') OR
             iut.real_name LIKE concat(concat('%',#{params}),'%') OR
             iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
             iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -267,13 +263,9 @@
         select count(1)
         from
         (
-        select distinct iut.id
+        select distinct iu.id
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         <if test="orgName != null">
             left join hpfm_tenant fo on fo.tenant_id = iut.organization_id
         </if>
@@ -294,7 +286,7 @@
                 and iut.real_name like concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name like concat(concat('%',#{loginName}),'%')
+                and iut.login_name like concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
@@ -304,7 +296,7 @@
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -315,7 +307,7 @@
     </select>
 
     <select id="selectUserWithRolesOnSiteLevel" resultMap="userWithRolesMap">
-        select t2.is_ldap,t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,
+        select t2.is_ldap,t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,
         t2.object_version_number as user_version_number,
         fo2.tenant_name as user_org_name,fo2.tenant_num as user_org_code, ir2.id as role_id,ir2.code as role_code,
@@ -327,11 +319,7 @@
         (
         select iut.*
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         <if test="orgName != null">
             left join hpfm_tenant fo on fo.tenant_id = iut.organization_id
         </if>
@@ -352,7 +340,7 @@
                 and iut.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
@@ -362,7 +350,7 @@
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -464,7 +452,7 @@
         SELECT DISTINCT iut.id FROM
         (
         select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        case when iu.is_ldap=1 then iu.login_name else iu.email end as login_name
         from iam_user iu
         ) iut
         LEFT JOIN iam_member_role imr on imr.member_id = iut.id
@@ -474,7 +462,7 @@
         AND imr.source_type = #{sourceType}
         <if test="roleAssignmentSearchDTO != null">
             <if test="roleAssignmentSearchDTO.loginName != null">
-                AND iut.target_login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                AND iut.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
             </if>
             <if test="roleAssignmentSearchDTO.realName != null">
                 AND iut.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
@@ -484,7 +472,7 @@
             </if>
             <if test="param != null">
                 AND (
-                iut.target_login_name LIKE concat(concat('%',#{param}),'%') OR
+                iut.login_name LIKE concat(concat('%',#{param}),'%') OR
                 iut.real_name LIKE concat(concat('%',#{param}),'%') OR
                 ir.name LIKE concat(concat('%',#{param}),'%') OR
                 imr.member_type LIKE concat(concat('%',#{param}),'%')
@@ -680,43 +668,38 @@
 
     <select id="listOrgAdministrator" resultType="io.choerodon.iam.infra.dto.UserDTO">
         SELECT
-        iut.id,
-        iut.target_login_name as login_name,
-        iut.EMAIL,
-        iut.ORGANIZATION_ID,
-        iut.REAL_NAME,
-        iut.IS_ENABLED AS enabled,
-        iut.IS_LOCKED AS locked,
-        iut.IS_LDAP AS ldap,
+        iu.id,
+        iu.login_name as login_name,
+        iu.EMAIL,
+        iu.ORGANIZATION_ID,
+        iu.REAL_NAME,
+        iu.IS_ENABLED AS enabled,
+        iu.IS_LOCKED AS locked,
+        iu.IS_LDAP AS ldap,
         imr.creation_date
         FROM
         iam_member_role imr
         LEFT JOIN iam_role ir ON ir.ID = imr.ROLE_ID
         LEFT JOIN hiam_label_rel hlr ON hlr.data_id = ir.id AND hlr.data_type = 'ROLE'
         LEFT JOIN iam_label il ON il.id = hlr.label_id
-        LEFT JOIN
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut ON imr.MEMBER_ID = iut.ID
+        LEFT JOIN iam_user iu ON imr.MEMBER_ID = iu.ID
         WHERE
         il.name = 'TENANT_ADMIN'
         AND imr.source_type='organization'
         AND imr.source_id=#{organizationId}
         AND imr.member_type = 'user'
         <if test="realName != null">
-            AND iut.real_name LIKE concat(concat('%',#{realName }),'%')
+            AND iu.real_name LIKE concat(concat('%',#{realName }),'%')
         </if>
         <if test="loginName  != null ">
-            and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+            and iu.login_name LIKE concat(concat('%',#{loginName}),'%')
         </if>
         <if test="params != null">
             AND (
-            iut.real_name LIKE concat(concat('%',#{params}),'%')
-            OR iut.target_login_name LIKE concat(concat('%',#{params}),'%')
-            OR iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
-            iut.attribute14 LIKE concat(concat('%',#{params}),'%')
+            iu.real_name LIKE concat(concat('%',#{params}),'%')
+            OR iu.login_name LIKE concat(concat('%',#{params}),'%')
+            OR iu.attribute15 LIKE concat(concat('%',#{params}),'%') OR
+            iu.attribute14 LIKE concat(concat('%',#{params}),'%')
             )
         </if>
     </select>
@@ -731,11 +714,7 @@
         (
         select iut.*
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         left join iam_role ir on ir.id = imr.role_id
         where imr.source_id = #{sourceId} and imr.source_type = #{sourceType}
@@ -744,8 +723,7 @@
         </if>
         <if test="roleName == null">
             union
-            select iu2.*,
-            case when iu2.is_ldap=1 then iu2.login_name else iu2.email end as target_login_name
+            select iu2.*
             from iam_user iu2
             where iu2.organization_id = #{sourceId}
         </if>
@@ -755,7 +733,7 @@
                 and t1.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and t1.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and t1.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and t1.is_enabled = #{enabled}
@@ -765,7 +743,7 @@
             </if>
             <if test="params != null">
                 and (
-                t1.target_login_name like concat(concat('%',#{params}),'%') or
+                t1.login_name like concat(concat('%',#{params}),'%') or
                 t1.real_name like concat(concat('%',#{params}),'%') OR
                 t1.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 t1.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -776,7 +754,7 @@
     </select>
 
     <select id="selectUserWithRolesOnOrganizationLevel" resultMap="userWithRolesMap">
-        select t2.is_ldap,t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,
+        select t2.is_ldap,t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled,
         t2.is_locked,t2.organization_id, t2.email,t2.language,t2.time_zone, t2.phone,
         t2.object_version_number as user_version_number,
         ir2.id as role_id,ir2.code as role_code, ir2.name as role_name,ir2.is_enabled as
@@ -787,11 +765,7 @@
         (
         select iut.*
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         left join iam_role ir on ir.id = imr.role_id
         left join hiam_label_rel hlr on (hlr.data_id = ir.id and hlr.data_type = 'ROLE')
@@ -802,8 +776,7 @@
         </if>
         <if test="roleName == null">
             union
-            select iu2.*,
-            case when iu2.is_ldap=1 then iu2.login_name else iu2.email end as target_login_name
+            select iu2.*
             from iam_user iu2
             where iu2.organization_id = #{sourceId}
         </if>
@@ -813,7 +786,7 @@
                 and t1.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and t1.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and t1.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and t1.is_enabled = #{enabled}
@@ -823,7 +796,7 @@
             </if>
             <if test="params != null">
                 and (
-                t1.target_login_name like concat(concat('%',#{params}),'%') or
+                t1.login_name like concat(concat('%',#{params}),'%') or
                 t1.real_name like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -847,11 +820,7 @@
         (
         select distinct iut.id
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         JOIN iam_role ir on ir.id=imr.role_id
         <if test="roleName != null">
@@ -866,14 +835,14 @@
                 and iut.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') or
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -884,7 +853,7 @@
     </select>
 
     <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMap">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,
+        select t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled,t2.is_ldap,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
         fo.tenant_name as user_org_name,fo.tenant_num as user_org_code, ir2.id as role_id,ir2.code as role_code,
@@ -896,11 +865,7 @@
         (
         select iut.*
         from
-        (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
-        from iam_user iu
-        ) iut
+        iam_user iut
         left join iam_member_role imr on (imr.member_id = iut.id and imr.member_type = 'user')
         JOIN iam_role ir2 on ir2.id=imr.role_id
         <if test="roleName != null">
@@ -915,14 +880,14 @@
                 and iut.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
                 iut.attribute15 LIKE concat(concat('%',#{params}),'%') OR
                 iut.attribute14 LIKE concat(concat('%',#{params}),'%')
@@ -943,7 +908,7 @@
     </select>
 
     <select id="listUserWithRolesOnProjectLevelByIds" resultMap="userWithRoleAndImage">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled, t2.image_url,
+        select t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled, t2.image_url,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,
         t2.object_version_number as user_version_number,
         fo.tenant_name as user_org_name,fo.tenant_num as user_org_code, ir2.id as role_id,ir2.code as role_code,
@@ -956,8 +921,7 @@
         select iut.*
         from
         (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        select iu.*
         from iam_user iu
         <if test="userIds != null and userIds.size() != 0">
             WHERE iu.ID IN
@@ -982,7 +946,7 @@
 
 
     <select id="listUserWithRolesOnOrganizationLevelByIds" resultMap="userWithRoleAndImage">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled, t2.image_url,
+        select t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled, t2.image_url,
         t2.is_locked,t2.organization_id, t2.email,t2.language,t2.time_zone, t2.phone,
         t2.object_version_number as user_version_number,
         ir2.id as role_id,ir2.code as role_code, ir2.name as role_name,ir2.is_enabled as
@@ -994,8 +958,7 @@
         select iut.*
         from
         (
-        select iu.*,
-        case when iu.is_ldap=1 then iu.login_name else iu.email end as target_login_name
+        select iu.*
         from iam_user iu
         <if test="userIds != null and userIds.size() != 0">
             WHERE iu.ID IN
@@ -1256,13 +1219,7 @@
         FROM (
             SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
             iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked,
-            iu.object_version_number,iu.attribute15,iu.attribute14,
-            CASE
-            WHEN iu.is_ldap = 1 THEN
-            iu.login_name
-            ELSE
-            iu.email
-            end as login_name
+            iu.object_version_number,iu.attribute15,iu.attribute14,iu.login_name
             FROM iam_user iu
             LEFT JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.source_id = #{organizationId} AND imr.source_type = 'organization'
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -1513,13 +1470,7 @@
         FROM (
         SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url,
         iu.is_enabled as enabled, iu.is_ldap as ldap, iu.is_admin as admin,iu.is_locked as locked,
-        iu.object_version_number,iu.attribute15,iu.attribute14,
-        CASE
-        WHEN iu.is_ldap = 1 THEN
-        iu.login_name
-        ELSE
-        iu.email
-        end as login_name
+        iu.object_version_number,iu.attribute15,iu.attribute14,iu.login_name
         FROM iam_user iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id AND imr.source_id = #{organizationId} AND imr.source_type = 'organization'
         LEFT JOIN iam_role ir ON ir.id = imr.role_id

@@ -58,7 +58,7 @@
                 and iut.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
@@ -71,7 +71,7 @@
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
                 iut.email like concat(concat('%',#{params}),'%') OR
                 iut.phone like concat(concat('%',#{params}),'%') OR
@@ -84,7 +84,7 @@
     </select>
 
     <select id="selectUserWithRolesOnProjectLevel" resultMap="userWithRolesMap">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled,t2.is_ldap,t2.phone,
+        select t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled,t2.is_ldap,t2.phone,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.image_url,
         t2.object_version_number as user_version_number,
         t2.creation_date as creation_date,
@@ -115,7 +115,7 @@
                 and iut.real_name LIKE concat(concat('%',#{realName}),'%')
             </if>
             <if test="loginName != null">
-                and iut.target_login_name LIKE concat(concat('%',#{loginName}),'%')
+                and iut.login_name LIKE concat(concat('%',#{loginName}),'%')
             </if>
             <if test="enabled != null">
                 and iut.is_enabled = #{enabled}
@@ -128,7 +128,7 @@
             </if>
             <if test="params != null">
                 and (
-                iut.target_login_name like concat(concat('%',#{params}),'%') or
+                iut.login_name like concat(concat('%',#{params}),'%') or
                 iut.real_name like concat(concat('%',#{params}),'%') OR
                 iut.email like concat(concat('%',#{params}),'%') OR
                 iut.phone like concat(concat('%',#{params}),'%') OR
@@ -155,7 +155,7 @@
         SELECT
 	      t2.id,
 	      t2.real_name,
-	      t2.target_login_name AS login_name,
+	      t2.login_name AS login_name,
 	      t2.is_enabled,
 	      t2.is_ldap,
 	      t2.is_locked,
@@ -182,7 +182,7 @@
         SELECT
         	iut.*
         FROM
-	      ( SELECT iu.*, CASE WHEN iu.is_ldap = 1 THEN iu.login_name ELSE iu.email END AS target_login_name FROM iam_user iu ) iut
+	      ( SELECT iu.*, CASE WHEN iu.is_ldap = 1 THEN iu.login_name ELSE iu.email END AS login_name FROM iam_user iu ) iut
 	      JOIN iam_member_role imr ON iut.id = imr.member_id
 	      JOIN fd_project_permission fdu ON fdu.MEMBER_ROLE_ID = imr.id
 	      JOIN iam_role ir2 ON ir2.id = imr.role_id
@@ -206,7 +206,7 @@
 
 
     <select id="listUserWithRolesOnProjectLevelByIds" resultMap="userWithRolesMap">
-        select t2.id,t2.real_name,t2.target_login_name as login_name,t2.is_enabled, t2.image_url,
+        select t2.id,t2.real_name,t2.login_name as login_name,t2.is_enabled, t2.image_url,
         t2.is_locked,t2.organization_id,t2.email,t2.language,t2.time_zone, t2.phone,t2.is_ldap,
         t2.object_version_number as user_version_number,
         fo.tenant_name as user_org_name,htc.config_value as user_org_code, ir2.id as role_id,ir2.code as role_code,

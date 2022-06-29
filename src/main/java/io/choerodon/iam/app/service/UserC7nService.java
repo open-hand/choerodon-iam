@@ -172,6 +172,8 @@ public interface UserC7nService {
      */
     OrganizationProjectVO queryOrganizationProjectByUserId(Long userId, String projectName);
 
+    List<ProjectDTO> listProjectsByUserIdOptional(Long organizationId, Long userId);
+
     /**
      * 校验用户是否是项目的所有者
      *

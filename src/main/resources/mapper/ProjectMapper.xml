@@ -282,9 +282,12 @@
         SELECT fp.*,
         iu.real_name as create_user_name,
         iu.image_url as create_user_image_url,
+        iu2.real_name as update_user_name,
+        iu2.image_url as update_user_image_url,
         null as program_name
         FROM fd_project fp
         left join iam_user iu on iu.id = fp.created_by
+        left join iam_user iu2 on iu2.id=fp.last_updated_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
                 INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id

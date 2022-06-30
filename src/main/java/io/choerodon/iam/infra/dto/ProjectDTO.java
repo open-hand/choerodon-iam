@@ -110,6 +110,12 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目创建人的头像")
     private String createUserImageUrl;
     @Transient
+    @ApiModelProperty(value = "项目更新人的用户名")
+    private String updateUserName;
+    @Transient
+    @ApiModelProperty(value = "项目更新人的头像")
+    private String updateUserImageUrl;
+    @Transient
     @ApiModelProperty(value = "项目所在项目群名称")
     private String programName;
     @Transient
@@ -572,5 +578,21 @@ public class ProjectDTO extends AuditDomain {
 
     public void setCategoryCodes(List<String> categoryCodes) {
         this.categoryCodes = categoryCodes;
+    }
+
+    public String getUpdateUserName() {
+        return updateUserName;
+    }
+
+    public void setUpdateUserName(String updateUserName) {
+        this.updateUserName = updateUserName;
+    }
+
+    public String getUpdateUserImageUrl() {
+        return updateUserImageUrl;
+    }
+
+    public void setUpdateUserImageUrl(String updateUserImageUrl) {
+        this.updateUserImageUrl = updateUserImageUrl;
     }
 }

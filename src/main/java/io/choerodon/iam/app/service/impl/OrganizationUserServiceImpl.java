@@ -177,7 +177,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public Page<UserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, PageRequest pageable, UserSearchVO userSearchVO) {
         Page<User> userPage = PageHelper.doPageAndSort(pageable, () -> userC7nMapper.listOrganizationUser(organizationId, userSearchVO.getLoginName(),
-                userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getLocked(), userSearchVO.getParams()));
+                userSearchVO.getRealName(), userSearchVO.getRoleName(), userSearchVO.getEnabled(), userSearchVO.getLocked(), userSearchVO.getInternal(),
+                userSearchVO.getParams()));
         return setUserRoleAndSagaInfo(userPage, organizationId, userSearchVO.getRoleName());
     }
 

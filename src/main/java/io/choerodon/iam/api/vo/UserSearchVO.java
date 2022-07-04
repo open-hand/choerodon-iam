@@ -31,6 +31,10 @@ public class UserSearchVO {
     private Long roles;
     @ApiModelProperty("用户标签")
     private String userLabel;
+    @ApiModelProperty("工作组")
+    private String workGroup;
+    @ApiModelProperty("是否内部用户")
+    private Boolean internal;
 
     public String getLoginName() {
         return loginName;
@@ -110,5 +114,21 @@ public class UserSearchVO {
 
     public void setUserLabel(String userLabel) {
         this.userLabel = userLabel;
+    }
+
+    public String getWorkGroup() {
+        return workGroup;
+    }
+
+    public void setWorkGroup(String workGroup) {
+        this.workGroup = workGroup;
+    }
+
+    public Boolean getInternal() {
+        return internal;
+    }
+
+    public void setInternal(Boolean internal) {
+        this.internal = internal;
     }
 }

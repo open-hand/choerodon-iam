@@ -1237,6 +1237,12 @@
                 <if test="locked != null">
                     AND iu.is_locked = #{locked}
                 </if>
+                <if test="internal != null and internal==true">
+                    AND iu.organization_id = #{organizationId}
+                </if>
+                <if test="internal != null and internal==false">
+                    AND iu.organization_id != #{organizationId}
+                </if>
             </where>
             GROUP BY iu.id
         ) iut

@@ -55,4 +55,13 @@ public interface BusinessService {
      * @param projectId
      */
     void deleteProjectClassficationRelation(Long projectId);
+
+    /**
+     * 更新工作组的关联关系
+     *
+     * @param organizationId
+     * @param id
+     * @param workGroupId
+     */
+    void setWorkGroup(Long organizationId, Long id, Long workGroupId);
 }

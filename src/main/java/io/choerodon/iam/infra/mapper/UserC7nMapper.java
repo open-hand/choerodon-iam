@@ -370,6 +370,8 @@ public interface UserC7nMapper {
                                     @Param("loginName") String loginName,
                                     @Param("realName") String realName,
                                     @Param("roleName") String roleName,
+                                    @Param("email") String email,
+                                    @Param("phone") String phone,
                                     @Param("enabled") Boolean enabled,
                                     @Param("locked") Boolean locked,
                                     @Param("internal") Boolean internal,

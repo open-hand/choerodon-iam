@@ -87,18 +87,16 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     }
 
     @Override
-    public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId) {
+    public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Boolean isMobile, Long projectId) {
         CustomUserDetails self = UserUtils.getUserDetails();
         Boolean isOrgRoot = false;
         Set<String> labels = new HashSet<>();
-        if (projectId != null) {
+        if (projectId != null && Boolean.FALSE.equals(isMobile)) {
             ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(projectId);
             isOrgRoot = userC7nService.checkIsOrgRoot(projectDTO.getOrganizationId(), self.getUserId());
             labels.addAll(getProjectLabels(projectId));
         }
         Boolean finalIsOrgRoot = isOrgRoot;
-        LOGGER.info(">>>>>>>>>>>> check permission >>>>>>>>>>>>>");
-        LOGGER.info("CustomUserDetails is {}.ProjectId id is {}.", self, projectId);
         List<Long> currentRoleIds = null;
         if (tenantId != null) {
             currentRoleIds = roleC7nMapper.listRoleIdsByTenantId(self.getUserId(), tenantId);
@@ -107,7 +105,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
             currentRoleIds = self.roleMergeIds();
         }
         List<Long> finalCurrentRoleIds = currentRoleIds;
-        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(finalCurrentRoleIds, projectId, labels, self.getUserId(), finalIsOrgRoot, c));
+        return menuRepository.checkPermissionSets(codes, (c) -> menuC7nMapper.checkPermissionSets(finalCurrentRoleIds, projectId, labels, isMobile, self.getUserId(), finalIsOrgRoot, c));
     }
 
     @Override

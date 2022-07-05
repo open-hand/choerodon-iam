@@ -218,15 +218,14 @@
         AND imr.member_id = #{userId}
         JOIN fd_project_permission fpu ON fpu.MEMBER_ROLE_ID = imr.id
         AND fpu.PROJECT_ID = #{projectId}
-        JOIN iam_menu im ON im.id = ps.parent_id
-        JOIN hiam_label_rel hlr1 ON hlr1.data_type = 'MENU'
-        AND hlr1.data_id = im.id
-        JOIN iam_label il1 ON il1.id = hlr1.label_id
-        AND il1.type = 'MENU'
-        and il1.name in
-        <foreach collection="labels" open="(" separator="," close=")" item="label">
-            #{label}
-        </foreach>
+        <if test="isMobile==false">
+            JOIN iam_menu im ON im.id = ps.parent_id
+            JOIN hiam_label_rel hlr1 ON hlr1.data_type = 'MENU' AND hlr1.data_id = im.id
+            JOIN iam_label il1 ON il1.id = hlr1.label_id  AND il1.type = 'MENU' and il1.name in
+            <foreach collection="labels" open="(" separator="," close=")" item="label">
+                #{label}
+            </foreach>
+        </if>
     </if>
     join iam_role_permission irp on (
     irp.role_id = ir.id

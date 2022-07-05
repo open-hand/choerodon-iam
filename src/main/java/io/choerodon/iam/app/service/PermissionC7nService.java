@@ -19,9 +19,10 @@ public interface PermissionC7nService {
      * 查询当前用户菜单下可访问的权限集编码列表
      *
      * @param codes 权限集编码
+     * @param isMobile
      * @return 可访问的权限集编码
      */
-    List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Long projectId);
+    List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Boolean isMobile, Long projectId);
 
     List<Permission> getPermission(String[] codes);
 

@@ -377,6 +377,11 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         List<ProjectCategoryDTO> projectCategoryDTOS = projectMapCategoryMapper.selectProjectCategoryNames(projectDTO.getId());
         projectDTO.setCategories(projectCategoryDTOS);
 
+        Tenant tenant = organizationMapper.selectByPrimaryKey(projectDTO.getOrganizationId());
+        if (tenant != null) {
+            projectDTO.setOrganizationCode(tenant.getTenantNum());
+            projectDTO.setOrganizationName(tenant.getTenantName());
+        }
         return projectDTO;
     }
 

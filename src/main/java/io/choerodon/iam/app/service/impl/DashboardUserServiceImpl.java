@@ -1,5 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -10,13 +18,6 @@ import io.choerodon.iam.infra.dto.DashboardUserDTO;
 import io.choerodon.iam.infra.enums.DashboardType;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 应用服务默认实现
@@ -69,14 +70,9 @@ public class DashboardUserServiceImpl implements DashboardUserService {
             createCustomizeDashboardUser(dashboardUser);
             return;
         }
-        Integer rank = customizeDashboardUserDTOS.get(BaseConstants.Digital.ZERO).getRank();
-        dashboardUser.setRank(rank);
+        Integer rank = dashboardUserMapper.queryMaxRankByUserId(dashboardUser.getUserId());
+        dashboardUser.setRank(rank == null ? BaseConstants.Digital.ZERO : rank + 1);
         dashboardUserMapper.insert(dashboardUser);
-        for (DashboardUserDTO customizeDashboardUser : customizeDashboardUserDTOS) {
-            customizeDashboardUser.setRank(customizeDashboardUser.getRank() + 1);
-        }
-        customizeDashboardUserDTOS.forEach(customizeDashboardUser ->
-                dashboardUserMapper.updateOptional(customizeDashboardUser, DashboardUserDTO.FIELD_RANK));
     }
 
     @Override

@@ -22,11 +22,13 @@ import io.choerodon.iam.app.service.DashboardUserService;
 import io.choerodon.iam.infra.constant.DashboardConstants;
 import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.choerodon.iam.infra.dto.DashboardUserDTO;
+import io.choerodon.iam.infra.dto.ProjectCategoryDTO;
 import io.choerodon.iam.infra.enums.DashboardType;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardUserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 应用服务默认实现
@@ -103,9 +105,9 @@ public class DashboardServiceImpl implements DashboardService {
         if (CollectionUtils.isNotEmpty(dashboards)) {
             return dashboards;
         }
-        List<DashboardDTO> defaultDashboards =
-                dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue())
-                        .setDefaultFlag(BaseConstants.Flag.YES));
+        List<DashboardDTO> defaultDashboards = PageHelper.doSort(new Sort(Sort.Direction.ASC, "dashboard_id"),
+                () -> dashboardMapper.select(new DashboardDTO().setDashboardType(DashboardType.INTERNAL.getValue()).setDefaultFlag(BaseConstants.Flag.YES)));
+
         defaultDashboards.forEach(defaultDashboard -> {
             DashboardUserDTO dashboardUserDTO = new DashboardUserDTO()
                     .setDashboardId(defaultDashboard.getDashboardId())

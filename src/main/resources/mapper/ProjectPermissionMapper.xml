@@ -179,10 +179,9 @@
         	t1.*
         FROM
         	(
-        SELECT
-        	iut.*
-        FROM
-	      ( SELECT iu.*, CASE WHEN iu.is_ldap = 1 THEN iu.login_name ELSE iu.email END AS login_name FROM iam_user iu ) iut
+        select iut.*
+        from
+        iam_user iut
 	      JOIN iam_member_role imr ON iut.id = imr.member_id
 	      JOIN fd_project_permission fdu ON fdu.MEMBER_ROLE_ID = imr.id
 	      JOIN iam_role ir2 ON ir2.id = imr.role_id
@@ -671,13 +670,7 @@
         SELECT *
         FROM (
         SELECT iu.id, iu.email, iu.organization_id, iu.real_name, iu.phone, iu.image_url, iu.is_enabled, iu.is_ldap,
-        iu.is_admin,
-        CASE
-        WHEN iu.is_ldap = 1 THEN
-        iu.login_name
-        ELSE
-        iu.email
-        end as login_name
+        iu.is_admin,iu.login_name
         FROM fd_project_permission fpu
         JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
         JOIN iam_user iu ON iu.id = imr.member_id

@@ -82,8 +82,9 @@ public class PermissionC7nController {
     public ResponseEntity<List<PermissionCheckDTO>> checkPermissions(
             @RequestParam(required = false) Long tenantId,
             @RequestParam(required = false) Long projectId,
+            @RequestParam(defaultValue = "false",value = "is_mobile") Boolean isMobile,
             @RequestBody List<String> codes) {
-        return Results.success(permissionC7nService.checkPermissionSets(codes, tenantId, projectId));
+        return Results.success(permissionC7nService.checkPermissionSets(codes, tenantId, isMobile, projectId));
     }
 
     @Permission(permissionLogin = true)

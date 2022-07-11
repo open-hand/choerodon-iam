@@ -274,7 +274,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
         }
-        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
+        if (businessService != null) {
             businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
         return projectMapper.selectByPrimaryKey(projectDTO);
@@ -364,6 +364,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     /**
      * 更新项目信息
      * 增加项目类型的操作在最后一个sagaTask执行，目的是保证只有各个服务的添加项目类型执行成功后，界面才能查到相关类型
+     *
      * @param organizationId
      * @param projectDTO
      * @return
@@ -423,7 +424,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
 
         // 更新项目类别
-        if (businessService != null && projectDTO.getProjectClassficationId() != null) {
+        if (businessService != null) {
             businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
         }
 
@@ -486,6 +487,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         projectMapper.updateByPrimaryKeySelective(projectDTO);
         if (businessService != null) {
             businessService.setProjectClassfication(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getProjectClassficationId());
+            businessService.setWorkGroup(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getWorkGroupId());
         }
         return projectMapper.selectByPrimaryKey(projectDTO.getId());
     }

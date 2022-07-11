@@ -30,7 +30,7 @@ import io.choerodon.iam.infra.utils.TypeUtil;
 @Service
 public class DefaultUserDetailsC7nService extends DefaultUserDetailsService {
 
-    private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(20, 200, 60, TimeUnit.SECONDS,
+    private final ThreadPoolExecutor SELECT_MENU_POOL = new ThreadPoolExecutor(0, 20, 10, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2000), new ThreadFactoryBuilder().setNameFormat("record-tenant-visitors-%d").build());
 
     @Autowired

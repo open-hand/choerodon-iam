@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.Gson;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.boot.file.FileClient;
 import org.hzero.common.HZeroService;
@@ -145,11 +146,20 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         Map<String, SysSettingDTO> sysSettingDTOMap = sysSettingMapper.selectAll().stream().collect(Collectors.toMap(SysSettingDTO::getSettingKey, Function.identity()));
         Map<String, String> settingDTOMap = new HashMap<>();
         SysSettingUtils.sysSettingVoToGeneralInfoMap(sysSettingHandlers, sysSettingVO, settingDTOMap);
+        Map<String, Map<String, String>> tls = sysSettingVO.get_tls();
         settingDTOMap.forEach((k, v) -> {
             SysSettingDTO settingDTO;
             if (sysSettingDTOMap.containsKey(k)) {
                 settingDTO = sysSettingDTOMap.get(k);
                 settingDTO.setSettingValue(v);
+                if (!MapUtils.isEmpty(tls)) {
+                    Map<String, String> stringStringMap = tls.get(k);
+                    if (MapUtils.isNotEmpty(stringStringMap)){
+                        HashMap<String, Map<String, String>> stringMapHashMap = new HashMap<>();
+                        stringMapHashMap.put("settingValue", stringStringMap);
+                        settingDTO.set_tls(stringMapHashMap);
+                    }
+                }
                 if (sysSettingMapper.updateByPrimaryKey(settingDTO) != 1) {
                     throw new CommonException("error.setting.update.failed");
                 }
@@ -157,6 +167,14 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 settingDTO = new SysSettingDTO();
                 settingDTO.setSettingKey(k);
                 settingDTO.setSettingValue(v);
+                if (!MapUtils.isEmpty(tls)) {
+                    Map<String, String> stringStringMap = tls.get(k);
+                    if (MapUtils.isNotEmpty(stringStringMap)){
+                        HashMap<String, Map<String, String>> stringMapHashMap = new HashMap<>();
+                        stringMapHashMap.put("settingValue", stringStringMap);
+                        settingDTO.set_tls(stringMapHashMap);
+                    }
+                }
                 if (sysSettingMapper.insertSelective(settingDTO) != 1) {
                     throw new CommonException("error.setting.insert.failed");
                 }

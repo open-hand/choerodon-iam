@@ -21,15 +21,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_sys_setting_tl.groovy') {
     changeSet(id: "2022-07-14-iam_sys_setting_tl", author: 'wx') {
         sql("""
               INSERT INTO iam_sys_setting_tl ( ID, SETTING_VALUE, LANG )
-              ( SELECT iss.id, iss.SETTING_VALUE, 'zh_CN' FROM iam_sys_setting iss WHERE iss.SETTING_KEY='systemTitle' );
+              ( SELECT iss.id, iss.SETTING_VALUE, 'zh_CN' FROM iam_sys_setting iss);
               INSERT INTO iam_sys_setting_tl ( ID, SETTING_VALUE, LANG )
-              ( SELECT iss.id, iss.SETTING_VALUE, 'en_US' FROM iam_sys_setting iss WHERE iss.SETTING_KEY='systemTitle' );
-              
-              
-              INSERT INTO iam_sys_setting_tl ( ID, SETTING_VALUE, LANG )
-              ( SELECT iss.id, iss.SETTING_VALUE, 'zh_CN' FROM iam_sys_setting iss WHERE iss.SETTING_KEY='systemName' );
-              INSERT INTO iam_sys_setting_tl ( ID, SETTING_VALUE, LANG )
-              ( SELECT iss.id, iss.SETTING_VALUE, 'en_US' FROM iam_sys_setting iss WHERE iss.SETTING_KEY='systemName' );
+              ( SELECT iss.id, iss.SETTING_VALUE, 'en_US' FROM iam_sys_setting iss);
            """)
     }
 

@@ -236,10 +236,25 @@
 
 
     <select id="fulltextSearch" resultMap="RoleDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
-        ir.*
+           tmp.id,
+           tmp.`code`,
+           irt.`name`,
+           tmp.fd_level,
+           tmp.is_enabled,
+           tmp.is_built_in,
+           tmp.is_modified
         FROM
-        iam_role ir
+        (SELECT
+           ir.id,
+           ir.`code`,
+           ir.fd_level,
+           ir.is_enabled,
+           ir.is_built_in,
+           ir.is_modified
+        FROM
+           iam_role ir
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
         INNER JOIN iam_label il on il.id=hlr.label_id
         <where>
@@ -271,7 +286,8 @@
         order by
         ir.is_modified ASC,
         ir.is_enabled DESC,
-        ir.id DESC
+        ir.id DESC) tmp
+        INNER JOIN iam_role_tl irt ON irt.id=tmp.id  AND irt.lang= #{lang}
     </select>
     <select id="getTenantAdminRole" resultType="org.hzero.iam.domain.entity.Role">
         SELECT ir.*

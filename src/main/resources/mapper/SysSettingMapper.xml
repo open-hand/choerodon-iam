@@ -2,16 +2,27 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.SysSettingMapper">
     <select id="queryByKey" resultType="io.choerodon.iam.infra.dto.SysSettingDTO">
-        SELECT *
-        FROM iam_sys_setting
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+          iss.id,
+          iss.SETTING_KEY,
+          isst.SETTING_VALUE,
+          iss.OBJECT_VERSION_NUMBER
+        FROM iam_sys_setting  iss
+        JOIN iam_sys_setting_tl isst ON iss.id= isst.ID AND isst.LANG= #{lang}
         WHERE SETTING_KEY = #{key}
     </select>
 
     <select id="listByLikeCode" resultType="io.choerodon.iam.infra.dto.SysSettingDTO">
+      <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
-        *
+           iss.id,
+           iss.SETTING_KEY,
+           isst.SETTING_VALUE,
+           iss.OBJECT_VERSION_NUMBER
         FROM
-        iam_sys_setting
+        iam_sys_setting  iss
+        JOIN iam_sys_setting_tl isst ON iss.id= isst.ID AND isst.LANG= #{lang}
         WHERE
         SETTING_KEY LIKE concat(concat('%',#{code}),'%')
     </select>

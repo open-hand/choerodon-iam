@@ -18,6 +18,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "iam_sys_setting")
 @MultiLanguage
 public class SysSettingDTO extends AuditDomain {
+    public static final String SETTING_VALUE = "settingValue";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

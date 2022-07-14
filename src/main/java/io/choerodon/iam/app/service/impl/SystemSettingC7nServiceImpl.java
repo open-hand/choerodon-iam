@@ -154,9 +154,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 settingDTO.setSettingValue(v);
                 if (!MapUtils.isEmpty(tls)) {
                     Map<String, String> stringStringMap = tls.get(k);
-                    if (MapUtils.isNotEmpty(stringStringMap)){
+                    if (MapUtils.isNotEmpty(stringStringMap)) {
                         HashMap<String, Map<String, String>> stringMapHashMap = new HashMap<>();
-                        stringMapHashMap.put("settingValue", stringStringMap);
+                        stringMapHashMap.put(SysSettingDTO.SETTING_VALUE, stringStringMap);
                         settingDTO.set_tls(stringMapHashMap);
                     }
                 }
@@ -169,9 +169,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
                 settingDTO.setSettingValue(v);
                 if (!MapUtils.isEmpty(tls)) {
                     Map<String, String> stringStringMap = tls.get(k);
-                    if (MapUtils.isNotEmpty(stringStringMap)){
+                    if (MapUtils.isNotEmpty(stringStringMap)) {
                         HashMap<String, Map<String, String>> stringMapHashMap = new HashMap<>();
-                        stringMapHashMap.put("settingValue", stringStringMap);
+                        stringMapHashMap.put(SysSettingDTO.SETTING_VALUE, stringStringMap);
                         settingDTO.set_tls(stringMapHashMap);
                     }
                 }

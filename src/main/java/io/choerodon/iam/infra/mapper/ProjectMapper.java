@@ -64,14 +64,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
 
     List<ProjectDTO> selectByOrgIdAndCategory(@Param("organizationId") Long organizationId, @Param("param") String param);
 
-    List<ProjectDTO> selectByOrgIdAndCategoryEnable(@Param("organizationId") Long organizationId, @Param("agile") String agile, @Param("param") String param);
-
-    /**
-     * 获取所有项目Id及其对应类型Id
-     *
-     * @return 列表
-     */
-    List<ProjectMapCategoryDTO> selectProjectAndCategoryId();
 
     /**
      * 查询组织下用户的项目列表.

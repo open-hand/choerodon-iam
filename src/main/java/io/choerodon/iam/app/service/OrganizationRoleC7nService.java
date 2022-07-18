@@ -29,7 +29,7 @@ public interface OrganizationRoleC7nService {
      * @param roleId
      * @param roleVO
      */
-    void update(Long organizationId, Long roleId, RoleVO roleVO);
+    RoleVO update(Long organizationId, Long roleId, RoleVO roleVO);
 
 
     /**

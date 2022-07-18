@@ -281,7 +281,6 @@
                 AND ht.tenant_num LIKE concat(concat('%', #{param1.tenantNum}), '%')
             </if>
         </where>
-        GROUP BY ht.tenant_id
     </select>
 
     <select id="listMemberIds" resultType="org.hzero.iam.domain.entity.User">

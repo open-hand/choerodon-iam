@@ -43,12 +43,11 @@ public class OrganizationRoleC7nController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改角色信息")
     @PutMapping("/{role_id}")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<RoleVO> update(
             @PathVariable("organization_id") Long organizationId,
             @Encrypt @PathVariable("role_id") Long roleId,
             @RequestBody RoleVO roleVO) {
-        organizationRoleC7nService.update(organizationId, roleId, roleVO);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(organizationRoleC7nService.update(organizationId, roleId, roleVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.app.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.iam.domain.entity.Role;
@@ -41,10 +42,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.vo.*;
 import io.choerodon.iam.api.vo.agile.AgileUserVO;
-import io.choerodon.iam.app.service.BusinessService;
-import io.choerodon.iam.app.service.OrganizationProjectC7nService;
-import io.choerodon.iam.app.service.ProjectC7nService;
-import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -113,6 +110,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
     @Autowired(required = false)
     BusinessService businessService;
+    @Autowired
+    private WorkGroupProjectRelService workGroupProjectRelService;
 
     public ProjectC7nServiceImpl(OrganizationProjectC7nService organizationProjectC7nService,
                                  OrganizationAssertHelper organizationAssertHelper,
@@ -204,6 +203,8 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         List<Long> deleteProjectCategoryIds = dbProjectCategoryIds.stream().filter(id -> !projectCategoryIds.contains(id)).collect(Collectors.toList());
         List<Long> addProjectCategoryIds = projectCategoryIds.stream().filter(id -> !dbProjectCategoryIds.contains(id)).collect(Collectors.toList());
         deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+        //更新工作组
+        workGroupProjectRelService.insertOrUpdateOrDeleteRelation(projectDTO.getOrganizationId(), projectDTO.getId(), projectDTO.getWorkGroupId());
 
         //增加项目类型的数据  这个之前存在的类型要从数据库中取，因为前端传的可能不准确。
         Set<String> beforeCode = new HashSet<>();

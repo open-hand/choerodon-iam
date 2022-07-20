@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.iam.infra.mapper.WorkGroupTreeClosureMapper">
+    <select id="queryAncestor" resultType="java.lang.Long">
+        select
+          distinct ancestor_id
+        from
+        fd_work_group_tree_closure
+        where
+          organization_id = #{organizationId}
+          and
+          descendant_id = #{workGroupId}
+    </select>
+
+    <select id="queryDescendant" resultType="java.lang.Long">
+        select
+          distinct descendant_id
+        from
+        fd_work_group_tree_closure
+        where
+          organization_id = #{organizationId}
+          and ancestor_id in
+          <foreach collection="workGroupIds" item="workGroupId" open="(" separator="," close=")">
+              #{workGroupId}
+          </foreach>
+    </select>
+
+    <select id="batchInsert">
+        INSERT INTO fd_work_group_tree_closure (
+          ancestor_id, descendant_id, organization_id,
+          created_by, last_updated_by
+        )
+        values
+        <foreach collection="workGroupTreeClosures" item="item" separator=",">
+            (#{item.ancestorId}, #{item.descendantId},#{organizationId}, #{userId}, #{userId})
+        </foreach>
+    </select>
+
+    <delete id="deleteDescendant">
+        DELETE FROM fd_work_group_tree_closure
+        where organization_id = #{organizationId}
+        AND descendant_id in
+        <foreach collection="childrens" item="children" open="(" close=")" separator=",">
+            #{children}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByAncestorsAndDescendants">
+        DELETE FROM fd_work_group_tree_closure
+        where organization_id = #{organizationId}
+        AND ancestor_id in
+        <foreach collection="ancestors" item="ancestor" open="(" close=")" separator=",">
+            #{ancestor}
+        </foreach>
+        AND descendant_id in
+        <foreach collection="descendants" item="descendant" open="(" close=")" separator=",">
+            #{descendant}
+        </foreach>
+    </delete>
+</mapper>

@@ -2,9 +2,9 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.RedisCacheKeyConstants.REDIS_KEY_LOGIN;
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
-import static io.choerodon.iam.infra.utils.SysSettingUtils.listToMap;
 import static io.choerodon.iam.infra.utils.SysSettingUtils.listToMapTl;
 
+import com.google.inject.internal.cglib.core.$CollectionUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -381,43 +381,68 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
     }
 
     private void handSysttingTl(SysSettingVO sysSettingVO, List<SysSettingDTO> sysSettingDTOS) {
-        Map<String, String> settingDTOMap = listToMapTl(sysSettingDTOS);
+        Map<String, SysSettingDTO> settingDTOMap = listToMapTl(sysSettingDTOS);
         if (org.springframework.util.ObjectUtils.isEmpty(settingDTOMap)) {
             return;
         }
         // 基本信息
-        sysSettingVO.setFavicon(settingDTOMap.get(SysSettingEnum.FAVICON.value()));
-        sysSettingVO.setSystemLogo(settingDTOMap.get(SysSettingEnum.SYSTEM_LOGO.value()));
-        sysSettingVO.setSystemTitle(settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()));
-        sysSettingVO.setSystemName(settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()));
-        sysSettingVO.setDefaultLanguage(settingDTOMap.get(SysSettingEnum.DEFAULT_LANGUAGE.value()));
-        sysSettingVO.setRegisterUrl(settingDTOMap.get(SysSettingEnum.REGISTER_URL.value()));
-        sysSettingVO.setResetGitlabPasswordUrl(settingDTOMap.get(SysSettingEnum.RESET_GITLAB_PASSWORD_URL.value()));
-        sysSettingVO.setThemeColor(settingDTOMap.get(SysSettingEnum.THEME_COLOR.value()));
-        sysSettingVO.setAutoCleanEmailRecord(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD.value()), SysSettingDTO.class).getSettingValue()));
-        sysSettingVO.setAutoCleanEmailRecordInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
-        sysSettingVO.setAutoCleanWebhookRecord(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value()), SysSettingDTO.class).getSettingValue()));
-        sysSettingVO.setAutoCleanWebhookRecordInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
-        sysSettingVO.setAutoCleanSagaInstance(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value()), SysSettingDTO.class).getSettingValue()));
+        sysSettingVO.setFavicon(settingDTOMap.get(SysSettingEnum.FAVICON.value()) != null ? settingDTOMap.get(SysSettingEnum.FAVICON.value()).getSettingValue() : null);
+        sysSettingVO.setSystemLogo(settingDTOMap.get(SysSettingEnum.SYSTEM_LOGO.value()) != null ? settingDTOMap.get(SysSettingEnum.SYSTEM_LOGO.value()).getSettingValue() : null);
+        sysSettingVO.setSystemTitle(settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()) != null ? settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()).getSettingValue() : null);
+        sysSettingVO.setSystemTitleToken(settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()) != null ? settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()).get_token() : null);
+        sysSettingVO.setSystemName(settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()) != null ? settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()).getSettingValue() : null);
+        sysSettingVO.setSystemNameToken(settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()) != null ? settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()).get_token() : null);
+
+        sysSettingVO.setDefaultLanguage(settingDTOMap.get(SysSettingEnum.DEFAULT_LANGUAGE.value()) != null ? settingDTOMap.get(SysSettingEnum.DEFAULT_LANGUAGE.value()).getSettingValue() : null);
+        sysSettingVO.setRegisterUrl(settingDTOMap.get(SysSettingEnum.REGISTER_URL.value()) != null ? settingDTOMap.get(SysSettingEnum.REGISTER_URL.value()).getSettingValue() : null);
+        sysSettingVO.setResetGitlabPasswordUrl(settingDTOMap.get(SysSettingEnum.RESET_GITLAB_PASSWORD_URL.value()) != null ? settingDTOMap.get(SysSettingEnum.RESET_GITLAB_PASSWORD_URL.value()).getSettingValue() : null);
+        sysSettingVO.setThemeColor(settingDTOMap.get(SysSettingEnum.THEME_COLOR.value()) != null ? settingDTOMap.get(SysSettingEnum.THEME_COLOR.value()).getSettingValue() : null);
+        SysSettingDTO autoCleanEmail = settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD.value());
+        if (autoCleanEmail != null) {
+            sysSettingVO.setAutoCleanEmailRecord(autoCleanEmail.getSettingValue() != null ? Boolean.valueOf(autoCleanEmail.getSettingValue()) : null);
+        }
+        SysSettingDTO autoCleanWebhook = settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value());
+        if (autoCleanWebhook != null) {
+            sysSettingVO.setAutoCleanWebhookRecord(autoCleanWebhook.getSettingValue() != null ? Boolean.valueOf(autoCleanWebhook.getSettingValue()) : null);
+        }
+        SysSettingDTO autoCleanWebhookRecordInterval = settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value());
+        if (autoCleanWebhookRecordInterval != null) {
+            sysSettingVO.setAutoCleanWebhookRecordInterval(autoCleanWebhookRecordInterval.getSettingValue() != null ? Integer.valueOf(autoCleanWebhookRecordInterval.getSettingValue()) : null);
+        }
+        SysSettingDTO autoCleanSagaInstance = settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value());
+        if (autoCleanSagaInstance != null) {
+            sysSettingVO.setAutoCleanSagaInstance(autoCleanSagaInstance.getSettingValue() != null ? Boolean.valueOf(autoCleanSagaInstance.getSettingValue()) : null);
+        }
+
+
         if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value()))) {
-            sysSettingVO.setAutoCleanSagaInstanceInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
+            SysSettingDTO autoCleanSagaInstanceInterval = settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value());
+            if (autoCleanSagaInstanceInterval != null) {
+                sysSettingVO.setAutoCleanSagaInstanceInterval(autoCleanSagaInstanceInterval.getSettingValue() != null ? Integer.valueOf(autoCleanSagaInstanceInterval.getSettingValue()) : null);
+            }
         }
         if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value()))) {
-            sysSettingVO.setRetainFailedSagaInstance(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value()), SysSettingDTO.class).getSettingValue()));
+            SysSettingDTO retainFailedSagaInstance = settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value());
+            if (retainFailedSagaInstance != null) {
+                sysSettingVO.setRetainFailedSagaInstance(retainFailedSagaInstance.getSettingValue() != null ? Boolean.valueOf(retainFailedSagaInstance.getSettingValue()) : null);
+            }
         }
-        String registerEnabled = settingDTOMap.get(SysSettingEnum.REGISTER_ENABLED.value());
-        if (!org.springframework.util.ObjectUtils.isEmpty(registerEnabled)) {
-            sysSettingVO.setRegisterEnabled(Boolean.valueOf(JsonHelper.unmarshalByJackson(registerEnabled, SysSettingDTO.class).getSettingValue()));
+        SysSettingDTO registerEnabled = settingDTOMap.get(SysSettingEnum.REGISTER_ENABLED.value());
+        if (registerEnabled != null) {
+            sysSettingVO.setRegisterEnabled(registerEnabled.getSettingValue() != null ? Boolean.valueOf(registerEnabled.getSettingValue()) : null);
         }
         // 密码策略
-        sysSettingVO.setDefaultPassword(settingDTOMap.get(SysSettingEnum.DEFAULT_PASSWORD.value()));
-        String minPwd = settingDTOMap.get(SysSettingEnum.MIN_PASSWORD_LENGTH.value());
-        String maxPwd = settingDTOMap.get(SysSettingEnum.MAX_PASSWORD_LENGTH.value());
+        SysSettingDTO defaultPassword = settingDTOMap.get(SysSettingEnum.DEFAULT_PASSWORD.value());
+        sysSettingVO.setDefaultPassword(defaultPassword != null ? defaultPassword.getSettingValue() : null);
+        SysSettingDTO minPwdSysSettingDTO = settingDTOMap.get(SysSettingEnum.MIN_PASSWORD_LENGTH.value());
+        SysSettingDTO maxPwdSysSettingDTO = settingDTOMap.get(SysSettingEnum.MAX_PASSWORD_LENGTH.value());
+        String minPwd = minPwdSysSettingDTO != null ? minPwdSysSettingDTO.getSettingValue() : null;
+        String maxPwd = maxPwdSysSettingDTO != null ? maxPwdSysSettingDTO.getSettingValue() : null;
         if (!org.springframework.util.ObjectUtils.isEmpty(minPwd)) {
-            sysSettingVO.setMinPasswordLength(Integer.valueOf(JsonHelper.unmarshalByJackson(minPwd,SysSettingDTO.class).getSettingValue()));
+            sysSettingVO.setMinPasswordLength(Integer.valueOf(minPwd));
         }
         if (!org.springframework.util.ObjectUtils.isEmpty(maxPwd)) {
-            sysSettingVO.setMaxPasswordLength(Integer.valueOf(JsonHelper.unmarshalByJackson(maxPwd,SysSettingDTO.class).getSettingValue()));
+            sysSettingVO.setMaxPasswordLength(Integer.valueOf(maxPwd));
         }
     }
 

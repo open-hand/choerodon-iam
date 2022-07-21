@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.constant.RedisCacheKeyConstants.REDIS_KEY_LOGIN;
 import static io.choerodon.iam.infra.constant.TenantConstants.BACKETNAME;
+import static io.choerodon.iam.infra.utils.SysSettingUtils.listToMap;
+import static io.choerodon.iam.infra.utils.SysSettingUtils.listToMapTl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
@@ -45,6 +48,7 @@ import io.choerodon.iam.infra.feign.PlatformFeignClient;
 import io.choerodon.iam.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.iam.infra.mapper.SysSettingMapper;
 import io.choerodon.iam.infra.utils.ImageUtils;
+import io.choerodon.iam.infra.utils.JsonHelper;
 import io.choerodon.iam.infra.utils.MockMultipartFile;
 import io.choerodon.iam.infra.utils.SysSettingUtils;
 
@@ -366,6 +370,56 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         return settingDTOMap;
     }
 
+    @Override
+    public SysSettingVO getSettingTl() {
+        SysSettingVO sysSettingVO = new SysSettingVO();
+        List<SysSettingDTO> sysSettingDTOS = sysSettingMapper.selectAll();
+        sysSettingHandlers.forEach(handler -> {
+            handSysttingTl(sysSettingVO, sysSettingDTOS);
+        });
+        return sysSettingVO;
+    }
+
+    private void handSysttingTl(SysSettingVO sysSettingVO, List<SysSettingDTO> sysSettingDTOS) {
+        Map<String, String> settingDTOMap = listToMapTl(sysSettingDTOS);
+        if (org.springframework.util.ObjectUtils.isEmpty(settingDTOMap)) {
+            return;
+        }
+        // 基本信息
+        sysSettingVO.setFavicon(settingDTOMap.get(SysSettingEnum.FAVICON.value()));
+        sysSettingVO.setSystemLogo(settingDTOMap.get(SysSettingEnum.SYSTEM_LOGO.value()));
+        sysSettingVO.setSystemTitle(settingDTOMap.get(SysSettingEnum.SYSTEM_TITLE.value()));
+        sysSettingVO.setSystemName(settingDTOMap.get(SysSettingEnum.SYSTEM_NAME.value()));
+        sysSettingVO.setDefaultLanguage(settingDTOMap.get(SysSettingEnum.DEFAULT_LANGUAGE.value()));
+        sysSettingVO.setRegisterUrl(settingDTOMap.get(SysSettingEnum.REGISTER_URL.value()));
+        sysSettingVO.setResetGitlabPasswordUrl(settingDTOMap.get(SysSettingEnum.RESET_GITLAB_PASSWORD_URL.value()));
+        sysSettingVO.setThemeColor(settingDTOMap.get(SysSettingEnum.THEME_COLOR.value()));
+        sysSettingVO.setAutoCleanEmailRecord(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD.value()), SysSettingDTO.class).getSettingValue()));
+        sysSettingVO.setAutoCleanEmailRecordInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_EMAIL_RECORD_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
+        sysSettingVO.setAutoCleanWebhookRecord(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD.value()), SysSettingDTO.class).getSettingValue()));
+        sysSettingVO.setAutoCleanWebhookRecordInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_WEBHOOK_RECORD_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
+        sysSettingVO.setAutoCleanSagaInstance(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE.value()), SysSettingDTO.class).getSettingValue()));
+        if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value()))) {
+            sysSettingVO.setAutoCleanSagaInstanceInterval(Integer.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.AUTO_CLEAN_SAGA_INSTANCE_INTERVAL.value()), SysSettingDTO.class).getSettingValue()));
+        }
+        if (!StringUtils.isEmpty(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value()))) {
+            sysSettingVO.setRetainFailedSagaInstance(Boolean.valueOf(JsonHelper.unmarshalByJackson(settingDTOMap.get(SysSettingEnum.RETAIN_FAILED_SAGA_INSTANCE.value()), SysSettingDTO.class).getSettingValue()));
+        }
+        String registerEnabled = settingDTOMap.get(SysSettingEnum.REGISTER_ENABLED.value());
+        if (!org.springframework.util.ObjectUtils.isEmpty(registerEnabled)) {
+            sysSettingVO.setRegisterEnabled(Boolean.valueOf(JsonHelper.unmarshalByJackson(registerEnabled, SysSettingDTO.class).getSettingValue()));
+        }
+        // 密码策略
+        sysSettingVO.setDefaultPassword(settingDTOMap.get(SysSettingEnum.DEFAULT_PASSWORD.value()));
+        String minPwd = settingDTOMap.get(SysSettingEnum.MIN_PASSWORD_LENGTH.value());
+        String maxPwd = settingDTOMap.get(SysSettingEnum.MAX_PASSWORD_LENGTH.value());
+        if (!org.springframework.util.ObjectUtils.isEmpty(minPwd)) {
+            sysSettingVO.setMinPasswordLength(Integer.valueOf(JsonHelper.unmarshalByJackson(minPwd,SysSettingDTO.class).getSettingValue()));
+        }
+        if (!org.springframework.util.ObjectUtils.isEmpty(maxPwd)) {
+            sysSettingVO.setMaxPasswordLength(Integer.valueOf(JsonHelper.unmarshalByJackson(maxPwd,SysSettingDTO.class).getSettingValue()));
+        }
+    }
 
     private String uploadFile(MultipartFile file) {
         return fileClient.uploadFile(0L, BACKETNAME, null, file.getOriginalFilename(), file);

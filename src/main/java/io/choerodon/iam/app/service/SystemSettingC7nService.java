@@ -78,4 +78,7 @@ public interface SystemSettingC7nService {
      * @return
      */
     Map<String, String> queryLogin();
+
+    SysSettingVO getSettingTl();
+
 }

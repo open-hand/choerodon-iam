@@ -1,7 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.utils.SysSettingUtils.DEFAULT_CLEAN_NUM;
-import static io.choerodon.iam.infra.utils.SysSettingUtils.listToMap;
+import static io.choerodon.iam.infra.utils.SysSettingUtils.*;
 
 import java.util.List;
 import java.util.Map;

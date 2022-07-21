@@ -30,6 +30,17 @@ public class SysSettingUtils {
         return settingDTOMap;
     }
 
+    public static Map<String, String> listToMapTl(List<SysSettingDTO> settingDTOS) {
+        if (CollectionUtils.isEmpty(settingDTOS)) {
+            return null;
+        }
+        Map<String, String> settingDTOMap = new HashMap<>();
+        settingDTOS.forEach(settingDTO -> {
+            settingDTOMap.put(settingDTO.getSettingKey(), JsonHelper.marshalByJackson(settingDTO));
+        });
+        return settingDTOMap;
+    }
+
     /**
      * 系统配置列表转为系统配置VO
      *

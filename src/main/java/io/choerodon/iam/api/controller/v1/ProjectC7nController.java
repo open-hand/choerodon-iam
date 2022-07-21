@@ -54,8 +54,11 @@ public class ProjectC7nController extends BaseController {
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id,
                                             @RequestParam(value = "with_category_info", required = false, defaultValue = "true") Boolean withCategoryInfo,
                                             @RequestParam(value = "with_user_info", required = false, defaultValue = "true") Boolean withUserInfo,
-                                            @RequestParam(value = "with_agile_info", required = false, defaultValue = "true") Boolean withAgileInfo) {
-        return new ResponseEntity<>(projectService.queryProjectById(id, withCategoryInfo, withUserInfo, withAgileInfo), HttpStatus.OK);
+                                            @RequestParam(value = "with_agile_info", required = false, defaultValue = "true") Boolean withAgileInfo,
+                                            @RequestParam(value = "with_work_group", required = false, defaultValue = "true") Boolean withWorkGroup,
+                                            @RequestParam(value = "with_project_classfication", required = false, defaultValue = "true") Boolean withProjectClassfication
+    ) {
+        return new ResponseEntity<>(projectService.queryProjectById(id, withCategoryInfo, withUserInfo, withAgileInfo, withWorkGroup, withProjectClassfication), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)

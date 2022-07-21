@@ -361,6 +361,9 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         } else {
             List<SysSettingDTO> settingDTOS = sysSettingMapper.listByLikeCode("login");
             settingDTOMap = settingDTOS.stream().filter(t -> ObjectUtils.isNotEmpty(t.getSettingValue())).collect(Collectors.toMap(SysSettingDTO::getSettingKey, SysSettingDTO::getSettingValue));
+            settingDTOS.forEach(sysSettingDTO -> {
+                settingDTOMap.put(sysSettingDTO.getSettingKey() + "Token", sysSettingDTO.get_token());
+            });
             settingDTOMap.remove(SysSettingEnum.LOGIN_DING_TALK_APP_SECRET.value());
             settingStr = gson.toJson(settingDTOMap);
             stringRedisTemplate.opsForValue().set(REDIS_KEY_LOGIN, settingStr, 5, TimeUnit.MINUTES);

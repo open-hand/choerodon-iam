@@ -81,6 +81,13 @@ public class SysSettingVO extends AuditDomain {
     @ApiModelProperty(value = "是否保留失败的事务记录")
     private Boolean retainFailedSagaInstance;
 
+    @ApiModelProperty(value = "systemTitle数据的token")
+    private String systemTitleToken;
+
+    @ApiModelProperty("systemName的token")
+    private String systemNameToken;
+
+
     public Boolean getAutoCleanEmailRecord() {
         return autoCleanEmailRecord;
     }
@@ -231,5 +238,21 @@ public class SysSettingVO extends AuditDomain {
 
     public void setRetainFailedSagaInstance(Boolean retainFailedSagaInstance) {
         this.retainFailedSagaInstance = retainFailedSagaInstance;
+    }
+
+    public String getSystemTitleToken() {
+        return systemTitleToken;
+    }
+
+    public void setSystemTitleToken(String systemTitleToken) {
+        this.systemTitleToken = systemTitleToken;
+    }
+
+    public String getSystemNameToken() {
+        return systemNameToken;
+    }
+
+    public void setSystemNameToken(String systemNameToken) {
+        this.systemNameToken = systemNameToken;
     }
 }

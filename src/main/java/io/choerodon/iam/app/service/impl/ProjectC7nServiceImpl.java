@@ -145,7 +145,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
     }
 
     @Override
-    public ProjectDTO queryProjectById(Long projectId, boolean withCategoryInfo, boolean withUserInfo, boolean withAgileInfo) {
+    public ProjectDTO queryProjectById(Long projectId, boolean withCategoryInfo, boolean withUserInfo, boolean withAgileInfo, boolean withWorkGroup, boolean withProjectClassfication) {
         ProjectDTO dto = projectAssertHelper.projectNotExisted(projectId);
         if (withCategoryInfo) {
             if (enableCategory) {

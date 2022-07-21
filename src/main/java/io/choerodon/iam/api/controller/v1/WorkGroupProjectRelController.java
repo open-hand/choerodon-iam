@@ -1,7 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.iam.app.service.WorkGroupProjectRelService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_WORK_GROUP)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/work_group_project_rel")
 public class WorkGroupProjectRelController {

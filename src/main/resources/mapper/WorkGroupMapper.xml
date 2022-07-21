@@ -1,6 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.iam.infra.mapper.WorkGroupMapper">
+
+    <insert id="insertSyncData">
+        insert into fd_work_group
+        (
+        id,
+        name,
+        parent_id,
+        rank,
+        organization_id,
+        open_object_id,
+        open_type,
+        object_version_number,
+        created_by,
+        creation_date,
+        last_updated_by,
+        last_update_date
+        )
+        values
+        <foreach collection="insertList" item="item" index="index" separator=",">
+            (#{item.id},
+            #{item.name},
+            #{item.parentId},
+            #{item.rank},
+            #{item.organizationId},
+            #{item.openObjectId},
+            #{item.openType},
+            #{item.objectVersionNumber},
+            #{item.createdBy},
+            #{item.creationDate},
+            #{item.lastUpdatedBy},
+            #{item.lastUpdateDate}
+            )
+        </foreach>
+    </insert>
+
     <delete id="deleteByWorkGroupIds">
         DELETE FROM fd_work_group
         WHERE organization_id = #{organizationId}

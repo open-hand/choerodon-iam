@@ -12,4 +12,6 @@ public interface WorkGroupProjectRelMapper extends BaseMapper<WorkGroupProjectRe
     List<WorkGroupVO> selectWorkGroupByProjectIds(@Param("organizationId") Long organizationId, @Param("projectIds") Set<Long> projectIds);
 
     List<Long> listProjectIdsByWorkGroupId(@Param("workGroupIds") List<Long> workGroupIds);
+
+    void insertSyncData(@Param("insertList") List<WorkGroupProjectRelDTO> insertList);
 }

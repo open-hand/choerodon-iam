@@ -33,4 +33,6 @@ public interface WorkGroupMapper extends BaseMapper<WorkGroupDTO> {
                                      @Param("openType") String openType);
 
     void updateOpenObjectIdById(@Param("id") Long id, @Param("openObjectId") String openObjectId, @Param("openType") String openType);
+
+    void insertSyncData(@Param("insertList") List<WorkGroupDTO> insertList);
 }

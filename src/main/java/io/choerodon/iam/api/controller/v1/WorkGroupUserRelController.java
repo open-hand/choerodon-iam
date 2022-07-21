@@ -7,8 +7,10 @@ import io.choerodon.iam.api.vo.WorkGroupUserRelParamVO;
 import io.choerodon.iam.api.vo.WorkGroupUserRelVO;
 import io.choerodon.iam.api.vo.WorkHoursSearchVO;
 import io.choerodon.iam.app.service.WorkGroupUserRelService;
+import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,6 +26,7 @@ import java.util.Set;
  * @author zhaotianxin
  * @date 2021-11-08 19:29
  */
+@Api(tags = C7nSwaggerApiConfig.CHOERODON_WORK_GROUP)
 @RestController
 @RequestMapping(value = "/choerodon/v1/organizations/{organization_id}/work_group_user_rel")
 public class WorkGroupUserRelController {

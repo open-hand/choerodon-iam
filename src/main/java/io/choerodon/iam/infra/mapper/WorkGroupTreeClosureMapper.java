@@ -21,4 +21,6 @@ public interface WorkGroupTreeClosureMapper extends BaseMapper<WorkGroupTreeClos
     void deleteDescendant(@Param("organizationId") Long organizationId, @Param("childrens") List<Long> childrens);
 
     void deleteByAncestorsAndDescendants(@Param("organizationId") Long organizationId, @Param("ancestors") List<Long> oldAncestors, @Param("descendants") List<Long> descendants);
+
+    void insertSyncData(@Param("insertList") List<WorkGroupTreeClosureDTO> insertList);
 }

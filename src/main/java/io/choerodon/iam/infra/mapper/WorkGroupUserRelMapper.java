@@ -29,4 +29,6 @@ public interface WorkGroupUserRelMapper extends BaseMapper<WorkGroupUserRelDTO> 
                                  @Param("projectIds") List<Long> projectIds,
                                  @Param("startTime") Date startTime,
                                  @Param("endTime") Date endTime);
+
+    void insertSyncData(@Param("insertList") List<WorkGroupUserRelDTO> insertList);
 }

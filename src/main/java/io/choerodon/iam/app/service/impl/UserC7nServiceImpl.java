@@ -103,7 +103,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 @Service
 public class UserC7nServiceImpl implements UserC7nService {
     private static final String ROOT_BUSINESS_TYPE_CODE = "SITEADDROOT";
-    private static final String LOGIN_NAME_REGULAR = "^(?!_)(^[a-zA-Z0-9_-]{1,100}$)$";
+    private static final String LOGIN_NAME_REGULAR = "^(?!_)(^[a-zA-Z0-9_\\.-]{1,100}$)(?<!\\.git)(?<!\\.)(?<!\\.atom)$";
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";

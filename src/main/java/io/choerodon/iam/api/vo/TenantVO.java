@@ -17,10 +17,6 @@ import io.choerodon.mybatis.annotation.MultiLanguage;
  * @since 2020/4/21
  */
 @JsonInclude(JsonInclude.Include.ALWAYS)
-@Table(
-        name = "hpfm_tenant"
-)
-@MultiLanguage
 public class TenantVO extends Tenant {
 
     @ApiModelProperty(value = "组织信息")

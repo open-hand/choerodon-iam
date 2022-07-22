@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hzero.iam.api.dto.TenantDTO;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.mybatis.domian.MultiLanguage;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.vo.ExternalTenantVO;
@@ -87,5 +88,12 @@ public interface TenantC7nService {
      * 修复部分组织没有多语言问题
      */
     void syncTenantTl();
+
+    /**
+     * 查询组织名称多语言
+     * @param organizationId
+     * @return
+     */
+    List<MultiLanguage> queryTenantNameTl(Long organizationId);
 
 }

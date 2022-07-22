@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.iam.domain.entity.User;
+import org.hzero.mybatis.domian.MultiLanguage;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import io.choerodon.iam.app.service.OrganizationResourceLimitService;
 import io.choerodon.iam.app.service.TenantC7nService;
 import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.infra.config.C7nSwaggerApiConfig;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -214,5 +216,16 @@ public class TenantC7nController {
     @GetMapping("/external/tenants")
     public ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId) {
         return new ResponseEntity<>(tenantC7nService.queryTenantByIdWithExternalInfo(organizationId), HttpStatus.OK);
+    }
+
+    /**
+     * 不要删除
+     * @return
+     */
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "查询组织多语言")
+    @GetMapping("/{tenant_id}/tenant_tl")
+    public ResponseEntity<List<MultiLanguage>> queryTenantNameTl(@PathVariable(name = "tenant_id") Long organizationId) {
+        return ResponseEntity.ok(tenantC7nService.queryTenantNameTl(organizationId));
     }
 }

@@ -181,6 +181,7 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
         organizationProjectC7nService.cheryNamePattern(projectDTO.getName());
         ProjectDTO dto = new ProjectDTO();
         CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
+        organizationProjectC7nService.correctRequestParam(projectDTO);
         User user = userAssertHelper.userNotExisted(UserAssertHelper.WhichColumn.LOGIN_NAME, details.getUsername());
         ProjectDTO newProject = projectAssertHelper.projectNotExisted(projectDTO.getId());
 
@@ -192,6 +193,12 @@ public class ProjectC7nServiceImpl implements ProjectC7nService {
 
         projectEventMsg.setOrganizationCode(tenant.getTenantNum());
         projectEventMsg.setOrganizationName(tenant.getTenantName());
+
+        if (newProject.getDevopsComponentCode() != null) {
+            projectEventMsg.setDevopsComponentCode(newProject.getDevopsComponentCode());
+        } else {
+            projectEventMsg.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
+        }
 
 
         ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();

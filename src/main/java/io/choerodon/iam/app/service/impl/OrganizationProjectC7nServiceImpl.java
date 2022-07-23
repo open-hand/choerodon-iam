@@ -81,7 +81,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private static final String ERROR_PROJECT_NOT_EXIST = "error.project.not.exist";
     private static final String ERROR_PROJECT_CATEGORY_EMPTY = "error.project.category.empty";
     public static final String PROJECT = "project";
-    public static final String devops_component_code_regex = "^[a-z]+[a-zA-Z0-9\\-]*[a-zA-Z0-9]+$";
+    public static final String DEVOPS_COMPONENT_CODE_REGEX = "^[a-z]+[a-z0-9\\-]*[a-z0-9]+$";
 
     private UserC7nService userC7nService;
 
@@ -250,7 +250,7 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
             throw new CommonException("error.devops.component.code.null");
         }
         if (StringUtils.hasText(projectDTO.getDevopsComponentCode())
-                && (!Pattern.matches(devops_component_code_regex, projectDTO.getDevopsComponentCode()) || projectDTO.getDevopsComponentCode().contains("--"))) {
+                && (!Pattern.matches(DEVOPS_COMPONENT_CODE_REGEX, projectDTO.getDevopsComponentCode()) || projectDTO.getDevopsComponentCode().contains("--"))) {
             throw new CommonException("error.devops.component.code.invalid");
         }
 

@@ -44,7 +44,7 @@
         WHERE irp.role_id = #{roleId} AND im.h_enabled_flag = 1 AND  irp.type = 'PS' and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
     </select>
     <insert id="batchInsert">
-        INSERT INTO iam_role_permission
+        INSERT IGNORE INTO iam_role_permission
         (CREATION_DATE, CREATED_BY, LAST_UPDATE_DATE, LAST_UPDATED_BY, role_id, permission_id, type, h_create_flag, h_inherit_flag)
         VALUES
          <foreach collection="rolePermissionList" item="ps" separator=",">

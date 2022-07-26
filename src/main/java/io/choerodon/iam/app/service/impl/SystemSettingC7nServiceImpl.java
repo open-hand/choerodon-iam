@@ -193,7 +193,7 @@ public class SystemSettingC7nServiceImpl implements SystemSettingC7nService {
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put(MESSAGE_TYPE, messageType);
         mapParams.put(CLEAN_NUM, cleanNum);
-        handleScheduleTaskAutoClean(autoClean, taskName, mapParams, "cleanMessageRecord", HZeroService.Message.NAME);
+        handleScheduleTaskAutoClean(autoClean, taskName, mapParams, "cleanMessageRecord", HZeroService.getRealName(HZeroService.Message.NAME));
     }
 
 

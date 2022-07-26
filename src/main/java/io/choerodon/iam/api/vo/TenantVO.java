@@ -4,11 +4,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.Table;
 import org.hzero.iam.domain.entity.Role;
 import org.hzero.iam.domain.entity.Tenant;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.mybatis.annotation.MultiLanguage;
 
 /**
  * @author scp

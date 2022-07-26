@@ -16,6 +16,8 @@ import org.hzero.iam.infra.mapper.TenantMapper;
 import org.hzero.iam.infra.mapper.UserMapper;
 import org.hzero.iam.saas.app.service.TenantService;
 import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.domian.MultiLanguage;
+import org.hzero.mybatis.service.MultiLanguageService;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +93,8 @@ public class TenantC7NServiceImpl implements TenantC7nService {
     private RoleMapper roleMapper;
     @Autowired
     private MenuC7nMapper menuC7nMapper;
+    @Autowired
+    private MultiLanguageService multiLanguageService;
 
     @Override
     public TenantVO queryTenantById(Long tenantId, Boolean withMoreInfo) {
@@ -319,6 +323,13 @@ public class TenantC7NServiceImpl implements TenantC7nService {
             list.forEach(t -> tenantC7nMapper.insertTenantTl(t.getTenantId(), "en_US", t.getTenantName()));
         }
         LOGGER.info("================end sync tenant tl================");
+    }
+
+    @Override
+    public List<MultiLanguage> queryTenantNameTl(Long organizationId) {
+        Map<String, Object> pkValue = new HashMap<>();
+        pkValue.put("tenantId", organizationId);
+        return multiLanguageService.listMultiLanguage("org.hzero.iam.domain.entity.Tenant", "tenantName", pkValue);
     }
 
     @Override

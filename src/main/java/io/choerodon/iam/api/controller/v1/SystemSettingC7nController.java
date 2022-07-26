@@ -72,7 +72,7 @@ public class SystemSettingC7nController extends BaseController {
     @ApiOperation(value = "获取平台基本信息、密码策略及Feedback策略")
     @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     public ResponseEntity<Object> getSetting() {
-        SysSettingVO sysSettingVO = systemSettingService.getSetting();
+        SysSettingVO sysSettingVO = systemSettingService.getSettingTl();
         Object result;
         result = sysSettingVO == null ? "{}" : sysSettingVO;
         return new ResponseEntity<>(result, HttpStatus.OK);

@@ -6,6 +6,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.MultiLanguage;
+import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -16,6 +18,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 @VersionAudit
 @ModifyAudit
+@MultiLanguage
 @Table(name = "fd_project_category")
 public class ProjectCategoryDTO extends AuditDomain {
     public static final String FIELD_SEQUENCE = "sequence";
@@ -24,6 +27,7 @@ public class ProjectCategoryDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Encrypt
     private Long id;
+    @MultiLanguageField
     private String name;
     private String description;
     private String code;

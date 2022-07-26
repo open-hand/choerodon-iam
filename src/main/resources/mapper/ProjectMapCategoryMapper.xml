@@ -11,24 +11,17 @@
     </select>
 
     <select id="selectProjectCategoryNames" resultType="io.choerodon.iam.infra.dto.ProjectCategoryDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT pc.code AS code,
-            pc. NAME AS name,
+            fpct.NAME AS name,
             pc.LABEL_CODE as labelCode
         FROM
             FD_PROJECT_MAP_CATEGORY pmc
         INNER JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        JOIN fd_project_category_tl fpct on fpct.id = pc.id and fpct.lang= #{lang}
         WHERE pmc.project_id = #{projectId}
     </select>
 
-    <select id="selectAllProjectMapCategories" resultType="io.choerodon.iam.api.vo.ProjectMapCategorySimpleVO">
-        SELECT
-            fp.id as projectId,
-            fpc.`NAME` as category
-        FROM
-            fd_project fp
-        LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-        INNER JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
-    </select>
 
     <insert id="batchInsert" parameterType="java.util.List">
         INSERT IGNORE INTO FD_PROJECT_MAP_CATEGORY(PROJECT_ID,CATEGORY_ID) VALUES

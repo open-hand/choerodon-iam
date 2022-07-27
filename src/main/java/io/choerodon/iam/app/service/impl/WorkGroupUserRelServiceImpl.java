@@ -228,7 +228,22 @@ public class WorkGroupUserRelServiceImpl implements WorkGroupUserRelService {
             }
             if (!ObjectUtils.isEmpty(projectIds) && workGroupIds.contains(0L)) {
                 // 查询登记过工时但未分配工作组的人员
-                Set<Long> noGroupUserIds = workGroupUserRelMapper.selectNoGroupUsers(organizationId, projectIds, workHoursSearchVO.getStartTime(), workHoursSearchVO.getEndTime());
+                Set<Long> workLogUserIds = workHoursSearchVO.getWorkLogUserIds();
+                Set<Long> noGroupUserIds = new HashSet<>();
+                if(!ObjectUtils.isEmpty(workLogUserIds)) {
+                    WorkGroupUserRelDTO dto = new WorkGroupUserRelDTO();
+                    dto.setOrganizationId(organizationId);
+                    Set<Long> workGroupUserIds =
+                            workGroupUserRelMapper.select(dto)
+                                    .stream()
+                                    .map(WorkGroupUserRelDTO::getUserId)
+                                    .collect(Collectors.toSet());
+                    noGroupUserIds.addAll(
+                            workLogUserIds
+                                    .stream()
+                                    .filter(x -> !workGroupUserIds.contains(x))
+                                    .collect(Collectors.toSet()));
+                }
                 if (!noGroupUserIds.isEmpty()) {
                     List<User> users = userC7nService.listUsersByIds(noGroupUserIds.toArray(new Long[noGroupUserIds.size()]), true);
                     if (!ObjectUtils.isEmpty(users)) {

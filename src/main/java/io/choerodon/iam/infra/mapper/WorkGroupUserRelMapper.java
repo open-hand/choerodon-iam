@@ -5,7 +5,6 @@ import io.choerodon.iam.infra.dto.WorkGroupUserRelDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -24,11 +23,6 @@ public interface WorkGroupUserRelMapper extends BaseMapper<WorkGroupUserRelDTO> 
     Set<Long> listUserIdsByWorkGroupIds(@Param("organizationId") Long organizationId, @Param("workGroupIds") List<Long> workGroupIds);
 
     List<WorkGroupVO> selectWorkGroupByUserId(@Param("organizationId") Long organizationId, @Param("userIds") List<Long> userIds);
-
-    Set<Long> selectNoGroupUsers(@Param("organizationId") Long organizationId,
-                                 @Param("projectIds") List<Long> projectIds,
-                                 @Param("startTime") Date startTime,
-                                 @Param("endTime") Date endTime);
 
     void insertSyncData(@Param("insertList") List<WorkGroupUserRelDTO> insertList);
 }

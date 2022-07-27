@@ -5,6 +5,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author zhaotianxin
@@ -34,6 +35,17 @@ public class WorkHoursSearchVO {
 
     @ApiModelProperty("用户标签")
     private List<String> userLabels;
+
+    @ApiModelProperty("登记过工时的用户id")
+    private Set<Long> workLogUserIds;
+
+    public Set<Long> getWorkLogUserIds() {
+        return workLogUserIds;
+    }
+
+    public void setWorkLogUserIds(Set<Long> workLogUserIds) {
+        this.workLogUserIds = workLogUserIds;
+    }
 
     public Date getStartTime() {
         return startTime;

@@ -90,21 +90,4 @@
         </if>
     </select>
 
-    <select id="selectNoGroupUsers" resultType="java.lang.Long">
-        select created_by
-        from agile_work_log
-        where created_by not in
-        (
-          select user_id
-          from fd_work_group_user_rel
-          where organization_id = #{organizationId}
-        )
-        and project_id in
-        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-            #{projectId}
-        </foreach>
-        <if test="startTime != null and endTime != null">
-            and start_date between #{startTime} and #{endTime}
-        </if>
-    </select>
 </mapper>

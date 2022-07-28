@@ -27,7 +27,6 @@ public interface ProjectMapCategoryMapper extends BaseMapper<ProjectMapCategoryD
      */
     int batchInsert(@Param("records") List<ProjectMapCategoryDTO> records);
 
-    List<ProjectMapCategorySimpleVO> selectAllProjectMapCategories();
 
     int batchDelete(@Param("projectId") Long projectId, @Param("ids") List<Long> ids);
 

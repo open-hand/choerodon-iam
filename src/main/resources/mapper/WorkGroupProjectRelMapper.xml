@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.WorkGroupProjectRelMapper">
+
+    <insert id="insertSyncData">
+        insert into fd_work_group_project_rel
+        (
+        id,
+        work_group_id,
+        project_id,
+        organization_id,
+        object_version_number,
+        created_by,
+        creation_date,
+        last_updated_by,
+        last_update_date
+        )
+        values
+        <foreach collection="insertList" item="item" index="index" separator=",">
+            (#{item.id},
+            #{item.workGroupId},
+            #{item.projectId},
+            #{item.organizationId},
+            #{item.objectVersionNumber},
+            #{item.createdBy},
+            #{item.creationDate},
+            #{item.lastUpdatedBy},
+            #{item.lastUpdateDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectWorkGroupByProjectIds" resultType="io.choerodon.iam.api.vo.WorkGroupVO">
+        SELECT fwg.id, fwg.parent_id, fwg.name, fwgpr.project_id
+        FROM fd_work_group_project_rel fwgpr
+        JOIN fd_work_group fwg ON fwg.id = fwgpr.work_group_id
+        WHERE fwgpr.organization_id = #{organizationId}
+        AND fwgpr.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+    </select>
+
+    <select id="listProjectIdsByWorkGroupId" resultType="java.lang.Long">
+        SELECT project_id
+        FROM fd_work_group_project_rel fwgpr
+        WHERE fwgpr.work_group_id IN
+        <foreach collection="workGroupIds" item="workGroupId" open="(" close=")" separator=",">
+            #{workGroupId}
+        </foreach>
+    </select>
+</mapper>

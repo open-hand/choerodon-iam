@@ -53,6 +53,7 @@
     </select>
 
     <select id="fulltextSearch" resultType="io.choerodon.iam.api.vo.TenantVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         org.*,
         CASE
@@ -80,6 +81,7 @@
             LEFT JOIN hpfm_tenant_config owner ON owner.tenant_id = org.tenant_id AND owner.config_key = 'userId'
             LEFT JOIN iam_user iu ON owner.config_value = iu.id
         </if>
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = org.tenant_id and htt.lang= #{lang}
         <if test="isRegister != null and isRegister != ''">
             LEFT JOIN
             hpfm_tenant_config register
@@ -89,7 +91,7 @@
 
         <where>
             <if test="name != null">
-                AND org.tenant_name LIKE concat(concat('%',#{name}),'%')
+                AND htt.tenant_name LIKE concat(concat('%',#{name}),'%')
             </if>
             <if test="code != null">
                 AND org.tenant_num LIKE concat(concat('%',#{code}),'%')
@@ -105,7 +107,7 @@
             </if>
             <if test="params != null">
                 AND (
-                org.tenant_name LIKE concat(concat('%', #{params}), '%') OR
+                htt.tenant_name LIKE concat(concat('%', #{params}), '%') OR
                 org.tenant_num LIKE concat(concat('%', #{params}), '%')
                 )
             </if>
@@ -130,9 +132,10 @@
     </select>
 
     <select id="selectOrganizationsWithRoles" resultMap="OrganizationWithRoleDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         o.tenant_id,
-        o.tenant_name,
+        htt.tenant_name,
         o.tenant_num,
         o.enabled_flag,
         ir.id AS role_id,
@@ -152,12 +155,13 @@
         ON o.tenant_id = t.source_id
         INNER JOIN iam_member_role imr ON imr.source_id = o.tenant_id
         LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = o.tenant_id and htt.lang= #{lang}
         WHERE imr.source_type = 'organization'
         AND imr.member_type = 'user'
         AND imr.member_id = #{id}
         <if test="params != null">
             AND (
-            o.tenant_name LIKE concat(concat('%', #{params}), '%') OR
+            htt.tenant_name LIKE concat(concat('%', #{params}), '%') OR
             o.tenant_num LIKE concat(concat('%', #{params}), '%')
             )
         </if>
@@ -168,17 +172,19 @@
     </select>
 
     <select id="selectSpecified" resultType="org.hzero.iam.domain.entity.Tenant">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         fo.tenant_id AS id,
-        fo.tenant_name AS `name`,
+        htt.tenant_name AS `name`,
         fo.tenant_num AS `code`,
         fo.enabled_flag AS enabled
         FROM
         hpfm_tenant fo
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = fo.tenant_id and htt.lang= #{lang}
         WHERE
         1 = 1
         <if test="name != null">
-            AND fo.tenant_name LIKE concat(concat('%', #{name}), '%')
+            AND htt.tenant_name LIKE concat(concat('%', #{name}), '%')
         </if>
         <if test="code != null">
             AND fo.tenant_num LIKE concat(concat('%', #{code}), '%')
@@ -188,7 +194,7 @@
         </if>
         <if test="params != null">
             AND (
-            fo.tenant_name LIKE concat(concat('%', #{params}), '%') OR
+            htt.tenant_name LIKE concat(concat('%', #{params}), '%') OR
             fo.tenant_num LIKE concat(concat('%', #{params}), '%')
             )
         </if>
@@ -215,11 +221,13 @@
     </select>
 
     <select id="getOrganizationByName" resultType="java.lang.Long">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select fo.tenant_id
         from hpfm_tenant fo
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = fo.tenant_id and htt.lang= #{lang}
         WHERE 1=1
         <if test="name != null">
-            AND fo.tenant_name LIKE concat(concat('%',#{name}),'%')
+            AND htt.tenant_name LIKE concat(concat('%',#{name}),'%')
         </if>
     </select>
 
@@ -242,24 +250,40 @@
     </select>
 
     <select id="selectAllOrgIdAndName" resultType="io.choerodon.iam.infra.dto.OrganizationSimplifyDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT ht.tenant_id AS id, ht.tenant_name AS `name`
         FROM hpfm_tenant ht
     </select>
+
     <select id="listVisibleTentant" resultType="org.hzero.iam.api.dto.TenantDTO">
-        SELECT ht.*
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        ht.tenant_id,
+        ht.tenant_num,
+        ht.enabled_flag,
+        ht.object_version_number,
+        ht.created_by,
+        ht.last_updated_by,
+        ht.last_update_date,
+        ht.creation_date,
+        ht.limit_user_qty,
+        htt.tenant_name
         FROM iam_member_role imr
         INNER JOIN hpfm_tenant ht ON ht.tenant_id = imr.source_id
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = ht.tenant_id and htt.lang= #{lang}
         <where>
             ht.enabled_flag = true AND
             imr.member_type = 'user' AND imr.member_id = #{params.userId} AND imr.source_type = 'organization'
             <if test="params.tenantName != null">
-                AND ht.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')
+                AND htt.tenant_name LIKE concat(concat('%', #{param1.tenantName}), '%')
             </if>
             <if test="params.tenantNum != null">
                 AND ht.tenant_num LIKE concat(concat('%', #{param1.tenantNum}), '%')
             </if>
         </where>
-        GROUP BY ht.tenant_id
+        GROUP BY
+        ht.tenant_id,
+        htt.tenant_name
     </select>
 
     <select id="listMemberIds" resultType="org.hzero.iam.domain.entity.User">

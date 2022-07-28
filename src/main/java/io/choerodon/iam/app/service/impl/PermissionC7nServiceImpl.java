@@ -24,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.aop.TimeCheck;
 import io.choerodon.iam.app.service.PermissionC7nService;
 import io.choerodon.iam.app.service.UserC7nService;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
@@ -87,6 +88,7 @@ public class PermissionC7nServiceImpl implements PermissionC7nService {
     }
 
     @Override
+    @TimeCheck
     public List<PermissionCheckDTO> checkPermissionSets(List<String> codes, Long tenantId, Boolean isMobile, Long projectId) {
         CustomUserDetails self = UserUtils.getUserDetails();
         Boolean isOrgRoot = false;

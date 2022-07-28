@@ -124,6 +124,7 @@
     </select>
 
     <select id="selectRoles" resultMap="UserRoleVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         <bind name="roleLabelDataType" value="@org.hzero.iam.domain.entity.Role@LABEL_DATA_TYPE"/>
         SELECT *
         FROM (
@@ -155,7 +156,7 @@
         <if test="level == null or level == 'organization'">
             SELECT
             fo.tenant_id AS id,
-            fo.tenant_name AS name,
+            htt.tenant_name AS name,
             fo.tenant_num AS code,
             fo.enabled_flag AS is_enabled,
             imr.source_type,
@@ -168,13 +169,14 @@
             inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} and hlr.data_id = ir.id)
             inner join iam_label il on il.id = hlr.label_id
             INNER JOIN hpfm_tenant fo ON imr.source_id = fo.tenant_id
+            LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = fo.tenant_id and htt.lang= #{lang}
             WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
             fo.enabled_flag = 1 AND il.name = 'TENANT_ROLE'
             <if test="name != null">
-                AND fo.tenant_name LIKE concat(concat('%', #{name}), '%')
+                AND htt.tenant_name LIKE concat(concat('%', #{name}), '%')
             </if>
             <if test="params != null">
-                AND fo.tenant_name LIKE concat(concat('%', #{params}), '%')
+                AND htt.tenant_name LIKE concat(concat('%', #{params}), '%')
             </if>
             group by fo.tenant_id
         </if>
@@ -184,7 +186,7 @@
         <if test="level == null or level == 'project'">
             SELECT
             fp.id,
-            CONCAT(fo.tenant_name, CONCAT(' / ', fp.name)) AS name,
+            CONCAT(htt.tenant_name, CONCAT(' / ', fp.name)) AS name,
             fp.code,
             fp.is_enabled,
             'project' as source_type,
@@ -199,13 +201,14 @@
             inner join hiam_label_rel hlr on (hlr.data_type = #{roleLabelDataType} AND hlr.data_id = ir.id)
             inner join iam_label il on il.id = hlr.label_id
             INNER JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
+            LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = fo.tenant_id and htt.lang= #{lang}
             WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
             fp.is_enabled = 1 AND il.name = 'PROJECT_ROLE'
             <if test="name != null">
                 AND fp.name LIKE concat(concat('%', #{name}), '%')
             </if>
             <if test="params != null">
-                AND (fp.name LIKE concat(concat('%', #{params}), '%') OR fo.tenant_name LIKE concat(concat('%', #{params}), '%'))
+                AND (fp.name LIKE concat(concat('%', #{params}), '%') OR htt.tenant_name LIKE concat(concat('%', #{params}), '%'))
             </if>
             group by fp.id
 
@@ -236,10 +239,25 @@
 
 
     <select id="fulltextSearch" resultMap="RoleDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
-        ir.*
+           tmp.id,
+           tmp.`code`,
+           irt.`name`,
+           tmp.fd_level,
+           tmp.is_enabled,
+           tmp.is_built_in,
+           tmp.is_modified
         FROM
-        iam_role ir
+        (SELECT
+           ir.id,
+           ir.`code`,
+           ir.fd_level,
+           ir.is_enabled,
+           ir.is_built_in,
+           ir.is_modified
+        FROM
+           iam_role ir
         inner JOIN hiam_label_rel hlr on hlr.data_id=ir.id
         INNER JOIN iam_label il on il.id=hlr.label_id
         <where>
@@ -271,7 +289,8 @@
         order by
         ir.is_modified ASC,
         ir.is_enabled DESC,
-        ir.id DESC
+        ir.id DESC) tmp
+        INNER JOIN iam_role_tl irt ON irt.id=tmp.id  AND irt.lang= #{lang}
     </select>
     <select id="getTenantAdminRole" resultType="org.hzero.iam.domain.entity.Role">
         SELECT ir.*

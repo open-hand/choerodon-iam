@@ -154,12 +154,13 @@
     </select>
 
     <select id="selectProjectsWithRoles" resultMap="projectWithRoleDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         fp.id,
         fp.name,
         fp.code,
         fp.organization_id,
-        fo.tenant_name AS organization_name,
+        htt.tenant_name AS organization_name,
         fo.tenant_num AS organization_code,
         fp.is_enabled,
         ir.id AS role_id,
@@ -175,6 +176,7 @@
         INNER JOIN iam_member_role imr ON fpu.MEMBER_ROLE_ID = imr.id
         LEFT JOIN iam_role ir ON imr.role_id = ir.id
         LEFT JOIN hpfm_tenant fo ON fp.organization_id = fo.tenant_id
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = fo.tenant_id and htt.lang= #{lang}
         WHERE imr.member_id = #{id}
         <if test="params != null">
             AND (
@@ -189,15 +191,19 @@
     </select>
 
     <select id="selectByProjectIds" resultMap="projectDTOWithCategory">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select fp.*,
         fpc.id as category_id,
         fpc.code as category_code,
-        fpc.name as category_name,
-        ht.`tenant_name` AS tenant_name
+        fpct.name as category_name,
+        htt.`tenant_name` AS tenant_name
         from fd_project fp
         left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
         left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         LEFT JOIN hpfm_tenant ht ON fp.ORGANIZATION_ID = ht.tenant_id
+        LEFT JOIN hpfm_tenant_tl htt on htt.tenant_id = ht.tenant_id and htt.lang= #{lang}
+
         where fp.id in
         <foreach item="id" index="index" collection="ids"
                  open="(" separator="," close=")">
@@ -227,15 +233,17 @@
 
 
     <select id="selectCategoryByPrimaryKey" resultMap="projectWithCategoryMap">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select fp.*,
         fpc.id as category_id,
-        fpc.name as category_name,
+        fpct.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
         fpc.organization_id as category_org_id
         from fd_project fp
         left join fd_project_map_category fpmc on fp.id = fpmc.project_id
         left join fd_project_category fpc on fpc.id = fpmc.category_id
+        left join fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         Where fp.id = #{projectId}
         order by fpmc.id asc
     </select>
@@ -253,30 +261,6 @@
         </if>
     </select>
 
-    <select id="selectByOrgIdAndCategoryEnable" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        select * from
-        fd_project fp
-        left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-        left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
-        WHERE fp.organization_id=#{organizationId}
-        AND fpc.CODE = #{agile}
-        AND fp.is_enabled=1
-        <if test="param != null">
-            AND (
-            fp.name like concat(concat('%',#{param}),'%')
-            )
-        </if>
-    </select>
-
-    <select id="selectProjectAndCategoryId" resultType="io.choerodon.iam.infra.dto.ProjectMapCategoryDTO">
-        select
-        p.id as projectId,
-        pc.id as categoryId
-        from
-        fd_project p
-        left join FD_PROJECT_CATEGORY pc
-        on p.CATEGORY=pc.CODE
-    </select>
 
     <select id="selectProjectsByUserIdOrAdmin" resultMap="projectMap">
         SELECT fp.*,
@@ -387,9 +371,10 @@
     </select>
 
     <select id="selectAllProjectsByUserIdOrAdmin" resultMap="projectWithCategoryMap">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT DISTINCT fp.*,
         fpc.id as category_id,
-        fpc.name as category_name,
+        fpct.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
         fpc.organization_id as category_org_id
@@ -397,6 +382,7 @@
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
         inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'AGILE' or fpc.code = 'GENERAL'
         or fpc.code='PROGRAM'))
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         <if test="!isAdmin">
             INNER JOIN fd_project_permission fpu ON fpu.PROJECT_ID = fp.id
             INNER JOIN iam_member_role imr ON imr.id = fpu.MEMBER_ROLE_ID
@@ -505,16 +491,19 @@
         </where>
     </select>
     <select id="listProjectCategory" resultMap="ProjectMapCategoryMap">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT fpmc.*,
-        fpc.name AS category_name, fpc.CODE AS category_code
+        fpct.name AS category_name, fpc.CODE AS category_code
         FROM fd_project_map_category fpmc
         INNER JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         WHERE fpmc.PROJECT_ID IN
         <foreach collection="projectIdList" item="pid" open="(" separator="," close=")" index="i">
             #{pid}
         </foreach>
     </select>
     <select id="selectProjectsWithCategoryAndRoleByUserIdOrAdmin" resultMap="projectWithRoleAndCategoryDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT fp.*,
         iu.real_name as create_user_name,
         iu.image_url as create_user_image_url,
@@ -528,7 +517,7 @@
         ir.created_by as role_created_by,
         ir.creation_date as role_creation_date,
         fpc.id as category_id,
-        fpc.name as category_name,
+        fpct.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
         fpc.organization_id as category_org_id,
@@ -537,6 +526,7 @@
         FROM fd_project fp
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
         inner join fd_project_category fpc on fpc.id = fpmc.category_id
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         left join iam_user iu on iu.id = fp.created_by
         <choose>
             <when test="!isAdmin and !isOrgAdmin">
@@ -692,9 +682,10 @@
     </select>
 
     <select id="selectProjectWithCategoryByPrimaryKey" resultMap="projectWithCategoryMap">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select fp.*,
         fpc.id as category_id,
-        fpc.name as category_name,
+        fpct.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
         fpc.organization_id as category_org_id,
@@ -703,6 +694,7 @@
         from fd_project fp
         left join fd_project_map_category fpmc on fp.id = fpmc.project_id
         left join fd_project_category fpc on fpc.id = fpmc.category_id
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         left join iam_user iu on fp.CREATED_BY=iu.id
         Where fp.id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
@@ -738,9 +730,10 @@
         fpmc.PROJECT_ID = #{projectId}
     </select>
     <select id="selectWithCategory" resultMap="projectWithCategoryMap">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select fp.*,
         fpc.id as category_id,
-        fpc.name as category_name,
+        fpct.name as category_name,
         fpc.code as category_code,
         fpc.object_version_number as category_version_number,
         fpc.organization_id as category_org_id
@@ -748,6 +741,7 @@
         fd_project fp
         JOIN fd_project_map_category fpmc ON fp.ID = fpmc.PROJECT_ID
         JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         WHERE
         fp.ORGANIZATION_ID = #{organizationId}
         <if test="projectSearchVO != null">
@@ -774,11 +768,13 @@
     </select>
 
     <select id="listProjectOfDevopsOrOperations" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT DISTINCT fp.*,
-        ht.tenant_name as organizationName,
+        htt.tenant_name as organizationName,
         ht.tenant_id as organizationId
         FROM fd_project fp
         inner join hpfm_tenant ht on fp.organization_id=ht.tenant_id
+        JOIN hpfm_tenant_tl htt on htt.tenant_id = ht.tenant_id and htt.lang= #{lang}
         inner join fd_project_map_category fpmc on fp.id = fpmc.project_id
         inner join fd_project_category fpc on (fpc.id = fpmc.category_id and (fpc.code = 'N_DEVOPS' or fpc.code =
         'N_OPERATIONS'))
@@ -853,10 +849,15 @@
         fp.ORGANIZATION_ID = #{tenantId}
     </select>
     <select id="listProjectsByCategoryAndOrgId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        SELECT *
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        select fp.*,
+        fpc.id as category_id,
+        fpct.name as category_name,
+        fpc.code as category_code
         FROM fd_project fp
         LEFT JOIN fd_project_map_category fpmc ON fp.id = fpmc.PROJECT_ID
         LEFT JOIN fd_project_category fpc ON fpc.ID = fpmc.CATEGORY_ID
+        JOIN fd_project_category_tl fpct on fpct.id = fpc.id and fpct.lang= #{lang}
         WHERE fpc.CODE = #{categoryCode} and fp.ORGANIZATION_ID = #{organizationId}
     </select>
 

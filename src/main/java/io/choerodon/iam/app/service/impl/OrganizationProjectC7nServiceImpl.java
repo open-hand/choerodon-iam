@@ -129,6 +129,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
     private ProjectCategoryC7nService projectCategoryC7nService;
     @Autowired
     private UserWizardService userWizardService;
+    @Autowired
+    private WorkGroupProjectRelService workGroupProjectRelService;
 
     public OrganizationProjectC7nServiceImpl(ProjectMapCategoryMapper projectMapCategoryMapper,
                                              ProjectMapper projectMapper,
@@ -201,6 +203,11 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
         res.setCategories(projectDTO.getCategories());
         res.setUseTemplate(projectDTO.getUseTemplate());
         insertProjectMapCategory(projectDTO.getCategories(), res.getId());
+        //工作组
+        Long projectId = res.getId();
+        Long workGroupId = projectDTO.getWorkGroupId();
+        workGroupProjectRelService.insertOrUpdateOrDeleteRelation(organizationId, projectId, workGroupId);
+
         res = sendCreateProjectEvent(res);
         try {
             User user;
@@ -427,6 +434,8 @@ public class OrganizationProjectC7nServiceImpl implements OrganizationProjectC7n
 
         // 删除项目类型
         projectC7nService.deleteProjectCategory(projectDTO.getId(), deleteProjectCategoryIds);
+        //更新工作组
+        workGroupProjectRelService.insertOrUpdateOrDeleteRelation(organizationId, projectDTO.getId(), projectDTO.getWorkGroupId());
 
         // 更新项目类别
         if (businessService != null) {

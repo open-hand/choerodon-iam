@@ -14,16 +14,6 @@ import java.util.Set;
  */
 public interface ProjectCategoryMapper extends BaseMapper<ProjectCategoryDTO> {
 
-
-    List<ProjectCategoryDTO> selectProjectCategoriesByOrgId(@Param("organizationId") Long organizationId, @Param("param") String param, @Param("projectCategoryDTO") ProjectCategoryDTO projectCategoryDTO);
-
-    List<ProjectCategoryDTO> selectProjectCategoriesListByOrgId(@Param("organizationId") Long organizationId,
-                                                                @Param("param") String param);
-
-    List<ProjectCategoryDTO> selectByParam(@Param("param") String param, @Param("projectCategoryDTO") ProjectCategoryDTO projectCategoryDTO);
-
-    Long getIdByCode(@Param("agile") String agile);
-
     /**
      * 模糊查询projectType
      *

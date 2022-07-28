@@ -58,6 +58,8 @@
         <foreach collection="delPsIds" item="deletePermissionId" open="(" close=")" separator="," index="i">
             #{deletePermissionId}
         </foreach>
+        OR h_inherit_flag = 'X'
+        OR h_create_flag = 'X'
     </delete>
     <delete id="deleteByRoleId">
         delete from iam_role_permission

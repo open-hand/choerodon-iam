@@ -17,7 +17,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface ProjectC7nService {
 
-    ProjectDTO queryProjectById(Long projectId, boolean enableCategory, boolean withUserInfo, boolean withAgileInfo);
+    ProjectDTO queryProjectById(Long projectId, boolean enableCategory, boolean withUserInfo, boolean withAgileInfo,boolean withWorkGroup,boolean withProjectClassfication);
 
     ProjectDTO update(ProjectDTO projectDTO);
 

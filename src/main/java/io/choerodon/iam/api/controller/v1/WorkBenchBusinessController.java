@@ -51,8 +51,9 @@ public class WorkBenchBusinessController {
     @ApiOperation("查询工作组树形结构")
     @GetMapping(value = "/work_group/query_tree")
     public ResponseEntity<WorkGroupTreeVO> pageWorkHoursLogByProjectIds(@ApiParam(value = "组织Id", required = true)
-                                                                        @PathVariable(name = "organization_id") Long organizationId) {
-        return Optional.ofNullable(workGroupService.queryWorkGroupTree(organizationId))
+                                                                        @PathVariable(name = "organization_id") Long organizationId,
+                                                                        @RequestParam(name = "with_extra_items", required = false, defaultValue = "true") boolean withExtraItems) {
+        return Optional.ofNullable(workGroupService.queryWorkGroupTree(organizationId, withExtraItems))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.work.group.tree.get"));
     }

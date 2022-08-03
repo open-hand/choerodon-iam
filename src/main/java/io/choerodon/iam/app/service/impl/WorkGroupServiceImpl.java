@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.iam.api.vo.*;
@@ -157,7 +158,13 @@ public class WorkGroupServiceImpl implements WorkGroupService {
         }
         ancestorIds.add(workGroupVO.getId());
         List<WorkGroupTreeClosureDTO> workGroupTreeClosureDTOS = new ArrayList<>();
-        Long userId = DetailsHelper.getUserDetails().getUserId();
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        Long userId;
+        if (!ObjectUtils.isEmpty(customUserDetails)) {
+            userId = customUserDetails.getUserId();
+        } else {
+            userId = 0L;
+        }
         for (Long ancestorId : ancestorIds) {
             WorkGroupTreeClosureDTO workGroupTreeClosureDTO = new WorkGroupTreeClosureDTO();
             workGroupTreeClosureDTO.setAncestorId(ancestorId);

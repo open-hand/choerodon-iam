@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface WorkGroupService {
 
-    WorkGroupTreeVO queryWorkGroupTree(Long organizationId);
+    WorkGroupTreeVO queryWorkGroupTree(Long organizationId,boolean withExtraItems);
 
     WorkGroupVO create(Long organizationId, WorkGroupVO workGroupVO);
 

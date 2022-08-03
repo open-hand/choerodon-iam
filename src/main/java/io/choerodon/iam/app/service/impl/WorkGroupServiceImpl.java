@@ -65,7 +65,7 @@ public class WorkGroupServiceImpl implements WorkGroupService {
     private WorkGroupTreeClosureMapper workGroupTreeClosureMapper;
 
     @Override
-    public WorkGroupTreeVO queryWorkGroupTree(Long organizationId) {
+    public WorkGroupTreeVO queryWorkGroupTree(Long organizationId, boolean withExtraItems) {
         List<WorkGroupDTO> workGroupDTOS = workGroupMapper.selectByOrganiztionId(organizationId);
         WorkGroupTreeVO workGroupTreeVO = new WorkGroupTreeVO();
         List<WorkGroupVO> workGroupVOS = new ArrayList<>();
@@ -82,14 +82,16 @@ public class WorkGroupServiceImpl implements WorkGroupService {
                 Collections.sort(workGroupVOS, Comparator.comparing(WorkGroupVO::getRank));
             }
         }
-        int orgUserCount = 0;
-        Page<UserDTO> userPage = organizationUserService.pagingUsersOnOrganizationLevel(organizationId, new PageRequest(0, 10), new AgileUserVO());
-        orgUserCount = Long.valueOf(userPage.getTotalElements()).intValue();
-        // 构建未分配工作组
-        buildUnAssignee(organizationId, orgUserCount, workGroupVOS);
-        // 构建组织信息
-        workGroupVOS.add(buildOrganizationInfo(organizationId, orgUserCount));
-        workGroupTreeVO.setWorkGroupVOS(workGroupVOS);
+        if (withExtraItems) {
+            int orgUserCount = 0;
+            Page<UserDTO> userPage = organizationUserService.pagingUsersOnOrganizationLevel(organizationId, new PageRequest(0, 10), new AgileUserVO());
+            orgUserCount = Long.valueOf(userPage.getTotalElements()).intValue();
+            // 构建未分配工作组
+            buildUnAssignee(organizationId, orgUserCount, workGroupVOS);
+            // 构建组织信息
+            workGroupVOS.add(buildOrganizationInfo(organizationId, orgUserCount));
+            workGroupTreeVO.setWorkGroupVOS(workGroupVOS);
+        }
         return workGroupTreeVO;
     }
 

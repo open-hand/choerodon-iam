@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_report_project_category.groovy') {
     changeSet(author: 'scp', id: '2021-01-13-fd-report') {
-        createTable(tableName: "FD_REPORT_PROJECT_CATEGORY") {
+        createTable(tableName: "FD_REPORT_PROJECT_CATEGORY", remarks: "报表与项目类型关系表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '主键ID') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_REPORT_CATEGORY')
             }

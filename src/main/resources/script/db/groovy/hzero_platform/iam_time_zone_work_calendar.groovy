@@ -7,7 +7,7 @@ package script.db
  */
 databaseChangeLog(logicalFilePath: 'script/db/iam_time_zone_work_calendar.groovy') {
     changeSet(id: '2019-07-30-iam-time-zone-work-calendar', author: 'jiameng.cao@hand-china.com') {
-        createTable(tableName: "iam_time_zone_work_calendar") {
+        createTable(tableName: "iam_time_zone_work_calendar", remarks: "工作日历") {
             column(name: 'time_zone_id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '主键') {
                 constraints(primaryKey: true)
             }

@@ -2,7 +2,7 @@ package script.db.groovy.hzero_platform
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_menu_rel.groovy') {
     changeSet(author: 'wanghao', id: '2021-05-18-fd_user_guide_menu_rel') {
-        createTable(tableName: "FD_USER_GUIDE_MENU_REL") {
+        createTable(tableName: "FD_USER_GUIDE_MENU_REL", remarks: "用户指引与菜单关系表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }

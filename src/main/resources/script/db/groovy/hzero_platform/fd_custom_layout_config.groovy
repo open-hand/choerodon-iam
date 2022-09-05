@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_custom_layout_config.groovy') {
     changeSet(author: 'wanghao', id: '2021-01-06-fd_custom_layout_config') {
-        createTable(tableName: "fd_custom_layout_config") {
+        createTable(tableName: "fd_custom_layout_config", remarks: "用户自定义面板布局表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
             }

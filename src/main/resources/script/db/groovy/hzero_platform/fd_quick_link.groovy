@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_quick_link.groovy') {
     changeSet(author: 'wh', id: '2020-06-11-fd-quick-link') {
-        createTable(tableName: "fd_quick_link") {
+        createTable(tableName: "fd_quick_link", remarks: "快速连接表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '主键ID') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_REPORT')
             }

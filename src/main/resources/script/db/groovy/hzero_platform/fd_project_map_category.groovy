@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_project_map_category.groovy') {
     changeSet(author: 'shiying.shen@hand-china.com', id: '2019-06-12-fd_project_map_category') {
-        createTable(tableName: "FD_PROJECT_MAP_CATEGORY") {
+        createTable(tableName: "FD_PROJECT_MAP_CATEGORY", remarks: "项目与项目类型关联表") {
             column(name: 'ID', type: 'BIGINT(20)', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT_MAP_CATEGORY')
             }

@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap_auto.groovy') {
     changeSet(author: 'scp', id: '2019-11-21-oauth-ldap-auto') {
-        createTable(tableName: "OAUTH_LDAP_AUTO") {
+        createTable(tableName: "OAUTH_LDAP_AUTO", remarks: "ldap自动同步表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_LDAP_AUTO')
             }
@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap_auto.groovy') {
             column(name: 'FREQUENCY', type: 'VARCHAR(10)', remarks: '同步频率') {
                 constraints(nullable: false)
             }
-            column(name: "START_TIME", type: "DATETIME", remarks: '开始时间'){
+            column(name: "START_TIME", type: "DATETIME", remarks: '开始时间') {
                 constraints(nullable: false)
             }
             column(name: "QUARTZ_TASK_ID", type: "BIGINT UNSIGNED", remarks: '定时任务Id')

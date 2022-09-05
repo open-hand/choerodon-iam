@@ -5,7 +5,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
         if (helper.dbType().isSupportSequence()) {
             createSequence(sequenceName: 'FD_PROJECT_S', startValue: "1")
         }
-        createTable(tableName: "FD_PROJECT") {
+        createTable(tableName: "FD_PROJECT", remarks: "项目表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }

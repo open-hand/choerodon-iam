@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_enterprise_info.groovy') {
     changeSet(author: 'wanghao', id: '2020-11-04-fd_enterprise_info') {
-        createTable(tableName: "fd_enterprise_info") {
+        createTable(tableName: "fd_enterprise_info", remarks: "记录用户开源信息表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
             }

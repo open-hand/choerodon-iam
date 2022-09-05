@@ -2,7 +2,7 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/oauth_client_resource.groovy') {
     changeSet(author: 'wh', id: '2020-6-1-oauth-client-resource') {
-        createTable(tableName: "oauth_client_resource") {
+        createTable(tableName: "oauth_client_resource", remarks: "客户端资源表") {
             column(name: 'id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_LDAP_AUTO')
             }

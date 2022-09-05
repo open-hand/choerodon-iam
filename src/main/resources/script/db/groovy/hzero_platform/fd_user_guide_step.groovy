@@ -2,7 +2,7 @@ package script.db.groovy.hzero_platform
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_user_guide_step.groovy') {
     changeSet(author: 'wanghao', id: '2021-05-18-fd_user_guide_step') {
-        createTable(tableName: "FD_USER_GUIDE_STEP") {
+        createTable(tableName: "FD_USER_GUIDE_STEP", remarks: "用户指引步骤表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }

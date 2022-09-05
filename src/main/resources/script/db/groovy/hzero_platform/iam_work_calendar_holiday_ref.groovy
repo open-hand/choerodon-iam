@@ -7,7 +7,7 @@ package script.db
  */
 databaseChangeLog(logicalFilePath: 'script/db/iam_work_calendar_holiday_ref.groovy') {
     changeSet(id: '2019-07-30-iam-work-calendar-holiday-ref', author: 'jiameng.cao@hand-china.com') {
-        createTable(tableName: "iam_work_calendar_holiday_ref") {
+        createTable(tableName: "iam_work_calendar_holiday_ref", remarks: "工作日历节假日表") {
             column(name: 'calendar_id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '主键') {
                 constraints(primaryKey: true)
             }

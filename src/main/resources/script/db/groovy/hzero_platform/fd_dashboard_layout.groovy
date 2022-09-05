@@ -1,7 +1,7 @@
 package script.db
 databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard_layout.groovy') {
     changeSet(author: "jian.zhang02@hand-china.com", id: "fd_dashboard_layout-2021-07-07-version-1"){
-        createTable(tableName: "fd_dashboard_layout", remarks: "") {
+        createTable(tableName: "fd_dashboard_layout", remarks: "面板页面布局表") {
             column(name: "layout_id", type: "BIGINT(20)",autoIncrement: true,    remarks: "卡片布局ID")  {constraints(primaryKey: true)} 
             column(name: "user_id", type: "BIGINT(20)",  remarks: "用户ID")   
             column(name: "dashboard_id", type: "BIGINT(20)",  remarks: "面板ID")  {constraints(nullable:"false")}  

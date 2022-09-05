@@ -2,7 +2,7 @@ package script.db.groovy.hzero_platform
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_project_user.groovy') {
     changeSet(author: 'scp', id: '2020-04-16-fd-project-user') {
-        createTable(tableName: "FD_PROJECT_USER") {
+        createTable(tableName: "FD_PROJECT_USER", remarks: "用户项目权限表") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT')
             }

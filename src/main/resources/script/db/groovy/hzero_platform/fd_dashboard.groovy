@@ -1,7 +1,7 @@
 package script.db
 databaseChangeLog(logicalFilePath: 'script/db/fd_dashboard.groovy') {
     changeSet(author: "jian.zhang02@hand-china.com", id: "fd_dashboard-2021-07-07-version-1"){
-        createTable(tableName: "fd_dashboard", remarks: "") {
+        createTable(tableName: "fd_dashboard", remarks: "面板表") {
             column(name: "dashboard_id", type: "BIGINT(20)",autoIncrement: true,    remarks: "面板ID")  {constraints(primaryKey: true)} 
             column(name: "dashboard_type", type: "VARCHAR(30)",   defaultValue:"CUSTOMIZE",   remarks: "面板类型(CUSTOMIZE/自定义;INTERNAL/内置)")  {constraints(nullable:"false")}  
             column(name: "dashboard_name", type: "VARCHAR(480)",  remarks: "面板名称")  {constraints(nullable:"false")}  

@@ -117,9 +117,10 @@ public interface UserC7nService {
      * @param userId
      * @param projectDTO
      * @param params
+     * @param categoryList
      * @return
      */
-    List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params);
+    List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params, List<String> categoryList);
 
     Page<User> pagingQueryAdminUsers(PageRequest pageRequest, String loginName, String realName, String params);
 

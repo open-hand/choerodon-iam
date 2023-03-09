@@ -659,12 +659,12 @@ public class UserC7nServiceImpl implements UserC7nService {
     }
 
     @Override
-    public List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params) {
+    public List<ProjectDTO> listProjectsByUserIdForSimple(Long organizationId, Long userId, ProjectDTO projectDTO, String params, List<String> categoryList) {
         List<ProjectDTO> projects = new ArrayList<>();
         boolean isAdmin = isRoot(userId);
         boolean isOrgAdmin = checkIsOrgRoot(organizationId, userId);
         // 普通用户只能查到启用的项目
-        return projectMapper.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params);
+        return projectMapper.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, isAdmin, isOrgAdmin, params, categoryList);
     }
 
     @Override

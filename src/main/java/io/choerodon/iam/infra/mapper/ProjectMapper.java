@@ -144,7 +144,8 @@ public interface ProjectMapper extends BaseMapper<ProjectDTO> {
                                                    @Param("projectDTO") ProjectDTO projectDTO,
                                                    @Param("isAdmin") Boolean isAdmin,
                                                    @Param("isOrgAdmin") Boolean isOrgAdmin,
-                                                   @Param("params") String params);
+                                                   @Param("params") String params,
+                                                   @Param("categoryList") List<String> categoryList);
 
     List<ProjectDTO> listOwnedProjects(@Param("organizationId") Long organizationId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin, @Param("isOrgAdmin") boolean isOrgAdmin);
 

@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.Arrays;
 import java.util.List;
 
 import io.choerodon.iam.app.service.OrganizationProjectC7nService;
@@ -8,6 +9,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -47,9 +49,12 @@ public class AgileOnOrganizationController {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setName(name);
         projectDTO.setCode(code);
-        projectDTO.setCategory(category);
         projectDTO.setEnabled(enabled);
-        return new ResponseEntity<>(userC7nService.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, params), HttpStatus.OK);
+        List<String> categoryList = null;
+        if (!ObjectUtils.isEmpty(category)) {
+            categoryList = Arrays.asList(category.split(","));
+        }
+        return new ResponseEntity<>(userC7nService.listProjectsByUserIdForSimple(organizationId, userId, projectDTO, params, categoryList), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

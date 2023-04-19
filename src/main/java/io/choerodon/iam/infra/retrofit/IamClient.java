@@ -16,6 +16,6 @@ import io.choerodon.iam.api.vo.EnterpriseInfoVO;
  */
 public interface IamClient {
 
-    @POST("/iam/choerodon/v1/site/enterprises")
+    @POST("/cbase/choerodon/v1/site/enterprises")
     Call<ResponseBody> saveEnterpriseInfo(@Body EnterpriseInfoVO enterpriseInfoVO);
 }

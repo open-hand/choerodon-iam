@@ -38,44 +38,80 @@
     <!-- 查询角色菜单 -->
     <select id="selectRoleMenus" resultMap="MenuMap">
         <bind name="menuLabelDataType" value="@org.hzero.iam.domain.entity.Menu@LABEL_DATA_TYPE"/>
-
+        <bind name="menuDirs" value="@org.hzero.iam.domain.entity.Menu@MENU_DIR"/>
+        <bind name="siteSuperRole" value="@org.hzero.common.HZeroConstant$RoleCode@SITE"/>
+        <bind name="tenantSuperRole" value="@org.hzero.common.HZeroConstant$RoleCode@TENANT"/>
         select
         im.id,
-        im.code,
-        (case when imt.name is not null then imt.name else im.name end ) name,
+        im.code as code,
+        imt.name as name,
         im.fd_level,
         im.parent_id,
-        im.type,
+        case when im.parent_id = 0 then 1 else 0 end as root_node,
+        im.type as type,
         im.sort,
         im.icon,
         im.h_quick_index,
+        im.help_type,
+        im.help_value,
         (case when im.route is null then '' else im.route end) route
         from iam_menu im
-        <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
-            INNER JOIN hiam_label_rel hlr ON hlr.data_type = #{menuLabelDataType} AND hlr.data_id = im.id
-            INNER JOIN iam_label il ON hlr.label_id = il.id AND il.name IN
-            <foreach collection="labels" open="(" separator="," close=")" item="label">
-                #{label}
-            </foreach>
-        </if>
-        left join iam_menu_tl imt on imt.id = im.id and imt.lang = #{lang}
-        where im.type in ('root', 'dir', 'menu', 'link', 'inner-link', 'window')
+        join iam_menu_tl imt on imt.id = im.id and imt.lang = #{lang}
+        where im.type in
+        <foreach collection="menuDirs" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and (im.h_custom_flag = 0 or (im.h_custom_flag = 1 and im.h_tenant_id = #{tenantId}))
         and im.h_enabled_flag = 1
         and im.h_virtual_flag = 0
-        and (im.h_tenant_id = 0 or im.h_tenant_id = #{tenantId})
         <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(labels)">
             <bind name="labelsSize" value="labels.size()"/>
-            AND (SELECT COUNT(1)
-            FROM hiam_label_rel hlr
-            INNER JOIN iam_label il ON hlr.label_id = il.id
-            WHERE hlr.data_type = #{menuLabelDataType}
-            AND hlr.data_id = im.id
-            AND il.name IN
+            and exists (
+            select 1
+            from hiam_label_rel hlr
+            join iam_label il on il.id = hlr.label_id
+            where
+            hlr.data_type = #{menuLabelDataType}
+            and hlr.data_id = im.id
+            and il.name in
             <foreach collection="labels" open="(" separator="," close=")" item="label">
                 #{label}
             </foreach>
-            ) = #{labelsSize}
+            having count(*) > 0
+            )
         </if>
+        and (
+        exists (
+        select 1
+        from iam_role ir
+        where
+        ir.is_enabled = 1
+        and ir.id in
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+        and ir.code in (#{siteSuperRole}, #{tenantSuperRole})
+        and im.fd_level = ir.fd_level
+        )
+        or exists (
+        select 1
+        from iam_role ir
+        join iam_menu im_ps on (ir.fd_level = im_ps.fd_level)
+        join iam_role_permission irp on (irp.permission_id = im_ps.id and irp.role_id = ir.id and irp.type = 'PS') and (irp.h_create_flag = 'Y' OR irp.h_inherit_flag = 'Y')
+        where
+        ir.is_enabled = 1
+        and ir.id in
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+        and im_ps.h_enabled_flag = 1
+        and im_ps.type = 'ps'
+        and im.fd_level = ir.fd_level
+        and (irp.h_create_flag = 'Y' or irp.h_inherit_flag = 'Y')
+        <!-- 权限集限定查询菜单 -->
+        and (im_ps.h_level_path like concat(im.h_level_path, '|%'))
+        )
+        )
     </select>
 
 

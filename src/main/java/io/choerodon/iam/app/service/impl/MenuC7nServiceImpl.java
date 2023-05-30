@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -194,7 +193,7 @@ public class MenuC7nServiceImpl implements MenuC7nService {
             List<Long> finalRoleIds = roleIds;
             CompletableFuture<List<Menu>> f1 = CompletableFuture.supplyAsync(() -> {
                 SecurityTokenHelper.close();
-                List<Menu> menus = this.menuMapper.selectLevelMenus(projectDTO.getOrganizationId(), finalLang, HiamResourceLevel.ORGANIZATION.value(), finalLabels1, true);
+                List<Menu> menus = this.menuC7nMapper.selectRoleMenus(finalRoleIds,projectDTO.getOrganizationId(), finalLang, finalLabels1);
                 SecurityTokenHelper.clear();
                 return menus;
             }, SELECT_MENU_POOL);

@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import io.swagger.annotations.ApiModelProperty;
+
 import org.hzero.core.util.Regexs;
 
 /**
@@ -42,6 +43,17 @@ public class EnterpriseInfoVO {
     @ApiModelProperty(value = "所属行业")
     @NotNull(message = "error.enterprise.type.is.null")
     private String enterpriseType;
+    @ApiModelProperty(value = "当前猪齿鱼版本")
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public EnterpriseInfoVO setVersion(String version) {
+        this.version = version;
+        return this;
+    }
 
     public Long getId() {
         return id;

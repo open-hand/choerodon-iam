@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import okhttp3.ResponseBody;
-import org.hzero.iam.domain.entity.Tenant;
-import org.hzero.iam.domain.entity.User;
-import org.hzero.iam.infra.mapper.TenantMapper;
-import org.hzero.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +14,10 @@ import org.springframework.util.CollectionUtils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 
+import org.hzero.iam.domain.entity.Tenant;
+import org.hzero.iam.domain.entity.User;
+import org.hzero.iam.infra.mapper.TenantMapper;
+import org.hzero.iam.infra.mapper.UserMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -51,6 +51,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Value("${choerodon.url: https://api.choerodon.com.cn}")
     private String choerodonUrl;
+    @Value("${eureka.instance.metadata-map.VERSION}")
+    private String chartVersion;
 
     @Autowired
     private EnterpriseInfoMapper enterpriseInfoMapper;
@@ -119,6 +121,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (enterpriseInfoMapper.insert(enterpriseInfoDTO) != 1) {
             throw new CommonException("error.save.enterpriseInfo");
         }
+
+        enterpriseInfoVO.setVersion(chartVersion);
 
         try {
             Retrofit retrofit = RetrofitHandler.initRetrofit(choerodonUrl);

@@ -139,6 +139,7 @@ public class EnterpriseInfoVO {
                 ", enterpriseName='" + enterpriseName + '\'' +
                 ", enterpriseScale='" + enterpriseScale + '\'' +
                 ", enterpriseType='" + enterpriseType + '\'' +
+                ", version='" + version + '\'' +
                 '}';
     }
 }

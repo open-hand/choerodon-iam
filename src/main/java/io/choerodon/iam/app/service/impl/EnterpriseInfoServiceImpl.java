@@ -123,6 +123,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         enterpriseInfoVO.setVersion(chartVersion);
+        LOGGER.info("开源组织信息:{}", enterpriseInfoVO);
 
         try {
             Retrofit retrofit = RetrofitHandler.initRetrofit(choerodonUrl);

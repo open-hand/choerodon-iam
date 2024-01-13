@@ -43,18 +43,18 @@
 ```
 ## Data initialization
 
-- 使用`hzero_platfrom` 数据库，如果在`hzero_platfrom` 已经创建过该库，可忽略步骤2
+- 使用`hzero_platform` 数据库，如果在`hzero_platform` 已经创建过该库，可忽略步骤2
 
-- 创建数据库，本地创建 `hzero_platfrom` 数据库和默认用户，示例如下：
+- 创建数据库，本地创建 `hzero_platform` 数据库和默认用户，示例如下：
 
   ```sql
   CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
-  CREATE DATABASE hzero_platfrom DEFAULT CHARACTER SET utf8;
-  GRANT ALL PRIVILEGES ON hzero_platfrom.* TO choerodon@'%';
+  CREATE DATABASE hzero_platform DEFAULT CHARACTER SET utf8;
+  GRANT ALL PRIVILEGES ON hzero_platform.* TO choerodon@'%';
   FLUSH PRIVILEGES;
   ```
   
-- 初始化 `hzero_platfrom` 数据库，运行项目根目录下的 `init-database.sh`，该脚本默认初始化数据库的地址为 `localhost`，若有变更需要修改脚本文件
+- 初始化 `hzero_platform` 数据库，运行项目根目录下的 `init-database.sh`，该脚本默认初始化数据库的地址为 `localhost`，若有变更需要修改脚本文件
 
   ```sh
   sh init-database.sh
